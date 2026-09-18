@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Better Auth Mobile Template",
+    "slug": "better-auth-mobile-template",
+    "scheme": "better-auth-mobile-template",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#000000",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.thereallpj.betterauthmobiletemplate"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-localization"
+    ],
+    "extra": {
+      "description": "React Native (Expo) mobile template with Better Auth authentication built in",
+      "author": "LPJ IT-Solutions",
+      "authorUrl": "https://github.com/lpj-app",
+      "primaryColor": "#1e293b",
+      "defaultLanguage": "en"
+    }
+  }
+}

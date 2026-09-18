@@ -1,0 +1,1 @@
+{"nodes": [{"id": "ci_mobile_job", "label": "CI workflow: mobile job (lint, tsc, test)", "file_type": "document", "source_file": ".github/workflows/ci.yml", "source_location": "L4-13", "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}
