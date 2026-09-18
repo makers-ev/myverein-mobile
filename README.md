@@ -324,6 +324,9 @@ None of the above needs `expo-secure-store` — language, theme, and the two tit
 |---|---|---|
 | `Home` | public | Initial route for guests. Placeholder feature cards and a sign-up/login CTA; still reachable by signed-in users too (shortcut to Settings) |
 | `Dashboard` | public | Initial route for already-authenticated users on launch/relaunch — placeholder landing screen, replace with your app's real authenticated home |
+| `Verein` | gated (`RequireAuth`) | Tabs: Vereinsinfo (board/departments/documents), Mitglieder (list), Profil (self-service `birthDate`/emergency contact). Shows a "join a club" prompt if the caller has no membership yet |
+| `JoinClub` | gated (`RequireAuth`) | Join-by-slug form, reachable from `Verein`'s no-club state |
+| `Kalender` | gated (`RequireAuth`) | Tabs: Termine (event list + RSVP/waitlist, department-color-coded), Verfügbarkeit (recurring weekly slots + one-off exceptions, self-service), Treffen (meeting list + detail: agenda/minutes, zu-/absage, Terminfindung overlap check, attendance, resolutions) |
 | `Notifications` | gated (`RequireAuth`) | Unread/Read tabs, mark read/unread, delete (only where the backend marked it `deletable`). Reachable from the bottom Navbar's bell icon (badge shows unread count). `useNotificationText` (in the screen) prefers a notification's `translations` JSONB blob (`Record<langCode, {title, body}>`) over `translationKey` when set — always true for an admin-authored notification, true for a system one only once an admin overrode it via the backend's `/admin/notification-templates` — else falls back to `t(translationKey)` + a manual `{{param}}` replace |
 | `Login` | public | Email/password sign-in, hands off to `TwoFactor` if the account has 2FA enabled |
 | `ForgotPassword` | public | Requests a password-reset email (`authClient.requestPasswordReset`, link lands on the website's `/reset-password` page) and confirms it was sent |
