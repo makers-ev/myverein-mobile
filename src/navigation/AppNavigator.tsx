@@ -17,6 +17,7 @@ import SignupScreen from '@/screens/SignupScreen';
 import TwoFactorScreen from '@/screens/TwoFactorScreen';
 import SettingsScreen from '@/screens/SettingsScreen';
 import VereinScreen from '@/screens/VereinScreen';
+import JoinClubScreen from '@/screens/JoinClubScreen';
 import AppLockGate from '@/components/AppLock/AppLockGate';
 import Navbar from '@/components/Navbar';
 import PrivacyPolicyScreen from '@/legal/PrivacyPolicyScreen';
@@ -39,6 +40,7 @@ export type RootStackParamList = {
   Home: undefined;
   Dashboard: undefined;
   Verein: undefined;
+  JoinClub: undefined;
   Notifications: undefined;
   Login: { returnTo?: keyof RootStackParamList } | undefined;
   Signup: undefined;
@@ -87,6 +89,14 @@ function MainNavigator() {
         {() => (
           <RequireAuth>
             <VereinScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="JoinClub">
+        {(props) => (
+          <RequireAuth>
+            <JoinClubScreen {...props} />
           </RequireAuth>
         )}
       </RootStack.Screen>

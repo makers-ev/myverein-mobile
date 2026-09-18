@@ -4,12 +4,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
+import { navigate } from '@/navigation/navigationRef';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import { useClubInfo, type BoardMember, type Department } from '@/hooks/useClubInfo';
 import { useClubMembers, type ClubMember } from '@/hooks/useClubMembers';
 import { getDepartmentColor } from '@/theme/departmentColors';
+import ProfilTab from '@/components/verein/ProfilTab';
 
-type Tab = 'info' | 'mitglieder';
+type Tab = 'info' | 'mitglieder' | 'profil';
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -171,13 +173,21 @@ export default function VereinScreen() {
       ) : !activeClub ? (
         <View className="px-6 pt-6">
           <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t('verein.no-club.title')}</Text>
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.no-club.body')}</Text>
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-4">{t('verein.no-club.body')}</Text>
+          <TouchableOpacity
+            className="bg-primary dark:bg-primary-dark rounded-lg py-3 items-center self-start px-5"
+            onPress={() => navigate('JoinClub')}
+          >
+            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">
+              {t('verein.no-club.join')}
+            </Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <>
           <View className="px-6 pt-3">
             <View className="flex-row mb-4" style={{ gap: 8 }}>
-              {(['info', 'mitglieder'] as const).map((value) => (
+              {(['info', 'mitglieder', 'profil'] as const).map((value) => (
                 <TouchableOpacity
                   key={value}
                   onPress={() => setTab(value)}
@@ -196,7 +206,9 @@ export default function VereinScreen() {
           </View>
 
           <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
-            {tab === 'info' ? <VereinsinfoTab clubId={activeClub.clubId} /> : <MitgliederTab clubId={activeClub.clubId} />}
+            {tab === 'info' && <VereinsinfoTab clubId={activeClub.clubId} />}
+            {tab === 'mitglieder' && <MitgliederTab clubId={activeClub.clubId} />}
+            {tab === 'profil' && <ProfilTab clubId={activeClub.clubId} />}
           </ScrollView>
         </>
       )}
