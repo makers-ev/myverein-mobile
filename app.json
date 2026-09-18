@@ -12,13 +12,13 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#000000",
+        "backgroundColor": "#2c4870",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.thereallpj.betterauthmobiletemplate"
+      "package": "com.makers.myverein"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -29,11 +29,11 @@
       "expo-localization"
     ],
     "extra": {
-      "description": "React Native (Expo) mobile template with Better Auth authentication built in",
+      "description": "MyVerein ist die Vereinsverwaltung für Mitglieder, Vorstand und externe Kontakte.",
       "author": "LPJ IT-Solutions",
       "authorUrl": "https://github.com/lpj-app",
-      "primaryColor": "#1e293b",
-      "defaultLanguage": "en"
+      "primaryColor": "#2c4870",
+      "defaultLanguage": "de"
     }
   }
 }
