@@ -16,6 +16,7 @@ import NotificationsScreen from '@/screens/NotificationsScreen';
 import SignupScreen from '@/screens/SignupScreen';
 import TwoFactorScreen from '@/screens/TwoFactorScreen';
 import SettingsScreen from '@/screens/SettingsScreen';
+import VereinScreen from '@/screens/VereinScreen';
 import AppLockGate from '@/components/AppLock/AppLockGate';
 import Navbar from '@/components/Navbar';
 import PrivacyPolicyScreen from '@/legal/PrivacyPolicyScreen';
@@ -37,6 +38,7 @@ import { navigationRef } from './navigationRef';
 export type RootStackParamList = {
   Home: undefined;
   Dashboard: undefined;
+  Verein: undefined;
   Notifications: undefined;
   Login: { returnTo?: keyof RootStackParamList } | undefined;
   Signup: undefined;
@@ -80,6 +82,14 @@ function MainNavigator() {
       >
       <RootStack.Screen name="Home" component={HomeScreen} />
       <RootStack.Screen name="Dashboard" component={DashboardScreen} />
+
+      <RootStack.Screen name="Verein">
+        {() => (
+          <RequireAuth>
+            <VereinScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
 
       <RootStack.Screen name="Notifications">
         {() => (

@@ -22,6 +22,25 @@ export interface Palette {
 }
 
 export const palettes = {
+    // Mirrors the website's src/theme/palettes.ts "vereinsblau" entry
+    // exactly, see that file's comment for the reasoning.
+    vereinsblau: {
+        label: 'Vereinsblau',
+        light: {
+            background: '#fafaf7', foreground: '#22252b',
+            card: '#ffffff', muted: '#eef0f2', mutedForeground: '#6b7280',
+            border: '#e2e4e8',
+            primary: '#2c4870', primaryForeground: '#ffffff',
+            accent: '#b8860b', accentForeground: '#ffffff',
+        },
+        dark: {
+            background: '#16181d', foreground: '#e8e9ec',
+            card: '#1e2127', muted: '#282b32', mutedForeground: '#b4b8c0',
+            border: '#343841',
+            primary: '#7a9bc7', primaryForeground: '#16181d',
+            accent: '#e0b84d', accentForeground: '#16181d',
+        },
+    },
     'ink-navy': {
         label: 'Ink Navy',
         light: {
@@ -94,7 +113,7 @@ export const palettes = {
 
 export type PaletteId = keyof typeof palettes | 'custom';
 export const predefinedPaletteIds = Object.keys(palettes) as (keyof typeof palettes)[];
-export const DEFAULT_PALETTE_ID: PaletteId = 'ink-navy';
+export const DEFAULT_PALETTE_ID: PaletteId = 'vereinsblau';
 
 export function isPredefinedPaletteId(value: string): value is keyof typeof palettes {
     return Object.prototype.hasOwnProperty.call(palettes, value);

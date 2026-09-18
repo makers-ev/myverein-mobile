@@ -4,15 +4,16 @@ import { DarkTheme, DefaultTheme, type Theme as NavigationTheme } from '@react-n
 import { usePalette } from './PaletteProvider';
 
 /**
- * Fixed regardless of the chosen palette (ADR-008) -- danger/success
+ * Fixed regardless of the chosen palette (ADR-008) -- danger/success/warning
  * shouldn't shift with the accent color. Everything else comes from the
  * active palette via `usePalette()` (see PaletteProvider.tsx / palettes.ts),
  * which also drives the matching `bg-card dark:bg-card-dark`-style
- * classNames through NativeWind CSS variables.
+ * classNames through NativeWind CSS variables. `warning` added for
+ * MyVerein's overdue-loan/maintenance-due/open-Beitrag states.
  */
 const FIXED_COLORS = {
-  light: { destructive: '#DC2626', success: '#43A047' },
-  dark: { destructive: '#DC2626', success: '#66BB6A' },
+  light: { destructive: '#DC2626', success: '#43A047', warning: '#9C5F13' },
+  dark: { destructive: '#DC2626', success: '#66BB6A', warning: '#E8B84B' },
 } as const;
 
 export type ThemeColors = {
@@ -28,6 +29,7 @@ export type ThemeColors = {
   accentForeground: string;
   destructive: string;
   success: string;
+  warning: string;
 };
 
 /** Resolves the current color-scheme's + palette's token set for use in JS-prop colors. */

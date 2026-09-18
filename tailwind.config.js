@@ -25,9 +25,12 @@ module.exports = {
         'primary-foreground': { DEFAULT: 'rgb(var(--color-primary-foreground) / <alpha-value>)', dark: 'rgb(var(--color-primary-foreground-dark) / <alpha-value>)' },
         accent: { DEFAULT: 'rgb(var(--color-accent) / <alpha-value>)', dark: 'rgb(var(--color-accent-dark) / <alpha-value>)' },
         'accent-foreground': { DEFAULT: 'rgb(var(--color-accent-foreground) / <alpha-value>)', dark: 'rgb(var(--color-accent-foreground-dark) / <alpha-value>)' },
-        // Fixed regardless of palette (ADR-008) -- danger color shouldn't
-        // shift with the chosen accent, so this stays a plain static hex.
+        // Fixed regardless of palette (ADR-008) -- danger/success/warning
+        // colors shouldn't shift with the chosen accent, so these stay
+        // plain static hex (matches src/theme/colors.ts's FIXED_COLORS).
         destructive: { DEFAULT: '#DC2626', dark: '#DC2626' },
+        success: { DEFAULT: '#43A047', dark: '#66BB6A' },
+        warning: { DEFAULT: '#9C5F13', dark: '#E8B84B' },
       },
     },
   },

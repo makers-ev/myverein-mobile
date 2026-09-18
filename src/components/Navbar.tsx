@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, Home as HomeIcon, Settings as SettingsIcon, type LucideIcon } from 'lucide-react-native';
+import { Bell, Home as HomeIcon, Settings as SettingsIcon, Users, type LucideIcon } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -10,17 +10,18 @@ import { getShowNavbarTitles } from '@/settings/appSettingsStorage';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 
 interface NavItem {
-    route: 'Home' | 'Notifications' | 'Settings';
+    route: 'Home' | 'Verein' | 'Notifications' | 'Settings';
     labelKey: string;
     Icon: LucideIcon;
 }
 
 // Adding a destination is appending one object here, nothing else in this
-// component changes. `Notifications` itself is gated by `RequireAuth` (see
-// AppNavigator.tsx) -- a guest tapping it is redirected to Login, same as
-// any other gated screen reached from an ungated nav entry.
+// component changes. `Verein`/`Notifications` are gated by `RequireAuth`
+// (see AppNavigator.tsx) -- a guest tapping either is redirected to Login,
+// same as any other gated screen reached from an ungated nav entry.
 const NAV_ITEMS: NavItem[] = [
     { route: 'Home', labelKey: 'nav.home', Icon: HomeIcon },
+    { route: 'Verein', labelKey: 'nav.verein', Icon: Users },
     { route: 'Notifications', labelKey: 'nav.notifications', Icon: Bell },
     { route: 'Settings', labelKey: 'nav.settings', Icon: SettingsIcon },
 ];
