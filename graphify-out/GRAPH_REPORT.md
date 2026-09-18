@@ -1,63 +1,64 @@
-# Graph Report - .  (2026-09-13)
+# Graph Report - C:\GitHub\makers-ev\myverein\myverein-mobile  (2026-09-18)
 
 ## Corpus Check
-- 30 files · ~0 words
+- 0 files · ~99,999 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 633 nodes · 917 edges · 73 communities (37 shown, 36 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 26 edges (avg confidence: 0.86)
+- 864 nodes · 1327 edges · 82 communities (46 shown, 36 thin omitted)
+- Extraction: 97% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 31 edges (avg confidence: 0.84)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- [[_COMMUNITY_Auth Provider & Navigation Core|Auth Provider & Navigation Core]]
-- [[_COMMUNITY_Auth Actions, Guest Mode & Settings|Auth Actions, Guest Mode & Settings]]
-- [[_COMMUNITY_i18n Translation Modules|i18n Translation Modules]]
-- [[_COMMUNITY_Palette Theming & Notifications|Palette Theming & Notifications]]
-- [[_COMMUNITY_Legal Screens & App Config|Legal Screens & App Config]]
-- [[_COMMUNITY_Palette Derivation & Storage|Palette Derivation & Storage]]
-- [[_COMMUNITY_Package Dependencies (runtime)|Package Dependencies (runtime)]]
-- [[_COMMUNITY_app.json  Expo Config|app.json / Expo Config]]
-- [[_COMMUNITY_README Feature Docs|README Feature Docs]]
-- [[_COMMUNITY_App Lock, Onboarding & Auth Screens|App Lock, Onboarding & Auth Screens]]
-- [[_COMMUNITY_Notification Hooks & PIN Modals|Notification Hooks & PIN Modals]]
-- [[_COMMUNITY_App Lock Storage & Settings Storage|App Lock Storage & Settings Storage]]
-- [[_COMMUNITY_App Root, Error Boundary & Theme Storage|App Root, Error Boundary & Theme Storage]]
-- [[_COMMUNITY_Home Screen, Logo & ToS Acceptance|Home Screen, Logo & ToS Acceptance]]
-- [[_COMMUNITY_Package Dependencies (dev)|Package Dependencies (dev)]]
-- [[_COMMUNITY_Signup Screen & Keyboard-Aware Layout|Signup Screen & Keyboard-Aware Layout]]
-- [[_COMMUNITY_AuthGuest Cross-Repo Bridge|Auth/Guest Cross-Repo Bridge]]
-- [[_COMMUNITY_ADR008 Palette Decision & Components|ADR008 Palette Decision & Components]]
-- [[_COMMUNITY_TypeScript Config|TypeScript Config]]
-- [[_COMMUNITY_Subagent Orchestration Docs|Subagent Orchestration Docs]]
-- [[_COMMUNITY_Storage Navbar Titles, Language, Theme|Storage: Navbar Titles, Language, Theme]]
-- [[_COMMUNITY_Lockout, App-Lock & Two-Factor Screens|Lockout, App-Lock & Two-Factor Screens]]
-- [[_COMMUNITY_package.json Manifest|package.json Manifest]]
-- [[_COMMUNITY_npm Scripts|npm Scripts]]
-- [[_COMMUNITY_Connection Error Screen & URL Scheme|Connection Error Screen & URL Scheme]]
-- [[_COMMUNITY_MetroBabel Build Config|Metro/Babel Build Config]]
-- [[_COMMUNITY_Supported Languages & Detection|Supported Languages & Detection]]
-- [[_COMMUNITY_ReanimatedKeyboard Controller Config|Reanimated/Keyboard Controller Config]]
-- [[_COMMUNITY_KeyboardAwareScrollView Choice|KeyboardAwareScrollView Choice]]
-- [[_COMMUNITY_Confirmation Modal|Confirmation Modal]]
-- [[_COMMUNITY_Settings Dropdown Option|Settings Dropdown Option]]
-- [[_COMMUNITY_App Navigator Stacks|App Navigator Stacks]]
-- [[_COMMUNITY_Translation Modules (loginsettings)|Translation Modules (login/settings)]]
-- [[_COMMUNITY_Keyboard Controller Rationale|Keyboard Controller Rationale]]
-- [[_COMMUNITY_Dark Mode & NativeWind Rationale|Dark Mode & NativeWind Rationale]]
-- [[_COMMUNITY_Theme Colors & Tailwind Docs|Theme Colors & Tailwind Docs]]
-- [[_COMMUNITY_Template Suite Cross-Links|Template Suite Cross-Links]]
-- [[_COMMUNITY_Website Bridge (globalstailwind)|Website Bridge (globals/tailwind)]]
-- [[_COMMUNITY_ConfirmationInfo Modal Components|Confirmation/Info Modal Components]]
-- [[_COMMUNITY_Email Verification Flow|Email Verification Flow]]
-- [[_COMMUNITY_Backend User-Create Hook|Backend User-Create Hook]]
-- [[_COMMUNITY_CI Mobile Job|CI Mobile Job]]
-- [[_COMMUNITY_Logo Cross-Repo Bridge|Logo Cross-Repo Bridge]]
-- [[_COMMUNITY_NavbarNavigationRef Docs|Navbar/NavigationRef Docs]]
-- [[_COMMUNITY_Signup Flow|Signup Flow]]
-- [[_COMMUNITY_App Icon Assets|App Icon Assets]]
-- [[_COMMUNITY_ESLint Config|ESLint Config]]
-- [[_COMMUNITY_Polling Notifications ADR|Polling Notifications ADR]]
+- [[_COMMUNITY_Community 0|Community 0]]
+- [[_COMMUNITY_Community 1|Community 1]]
+- [[_COMMUNITY_Community 2|Community 2]]
+- [[_COMMUNITY_Community 3|Community 3]]
+- [[_COMMUNITY_Community 4|Community 4]]
+- [[_COMMUNITY_Community 5|Community 5]]
+- [[_COMMUNITY_Community 6|Community 6]]
+- [[_COMMUNITY_Community 7|Community 7]]
+- [[_COMMUNITY_Community 8|Community 8]]
+- [[_COMMUNITY_Community 9|Community 9]]
+- [[_COMMUNITY_Community 10|Community 10]]
+- [[_COMMUNITY_Community 11|Community 11]]
+- [[_COMMUNITY_Community 12|Community 12]]
+- [[_COMMUNITY_Community 13|Community 13]]
+- [[_COMMUNITY_Community 14|Community 14]]
+- [[_COMMUNITY_Community 15|Community 15]]
+- [[_COMMUNITY_Community 16|Community 16]]
+- [[_COMMUNITY_Community 17|Community 17]]
+- [[_COMMUNITY_Community 18|Community 18]]
+- [[_COMMUNITY_Community 19|Community 19]]
+- [[_COMMUNITY_Community 20|Community 20]]
+- [[_COMMUNITY_Community 21|Community 21]]
+- [[_COMMUNITY_Community 22|Community 22]]
+- [[_COMMUNITY_Community 23|Community 23]]
+- [[_COMMUNITY_Community 24|Community 24]]
+- [[_COMMUNITY_Community 25|Community 25]]
+- [[_COMMUNITY_Community 26|Community 26]]
+- [[_COMMUNITY_Community 27|Community 27]]
+- [[_COMMUNITY_Community 28|Community 28]]
+- [[_COMMUNITY_Community 29|Community 29]]
+- [[_COMMUNITY_Community 30|Community 30]]
+- [[_COMMUNITY_Community 31|Community 31]]
+- [[_COMMUNITY_Community 32|Community 32]]
+- [[_COMMUNITY_Community 33|Community 33]]
+- [[_COMMUNITY_Community 34|Community 34]]
+- [[_COMMUNITY_Community 35|Community 35]]
+- [[_COMMUNITY_Community 36|Community 36]]
+- [[_COMMUNITY_Community 37|Community 37]]
+- [[_COMMUNITY_Community 38|Community 38]]
+- [[_COMMUNITY_Community 39|Community 39]]
+- [[_COMMUNITY_Community 40|Community 40]]
+- [[_COMMUNITY_Community 41|Community 41]]
+- [[_COMMUNITY_Community 42|Community 42]]
+- [[_COMMUNITY_Community 43|Community 43]]
+- [[_COMMUNITY_Community 44|Community 44]]
+- [[_COMMUNITY_Community 45|Community 45]]
+- [[_COMMUNITY_Community 46|Community 46]]
+- [[_COMMUNITY_Community 47|Community 47]]
+- [[_COMMUNITY_Community 48|Community 48]]
 - [[_COMMUNITY_Community 49|Community 49]]
 - [[_COMMUNITY_Community 50|Community 50]]
 - [[_COMMUNITY_Community 51|Community 51]]
@@ -66,7 +67,6 @@
 - [[_COMMUNITY_Community 54|Community 54]]
 - [[_COMMUNITY_Community 55|Community 55]]
 - [[_COMMUNITY_Community 56|Community 56]]
-- [[_COMMUNITY_Community 57|Community 57]]
 - [[_COMMUNITY_Community 58|Community 58]]
 - [[_COMMUNITY_Community 59|Community 59]]
 - [[_COMMUNITY_Community 60|Community 60]]
@@ -82,18 +82,27 @@
 - [[_COMMUNITY_Community 70|Community 70]]
 - [[_COMMUNITY_Community 71|Community 71]]
 - [[_COMMUNITY_Community 72|Community 72]]
+- [[_COMMUNITY_Community 73|Community 73]]
+- [[_COMMUNITY_Community 74|Community 74]]
+- [[_COMMUNITY_Community 75|Community 75]]
+- [[_COMMUNITY_Community 76|Community 76]]
+- [[_COMMUNITY_Community 77|Community 77]]
+- [[_COMMUNITY_Community 78|Community 78]]
+- [[_COMMUNITY_Community 79|Community 79]]
+- [[_COMMUNITY_Community 80|Community 80]]
+- [[_COMMUNITY_Community 81|Community 81]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `useLanguage()` - 44 edges
-2. `useThemeColors()` - 38 edges
-3. `useAuth()` - 19 edges
-4. `expo` - 14 edges
-5. `LanguageContext Provider` - 14 edges
-6. `Language` - 12 edges
-7. `scripts` - 9 edges
-8. `LegalTranslation Module` - 9 edges
-9. `SettingsScreen component` - 9 edges
-10. `README architecture overview` - 9 edges
+1. `useLanguage()` - 67 edges
+2. `useThemeColors()` - 57 edges
+3. `useAuth()` - 21 edges
+4. `Language` - 16 edges
+5. `Better Auth Mobile Template` - 16 edges
+6. `expo` - 14 edges
+7. `LanguageContext Provider` - 14 edges
+8. `apiFetch()` - 13 edges
+9. `expo` - 13 edges
+10. `scripts` - 9 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `HomeScreen` --references--> `README architecture overview`  [EXTRACTED]
@@ -108,156 +117,189 @@
   src/hooks/useRequireAuth.ts → CLAUDE.md
 
 ## Hyperedges (group relationships)
-- **ADR-009 First-Pass AI Translation Pattern** — adr009_decision, componenttranslation_module, generaltranslation_module, loginsignuptranslation_module, modaltranslation_module, notificationtranslation_module, pagelayouttranslation_module, settingstranslation_module [EXTRACTED 1.00]
-- **Translation Module Aggregation into LanguageContext** — languagecontext_provider, componenttranslation_module, generaltranslation_module, loginsignuptranslation_module, modaltranslation_module, notificationtranslation_module, pagelayouttranslation_module, settingstranslation_module, legaltranslation_module [EXTRACTED 1.00]
-- **App Lock Feature Translation Cluster** — modaltranslation_module, settingstranslation_module, componenttranslation_module [INFERRED 0.85]
-- **Palette theming system** — PaletteProvider_component, palettes_registry, deriveTokens_deriveTokens, paletteStorage_module, colors_useThemeColors [EXTRACTED 0.90]
-- **Notification fetch/display/mutate flow** — useNotifications_useNotifications, useNotifications_useNotificationMutations, NotificationsScreen_screen, NotificationsScreen_useNotificationText [EXTRACTED 0.90]
-- **Language detection and selection flow** — supportedLanguages_registry, systemLanguage_detectSystemLanguage, SettingsScreen_screen [INFERRED 0.75]
+- **Android Adaptive Icon (background/foreground/monochrome layers)** — asset_android_icon_background, asset_android_icon_foreground, asset_android_icon_monochrome [INFERRED 0.85]
+- **LPJ IT-Solutions Mark Across App Surfaces** — asset_icon, asset_splash_icon, asset_favicon [INFERRED 0.85]
+- **Mobile Dev Orchestration Subagents** — rnuidev_agent, rnstatenavdev_agent, rnreviewer_agent [EXTRACTED 1.00]
 
-## Communities (73 total, 36 thin omitted)
+## Communities (82 total, 36 thin omitted)
 
-### Community 0 - "Auth Provider & Navigation Core"
-Cohesion: 0.06
-Nodes (33): AuthClient, checkBackendHealth(), AuthContext, AuthContextType, AuthProvider(), AuthResult, EnableTwoFactorResult, ListSessionsResult (+25 more)
+### Community 0 - "Community 0"
+Cohesion: 0.05
+Nodes (45): AuthClient, checkBackendHealth(), AuthContext, AuthContextType, AuthProvider(), AuthResult, EnableTwoFactorResult, ListSessionsResult (+37 more)
 
-### Community 1 - "Auth Actions, Guest Mode & Settings"
+### Community 1 - "Community 1"
+Cohesion: 0.05
+Nodes (43): ComponentTranslation, Translation, GeneralTranslation, Translation, authored, KalenderTranslation, Translation, defaultLanguage (+35 more)
+
+### Community 2 - "Community 2"
 Cohesion: 0.06
 Nodes (48): apiFetch() wrapper, AppLockGate, AppLockScreen, AppNavigator component, authClient (Better Auth client instance), backendUrl, AuthProvider component, AuthProvider.cancelTwoFactor (+40 more)
 
-### Community 2 - "i18n Translation Modules"
-Cohesion: 0.07
-Nodes (31): ComponentTranslation, Translation, GeneralTranslation, Translation, defaultLanguage, Language, LanguageContext, LanguageContextType (+23 more)
+### Community 3 - "Community 3"
+Cohesion: 0.06
+Nodes (46): AcceptTosModal, ADR-008: Runtime Palette CSS Vars, ADR-009: First-Pass AI Translation, ADR-010: app.json as Canonical Identity File, ADR-010 (app.json as Canonical Identity File), app.json (Expo Config), app.json Expo Config, app.json expo.name / expo.extra (appName, defaultLanguage) (+38 more)
 
-### Community 3 - "Palette Theming & Notifications"
+### Community 4 - "Community 4"
+Cohesion: 0.06
+Nodes (45): ADR-008 (No WCAG Contrast Enforcement), ADR-009 (RTL/Arabic Future Scope), Android Adaptive Icon — Background Layer, Android Adaptive Icon — Foreground Layer, Android Adaptive Icon — Monochrome Layer, Favicon, App Icon, Splash Icon (+37 more)
+
+### Community 5 - "Community 5"
 Cohesion: 0.06
 Nodes (36): ADR-008: palette derivation, no WCAG enforcement, ADR-009: single language registry, RTL out of scope, AcceptTosModal, IntroModal, LegalDocumentLayout, NotificationCard, NotificationsScreen, useNotificationText() (+28 more)
 
-### Community 4 - "Legal Screens & App Config"
-Cohesion: 0.09
-Nodes (35): AcceptTosModal, ADR-009: First-Pass AI Translation, ADR-010: app.json as Canonical Identity File, ADR-010 (app.json as canonical identity file), app.json (Expo Config), app.json Expo Config, app.json expo.name / expo.extra (appName, defaultLanguage), admin-notification-templates.ts (backend) (+27 more)
-
-### Community 5 - "Palette Derivation & Storage"
+### Community 6 - "Community 6"
 Cohesion: 0.12
 Nodes (24): AnchorKey, Mode, PaletteCustomEditorProps, deriveTokens(), foregroundFor(), hexToRgb(), hexToRgbTriplet(), luminance() (+16 more)
 
-### Community 6 - "Package Dependencies (runtime)"
+### Community 7 - "Community 7"
 Cohesion: 0.07
 Nodes (30): dependencies, better-auth, @better-auth/expo, expo, expo-constants, expo-linking, expo-localization, expo-navigation-bar (+22 more)
 
-### Community 7 - "app.json / Expo Config"
+### Community 8 - "Community 8"
+Cohesion: 0.07
+Nodes (29): dependencies, better-auth, @better-auth/expo, expo, expo-constants, expo-linking, expo-localization, expo-navigation-bar (+21 more)
+
+### Community 9 - "Community 9"
 Cohesion: 0.07
 Nodes (27): backgroundColor, backgroundImage, foregroundImage, monochromeImage, adaptiveIcon, package, predictiveBackGestureEnabled, expo (+19 more)
 
-### Community 8 - "README Feature Docs"
+### Community 10 - "Community 10"
+Cohesion: 0.07
+Nodes (27): backgroundColor, backgroundImage, foregroundImage, monochromeImage, adaptiveIcon, package, predictiveBackGestureEnabled, expo (+19 more)
+
+### Community 11 - "Community 11"
 Cohesion: 0.09
 Nodes (27): Guest mode gating rationale (CLAUDE.md), useNotifications / useNotificationMutations hooks, Navbar, NotificationsScreen, apiFetch<T>, AppLockGate, AppNavigator, authClient (Better Auth Expo client) (+19 more)
 
-### Community 9 - "App Lock, Onboarding & Auth Screens"
-Cohesion: 0.11
-Nodes (20): AppLockGate(), AppLockGateProps, IntroModal(), IntroModalProps, STEPS, EmailVerificationScreen(), EmailVerificationScreenProps, ForgotPasswordScreen() (+12 more)
-
-### Community 10 - "Notification Hooks & PIN Modals"
-Cohesion: 0.14
-Nodes (15): useNotificationMutations(), useNotifications(), LegalDocumentLayout(), ConfirmationInputModal(), ConfirmationModalProps, SetupPinModal(), SetupPinModalProps, VerifyPinModal() (+7 more)
-
-### Community 11 - "App Lock Storage & Settings Storage"
-Cohesion: 0.16
-Nodes (11): clearAppLockPin(), getAppLockPin(), setAppLockPin(), InfoModalProps, SettingsScreen(), SettingsScreenProps, getShowNavbarTitles(), getShowTopbarTitles() (+3 more)
-
-### Community 12 - "App Root, Error Boundary & Theme Storage"
+### Community 12 - "Community 12"
 Cohesion: 0.13
+Nodes (17): AppLockGate(), AppLockGateProps, LegalDocumentLayout(), EmailVerificationScreen(), EmailVerificationScreenProps, ProfileSection(), SecuritySection(), SessionsSection() (+9 more)
+
+### Community 13 - "Community 13"
+Cohesion: 0.14
+Nodes (17): AttendanceEntry, MeetingInvitee, MeetingResolution, OverlapCandidate, ResolutionInput, useMeetingDetail(), Meeting, MeetingInput (+9 more)
+
+### Community 14 - "Community 14"
+Cohesion: 0.15
+Nodes (12): clearAppLockPin(), getAppLockPin(), setAppLockPin(), InfoModalProps, DebugSection(), SettingsScreen(), SettingsScreenProps, getShowNavbarTitles() (+4 more)
+
+### Community 15 - "Community 15"
+Cohesion: 0.12
 Nodes (9): App Root Component, Navbar (floating bottom pill), ErrorBoundary, ErrorBoundaryProps, ErrorBoundaryState, mycollection-app PageLayout Navbar, PaletteProvider(), getStoredTheme() (+1 more)
 
-### Community 13 - "Home Screen, Logo & ToS Acceptance"
-Cohesion: 0.16
-Nodes (10): LogoProps, AcceptTosModal(), AcceptTosModalProps, hasAcceptedTos(), setTosAccepted(), hasSeenIntro(), setIntroSeen(), FEATURE_CARDS (+2 more)
+### Community 16 - "Community 16"
+Cohesion: 0.12
+Nodes (16): compilerOptions, baseUrl, ignoreDeprecations, paths, strict, types, extends, @/* (+8 more)
 
-### Community 14 - "Package Dependencies (dev)"
+### Community 17 - "Community 17"
+Cohesion: 0.16
+Nodes (14): BoardMember, ClubInfo, ClubInfoPage, Department, useClubInfo(), useClubMembers(), BoardRow(), DepartmentRow() (+6 more)
+
+### Community 18 - "Community 18"
+Cohesion: 0.17
+Nodes (11): useMyClubs(), ConfirmationInputModal(), ConfirmationModalProps, SetupPinModal(), SetupPinModalProps, VerifyPinModal(), VerifyPinModalProps, KalenderScreen() (+3 more)
+
+### Community 19 - "Community 19"
+Cohesion: 0.19
+Nodes (12): jest, preset, main, name, private, version, jest, preset (+4 more)
+
+### Community 20 - "Community 20"
+Cohesion: 0.27
+Nodes (8): ClubMember, ClubMemberRole, MyClub, useOwnMembership(), apiFetch(), ApiFetchOptions, ProfilTab(), Props
+
+### Community 21 - "Community 21"
+Cohesion: 0.24
+Nodes (10): Calendar, useCalendars(), CalendarEvent, EventRange, useEventRsvp(), useEvents(), EventRow(), Props (+2 more)
+
+### Community 22 - "Community 22"
 Cohesion: 0.15
 Nodes (13): devDependencies, babel-preset-expo, eslint, eslint-config-expo, jest, jest-expo, @react-native/jest-preset, tailwindcss (+5 more)
 
-### Community 15 - "Signup Screen & Keyboard-Aware Layout"
-Cohesion: 0.17
-Nodes (9): KeyboardAwareScreenProps, IconCalendar, IconLock, IconMail, IconMapPin, IconPhone, SignupFormData, SignupScreen() (+1 more)
+### Community 23 - "Community 23"
+Cohesion: 0.15
+Nodes (13): devDependencies, babel-preset-expo, eslint, eslint-config-expo, jest, jest-expo, @react-native/jest-preset, tailwindcss (+5 more)
 
-### Community 16 - "Auth/Guest Cross-Repo Bridge"
+### Community 24 - "Community 24"
+Cohesion: 0.20
+Nodes (9): AvailabilityException, AvailabilitySlot, useAvailability(), DEFAULT_ROW, Props, RowState, VerfuegbarkeitTab(), WEEKDAY_KEYS (+1 more)
+
+### Community 25 - "Community 25"
+Cohesion: 0.18
+Nodes (6): KeyboardAwareScreenProps, LogoProps, ForgotPasswordScreen(), ForgotPasswordScreenProps, LoginScreen(), LoginScreenProps
+
+### Community 26 - "Community 26"
 Cohesion: 0.22
 Nodes (11): AppLockGate, AuthProvider / useAuth, AuthProvider Test Suite, RequireAuth Screen Gate, App Lock PIN Storage (SecureStore), Better Auth Client Instance, auth-backend-template twoFactor() plugin, Guest Mode Pattern (CLAUDE.md) (+3 more)
 
-### Community 17 - "ADR008 Palette Decision & Components"
-Cohesion: 0.20
-Nodes (10): ADR-008: Runtime Palette CSS Vars, AppNavigator Component, App.tsx Root Component, ErrorBoundary, KeyboardAwareScreen Component, Navbar Component, PaletteCustomEditor Component, PaletteProvider Component (+2 more)
-
-### Community 18 - "TypeScript Config"
-Cohesion: 0.22
-Nodes (9): compilerOptions, baseUrl, ignoreDeprecations, paths, strict, types, extends, @/* (+1 more)
-
-### Community 19 - "Subagent Orchestration Docs"
-Cohesion: 0.22
-Nodes (9): graphify, Graphify usage convention (query before search, --update after changes), Repo Orchestration Workflow, rn-reviewer subagent, rn-state-nav-dev subagent, rn-ui-dev subagent, rn-reviewer subagent, rn-state-nav-dev subagent (+1 more)
-
-### Community 20 - "Storage: Navbar Titles, Language, Theme"
+### Community 27 - "Community 27"
 Cohesion: 0.25
 Nodes (9): getShowNavbarTitles/setShowNavbarTitles, getShowTopbarTitles/setShowTopbarTitles, LanguageProvider component, getStoredLanguage, setStoredLanguage, Decision: manual dark-mode toggle via NativeWind colorScheme API, README: State and storage table, getStoredTheme (+1 more)
 
-### Community 21 - "Lockout, App-Lock & Two-Factor Screens"
+### Community 28 - "Community 28"
 Cohesion: 0.36
 Nodes (5): useAttemptLockout(), AppLockScreen(), AppLockScreenProps, TwoFactorScreen(), TwoFactorScreenProps
 
-### Community 22 - "package.json Manifest"
-Cohesion: 0.39
-Nodes (6): jest, preset, main, name, private, version
+### Community 29 - "Community 29"
+Cohesion: 0.22
+Nodes (8): IconCalendar, IconLock, IconMail, IconMapPin, IconPhone, SignupFormData, SignupScreen(), SignupScreenProps
 
-### Community 23 - "npm Scripts"
+### Community 30 - "Community 30"
+Cohesion: 0.25
+Nodes (6): config, { getDefaultConfig }, { withNativeWind }, config, { getDefaultConfig }, { withNativeWind }
+
+### Community 31 - "Community 31"
 Cohesion: 0.25
 Nodes (8): scripts, android, ios, lint, start, test, typecheck, web
 
-### Community 24 - "Connection Error Screen & URL Scheme"
+### Community 32 - "Community 32"
+Cohesion: 0.25
+Nodes (8): scripts, android, ios, lint, start, test, typecheck, web
+
+### Community 33 - "Community 33"
 Cohesion: 0.38
 Nodes (4): ConnectionErrorScreen(), ConnectionErrorScreenProps, ConnectionStatus, withScheme()
 
-### Community 25 - "Metro/Babel Build Config"
-Cohesion: 0.40
-Nodes (3): config, { getDefaultConfig }, { withNativeWind }
-
-### Community 26 - "Supported Languages & Detection"
+### Community 34 - "Community 34"
 Cohesion: 0.40
 Nodes (4): Language type, detectSystemLanguage test suite, detectSystemLanguage(), website acceptLanguage.ts (external)
 
-### Community 27 - "Reanimated/Keyboard Controller Config"
-Cohesion: 0.67
-Nodes (4): babel-preset-expo reanimated/worklets auto-detection (re-enabled), Rationale: removal of dead react-native-worklets pin, react-native-keyboard-controller dependency, react-native-reanimated dependency
-
-### Community 28 - "KeyboardAwareScrollView Choice"
-Cohesion: 0.67
-Nodes (4): App (root component), KeyboardAwareScreen, KeyboardAwareScrollView (react-native-keyboard-controller), Rationale: KeyboardAwareScrollView over hand-rolled KeyboardAvoidingView
-
-### Community 30 - "Settings Dropdown Option"
-Cohesion: 0.50
-Nodes (3): DropdownOption, SettingsDropdownOption(), SettingsDropdownOptionProps
-
-### Community 31 - "App Navigator Stacks"
+### Community 35 - "Community 35"
 Cohesion: 0.50
 Nodes (4): MainNavigator component, MainNavigator, TwoFactorNavigator, useRequireAuth
 
-### Community 32 - "Translation Modules (login/settings)"
+### Community 36 - "Community 36"
+Cohesion: 0.67
+Nodes (4): babel-preset-expo reanimated/worklets auto-detection (re-enabled), Rationale: removal of dead react-native-worklets pin, react-native-keyboard-controller dependency, react-native-reanimated dependency
+
+### Community 37 - "Community 37"
+Cohesion: 0.67
+Nodes (4): App (root component), KeyboardAwareScreen, KeyboardAwareScrollView (react-native-keyboard-controller), Rationale: KeyboardAwareScrollView over hand-rolled KeyboardAvoidingView
+
+### Community 38 - "Community 38"
+Cohesion: 0.50
+Nodes (3): IntroModal(), IntroModalProps, STEPS
+
+### Community 40 - "Community 40"
+Cohesion: 0.50
+Nodes (3): CATEGORIES, JoinClubScreen(), Props
+
+### Community 41 - "Community 41"
 Cohesion: 0.67
 Nodes (3): translations merged table, LoginSignupTranslation table, SettingsTranslation table
 
-### Community 33 - "Keyboard Controller Rationale"
-Cohesion: 0.67
-Nodes (3): react-native-keyboard-controller, KeyboardAwareScreen library choice rationale, KeyboardAwareScreen
-
-### Community 34 - "Dark Mode & NativeWind Rationale"
-Cohesion: 0.67
-Nodes (3): Manual dark-mode toggle rationale, NativeWind, NativeWind wiring fix rationale
-
-### Community 35 - "Theme Colors & Tailwind Docs"
+### Community 43 - "Community 43"
 Cohesion: 0.67
 Nodes (3): src/theme/colors.ts, tailwind.config.js, useNavigationTheme
 
-### Community 36 - "Template Suite Cross-Links"
+### Community 44 - "Community 44"
+Cohesion: 0.67
+Nodes (3): Manual dark-mode toggle rationale, NativeWind, NativeWind wiring fix rationale
+
+### Community 45 - "Community 45"
+Cohesion: 0.67
+Nodes (3): react-native-keyboard-controller, KeyboardAwareScreen library choice rationale, KeyboardAwareScreen
+
+### Community 46 - "Community 46"
 Cohesion: 0.67
 Nodes (3): _template_better-auth-backend, _template_better-auth-mobile (this app), _template_better-auth-website
 
@@ -268,9 +310,11 @@ Nodes (3): _template_better-auth-backend, _template_better-auth-mobile (this app
   src/contexts/translation/PageLayoutTranslation.ts · relation: shares_data_with
 - `ErrorBoundary` → `AppNavigator Component`  [AMBIGUOUS]
   src/error/ErrorBoundary.tsx · relation: conceptually_related_to
+- `Guest Mode (Browse-First Navigation)` → `_template_better-auth-website`  [AMBIGUOUS]
+  CLAUDE.md · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **270 isolated node(s):** `name`, `slug`, `scheme`, `version`, `orientation` (+265 more)
+- **401 isolated node(s):** `name`, `slug`, `scheme`, `version`, `orientation` (+396 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **36 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -283,11 +327,11 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: shares_data_with) - confidence is low._
 - **What is the exact relationship between `ErrorBoundary` and `AppNavigator Component`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `useLanguage()` connect `Notification Hooks & PIN Modals` to `Auth Provider & Navigation Core`, `i18n Translation Modules`, `App Lock, Onboarding & Auth Screens`, `App Lock Storage & Settings Storage`, `Home Screen, Logo & ToS Acceptance`, `Signup Screen & Keyboard-Aware Layout`, `Lockout, App-Lock & Two-Factor Screens`, `Connection Error Screen & URL Scheme`?**
-  _High betweenness centrality (0.022) - this node is a cross-community bridge._
-- **Why does `useThemeColors()` connect `App Lock, Onboarding & Auth Screens` to `Auth Provider & Navigation Core`, `Notification Hooks & PIN Modals`, `App Lock Storage & Settings Storage`, `Signup Screen & Keyboard-Aware Layout`, `Lockout, App-Lock & Two-Factor Screens`, `Connection Error Screen & URL Scheme`, `Settings Dropdown Option`?**
-  _High betweenness centrality (0.012) - this node is a cross-community bridge._
+- **What is the exact relationship between `Guest Mode (Browse-First Navigation)` and `_template_better-auth-website`?**
+  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
+- **Why does `useLanguage()` connect `Community 18` to `Community 0`, `Community 1`, `Community 33`, `Community 38`, `Community 40`, `Community 12`, `Community 13`, `Community 14`, `Community 17`, `Community 20`, `Community 21`, `Community 24`, `Community 25`, `Community 28`, `Community 29`?**
+  _High betweenness centrality (0.031) - this node is a cross-community bridge._
+- **Why does `expo` connect `Community 10` to `Community 9`?**
+  _High betweenness centrality (0.029) - this node is a cross-community bridge._
 - **What connects `name`, `slug`, `scheme` to the rest of the system?**
-  _285 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Auth Provider & Navigation Core` be split into smaller, more focused modules?**
-  _Cohesion score 0.0641025641025641 - nodes in this community are weakly interconnected._
+  _417 weakly-connected nodes found - possible documentation gaps or missing edges._
