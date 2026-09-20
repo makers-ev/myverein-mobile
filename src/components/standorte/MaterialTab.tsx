@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Camera, Wrench } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -230,6 +230,10 @@ function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: st
   const [photoUploading, setPhotoUploading] = useState(false);
   const [damageSaving, setDamageSaving] = useState(false);
   const [damageError, setDamageError] = useState<string | null>(null);
+  // Bumped on every pick + every form reset -- a slow upload that resolves
+  // after the user already submitted/reset the form must not write its key
+  // into whatever form session is active by then (stale-write guard).
+  const uploadTokenRef = useRef(0);
 
   const handleBorrow = async () => {
     setBorrowSaving(true);
@@ -262,6 +266,7 @@ function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: st
     if (result.canceled || !result.assets[0]) return;
     const asset = result.assets[0];
 
+    const token = ++uploadTokenRef.current;
     setPhotoUploading(true);
     setDamageError(null);
     const uploadResult = await uploadMedia(clubId, {
@@ -269,6 +274,9 @@ function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: st
       name: asset.fileName ?? 'photo.jpg',
       type: asset.mimeType ?? 'image/jpeg',
     });
+    // A stale resolve (the form was reset/resubmitted while this was in
+    // flight) must not write into whatever form session is active now.
+    if (token !== uploadTokenRef.current) return;
     setPhotoUploading(false);
 
     if ('error' in uploadResult) {
@@ -279,11 +287,16 @@ function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: st
   };
 
   const handleSubmitDamage = async () => {
-    if (!description.trim() || damageSaving) return;
+    // Also blocks on photoUploading -- submitting while a photo is still
+    // uploading would either silently drop it (report saved with no photo)
+    // or, worse, let the upload resolve after the reset and attach a stale
+    // key to a later, unrelated report.
+    if (!description.trim() || damageSaving || photoUploading) return;
     setDamageSaving(true);
     setDamageError(null);
     try {
       await reportDamage(description.trim(), photoKey ?? undefined);
+      uploadTokenRef.current++;
       setDescription('');
       setPhotoKey(null);
       setShowDamageForm(false);
@@ -425,9 +438,9 @@ function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: st
             {damageError ? <Text className="text-destructive text-sm mb-3">{damageError}</Text> : null}
 
             <TouchableOpacity
-              className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${damageSaving ? 'opacity-70' : ''}`}
+              className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${damageSaving || photoUploading ? 'opacity-70' : ''}`}
               onPress={() => void handleSubmitDamage()}
-              disabled={damageSaving}
+              disabled={damageSaving || photoUploading}
             >
               {damageSaving ? (
                 <ActivityIndicator color={themeColors.primaryForeground} size="small" />

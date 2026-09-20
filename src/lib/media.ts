@@ -32,6 +32,11 @@ function toUploadableFile(uri: string, name: string): File {
   return dest;
 }
 
+// Without a bound, a stalled/dropped connection (or the app backgrounded
+// mid-transfer) leaves the upload/download promise pending forever -- the
+// caller's loading state never resolves and there's no way to retry.
+const TRANSFER_TIMEOUT_MS = 30_000;
+
 // `File.upload()` is a native request, not `authClient.$fetch` -- the
 // session cookie isn't attached automatically, so it's read from the same
 // store the `expoClient` plugin uses and set explicitly. Cast: the plugin's
@@ -69,6 +74,7 @@ export async function uploadMedia(
       fieldName: 'file',
       mimeType: asset.type,
       headers: { Cookie: cookie },
+      signal: AbortSignal.timeout(TRANSFER_TIMEOUT_MS),
     });
 
     const parsed: { data?: { key?: string }; error?: { message?: string } } | null = result.body ? JSON.parse(result.body) : null;
@@ -89,19 +95,30 @@ export async function uploadMedia(
  * writes the bytes to a cache file, returning its `file://` URI for use in
  * `<Image source={{ uri }}>`. Plain global `fetch` (not `authClient.$fetch`)
  * -- this just needs the raw bytes, not JSON parsing. Returns `null` on any
- * non-2xx response (404 = no photo, this is not an error condition) or
- * network failure -- callers render "no photo" rather than an error state.
+ * non-2xx response (404 = no photo, this is not an error condition), a
+ * timed-out/dropped connection, or any other network failure -- callers
+ * render "no photo" rather than an error state.
+ *
+ * The destination filename is derived from `key` alone (not `Date.now()`),
+ * so a `key` already cached on disk is reused instead of re-fetched -- every
+ * remount of a photo thumbnail (e.g. revisiting a damage-report list) would
+ * otherwise re-download the same bytes over the network on every mount,
+ * which is the most expensive place to be redundant under a bad connection.
  */
 export async function downloadMediaUri(clubId: string, key: string): Promise<string | null> {
+  const filename = sanitizeMediaFilename(key.replace(/\//g, '_'));
+  const destination = new File(Paths.cache, filename);
+  if (destination.exists) return destination.uri;
+
   try {
     const cookie = await getSessionCookie();
-    const response = await fetch(`${backendUrl}/media/${key}?clubId=${clubId}`, { headers: { Cookie: cookie } });
+    const response = await fetch(`${backendUrl}/media/${key}?clubId=${clubId}`, {
+      headers: { Cookie: cookie },
+      signal: AbortSignal.timeout(TRANSFER_TIMEOUT_MS),
+    });
     if (!response.ok) return null;
 
     const bytes = new Uint8Array(await response.arrayBuffer());
-    const filename = sanitizeMediaFilename(key.split('/').pop() ?? 'media');
-    const destination = new File(Paths.cache, `${Date.now()}-${filename}`);
-    if (destination.exists) destination.delete();
     destination.write(bytes);
     return destination.uri;
   } catch {
