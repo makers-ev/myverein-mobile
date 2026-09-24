@@ -55,11 +55,11 @@ export function useEvents(clubId: string | null, range?: EventRange) {
 export function useEventRsvp(clubId: string | null, onChanged?: () => void) {
   const rsvp = useCallback(
     async (eventId: string) => {
-      const { status } = await apiFetch<{ status: 'angemeldet' | 'warteliste' }>(`/events/${eventId}/rsvp?clubId=${clubId}`, {
+      const { data } = await apiFetch<{ data: { status: 'angemeldet' | 'warteliste' } }>(`/events/${eventId}/rsvp?clubId=${clubId}`, {
         method: 'POST',
       });
       onChanged?.();
-      return status;
+      return data.status;
     },
     [clubId, onChanged],
   );
