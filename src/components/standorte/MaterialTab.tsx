@@ -1,121 +1,113 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Camera, Wrench } from 'lucide-react-native';
+import { AlertTriangle, Camera, MapPin, Package, Wrench } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
 import { uploadMedia, downloadMediaUri } from '@/lib/media';
-import { useLocations } from '@/hooks/useLocations';
+import { useLocations, type Location } from '@/hooks/useLocations';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import {
   useInventoryItems,
   useInventoryItemDetail,
   useInventoryActions,
+  useInventoryMutations,
   damageReportPhotoKey,
+  type DamageReportStatus,
   type InventoryItem,
   type InventoryLoan,
   type DamageReport,
 } from '@/hooks/useInventory';
+import InventoryItemForm from './InventoryItemForm';
+import {
+  ChipPicker,
+  conditionLabel,
+  conditionTone,
+  EmptyState,
+  IconButton,
+  SectionCard,
+  StatusChip,
+  useToneColor,
+  type Tone,
+} from './shared';
 
-interface Props {
-  clubId: string;
-}
+const ALL = '__all__';
+const DAMAGE_STATUSES: DamageReportStatus[] = ['gemeldet', 'in_bearbeitung', 'behoben'];
+const DAMAGE_TONES: Record<string, Tone> = { gemeldet: 'warning', in_bearbeitung: 'primary', behoben: 'success' };
+const LOAN_TONES: Record<string, Tone> = { ausgeliehen: 'primary', ueberfaellig: 'destructive', zurueckgegeben: 'muted' };
 
-function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{title}</Text>
-      {children}
-    </View>
-  );
-}
-
-// `condition` is free text on the backend (Freitext-Beispiele: "gut" |
-// "beschaedigt" | "defekt", see myverein-backend's inventory schema) --
-// same "translate the known examples, fall back to the raw key otherwise"
-// convention `VereinScreen.tsx`'s `MemberRow` already uses for `category`.
-function ConditionBadge({ condition }: { condition: string }) {
+function ConditionChip({ condition }: { condition: string }) {
   const { t } = useLanguage();
-  return (
-    <View className="bg-muted dark:bg-muted-dark px-2.5 py-1 rounded-full self-start">
-      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">
-        {t(`material.condition.${condition}`)}
-      </Text>
-    </View>
-  );
+  return <StatusChip label={conditionLabel(t, condition)} tone={conditionTone(condition)} />;
 }
 
-// `warning` is a fixed token (see theme/colors.ts's `FIXED_COLORS`)
-// specifically added for MyVerein's overdue-loan/maintenance-due states.
-function MaintenanceDueBadge() {
+function MaintenanceDueChip() {
   const { t } = useLanguage();
+  const color = useToneColor('warning');
+  return <StatusChip label={t('material.maintenance-due')} tone="warning" icon={<Wrench size={12} color={color} />} />;
+}
+
+function OverdueChip() {
+  const { t } = useLanguage();
+  const color = useToneColor('destructive');
+  return <StatusChip label={t('material.loan-status.ueberfaellig')} tone="destructive" icon={<AlertTriangle size={12} color={color} />} />;
+}
+
+function ItemCard({ item, locationName, onPress }: { item: InventoryItem; locationName: string | null; onPress: () => void }) {
   const themeColors = useThemeColors();
-  return (
-    <View className="flex-row items-center bg-warning/10 dark:bg-warning-dark/10 px-2.5 py-1 rounded-full self-start" style={{ gap: 4 }}>
-      <Wrench size={12} color={themeColors.warning} />
-      <Text className="text-warning dark:text-warning-dark text-xs font-semibold">{t('material.maintenance-due')}</Text>
-    </View>
-  );
-}
-
-function LoanStatusBadge({ status }: { status: string }) {
-  const { t } = useLanguage();
-  const overdue = status === 'ueberfaellig';
-  return (
-    <View
-      className={`px-2.5 py-1 rounded-full ${overdue ? 'bg-warning/10 dark:bg-warning-dark/10' : 'bg-primary/10 dark:bg-primary-dark/10'}`}
-    >
-      <Text className={`text-xs font-semibold ${overdue ? 'text-warning dark:text-warning-dark' : 'text-primary dark:text-primary-dark'}`}>
-        {t(`material.loan-status.${status}`)}
-      </Text>
-    </View>
-  );
-}
-
-function DamageStatusBadge({ status }: { status: string }) {
-  const { t } = useLanguage();
-  const resolved = status === 'behoben';
-  return (
-    <View className={`px-2 py-0.5 rounded-full ${resolved ? 'bg-success/20' : 'bg-muted dark:bg-muted-dark'}`}>
-      <Text
-        className={`text-xs font-semibold ${resolved ? 'text-success dark:text-success-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}
-      >
-        {t(`material.damage-status.${status}`)}
-      </Text>
-    </View>
-  );
-}
-
-function ItemCard({ item, onPress }: { item: InventoryItem; onPress: () => void }) {
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-3"
+      className="flex-row bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-3"
+      style={{ gap: 12 }}
     >
-      <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
-        <Text className="flex-1 text-foreground dark:text-foreground-dark font-bold text-sm">{item.name}</Text>
-        <ConditionBadge condition={item.condition} />
+      <View className="w-10 h-10 rounded-xl items-center justify-center bg-primary/10 dark:bg-primary-dark/10">
+        <Package size={20} color={themeColors.primary} />
       </View>
-      {item.category && (
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">{item.category}</Text>
-      )}
-      {item.maintenanceDue && (
-        <View className="mt-2">
-          <MaintenanceDueBadge />
+      <View className="flex-1">
+        <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
+          <Text className="flex-1 text-foreground dark:text-foreground-dark font-bold text-sm">{item.name}</Text>
+          <ConditionChip condition={item.condition} />
         </View>
-      )}
+        {(item.category || locationName) && (
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1" numberOfLines={1}>
+            {[item.category, locationName].filter(Boolean).join(' · ')}
+          </Text>
+        )}
+        {item.maintenanceDue && (
+          <View className="mt-2">
+            <MaintenanceDueChip />
+          </View>
+        )}
+      </View>
     </TouchableOpacity>
   );
 }
 
-function MaterialList({ clubId, onSelect }: { clubId: string; onSelect: (id: string) => void }) {
+function MaterialList({
+  items,
+  loading,
+  locations,
+  categories,
+  canWrite,
+  onAdd,
+  onSelect,
+}: {
+  items: InventoryItem[];
+  loading: boolean;
+  locations: Location[];
+  categories: string[];
+  canWrite: boolean;
+  onAdd: () => void;
+  onSelect: (id: string) => void;
+}) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { items, loading } = useInventoryItems(clubId);
+  const [category, setCategory] = useState(ALL);
 
-  if (loading) {
+  if (loading && items.length === 0) {
     return (
       <View className="py-12 items-center">
         <ActivityIndicator color={themeColors.primary} />
@@ -123,11 +115,36 @@ function MaterialList({ clubId, onSelect }: { clubId: string; onSelect: (id: str
     );
   }
 
-  if (items.length === 0) {
-    return <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('material.list.empty')}</Text>;
-  }
+  const visible = category === ALL ? items : items.filter((i) => i.category === category);
+  const locationName = (id: string | null) => (id ? (locations.find((l) => l.id === id)?.name ?? null) : null);
 
-  return <>{items.map((i) => <ItemCard key={i.id} item={i} onPress={() => onSelect(i.id)} />)}</>;
+  return (
+    <>
+      <View className="flex-row items-center justify-between mb-3">
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold uppercase">
+          {t('material.list.count', { count: visible.length })}
+        </Text>
+        {canWrite && <IconButton kind="add" label={t('material.add')} onPress={onAdd} />}
+      </View>
+
+      {categories.length > 0 && (
+        <View className="mb-4">
+          <ChipPicker
+            scroll
+            options={[{ value: ALL, label: t('material.filter.all') }, ...categories.map((c) => ({ value: c, label: c }))]}
+            value={category}
+            onChange={setCategory}
+          />
+        </View>
+      )}
+
+      {visible.length === 0 ? (
+        <EmptyState icon={<Package size={26} color={themeColors.primary} />} text={t('material.list.empty')} />
+      ) : (
+        visible.map((i) => <ItemCard key={i.id} item={i} locationName={locationName(i.locationId)} onPress={() => onSelect(i.id)} />)
+      )}
+    </>
+  );
 }
 
 function LoanRow({ loan, isLast }: { loan: InventoryLoan; isLast: boolean }) {
@@ -138,7 +155,7 @@ function LoanRow({ loan, isLast }: { loan: InventoryLoan; isLast: boolean }) {
         <Text className="text-foreground dark:text-foreground-dark text-sm font-medium">
           {new Date(loan.borrowedAt).toLocaleDateString()}
         </Text>
-        <LoanStatusBadge status={loan.status} />
+        <StatusChip label={t(`material.loan-status.${loan.status}`)} tone={LOAN_TONES[loan.status] ?? 'muted'} />
       </View>
       {loan.dueAt && (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
@@ -154,9 +171,7 @@ function LoanRow({ loan, isLast }: { loan: InventoryLoan; isLast: boolean }) {
   );
 }
 
-// Loaded lazily per-row rather than up front for the whole list -- most
-// damage reports won't have the detail view open at once, and each photo
-// needs its own authenticated round-trip (see media.ts's `downloadMediaUri`).
+// Loaded lazily per row: each photo needs its own authenticated round-trip (see media.ts's `downloadMediaUri`).
 function DamageReportPhoto({ clubId, photoUrl }: { clubId: string; photoUrl: string | null }) {
   const themeColors = useThemeColors();
   const key = damageReportPhotoKey(photoUrl);
@@ -193,30 +208,78 @@ function DamageReportPhoto({ clubId, photoUrl }: { clubId: string; photoUrl: str
   return <Image source={{ uri }} className="w-16 h-16 rounded-lg" resizeMode="cover" />;
 }
 
-function DamageReportRow({ clubId, report, isLast }: { clubId: string; report: DamageReport; isLast: boolean }) {
+function DamageReportRow({
+  clubId,
+  report,
+  isLast,
+  onStatusChange,
+}: {
+  clubId: string;
+  report: DamageReport;
+  isLast: boolean;
+  /** Set when the viewer may triage (inventory:write). */
+  onStatusChange?: (status: DamageReportStatus) => void;
+}) {
+  const { t } = useLanguage();
   return (
     <View className={`flex-row py-2.5 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`} style={{ gap: 10 }}>
       <DamageReportPhoto clubId={clubId} photoUrl={report.photoUrl} />
       <View className="flex-1">
         <Text className="text-foreground dark:text-foreground-dark text-sm font-medium mb-1">{report.description}</Text>
-        <View className="flex-row items-center" style={{ gap: 8 }}>
-          <DamageStatusBadge status={report.status} />
+        <View className="flex-row items-center mb-1" style={{ gap: 8 }}>
+          {!onStatusChange && (
+            <StatusChip label={t(`material.damage-status.${report.status}`)} tone={DAMAGE_TONES[report.status] ?? 'muted'} />
+          )}
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
             {new Date(report.createdAt).toLocaleDateString()}
           </Text>
         </View>
+        {onStatusChange && (
+          <ChipPicker
+            options={DAMAGE_STATUSES.map((s) => ({ value: s, label: t(`material.damage-status.${s}`) }))}
+            value={report.status as DamageReportStatus}
+            onChange={(s) => s !== report.status && onStatusChange(s)}
+          />
+        )}
       </View>
     </View>
   );
 }
 
-function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: string; onBack: () => void }) {
-  const { t } = useLanguage();
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View className="flex-row justify-between py-1.5" style={{ gap: 12 }}>
+      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{label}</Text>
+      <Text className="flex-1 text-right text-foreground dark:text-foreground-dark text-sm font-medium">{value}</Text>
+    </View>
+  );
+}
+
+function MaterialDetail({
+  clubId,
+  itemId,
+  membershipId,
+  canWrite,
+  locations,
+  categories,
+  onBack,
+}: {
+  clubId: string;
+  itemId: string;
+  membershipId: string | null;
+  canWrite: boolean;
+  locations: Location[];
+  categories: string[];
+  onBack: () => void;
+}) {
+  const { t, language } = useLanguage();
   const themeColors = useThemeColors();
-  const { locations } = useLocations(clubId);
-  const { membership } = useOwnMembership(clubId);
   const { item, loans, damageReports, loading, refetch } = useInventoryItemDetail(clubId, itemId);
   const { borrow, returnLoan, reportDamage } = useInventoryActions(clubId, itemId, refetch);
+  const { setDamageReportStatus } = useInventoryMutations(clubId);
+
+  const [editing, setEditing] = useState(false);
+  const [triageError, setTriageError] = useState<string | null>(null);
 
   const [borrowSaving, setBorrowSaving] = useState(false);
   const [borrowError, setBorrowError] = useState<string | null>(null);
@@ -230,9 +293,7 @@ function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: st
   const [photoUploading, setPhotoUploading] = useState(false);
   const [damageSaving, setDamageSaving] = useState(false);
   const [damageError, setDamageError] = useState<string | null>(null);
-  // Bumped on every pick + every form reset -- a slow upload that resolves
-  // after the user already submitted/reset the form must not write its key
-  // into whatever form session is active by then (stale-write guard).
+  // Bumped on every pick + form reset so a slow upload can't write into a newer form session.
   const uploadTokenRef = useRef(0);
 
   const handleBorrow = async () => {
@@ -259,6 +320,16 @@ function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: st
     }
   };
 
+  const handleTriage = async (reportId: string, status: DamageReportStatus) => {
+    setTriageError(null);
+    try {
+      await setDamageReportStatus(itemId, reportId, status);
+      await refetch();
+    } catch (err) {
+      setTriageError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+    }
+  };
+
   const handlePickPhoto = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) return;
@@ -274,8 +345,7 @@ function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: st
       name: asset.fileName ?? 'photo.jpg',
       type: asset.mimeType ?? 'image/jpeg',
     });
-    // A stale resolve (the form was reset/resubmitted while this was in
-    // flight) must not write into whatever form session is active now.
+    // Stale resolve: the form was reset/resubmitted while this was in flight.
     if (token !== uploadTokenRef.current) return;
     setPhotoUploading(false);
 
@@ -287,10 +357,7 @@ function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: st
   };
 
   const handleSubmitDamage = async () => {
-    // Also blocks on photoUploading -- submitting while a photo is still
-    // uploading would either silently drop it (report saved with no photo)
-    // or, worse, let the upload resolve after the reset and attach a stale
-    // key to a later, unrelated report.
+    // Blocks while uploading so the report can't drop the photo or attach a stale key later.
     if (!description.trim() || damageSaving || photoUploading) return;
     setDamageSaving(true);
     setDamageError(null);
@@ -307,19 +374,34 @@ function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: st
     }
   };
 
-  if (loading || !item) {
+  if (loading && !item) {
     return (
       <View className="py-12 items-center">
         <ActivityIndicator color={themeColors.primary} />
       </View>
     );
   }
+  if (!item) return null;
 
-  // Just a client-side lookup by id against M1's location list -- no new
-  // backend join for this, per the task's own explicit call-out.
-  const locationName = item.locationId ? locations.find((l) => l.id === item.locationId)?.name ?? null : null;
+  const locationName = item.locationId ? (locations.find((l) => l.id === item.locationId)?.name ?? null) : null;
   const hasOpenLoan = loans.some((l) => !l.returnedAt);
-  const ownOpenLoan = membership ? loans.find((l) => !l.returnedAt && l.memberId === membership.id) : undefined;
+  const isOverdue = loans.some((l) => l.status === 'ueberfaellig');
+  const ownOpenLoan = membershipId ? loans.find((l) => !l.returnedAt && l.memberId === membershipId) : undefined;
+  const formatDate = (value: string) => new Date(value).toLocaleDateString(language);
+
+  const infoRows: [string, string][] = [];
+  if (item.acquisitionValueCents !== null) {
+    infoRows.push([
+      t('material.form.acquisition-value-short'),
+      (item.acquisitionValueCents / 100).toLocaleString(language, { style: 'currency', currency: 'EUR' }),
+    ]);
+  }
+  if (item.acquiredAt) infoRows.push([t('material.form.acquired-at'), formatDate(item.acquiredAt)]);
+  if (item.lastMaintenanceAt) infoRows.push([t('material.form.last-maintenance-at'), formatDate(item.lastMaintenanceAt)]);
+  if (item.maintenanceIntervalDays) {
+    infoRows.push([t('material.detail.interval'), t('material.detail.interval-days', { count: item.maintenanceIntervalDays })]);
+  }
+  if (item.maintenanceDueAt) infoRows.push([t('material.detail.next-maintenance'), formatDate(item.maintenanceDueAt)]);
 
   return (
     <>
@@ -327,23 +409,37 @@ function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: st
         <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('material.back')}</Text>
       </TouchableOpacity>
 
-      <View className="mb-4">
-        <View className="flex-row items-start justify-between mb-1" style={{ gap: 8 }}>
-          <Text className="flex-1 text-xl font-black text-foreground dark:text-foreground-dark">{item.name}</Text>
-          <ConditionBadge condition={item.condition} />
+      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+        <View className="flex-row items-start" style={{ gap: 12 }}>
+          <View className="w-12 h-12 rounded-xl items-center justify-center bg-primary/10 dark:bg-primary-dark/10">
+            <Package size={24} color={themeColors.primary} />
+          </View>
+          <View className="flex-1">
+            <Text className="text-xl font-black text-foreground dark:text-foreground-dark">{item.name}</Text>
+            {item.category && <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{item.category}</Text>}
+          </View>
+          {canWrite && <IconButton kind="edit" label={t('material.edit')} onPress={() => setEditing(true)} />}
         </View>
-        {item.category && <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-1">{item.category}</Text>}
         {locationName && (
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
-            {t('material.detail.location')}: {locationName}
-          </Text>
-        )}
-        {item.maintenanceDue && (
-          <View className="mt-2">
-            <MaintenanceDueBadge />
+          <View className="flex-row items-center mt-3" style={{ gap: 4 }}>
+            <MapPin size={12} color={themeColors.mutedForeground} />
+            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{locationName}</Text>
           </View>
         )}
+        <View className="flex-row flex-wrap mt-3" style={{ gap: 6 }}>
+          <ConditionChip condition={item.condition} />
+          {item.maintenanceDue && <MaintenanceDueChip />}
+          {isOverdue && <OverdueChip />}
+        </View>
       </View>
+
+      {infoRows.length > 0 && (
+        <SectionCard title={t('material.detail.info')}>
+          {infoRows.map(([label, value]) => (
+            <InfoRow key={label} label={label} value={value} />
+          ))}
+        </SectionCard>
+      )}
 
       <SectionCard title={t('material.loans.title')}>
         {loans.length === 0 ? (
@@ -393,9 +489,16 @@ function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: st
           </Text>
         ) : (
           damageReports.map((r, i) => (
-            <DamageReportRow key={r.id} clubId={clubId} report={r} isLast={i === damageReports.length - 1} />
+            <DamageReportRow
+              key={r.id}
+              clubId={clubId}
+              report={r}
+              isLast={i === damageReports.length - 1}
+              onStatusChange={canWrite ? (s) => void handleTriage(r.id, s) : undefined}
+            />
           ))
         )}
+        {triageError ? <Text className="text-destructive text-sm mt-2">{triageError}</Text> : null}
 
         {showDamageForm ? (
           <View className="mt-3 pt-3 border-t border-border dark:border-border-dark">
@@ -457,23 +560,74 @@ function MaterialDetail({ clubId, itemId, onBack }: { clubId: string; itemId: st
           </TouchableOpacity>
         )}
       </SectionCard>
+
+      {editing && (
+        <InventoryItemForm
+          clubId={clubId}
+          item={item}
+          locations={locations}
+          categories={categories}
+          onClose={() => setEditing(false)}
+          onSaved={() => void refetch()}
+          onDeleted={onBack}
+        />
+      )}
     </>
   );
 }
 
 /**
- * Self-service inventory tab for members: browse items, borrow one,
- * return one they borrowed, and file a damage report with an optional
- * photo. Item create/edit/delete is board-only and lives on the separate
- * admin website -- entirely out of scope here. Follows `TreffenTab.tsx`'s
- * list<->detail pattern (local `selectedItemId` state).
+ * Inventory tab: members browse, borrow/return and report damage;
+ * `inventory:write` additionally creates/edits/deletes items and triages damage reports.
  */
-export default function MaterialTab({ clubId }: Props) {
+export default function MaterialTab({ clubId }: { clubId: string }) {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const { membership, can } = useOwnMembership(clubId);
+  const { locations } = useLocations(clubId);
+  const { items, loading, refetch } = useInventoryItems(clubId);
+  const canWrite = can('inventory:write');
 
-  return selectedItemId ? (
-    <MaterialDetail clubId={clubId} itemId={selectedItemId} onBack={() => setSelectedItemId(null)} />
-  ) : (
-    <MaterialList clubId={clubId} onSelect={setSelectedItemId} />
+  const categories = useMemo(
+    () => [...new Set(items.map((i) => i.category).filter((c): c is string => !!c))].sort((a, b) => a.localeCompare(b)),
+    [items],
+  );
+
+  return (
+    <>
+      {selectedItemId ? (
+        <MaterialDetail
+          clubId={clubId}
+          itemId={selectedItemId}
+          membershipId={membership?.id ?? null}
+          canWrite={canWrite}
+          locations={locations}
+          categories={categories}
+          onBack={() => {
+            setSelectedItemId(null);
+            void refetch();
+          }}
+        />
+      ) : (
+        <MaterialList
+          items={items}
+          loading={loading}
+          locations={locations}
+          categories={categories}
+          canWrite={canWrite}
+          onAdd={() => setCreating(true)}
+          onSelect={setSelectedItemId}
+        />
+      )}
+      {creating && (
+        <InventoryItemForm
+          clubId={clubId}
+          locations={locations}
+          categories={categories}
+          onClose={() => setCreating(false)}
+          onSaved={() => void refetch()}
+        />
+      )}
+    </>
   );
 }
