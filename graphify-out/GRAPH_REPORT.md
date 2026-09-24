@@ -1,13 +1,18 @@
-# Graph Report - C:\GitHub\makers-ev\myverein\myverein-mobile  (2026-09-18)
+# Graph Report - myverein-mobile  (2026-09-24)
 
 ## Corpus Check
-- 0 files · ~99,999 words
+- 124 files · ~60,675 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 864 nodes · 1327 edges · 82 communities (46 shown, 36 thin omitted)
-- Extraction: 97% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 31 edges (avg confidence: 0.84)
+- 1026 nodes · 1760 edges · 97 communities (61 shown, 36 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 31 edges (avg confidence: 0.84)
 - Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `61eef8c6`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - [[_COMMUNITY_Community 0|Community 0]]
@@ -91,18 +96,30 @@
 - [[_COMMUNITY_Community 79|Community 79]]
 - [[_COMMUNITY_Community 80|Community 80]]
 - [[_COMMUNITY_Community 81|Community 81]]
+- [[_COMMUNITY_Community 82|Community 82]]
+- [[_COMMUNITY_Community 83|Community 83]]
+- [[_COMMUNITY_Community 84|Community 84]]
+- [[_COMMUNITY_Community 85|Community 85]]
+- [[_COMMUNITY_Community 86|Community 86]]
+- [[_COMMUNITY_Community 87|Community 87]]
+- [[_COMMUNITY_Community 88|Community 88]]
+- [[_COMMUNITY_Community 89|Community 89]]
+- [[_COMMUNITY_Community 90|Community 90]]
+- [[_COMMUNITY_Community 91|Community 91]]
+- [[_COMMUNITY_Community 92|Community 92]]
+- [[_COMMUNITY_Community 93|Community 93]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `useLanguage()` - 67 edges
-2. `useThemeColors()` - 57 edges
+1. `useLanguage()` - 104 edges
+2. `useThemeColors()` - 90 edges
 3. `useAuth()` - 21 edges
-4. `Language` - 16 edges
-5. `Better Auth Mobile Template` - 16 edges
-6. `expo` - 14 edges
-7. `LanguageContext Provider` - 14 edges
-8. `apiFetch()` - 13 edges
+4. `Better Auth Mobile Template` - 19 edges
+5. `Language` - 17 edges
+6. `Better Auth Mobile Template` - 16 edges
+7. `apiFetch()` - 15 edges
+8. `expo` - 13 edges
 9. `expo` - 13 edges
-10. `scripts` - 9 edges
+10. `LanguageContext Provider` - 13 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `HomeScreen` --references--> `README architecture overview`  [EXTRACTED]
@@ -121,31 +138,31 @@
 - **LPJ IT-Solutions Mark Across App Surfaces** — asset_icon, asset_splash_icon, asset_favicon [INFERRED 0.85]
 - **Mobile Dev Orchestration Subagents** — rnuidev_agent, rnstatenavdev_agent, rnreviewer_agent [EXTRACTED 1.00]
 
-## Communities (82 total, 36 thin omitted)
+## Communities (97 total, 36 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.05
-Nodes (45): AuthClient, checkBackendHealth(), AuthContext, AuthContextType, AuthProvider(), AuthResult, EnableTwoFactorResult, ListSessionsResult (+37 more)
+Cohesion: 0.14
+Nodes (11): useAuth(), RequireAuth(), RequireAuthProps, useRequireAuth(), AppNavigator(), MainNavigator(), RootStack, TwoFactorNavigator() (+3 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.05
-Nodes (43): ComponentTranslation, Translation, GeneralTranslation, Translation, authored, KalenderTranslation, Translation, defaultLanguage (+35 more)
+Nodes (46): ComponentTranslation, Translation, GeneralTranslation, Translation, authored, KalenderTranslation, Translation, defaultLanguage (+38 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.06
 Nodes (48): apiFetch() wrapper, AppLockGate, AppLockScreen, AppNavigator component, authClient (Better Auth client instance), backendUrl, AuthProvider component, AuthProvider.cancelTwoFactor (+40 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.06
-Nodes (46): AcceptTosModal, ADR-008: Runtime Palette CSS Vars, ADR-009: First-Pass AI Translation, ADR-010: app.json as Canonical Identity File, ADR-010 (app.json as Canonical Identity File), app.json (Expo Config), app.json Expo Config, app.json expo.name / expo.extra (appName, defaultLanguage) (+38 more)
+Cohesion: 0.07
+Nodes (44): AcceptTosModal, ADR-008: Runtime Palette CSS Vars, ADR-009: First-Pass AI Translation, ADR-010: app.json as Canonical Identity File, ADR-010 (app.json as Canonical Identity File), app.json (Expo Config), app.json Expo Config, app.json expo.name / expo.extra (appName, defaultLanguage) (+36 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.06
 Nodes (45): ADR-008 (No WCAG Contrast Enforcement), ADR-009 (RTL/Arabic Future Scope), Android Adaptive Icon — Background Layer, Android Adaptive Icon — Foreground Layer, Android Adaptive Icon — Monochrome Layer, Favicon, App Icon, Splash Icon (+37 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.06
-Nodes (36): ADR-008: palette derivation, no WCAG enforcement, ADR-009: single language registry, RTL out of scope, AcceptTosModal, IntroModal, LegalDocumentLayout, NotificationCard, NotificationsScreen, useNotificationText() (+28 more)
+Cohesion: 0.07
+Nodes (32): ADR-008: palette derivation, no WCAG enforcement, ADR-009: single language registry, RTL out of scope, AcceptTosModal, IntroModal, LegalDocumentLayout, NotificationCard, NotificationsScreen, useNotificationText() (+24 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.12
@@ -153,19 +170,19 @@ Nodes (24): AnchorKey, Mode, PaletteCustomEditorProps, deriveTokens(), foregroun
 
 ### Community 7 - "Community 7"
 Cohesion: 0.07
-Nodes (30): dependencies, better-auth, @better-auth/expo, expo, expo-constants, expo-linking, expo-localization, expo-navigation-bar (+22 more)
-
-### Community 8 - "Community 8"
-Cohesion: 0.07
 Nodes (29): dependencies, better-auth, @better-auth/expo, expo, expo-constants, expo-linking, expo-localization, expo-navigation-bar (+21 more)
 
+### Community 8 - "Community 8"
+Cohesion: 0.06
+Nodes (32): dependencies, better-auth, @better-auth/expo, expo, expo-constants, expo-file-system, expo-image-picker, expo-linking (+24 more)
+
 ### Community 9 - "Community 9"
-Cohesion: 0.07
-Nodes (27): backgroundColor, backgroundImage, foregroundImage, monochromeImage, adaptiveIcon, package, predictiveBackGestureEnabled, expo (+19 more)
+Cohesion: 0.14
+Nodes (13): expo, icon, ios, name, orientation, plugins, scheme, slug (+5 more)
 
 ### Community 10 - "Community 10"
-Cohesion: 0.07
-Nodes (27): backgroundColor, backgroundImage, foregroundImage, monochromeImage, adaptiveIcon, package, predictiveBackGestureEnabled, expo (+19 more)
+Cohesion: 0.15
+Nodes (13): expo, icon, ios, name, orientation, plugins, scheme, slug (+5 more)
 
 ### Community 11 - "Community 11"
 Cohesion: 0.09
@@ -173,43 +190,43 @@ Nodes (27): Guest mode gating rationale (CLAUDE.md), useNotifications / useNotif
 
 ### Community 12 - "Community 12"
 Cohesion: 0.13
-Nodes (17): AppLockGate(), AppLockGateProps, LegalDocumentLayout(), EmailVerificationScreen(), EmailVerificationScreenProps, ProfileSection(), SecuritySection(), SessionsSection() (+9 more)
+Nodes (17): AppLockGate(), AppLockGateProps, LegalDocumentLayout(), IntroModal(), IntroModalProps, STEPS, EmailVerificationScreen(), EmailVerificationScreenProps (+9 more)
 
 ### Community 13 - "Community 13"
 Cohesion: 0.14
 Nodes (17): AttendanceEntry, MeetingInvitee, MeetingResolution, OverlapCandidate, ResolutionInput, useMeetingDetail(), Meeting, MeetingInput (+9 more)
 
 ### Community 14 - "Community 14"
-Cohesion: 0.15
-Nodes (12): clearAppLockPin(), getAppLockPin(), setAppLockPin(), InfoModalProps, DebugSection(), SettingsScreen(), SettingsScreenProps, getShowNavbarTitles() (+4 more)
+Cohesion: 0.13
+Nodes (15): clearAppLockPin(), getAppLockPin(), setAppLockPin(), InfoModalProps, DebugSection(), ProfileSection(), SecuritySection(), SessionsSection() (+7 more)
 
 ### Community 15 - "Community 15"
-Cohesion: 0.12
-Nodes (9): App Root Component, Navbar (floating bottom pill), ErrorBoundary, ErrorBoundaryProps, ErrorBoundaryState, mycollection-app PageLayout Navbar, PaletteProvider(), getStoredTheme() (+1 more)
+Cohesion: 0.08
+Nodes (19): App Root Component, Navbar (floating bottom pill), AuthClient, checkBackendHealth(), AuthContext, AuthContextType, AuthProvider(), AuthResult (+11 more)
 
 ### Community 16 - "Community 16"
-Cohesion: 0.12
-Nodes (16): compilerOptions, baseUrl, ignoreDeprecations, paths, strict, types, extends, @/* (+8 more)
+Cohesion: 0.22
+Nodes (8): compilerOptions, baseUrl, ignoreDeprecations, paths, strict, types, extends, @/*
 
 ### Community 17 - "Community 17"
 Cohesion: 0.16
-Nodes (14): BoardMember, ClubInfo, ClubInfoPage, Department, useClubInfo(), useClubMembers(), BoardRow(), DepartmentRow() (+6 more)
+Nodes (13): BoardMember, ClubInfo, ClubInfoPage, useClubInfo(), useClubMembers(), BoardRow(), DepartmentRow(), MemberRow() (+5 more)
 
 ### Community 18 - "Community 18"
-Cohesion: 0.17
-Nodes (11): useMyClubs(), ConfirmationInputModal(), ConfirmationModalProps, SetupPinModal(), SetupPinModalProps, VerifyPinModal(), VerifyPinModalProps, KalenderScreen() (+3 more)
+Cohesion: 0.12
+Nodes (15): AcceptTosModal(), AcceptTosModalProps, ConfirmationInputModal(), ConfirmationModalProps, SetupPinModal(), SetupPinModalProps, VerifyPinModal(), VerifyPinModalProps (+7 more)
 
 ### Community 19 - "Community 19"
-Cohesion: 0.19
+Cohesion: 0.15
 Nodes (12): jest, preset, main, name, private, version, jest, preset (+4 more)
 
 ### Community 20 - "Community 20"
-Cohesion: 0.27
-Nodes (8): ClubMember, ClubMemberRole, MyClub, useOwnMembership(), apiFetch(), ApiFetchOptions, ProfilTab(), Props
+Cohesion: 0.15
+Nodes (14): ClubMember, ClubMemberRole, MyClub, ClubPermission, useOwnMembership(), ApiError, apiFetch(), ApiFetchOptions (+6 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.24
-Nodes (10): Calendar, useCalendars(), CalendarEvent, EventRange, useEventRsvp(), useEvents(), EventRow(), Props (+2 more)
+Cohesion: 0.16
+Nodes (18): useCalendars(), CalendarEvent, EventInput, EventRange, useEventMutations(), useEventRsvp(), useEvents(), EventSheet() (+10 more)
 
 ### Community 22 - "Community 22"
 Cohesion: 0.15
@@ -220,16 +237,16 @@ Cohesion: 0.15
 Nodes (13): devDependencies, babel-preset-expo, eslint, eslint-config-expo, jest, jest-expo, @react-native/jest-preset, tailwindcss (+5 more)
 
 ### Community 24 - "Community 24"
-Cohesion: 0.20
-Nodes (9): AvailabilityException, AvailabilitySlot, useAvailability(), DEFAULT_ROW, Props, RowState, VerfuegbarkeitTab(), WEEKDAY_KEYS (+1 more)
+Cohesion: 0.12
+Nodes (15): AvailabilityException, AvailabilitySlot, useAvailability(), DEFAULT_ROW, Props, RowState, VerfuegbarkeitTab(), WEEKDAY_KEYS (+7 more)
 
 ### Community 25 - "Community 25"
-Cohesion: 0.18
-Nodes (6): KeyboardAwareScreenProps, LogoProps, ForgotPasswordScreen(), ForgotPasswordScreenProps, LoginScreen(), LoginScreenProps
+Cohesion: 0.10
+Nodes (14): KeyboardAwareScreenProps, LogoProps, ForgotPasswordScreen(), ForgotPasswordScreenProps, LoginScreen(), LoginScreenProps, IconCalendar, IconLock (+6 more)
 
 ### Community 26 - "Community 26"
-Cohesion: 0.22
-Nodes (11): AppLockGate, AuthProvider / useAuth, AuthProvider Test Suite, RequireAuth Screen Gate, App Lock PIN Storage (SecureStore), Better Auth Client Instance, auth-backend-template twoFactor() plugin, Guest Mode Pattern (CLAUDE.md) (+3 more)
+Cohesion: 0.25
+Nodes (9): AppLockGate, AuthProvider / useAuth, AuthProvider Test Suite, RequireAuth Screen Gate, App Lock PIN Storage (SecureStore), Better Auth Client Instance, Guest Mode Pattern (CLAUDE.md), Old Keycloak Template (react-native-keychain) (+1 more)
 
 ### Community 27 - "Community 27"
 Cohesion: 0.25
@@ -240,8 +257,8 @@ Cohesion: 0.36
 Nodes (5): useAttemptLockout(), AppLockScreen(), AppLockScreenProps, TwoFactorScreen(), TwoFactorScreenProps
 
 ### Community 29 - "Community 29"
-Cohesion: 0.22
-Nodes (8): IconCalendar, IconLock, IconMail, IconMapPin, IconPhone, SignupFormData, SignupScreen(), SignupScreenProps
+Cohesion: 0.06
+Nodes (34): Adding a new API request, Adding a new popup, Adding a protected screen, Architecture, Better Auth Mobile Template, code:block1 (npm install), code:ts (const insets = useSafeAreaInsets();), code:json ("extra": {) (+26 more)
 
 ### Community 30 - "Community 30"
 Cohesion: 0.25
@@ -260,8 +277,8 @@ Cohesion: 0.38
 Nodes (4): ConnectionErrorScreen(), ConnectionErrorScreenProps, ConnectionStatus, withScheme()
 
 ### Community 34 - "Community 34"
-Cohesion: 0.40
-Nodes (4): Language type, detectSystemLanguage test suite, detectSystemLanguage(), website acceptLanguage.ts (external)
+Cohesion: 0.50
+Nodes (3): Language type, detectSystemLanguage test suite, detectSystemLanguage()
 
 ### Community 35 - "Community 35"
 Cohesion: 0.50
@@ -276,12 +293,12 @@ Cohesion: 0.67
 Nodes (4): App (root component), KeyboardAwareScreen, KeyboardAwareScrollView (react-native-keyboard-controller), Rationale: KeyboardAwareScrollView over hand-rolled KeyboardAvoidingView
 
 ### Community 38 - "Community 38"
-Cohesion: 0.50
-Nodes (3): IntroModal(), IntroModalProps, STEPS
+Cohesion: 0.11
+Nodes (20): useLocationDetail(), useLocations(), buildWifiQrPayload(), escapeWifiField(), LinkRow(), LocationDetail(), LocationList(), LocationPhotoPlaceholder() (+12 more)
 
 ### Community 40 - "Community 40"
-Cohesion: 0.50
-Nodes (3): CATEGORIES, JoinClubScreen(), Props
+Cohesion: 0.15
+Nodes (19): DamageReport, DamageReportStatus, InventoryItemInput, InventoryLoan, useInventoryActions(), useInventoryItemDetail(), useInventoryItems(), ConditionChip() (+11 more)
 
 ### Community 41 - "Community 41"
 Cohesion: 0.67
@@ -303,6 +320,54 @@ Nodes (3): react-native-keyboard-controller, KeyboardAwareScreen library choice 
 Cohesion: 0.67
 Nodes (3): _template_better-auth-backend, _template_better-auth-mobile (this app), _template_better-auth-website
 
+### Community 82 - "Community 82"
+Cohesion: 0.16
+Nodes (13): NAV_ITEMS, Navbar(), NavItem, useMyClubs(), useUnreadNotificationCount(), RootStackParamList, navigate(), navigationRef (+5 more)
+
+### Community 83 - "Community 83"
+Cohesion: 0.24
+Nodes (14): LocationInput, LocationKeyHolder, LocationLink, LocationLinkInput, useLocationMutations(), WifiNetwork, WifiNetworkInput, Input() (+6 more)
+
+### Community 84 - "Community 84"
+Cohesion: 0.27
+Nodes (11): InventoryItem, useInventoryMutations(), Location, InventoryItemForm(), Props, centsToEuroInput(), parseCoordinate(), parseEuroToCents() (+3 more)
+
+### Community 85 - "Community 85"
+Cohesion: 0.24
+Nodes (11): Calendar, CalendarVisibility, useCalendarAdmin(), VisibilityGrant, Department, CalendarCard(), CalendarManageSheet(), DepartmentPicker() (+3 more)
+
+### Community 86 - "Community 86"
+Cohesion: 0.29
+Nodes (7): hasAcceptedTos(), setTosAccepted(), hasSeenIntro(), setIntroSeen(), FEATURE_CARDS, HomeScreen(), Props
+
+### Community 87 - "Community 87"
+Cohesion: 0.38
+Nodes (7): downloadMediaUri(), getSessionCookie(), toUploadableFile(), uploadMedia(), damageReportPhotoKey(), sanitizeMediaFilename(), DamageReportPhoto()
+
+### Community 88 - "Community 88"
+Cohesion: 0.39
+Nodes (7): NotificationItem, useNotificationMutations(), useNotifications(), NotificationCard(), NotificationsScreen(), Tab, useNotificationText()
+
+### Community 89 - "Community 89"
+Cohesion: 0.25
+Nodes (8): backgroundColor, backgroundImage, foregroundImage, monochromeImage, adaptiveIcon, package, predictiveBackGestureEnabled, android
+
+### Community 90 - "Community 90"
+Cohesion: 0.25
+Nodes (8): backgroundColor, backgroundImage, foregroundImage, monochromeImage, adaptiveIcon, package, predictiveBackGestureEnabled, android
+
+### Community 91 - "Community 91"
+Cohesion: 0.29
+Nodes (6): Available subagents in this repo, code:tsx (<RequireAuth>), code:tsx (const { requireAuth } = useRequireAuth();), Graphify, Guest mode, Orchestration
+
+### Community 92 - "Community 92"
+Cohesion: 0.33
+Nodes (6): extra, author, authorUrl, defaultLanguage, description, primaryColor
+
+### Community 93 - "Community 93"
+Cohesion: 0.33
+Nodes (6): extra, author, authorUrl, defaultLanguage, description, primaryColor
+
 ## Ambiguous Edges - Review These
 - `babel.config.js` → `package.json`  [AMBIGUOUS]
   babel.config.js · relation: conceptually_related_to
@@ -314,7 +379,7 @@ Nodes (3): _template_better-auth-backend, _template_better-auth-mobile (this app
   CLAUDE.md · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **401 isolated node(s):** `name`, `slug`, `scheme`, `version`, `orientation` (+396 more)
+- **443 isolated node(s):** `name`, `slug`, `scheme`, `version`, `orientation` (+438 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **36 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -329,9 +394,9 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `Guest Mode (Browse-First Navigation)` and `_template_better-auth-website`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `useLanguage()` connect `Community 18` to `Community 0`, `Community 1`, `Community 33`, `Community 38`, `Community 40`, `Community 12`, `Community 13`, `Community 14`, `Community 17`, `Community 20`, `Community 21`, `Community 24`, `Community 25`, `Community 28`, `Community 29`?**
-  _High betweenness centrality (0.031) - this node is a cross-community bridge._
-- **Why does `expo` connect `Community 10` to `Community 9`?**
-  _High betweenness centrality (0.029) - this node is a cross-community bridge._
-- **What connects `name`, `slug`, `scheme` to the rest of the system?**
-  _417 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `useLanguage()` connect `Community 18` to `Community 0`, `Community 1`, `Community 12`, `Community 13`, `Community 14`, `Community 17`, `Community 20`, `Community 21`, `Community 24`, `Community 25`, `Community 28`, `Community 33`, `Community 38`, `Community 40`, `Community 82`, `Community 83`, `Community 84`, `Community 85`, `Community 86`, `Community 88`?**
+  _High betweenness centrality (0.044) - this node is a cross-community bridge._
+- **Why does `useThemeColors()` connect `Community 12` to `Community 0`, `Community 13`, `Community 14`, `Community 17`, `Community 18`, `Community 20`, `Community 21`, `Community 24`, `Community 25`, `Community 28`, `Community 33`, `Community 38`, `Community 40`, `Community 82`, `Community 83`, `Community 84`, `Community 85`, `Community 87`, `Community 88`?**
+  _High betweenness centrality (0.024) - this node is a cross-community bridge._
+- **Why does `expo` connect `Community 9` to `Community 89`, `Community 92`?**
+  _High betweenness centrality (0.022) - this node is a cross-community bridge._

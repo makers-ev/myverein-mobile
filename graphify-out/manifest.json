@@ -480,9 +480,9 @@
     "semantic_hash": "a70be0956b757c5d60847f8b69af4194"
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\package.json": {
-    "mtime": 1789737356.5165112,
-    "ast_hash": "e3f297ed359d9a799f54027d0d18c9ea",
-    "semantic_hash": "e3f297ed359d9a799f54027d0d18c9ea"
+    "mtime": 1789934238.9256036,
+    "ast_hash": "c67bf0069cf6c48e2fc94ec20d79057b",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\tailwind.config.js": {
     "mtime": 1789737356.633473,
@@ -535,9 +535,9 @@
     "semantic_hash": "4ffc6ed35f0d66f776474fd1e64db771"
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\Navbar.tsx": {
-    "mtime": 1789755387.2495785,
-    "ast_hash": "8a10f2d83a30e05f8d69f3e2802da9c7",
-    "semantic_hash": "8a10f2d83a30e05f8d69f3e2802da9c7"
+    "mtime": 1789934238.9266057,
+    "ast_hash": "57f28d0014c78e72cb8e425142971eb3",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\AppLock\\AppLockGate.tsx": {
     "mtime": 1789737356.5270312,
@@ -545,19 +545,19 @@
     "semantic_hash": "e30619784f5d8746b661d0dc4c388016"
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\kalender\\TermineTab.tsx": {
-    "mtime": 1789744984.2880087,
-    "ast_hash": "5fe7513c08e0c0eb1759f4bcaa18181e",
-    "semantic_hash": "5fe7513c08e0c0eb1759f4bcaa18181e"
+    "mtime": 1790260802.4745235,
+    "ast_hash": "cfbb33757a205e62b24d5d991664cabc",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\kalender\\TreffenTab.tsx": {
-    "mtime": 1789755373.2455103,
-    "ast_hash": "907363994ae00d1aa093d826b5f4368d",
-    "semantic_hash": "907363994ae00d1aa093d826b5f4368d"
+    "mtime": 1790260802.5394325,
+    "ast_hash": "321ad1c481b3f22eb8eee3b2dc91e1fa",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\kalender\\VerfuegbarkeitTab.tsx": {
-    "mtime": 1789745175.59088,
-    "ast_hash": "ec290187bda59e3c26f17ad6ef9f369b",
-    "semantic_hash": "ec290187bda59e3c26f17ad6ef9f369b"
+    "mtime": 1790260802.5964034,
+    "ast_hash": "69926892a4b1ffe9942b17430b8543a2",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\Modals\\ConfirmationInputModal.tsx": {
     "mtime": 1789737356.5325592,
@@ -600,14 +600,14 @@
     "semantic_hash": "c579e50d98e85a8334781f52fb9db2f3"
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\verein\\ProfilTab.tsx": {
-    "mtime": 1789737356.5455973,
-    "ast_hash": "3ec2ccffd8aeefd647bb0c5f46279f43",
-    "semantic_hash": "3ec2ccffd8aeefd647bb0c5f46279f43"
+    "mtime": 1790261335.6991389,
+    "ast_hash": "45f9588757c446c810d3fa8f1f422149",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\contexts\\translation\\ComponentTranslation.ts": {
-    "mtime": 1789737356.546597,
-    "ast_hash": "ef8bbaf028cf769a9f6ece2fcddc07b7",
-    "semantic_hash": "ef8bbaf028cf769a9f6ece2fcddc07b7"
+    "mtime": 1790261335.7001443,
+    "ast_hash": "d03fef8c3eae9ed1782f79cf11beab93",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\contexts\\translation\\GeneralTranslation.ts": {
     "mtime": 1789737356.5491228,
@@ -615,9 +615,9 @@
     "semantic_hash": "2add49464f7c07029ec6bdac479973b1"
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\contexts\\translation\\KalenderTranslation.ts": {
-    "mtime": 1789744992.6527371,
-    "ast_hash": "8e29574021be257930e544e4b39d89be",
-    "semantic_hash": "8e29574021be257930e544e4b39d89be"
+    "mtime": 1790261335.701662,
+    "ast_hash": "826c1bf018b0204a25cfdb7a11be187d",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\contexts\\translation\\LanguageContext.test.tsx": {
     "mtime": 1789737356.5501218,
@@ -625,9 +625,9 @@
     "semantic_hash": "115bd3e56ba77d171b04253c5adc3b51"
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\contexts\\translation\\LanguageContext.tsx": {
-    "mtime": 1789755391.7041721,
-    "ast_hash": "8599c8eb387b15b270f760e8151eaef3",
-    "semantic_hash": "8599c8eb387b15b270f760e8151eaef3"
+    "mtime": 1789934238.933298,
+    "ast_hash": "9d9f301dac1643b44be6355f4716a917",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\contexts\\translation\\languagePreferenceStorage.ts": {
     "mtime": 1789737356.5616543,
@@ -680,14 +680,14 @@
     "semantic_hash": "a899f70befc99e68b084befc751dbdd4"
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\contexts\\translation\\TreffenTranslation.ts": {
-    "mtime": 1789745158.0300403,
-    "ast_hash": "a9095849fc8745033f762a7c254222b8",
-    "semantic_hash": "a9095849fc8745033f762a7c254222b8"
+    "mtime": 1790260803.0585413,
+    "ast_hash": "d5d10280dd35bcb5eeee318a6230df03",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\contexts\\translation\\VereinTranslation.ts": {
-    "mtime": 1789737356.5597682,
-    "ast_hash": "6119bb9342196f7184f0139ba66222c7",
-    "semantic_hash": "6119bb9342196f7184f0139ba66222c7"
+    "mtime": 1790260802.9891477,
+    "ast_hash": "23c362b0224607be1a18b55885ef5b28",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\contexts\\translation\\VerfuegbarkeitTranslation.ts": {
     "mtime": 1789745095.2416008,
@@ -715,9 +715,9 @@
     "semantic_hash": "6f20167ab53ceda19b33bc816a5548b6"
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\hooks\\useCalendars.ts": {
-    "mtime": 1789744954.6503067,
-    "ast_hash": "0e5ae9375836f3537695981551709ce3",
-    "semantic_hash": "0e5ae9375836f3537695981551709ce3"
+    "mtime": 1790260802.8742738,
+    "ast_hash": "6e618e37f6a875a1f77899589c59ebf6",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\hooks\\useClubInfo.ts": {
     "mtime": 1789737356.5729153,
@@ -725,14 +725,14 @@
     "semantic_hash": "4a4cd7314d14a60ce0396cee36c39841"
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\hooks\\useClubMembers.ts": {
-    "mtime": 1789737356.5735295,
-    "ast_hash": "47653e3f4f4798b76c0867b8fb44a6e9",
-    "semantic_hash": "47653e3f4f4798b76c0867b8fb44a6e9"
+    "mtime": 1790260164.2610798,
+    "ast_hash": "4e03a9f62b17d98b2590dc537a4a9888",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\hooks\\useEvents.ts": {
-    "mtime": 1789744962.2522917,
-    "ast_hash": "f93e064a86f4ab5119eb3655b85b1b32",
-    "semantic_hash": "f93e064a86f4ab5119eb3655b85b1b32"
+    "mtime": 1790261335.7032769,
+    "ast_hash": "3f1c9708d7572b3a98760abe4bf5586e",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\hooks\\useMeetingDetail.ts": {
     "mtime": 1789745131.4012363,
@@ -755,9 +755,9 @@
     "semantic_hash": "7545a69a2067f56f2cf87b6ca4b24d33"
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\hooks\\useOwnMembership.ts": {
-    "mtime": 1789737356.5773766,
-    "ast_hash": "6c9f6c21d5bbf596b297bf2690e9bacf",
-    "semantic_hash": "6c9f6c21d5bbf596b297bf2690e9bacf"
+    "mtime": 1790261335.7052853,
+    "ast_hash": "c6e79345b7db13522785a424b978320b",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\hooks\\useRequireAuth.ts": {
     "mtime": 1789737356.5784824,
@@ -810,9 +810,9 @@
     "semantic_hash": "b70333aa8638bc082b6508d0696cb343"
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\navigation\\AppNavigator.tsx": {
-    "mtime": 1789755381.0004988,
-    "ast_hash": "9deb714335b8dfc54f34fd69dea03c74",
-    "semantic_hash": "9deb714335b8dfc54f34fd69dea03c74"
+    "mtime": 1789934238.9468634,
+    "ast_hash": "5b5249ba494e18aad53801c23ff4947e",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\navigation\\navigationRef.ts": {
     "mtime": 1789737356.5976672,
@@ -940,9 +940,9 @@
     "semantic_hash": "3876d0fac3d2702afd30e8f3dd8d251e"
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\README.md": {
-    "mtime": 1789755536.3349974,
-    "ast_hash": "bff5c7c133c8b19653ce0cba877998c1",
-    "semantic_hash": "bff5c7c133c8b19653ce0cba877998c1"
+    "mtime": 1790260924.62101,
+    "ast_hash": "949ae962c2edf328708ca30a1c99f1ac",
+    "semantic_hash": ""
   },
   "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\.claude\\agents\\rn-reviewer.md": {
     "mtime": 1789737356.3060458,
@@ -993,5 +993,110 @@
     "mtime": 1789737356.3276432,
     "ast_hash": "5d13d3990d9168134182c410884cfbf5",
     "semantic_hash": "5d13d3990d9168134182c410884cfbf5"
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\kalender\\CalendarManageSheet.tsx": {
+    "mtime": 1790261534.4021513,
+    "ast_hash": "851a068f6033ef74d6235cffd687ce74",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\kalender\\EventSheet.tsx": {
+    "mtime": 1790261518.5807548,
+    "ast_hash": "eca10f3252d4b72e3b772413f4ba458d",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\standorte\\InventoryItemForm.tsx": {
+    "mtime": 1790260625.7066774,
+    "ast_hash": "bbeaf4529f4701c2d2c940991f72317c",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\standorte\\LocationForms.tsx": {
+    "mtime": 1790260651.5261078,
+    "ast_hash": "4bb3422b5bfe74ba246910f7695101d8",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\standorte\\MaterialTab.tsx": {
+    "mtime": 1790261335.6932065,
+    "ast_hash": "0059b7c49c292922bde2b2a5fca5cf96",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\standorte\\OrteTab.tsx": {
+    "mtime": 1790261335.6956265,
+    "ast_hash": "175444f20b49a33b981e81fda79058fc",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\standorte\\parse.test.ts": {
+    "mtime": 1790260594.5391495,
+    "ast_hash": "16ba3dceb65d13670a16eadb1aac1cb9",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\standorte\\parse.ts": {
+    "mtime": 1790260594.4851205,
+    "ast_hash": "009184e7e1ea2bf6dc8848da481ffadd",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\standorte\\shared.tsx": {
+    "mtime": 1790260625.6540318,
+    "ast_hash": "432b088ce6b777dda85ee0259a87a973",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\ui\\DateTimeField.tsx": {
+    "mtime": 1790260802.6503782,
+    "ast_hash": "7928f479da1942d197f6480c84cbe795",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\ui\\FormSheet.tsx": {
+    "mtime": 1790260802.7049923,
+    "ast_hash": "f6d760499471f77cff48e25fd9563a46",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\components\\ui\\MonthCalendar.tsx": {
+    "mtime": 1790261335.6976364,
+    "ast_hash": "ce4e4df948fbb5a6cfce9e7b008dd2f2",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\contexts\\translation\\StandorteTranslation.ts": {
+    "mtime": 1790260777.350656,
+    "ast_hash": "1ec99a0932492a55df6451599474f4da",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\hooks\\useInventory.ts": {
+    "mtime": 1790260531.856025,
+    "ast_hash": "701c839069b0347762439b324b472ba4",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\hooks\\useLocations.ts": {
+    "mtime": 1790260531.891946,
+    "ast_hash": "d12f813b179becc501470800b7cc1f68",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\lib\\media.ts": {
+    "mtime": 1789934238.939849,
+    "ast_hash": "8156420fab7bef4cff2a6da22021b7a9",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\lib\\mediaKey.test.ts": {
+    "mtime": 1789934238.9408586,
+    "ast_hash": "0e65de6f9026ee7cb2cb03be44f13e35",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\lib\\mediaKey.ts": {
+    "mtime": 1789934238.941859,
+    "ast_hash": "2dc7bf2736966d321e42739a1d27fbe1",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\lib\\wifiQr.test.ts": {
+    "mtime": 1790260515.6720543,
+    "ast_hash": "9ae776d0aa28f2dc340df9782b549647",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\lib\\wifiQr.ts": {
+    "mtime": 1790260497.6033754,
+    "ast_hash": "eafbed6e9df13bc286782119fbc965b4",
+    "semantic_hash": ""
+  },
+  "C:\\GitHub\\makers-ev\\myverein\\myverein-mobile\\src\\screens\\StandorteScreen.tsx": {
+    "mtime": 1790260782.719719,
+    "ast_hash": "834cd724e2b969c599ad20b65e822486",
+    "semantic_hash": ""
   }
 }
