@@ -189,8 +189,7 @@ export function WifiForm({
       title={t(network ? 'standorte.wifi.edit' : 'standorte.wifi.add')}
       onClose={onClose}
       onSubmit={handleSubmit}
-      // Backend requires a non-empty password.
-      submitDisabled={!label.trim() || !ssid.trim() || !password}
+      submitDisabled={!label.trim() || !ssid.trim()}
       saving={saving}
       onDelete={network ? handleDelete : undefined}
       error={error}
