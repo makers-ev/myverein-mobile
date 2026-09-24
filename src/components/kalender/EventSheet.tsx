@@ -59,13 +59,26 @@ export function RsvpControl({ state, pending, onRsvp, onCancel }: RsvpProps) {
   );
 }
 
-export function ColorChip({ label, color, active, onPress }: { label: string; color?: string; active: boolean; onPress: () => void }) {
+export function ColorChip({
+  label,
+  color,
+  active,
+  onPress,
+  disabled,
+}: {
+  label: string;
+  color?: string;
+  active: boolean;
+  onPress: () => void;
+  disabled?: boolean;
+}) {
   return (
     <TouchableOpacity
       onPress={onPress}
+      disabled={disabled}
       className={`flex-row items-center px-3 py-1.5 rounded-full border ${
         active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'border-border dark:border-border-dark'
-      }`}
+      } ${disabled ? 'opacity-50' : ''}`}
       style={{ gap: 6 }}
     >
       {color ? (
@@ -157,8 +170,8 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
   const capacityNum = trimmedCapacity ? Number(trimmedCapacity) : null;
 
   const validate = (): string | null => {
-    if (!calendarId || !title.trim() || !startsAt || !endsAt) return t('termine.form.required');
-    if (endsAt.getTime() <= startsAt.getTime()) return t('termine.form.end-before-start');
+    if (!calendarId || !title.trim() || !startsAt) return t('termine.form.required');
+    if (endsAt && endsAt.getTime() <= startsAt.getTime()) return t('termine.form.end-before-start');
     if (capacityNum !== null && (!Number.isInteger(capacityNum) || capacityNum <= 0)) return t('termine.form.capacity-invalid');
     return null;
   };
@@ -178,7 +191,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
           title: title.trim(),
           description: description.trim() || null,
           startsAt: startsAt!.toISOString(),
-          endsAt: endsAt!.toISOString(),
+          endsAt: endsAt ? endsAt.toISOString() : null,
           category: category.trim() || null,
           capacity: capacityNum,
         },
@@ -330,7 +343,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
             />
           </Field>
           <Field label={t('termine.form.end')}>
-            <DateTimeField value={endsAt} onChange={setEndsAt} />
+            <DateTimeField value={endsAt} onChange={setEndsAt} clearable />
           </Field>
           <Field label={t('termine.form.description')}>
             <TextInput

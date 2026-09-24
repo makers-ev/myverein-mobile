@@ -3,6 +3,17 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import type { ClubMember } from './useClubMembers';
 
+export type ClubPermission =
+  | 'members:write'
+  | 'members:read_sensitive'
+  | 'roles:write'
+  | 'departments:write'
+  | 'club_info:write'
+  | 'calendars:write'
+  | 'meetings:write'
+  | 'locations:write'
+  | 'inventory:write';
+
 /** Fetch-shaped hook for `GET /club-members/me?clubId=`, always includes sensitive fields (it's the caller's own row). */
 export function useOwnMembership(clubId: string | null) {
   const [membership, setMembership] = useState<ClubMember | null>(null);
@@ -27,7 +38,7 @@ export function useOwnMembership(clubId: string | null) {
     void refetch();
   }, [refetch]);
 
-  const can = useCallback((permission: string) => !!membership?.permissions?.includes(permission), [membership]);
+  const can = useCallback((permission: ClubPermission) => !!membership?.permissions?.includes(permission), [membership]);
 
   return { membership, loading, refetch, can };
 }

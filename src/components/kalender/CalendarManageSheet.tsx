@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ChevronDown, ChevronRight, X } from 'lucide-react-native';
 
@@ -110,17 +110,19 @@ function DepartmentPicker({
   departments,
   value,
   onChange,
+  disabled,
 }: {
   departments: Department[];
   value: string | null;
   onChange: (id: string | null) => void;
+  disabled?: boolean;
 }) {
   const { t } = useLanguage();
   return (
     <View className="flex-row flex-wrap" style={{ gap: 6 }}>
-      <ColorChip label={t('kalender.manage.no-department')} active={value === null} onPress={() => onChange(null)} />
+      <ColorChip label={t('kalender.manage.no-department')} active={value === null} onPress={() => onChange(null)} disabled={disabled} />
       {departments.map((d) => (
-        <ColorChip key={d.id} label={d.name} active={value === d.id} onPress={() => onChange(d.id)} />
+        <ColorChip key={d.id} label={d.name} active={value === d.id} onPress={() => onChange(d.id)} disabled={disabled} />
       ))}
     </View>
   );
@@ -152,15 +154,22 @@ function CalendarCard({
   const [name, setName] = useState(calendar.name);
   const [grants, setGrants] = useState<CalendarVisibility[] | null>(null);
   const [busy, setBusy] = useState(false);
+  // Ref guard: state alone lets a fast double tap through before re-render.
+  const busyRef = useRef(false);
 
   useEffect(() => {
     if (!expanded || grants) return;
     listVisibility(calendar.id)
       .then(setGrants)
-      .catch((err) => onError(err instanceof ApiError ? err.message : t('alert.general-error-description')));
+      .catch((err) => {
+        setGrants([]);
+        onError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      });
   }, [expanded, grants, calendar.id, listVisibility, onError, t]);
 
   const run = async (action: () => Promise<void>) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     onError(null);
     try {
@@ -168,6 +177,7 @@ function CalendarCard({
     } catch (err) {
       onError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   };
@@ -231,6 +241,7 @@ function CalendarCard({
                 departments={departments}
                 value={calendar.departmentId}
                 onChange={(id) => void run(() => updateCalendar(calendar.id, { departmentId: id }))}
+                disabled={busy}
               />
             </Field>
           ) : null}
@@ -273,6 +284,7 @@ function CalendarCard({
                       key={r}
                       label={`+ ${t(`verein.role.${r}`)}`}
                       active={false}
+                      disabled={busy}
                       onPress={() =>
                         void run(async () => {
                           const created = await addVisibility(calendar.id, { roleType: r });
@@ -296,6 +308,7 @@ function CalendarCard({
                             key={d.id}
                             label={`+ ${d.name}`}
                             active={false}
+                            disabled={busy}
                             onPress={() =>
                               void run(async () => {
                                 const created = await addVisibility(calendar.id, { departmentId: d.id });

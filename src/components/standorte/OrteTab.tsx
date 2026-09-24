@@ -36,7 +36,7 @@ function LocationCard({ location, onPress }: { location: Location; onPress: () =
       )}
       <View className="p-4">
         <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{location.name}</Text>
-        {location.address && (
+        {!!location.address && (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm" numberOfLines={1}>
             {location.address}
           </Text>
@@ -191,7 +191,7 @@ function LocationDetail({
   if (!location) return null;
 
   const muted = themeColors.mutedForeground;
-  const hasInfo = location.openingHours || location.contactPerson || location.accessNote;
+  const hasInfo = !!(location.openingHours || location.contactPerson || location.accessNote);
 
   return (
     <>
@@ -210,7 +210,7 @@ function LocationDetail({
         {canWrite && <IconButton kind="edit" label={t('standorte.edit')} onPress={() => setSheet({ kind: 'location' })} />}
       </View>
 
-      {location.address && (
+      {!!location.address && (
         <SectionCard title={t('standorte.detail.address')}>
           <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">{location.address}</Text>
           <TouchableOpacity
@@ -228,13 +228,13 @@ function LocationDetail({
 
       {hasInfo && (
         <SectionCard title={t('standorte.detail.info')}>
-          {location.openingHours && (
+          {!!location.openingHours && (
             <InfoLine icon={<Clock size={16} color={muted} />} title={t('standorte.detail.opening-hours')} text={location.openingHours} />
           )}
-          {location.contactPerson && (
+          {!!location.contactPerson && (
             <InfoLine icon={<User size={16} color={muted} />} title={t('standorte.detail.contact')} text={location.contactPerson} />
           )}
-          {location.accessNote && (
+          {!!location.accessNote && (
             <InfoLine icon={<Info size={16} color={muted} />} title={t('standorte.detail.access-note')} text={location.accessNote} />
           )}
         </SectionCard>

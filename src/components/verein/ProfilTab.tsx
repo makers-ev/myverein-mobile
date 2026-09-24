@@ -74,7 +74,7 @@ export default function ProfilTab({ clubId }: Props) {
       <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
         <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('profil.section.personal')}</Text>
         <Field label={t('profil.birth-date')}>
-          <DateTimeField mode="date" value={birthDate} onChange={setBirthDate} clearable />
+          <DateTimeField mode="date" value={birthDate} onChange={setBirthDate} />
         </Field>
       </View>
 

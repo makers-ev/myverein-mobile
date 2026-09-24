@@ -20,6 +20,7 @@ import {
   type InventoryLoan,
   type DamageReport,
 } from '@/hooks/useInventory';
+import { fromDateString } from '@/components/ui/DateTimeField';
 import InventoryItemForm from './InventoryItemForm';
 import {
   ChipPicker,
@@ -71,7 +72,7 @@ function ItemCard({ item, locationName, onPress }: { item: InventoryItem; locati
           <Text className="flex-1 text-foreground dark:text-foreground-dark font-bold text-sm">{item.name}</Text>
           <ConditionChip condition={item.condition} />
         </View>
-        {(item.category || locationName) && (
+        {!!(item.category || locationName) && (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1" numberOfLines={1}>
             {[item.category, locationName].filter(Boolean).join(' · ')}
           </Text>
@@ -157,12 +158,12 @@ function LoanRow({ loan, isLast }: { loan: InventoryLoan; isLast: boolean }) {
         </Text>
         <StatusChip label={t(`material.loan-status.${loan.status}`)} tone={LOAN_TONES[loan.status] ?? 'muted'} />
       </View>
-      {loan.dueAt && (
+      {!!loan.dueAt && (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
           {t('material.loans.due-at')}: {new Date(loan.dueAt).toLocaleDateString()}
         </Text>
       )}
-      {loan.returnedAt && (
+      {!!loan.returnedAt && (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
           {t('material.loans.returned-at')}: {new Date(loan.returnedAt).toLocaleDateString()}
         </Text>
@@ -387,7 +388,8 @@ function MaterialDetail({
   const hasOpenLoan = loans.some((l) => !l.returnedAt);
   const isOverdue = loans.some((l) => l.status === 'ueberfaellig');
   const ownOpenLoan = membershipId ? loans.find((l) => !l.returnedAt && l.memberId === membershipId) : undefined;
-  const formatDate = (value: string) => new Date(value).toLocaleDateString(language);
+  // Date-only columns: parse as local day, not UTC midnight.
+  const formatDate = (value: string) => fromDateString(value)?.toLocaleDateString(language) ?? '';
 
   const infoRows: [string, string][] = [];
   if (item.acquisitionValueCents !== null) {
@@ -416,11 +418,11 @@ function MaterialDetail({
           </View>
           <View className="flex-1">
             <Text className="text-xl font-black text-foreground dark:text-foreground-dark">{item.name}</Text>
-            {item.category && <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{item.category}</Text>}
+            {!!item.category && <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{item.category}</Text>}
           </View>
           {canWrite && <IconButton kind="edit" label={t('material.edit')} onPress={() => setEditing(true)} />}
         </View>
-        {locationName && (
+        {!!locationName && (
           <View className="flex-row items-center mt-3" style={{ gap: 4 }}>
             <MapPin size={12} color={themeColors.mutedForeground} />
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{locationName}</Text>

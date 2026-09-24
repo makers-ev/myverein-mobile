@@ -15,6 +15,8 @@ const ComponentTranslation: Translation = {
     'ui.time': 'Time',
     'ui.pick-date': 'Pick a date',
     'ui.clear': 'Clear',
+    'ui.prev-month': 'Previous month',
+    'ui.next-month': 'Next month',
   },
   de: {
     'confirmation-input-modal.input-placeholder': 'Bestätige deine Aktion...',
@@ -26,6 +28,8 @@ const ComponentTranslation: Translation = {
     'ui.time': 'Uhrzeit',
     'ui.pick-date': 'Datum wählen',
     'ui.clear': 'Leeren',
+    'ui.prev-month': 'Vorheriger Monat',
+    'ui.next-month': 'Nächster Monat',
   },
   fr: {
     'confirmation-input-modal.input-placeholder': 'Confirmez votre action...',
