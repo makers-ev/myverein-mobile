@@ -12,6 +12,8 @@ interface Props {
   onClose: () => void;
   onSubmit?: () => void;
   submitLabel?: string;
+  /** Footer close button label, defaults to ui.cancel. */
+  cancelLabel?: string;
   submitDisabled?: boolean;
   saving?: boolean;
   onDelete?: () => void;
@@ -26,6 +28,7 @@ export default function FormSheet({
   onClose,
   onSubmit,
   submitLabel,
+  cancelLabel,
   submitDisabled,
   saving,
   onDelete,
@@ -59,7 +62,7 @@ export default function FormSheet({
 
           <View className="flex-row px-5 pb-4 pt-2" style={{ gap: 10 }}>
             <TouchableOpacity onPress={onClose} className="flex-1 border border-border dark:border-border-dark rounded-xl py-3 items-center">
-              <Text className="text-foreground dark:text-foreground-dark font-semibold">{t('ui.cancel')}</Text>
+              <Text className="text-foreground dark:text-foreground-dark font-semibold">{cancelLabel ?? t('ui.cancel')}</Text>
             </TouchableOpacity>
             {onSubmit ? (
               <TouchableOpacity

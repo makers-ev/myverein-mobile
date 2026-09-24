@@ -66,6 +66,18 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <Pressable className="flex-1 justify-center px-4" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }} onPress={() => setOpen(false)}>
           <Pressable className="bg-background dark:bg-background-dark rounded-3xl p-3" onPress={() => undefined}>
+            {mode === 'date' ? (
+              // Year jumps so far-away dates (e.g. birth dates) don't need dozens of month taps.
+              <View className="flex-row items-center justify-center mb-2" style={{ gap: 6 }}>
+                {[-10, -1].map((d) => (
+                  <Chip key={d} label={String(d)} active={false} onPress={() => setMonth(new Date(month.getFullYear() + d, month.getMonth(), 1))} />
+                ))}
+                <Text className="text-foreground dark:text-foreground-dark font-bold text-base px-2">{month.getFullYear()}</Text>
+                {[1, 10].map((d) => (
+                  <Chip key={d} label={`+${d}`} active={false} onPress={() => setMonth(new Date(month.getFullYear() + d, month.getMonth(), 1))} />
+                ))}
+              </View>
+            ) : null}
             <MonthCalendar
               month={month}
               onMonthChange={setMonth}

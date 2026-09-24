@@ -4,6 +4,7 @@ import { Check, X } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
+import DateTimeField from '@/components/ui/DateTimeField';
 import { ApiError } from '@/lib/api';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { useClubMembers } from '@/hooks/useClubMembers';
@@ -59,7 +60,7 @@ function MeetingList({ clubId, onSelect }: { clubId: string; onSelect: (id: stri
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState('');
   const [type, setType] = useState('');
-  const [scheduledAt, setScheduledAt] = useState('');
+  const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -68,11 +69,10 @@ function MeetingList({ clubId, onSelect }: { clubId: string; onSelect: (id: stri
     setSaving(true);
     setError(null);
     try {
-      const iso = scheduledAt.trim() ? new Date(scheduledAt.trim().replace(' ', 'T')).toISOString() : undefined;
-      await createMeeting({ title: title.trim(), type: type.trim(), scheduledAt: iso });
+      await createMeeting({ title: title.trim(), type: type.trim(), scheduledAt: scheduledAt?.toISOString() });
       setTitle('');
       setType('');
-      setScheduledAt('');
+      setScheduledAt(null);
       setShowCreate(false);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
@@ -121,13 +121,9 @@ function MeetingList({ clubId, onSelect }: { clubId: string; onSelect: (id: stri
           <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.scheduled-at')}
           </Text>
-          <TextInput
-            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
-            placeholder={t('treffen.scheduled-at.placeholder')}
-            placeholderTextColor={themeColors.mutedForeground}
-            value={scheduledAt}
-            onChangeText={setScheduledAt}
-          />
+          <View className="mb-3">
+            <DateTimeField value={scheduledAt} onChange={setScheduledAt} placeholder={t('treffen.scheduled-at.placeholder')} clearable />
+          </View>
           {error ? <Text className="text-destructive text-sm mb-3">{error}</Text> : null}
           <TouchableOpacity
             className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${saving ? 'opacity-70' : ''}`}
@@ -251,7 +247,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
   const [rsvpError, setRsvpError] = useState<string | null>(null);
   const [rsvpSaving, setRsvpSaving] = useState(false);
 
-  const [candidateInput, setCandidateInput] = useState('');
+  const [candidateInput, setCandidateInput] = useState<Date | null>(null);
   const [candidates, setCandidates] = useState<string[]>([]);
   const [overlapResults, setOverlapResults] = useState<OverlapCandidate[] | null>(null);
   const [overlapChecking, setOverlapChecking] = useState(false);
@@ -288,10 +284,10 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
   };
 
   const handleAddCandidate = () => {
-    if (!candidateInput.trim()) return;
-    const iso = new Date(candidateInput.trim().replace(' ', 'T')).toISOString();
+    if (!candidateInput) return;
+    const iso = candidateInput.toISOString();
     setCandidates((prev) => [...prev, iso]);
-    setCandidateInput('');
+    setCandidateInput(null);
     setOverlapResults(null);
   };
 
@@ -415,13 +411,9 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
           ))
         )}
         <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
-          <TextInput
-            className="flex-1 bg-muted dark:bg-muted-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
-            placeholder={t('treffen.overlap.candidate-placeholder')}
-            placeholderTextColor={themeColors.mutedForeground}
-            value={candidateInput}
-            onChangeText={setCandidateInput}
-          />
+          <View className="flex-1">
+            <DateTimeField value={candidateInput} onChange={setCandidateInput} placeholder={t('treffen.overlap.candidate-placeholder')} />
+          </View>
           <TouchableOpacity className="bg-muted dark:bg-muted-dark rounded-lg py-2.5 px-3" onPress={handleAddCandidate}>
             <Text className="text-foreground dark:text-foreground-dark text-xs font-bold">{t('treffen.overlap.add-candidate')}</Text>
           </TouchableOpacity>

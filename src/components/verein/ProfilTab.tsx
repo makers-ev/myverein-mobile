@@ -5,6 +5,8 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
+import DateTimeField, { fromDateString, toDateString } from '@/components/ui/DateTimeField';
+import { Field, inputClassName } from '@/components/ui/FormSheet';
 
 interface Props {
   clubId: string;
@@ -21,7 +23,7 @@ export default function ProfilTab({ clubId }: Props) {
   const themeColors = useThemeColors();
   const { membership, loading, refetch } = useOwnMembership(clubId);
 
-  const [birthDate, setBirthDate] = useState('');
+  const [birthDate, setBirthDate] = useState<Date | null>(null);
   const [emergencyContactName, setEmergencyContactName] = useState('');
   const [emergencyContactPhone, setEmergencyContactPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export default function ProfilTab({ clubId }: Props) {
 
   useEffect(() => {
     if (!membership) return;
-    setBirthDate(membership.birthDate ?? '');
+    setBirthDate(fromDateString(membership.birthDate));
     setEmergencyContactName(membership.emergencyContactName ?? '');
     setEmergencyContactPhone(membership.emergencyContactPhone ?? '');
   }, [membership]);
@@ -45,7 +47,7 @@ export default function ProfilTab({ clubId }: Props) {
         body: {
           // Omitted, not sent as "" -- the backend's Zod schema validates
           // birthDate as an actual date string when present at all.
-          ...(birthDate.trim() ? { birthDate: birthDate.trim() } : {}),
+          ...(birthDate ? { birthDate: toDateString(birthDate) } : {}),
           ...(emergencyContactName.trim() ? { emergencyContactName: emergencyContactName.trim() } : {}),
           ...(emergencyContactPhone.trim() ? { emergencyContactPhone: emergencyContactPhone.trim() } : {}),
         },
@@ -68,44 +70,40 @@ export default function ProfilTab({ clubId }: Props) {
   }
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4">
-      <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
-        {t('profil.birth-date')}
-      </Text>
-      <TextInput
-        className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-4"
-        placeholder="YYYY-MM-DD"
-        placeholderTextColor={themeColors.mutedForeground}
-        value={birthDate}
-        onChangeText={setBirthDate}
-      />
+    <View>
+      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('profil.section.personal')}</Text>
+        <Field label={t('profil.birth-date')}>
+          <DateTimeField mode="date" value={birthDate} onChange={setBirthDate} clearable />
+        </Field>
+      </View>
 
-      <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
-        {t('profil.emergency-contact-name')}
-      </Text>
-      <TextInput
-        className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-4"
-        placeholderTextColor={themeColors.mutedForeground}
-        value={emergencyContactName}
-        onChangeText={setEmergencyContactName}
-      />
-
-      <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
-        {t('profil.emergency-contact-phone')}
-      </Text>
-      <TextInput
-        className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-4"
-        placeholderTextColor={themeColors.mutedForeground}
-        keyboardType="phone-pad"
-        value={emergencyContactPhone}
-        onChangeText={setEmergencyContactPhone}
-      />
+      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('profil.section.emergency')}</Text>
+        <Field label={t('profil.emergency-contact-name')}>
+          <TextInput
+            className={inputClassName}
+            placeholderTextColor={themeColors.mutedForeground}
+            value={emergencyContactName}
+            onChangeText={setEmergencyContactName}
+          />
+        </Field>
+        <Field label={t('profil.emergency-contact-phone')}>
+          <TextInput
+            className={inputClassName}
+            placeholderTextColor={themeColors.mutedForeground}
+            keyboardType="phone-pad"
+            value={emergencyContactPhone}
+            onChangeText={setEmergencyContactPhone}
+          />
+        </Field>
+      </View>
 
       {error ? <Text className="text-destructive text-sm mb-3">{error}</Text> : null}
       {saved && !error ? <Text className="text-success dark:text-success-dark text-sm mb-3">{t('profil.saved')}</Text> : null}
 
       <TouchableOpacity
-        className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${isSaving ? 'opacity-70' : ''}`}
+        className={`bg-primary dark:bg-primary-dark rounded-xl py-3 items-center ${isSaving ? 'opacity-70' : ''}`}
         onPress={() => void handleSave()}
         disabled={isSaving}
       >

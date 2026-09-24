@@ -8,7 +8,7 @@ export interface CalendarEvent {
   title: string;
   description: string | null;
   startsAt: string;
-  endsAt: string;
+  endsAt: string | null;
   category: string | null;
   capacity: number | null;
   createdBy: string;
@@ -73,4 +73,45 @@ export function useEventRsvp(clubId: string | null, onChanged?: () => void) {
   );
 
   return { rsvp, cancelRsvp };
+}
+
+export interface EventInput {
+  calendarId: string;
+  title: string;
+  description: string | null;
+  startsAt: string;
+  endsAt: string;
+  category: string | null;
+  capacity: number | null;
+}
+
+/** Write actions for events (`calendars:write`), `onChanged` refetches the list. */
+export function useEventMutations(clubId: string | null, onChanged?: () => void) {
+  const createEvent = useCallback(
+    async (input: EventInput) => {
+      // POST schema has no nullable fields -- omit empty optionals instead of sending null.
+      const body = Object.fromEntries(Object.entries(input).filter(([, v]) => v !== null));
+      await apiFetch(`/events?clubId=${clubId}`, { method: 'POST', body });
+      onChanged?.();
+    },
+    [clubId, onChanged],
+  );
+
+  const updateEvent = useCallback(
+    async (id: string, input: EventInput) => {
+      await apiFetch(`/events/${id}?clubId=${clubId}`, { method: 'PATCH', body: input });
+      onChanged?.();
+    },
+    [clubId, onChanged],
+  );
+
+  const deleteEvent = useCallback(
+    async (id: string) => {
+      await apiFetch(`/events/${id}?clubId=${clubId}`, { method: 'DELETE' });
+      onChanged?.();
+    },
+    [clubId, onChanged],
+  );
+
+  return { createEvent, updateEvent, deleteEvent };
 }
