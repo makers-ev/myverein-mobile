@@ -25,6 +25,8 @@ export interface ClubMember {
   birthDate?: string | null;
   emergencyContactName?: string | null;
   emergencyContactPhone?: string | null;
+  // Only on GET /club-members/me: the caller's ClubPermission list.
+  permissions?: string[];
 }
 
 /** Fetch-shaped hook for `GET /club-members?clubId=`, see README.md's "Adding a new API request". */

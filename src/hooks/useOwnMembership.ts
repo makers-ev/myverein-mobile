@@ -27,5 +27,7 @@ export function useOwnMembership(clubId: string | null) {
     void refetch();
   }, [refetch]);
 
-  return { membership, loading, refetch };
+  const can = useCallback((permission: string) => !!membership?.permissions?.includes(permission), [membership]);
+
+  return { membership, loading, refetch, can };
 }
