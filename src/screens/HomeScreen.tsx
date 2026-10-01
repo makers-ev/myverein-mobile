@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Animated, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { CalendarDays, ChevronRight, MapPin, Moon, ShieldCheck, Users, Eye } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useAuth } from '@/auth/AuthProvider';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useThemeColors } from '@/theme/colors';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import Logo from '@/components/Logo';
 import AcceptTosModal from '@/legal/AcceptTosModal';
@@ -12,20 +15,38 @@ import IntroModal from '@/onboarding/IntroModal';
 import { hasSeenIntro, setIntroSeen } from '@/onboarding/introSeenStorage';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
+/** Fades + slides children in on mount; `delay` in ms staggers siblings. */
+function FadeIn({ delay = 0, children }: { delay?: number; children: ReactNode }) {
+  const v = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(v, { toValue: 1, duration: 500, delay, useNativeDriver: true }).start();
+  }, [v, delay]);
+  return (
+    <Animated.View style={{ opacity: v, transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }] }}>
+      {children}
+    </Animated.View>
+  );
+}
+
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
-// Placeholder only -- this is a generic auth template with no real product
-// behind it yet. Kept deliberately generic ("Feature preview", "Explore
-// what's possible") rather than inventing fake product features; a real
-// app replaces this array (and the screen it links to) with its own.
-const FEATURE_CARDS = [
-  { title: 'Feature preview', description: 'A gated screen or action lives here once this template has a real product behind it.' },
-  { title: 'Explore what’s possible', description: 'Another placeholder card -- swap these for your app’s actual features.' },
-];
+const CHIPS = [
+  { key: 'roles', icon: ShieldCheck },
+  { key: 'guest', icon: Eye },
+  { key: 'dark', icon: Moon },
+] as const;
+
+const FEATURES = [
+  { key: 'kalender', icon: CalendarDays, route: 'Kalender' },
+  { key: 'standorte', icon: MapPin, route: 'Standorte' },
+  { key: 'verein', icon: Users, route: 'Verein' },
+] as const;
 
 export default function HomeScreen({ navigation }: Props) {
   const { t } = useLanguage();
   const { isAuthenticated, user } = useAuth();
+  const { requireAuth } = useRequireAuth();
+  const colors = useThemeColors();
 
   const [tosModalVisible, setTosModalVisible] = useState(false);
   const [introModalVisible, setIntroModalVisible] = useState(false);
@@ -62,9 +83,27 @@ export default function HomeScreen({ navigation }: Props) {
 
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 120 }}>
         <View className="p-6">
-          <View className="items-center mb-8">
+          <FadeIn>
+          <View className="items-center mb-8 bg-primary/10 dark:bg-primary-dark/10 rounded-3xl px-6 py-8 overflow-hidden">
+            <View className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-primary/15 dark:bg-primary-dark/15" />
+            <View className="absolute -bottom-12 -left-8 w-32 h-32 rounded-full bg-accent/15 dark:bg-accent-dark/15" />
             <Logo size={56} />
+            <Text className="text-foreground dark:text-foreground-dark text-2xl font-extrabold text-center mt-5">
+              {t('home.hero-title')}
+            </Text>
+            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-center mt-2">
+              {t('home.hero-subtitle')}
+            </Text>
+            <View className="flex-row flex-wrap justify-center mt-5" style={{ gap: 8 }}>
+              {CHIPS.map(({ key, icon: Icon }) => (
+                <View key={key} className="flex-row items-center bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-full px-3 py-1.5" style={{ gap: 6 }}>
+                  <Icon size={13} color={colors.primary} />
+                  <Text className="text-foreground dark:text-foreground-dark text-xs font-medium">{t(`home.chip.${key}`)}</Text>
+                </View>
+              ))}
+            </View>
           </View>
+          </FadeIn>
 
           {isAuthenticated ? (
             <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-6">
@@ -110,18 +149,23 @@ export default function HomeScreen({ navigation }: Props) {
             {t('home.features-heading')}
           </Text>
 
-          {FEATURE_CARDS.map((card) => (
+          {FEATURES.map(({ key, icon: Icon, route }, i) => (
+            <FadeIn key={key} delay={200 + i * 120}>
             <TouchableOpacity
-              key={card.title}
-              className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-3"
-              // Settings isn't gated (see AppNavigator.tsx) -- language,
-              // theme, App Lock, and legal apply to guests too -- so this
-              // just navigates, no requireAuth() wall to get through first.
-              onPress={() => navigation.navigate('Settings')}
+              className="flex-row items-center bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-3"
+              style={{ gap: 14 }}
+              onPress={() => requireAuth(() => navigation.navigate(route))}
             >
-              <Text className="text-foreground dark:text-foreground-dark font-semibold mb-1">{card.title}</Text>
-              <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{card.description}</Text>
+              <View className="bg-primary/10 dark:bg-primary-dark/10 rounded-xl p-3">
+                <Icon size={22} color={colors.primary} />
+              </View>
+              <View className="flex-1">
+                <Text className="text-foreground dark:text-foreground-dark font-semibold">{t(`home.feature.${key}.title`)}</Text>
+                <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mt-0.5">{t(`home.feature.${key}.body`)}</Text>
+              </View>
+              <ChevronRight size={18} color={colors.mutedForeground} />
             </TouchableOpacity>
+            </FadeIn>
           ))}
         </View>
       </ScrollView>
