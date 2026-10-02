@@ -113,3 +113,79 @@ export function useLocationDetail(clubId: string | null, locationId: string | nu
 
   return { location, wifiNetworks, links, loading, refetch };
 }
+
+/** Body for POST/PATCH `/locations`; `null` clears a field on PATCH, create omits empty fields. */
+export interface LocationInput {
+  name: string;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  openingHours?: string | null;
+  photoUrl?: string | null;
+  contactPerson?: string | null;
+  accessNote?: string | null;
+}
+
+export interface WifiNetworkInput {
+  label: string;
+  ssid: string;
+  password: string;
+  visibleToGuests: boolean;
+}
+
+export interface LocationLinkInput {
+  title: string;
+  url: string;
+  visibleToGuests: boolean;
+}
+
+/** Mutation-shaped hook for `locations:write` actions (location, WiFi and link CRUD). */
+export function useLocationMutations(clubId: string | null) {
+  const createLocation = useCallback(
+    (input: LocationInput) => apiFetch<{ data: Location }>(`/locations?clubId=${clubId}`, { method: 'POST', body: input }),
+    [clubId],
+  );
+  const updateLocation = useCallback(
+    (locationId: string, input: LocationInput) =>
+      apiFetch<{ data: Location }>(`/locations/${locationId}?clubId=${clubId}`, { method: 'PATCH', body: input }),
+    [clubId],
+  );
+  const deleteLocation = useCallback(
+    (locationId: string) => apiFetch<void>(`/locations/${locationId}?clubId=${clubId}`, { method: 'DELETE' }),
+    [clubId],
+  );
+
+  const createWifi = useCallback(
+    (locationId: string, input: WifiNetworkInput) =>
+      apiFetch<{ data: WifiNetwork }>(`/locations/${locationId}/wifi?clubId=${clubId}`, { method: 'POST', body: input }),
+    [clubId],
+  );
+  const updateWifi = useCallback(
+    (locationId: string, wifiId: string, input: WifiNetworkInput) =>
+      apiFetch<{ data: WifiNetwork }>(`/locations/${locationId}/wifi/${wifiId}?clubId=${clubId}`, { method: 'PATCH', body: input }),
+    [clubId],
+  );
+  const deleteWifi = useCallback(
+    (locationId: string, wifiId: string) =>
+      apiFetch<void>(`/locations/${locationId}/wifi/${wifiId}?clubId=${clubId}`, { method: 'DELETE' }),
+    [clubId],
+  );
+
+  const createLink = useCallback(
+    (locationId: string, input: LocationLinkInput) =>
+      apiFetch<{ data: LocationLink }>(`/locations/${locationId}/links?clubId=${clubId}`, { method: 'POST', body: input }),
+    [clubId],
+  );
+  const updateLink = useCallback(
+    (locationId: string, linkId: string, input: LocationLinkInput) =>
+      apiFetch<{ data: LocationLink }>(`/locations/${locationId}/links/${linkId}?clubId=${clubId}`, { method: 'PATCH', body: input }),
+    [clubId],
+  );
+  const deleteLink = useCallback(
+    (locationId: string, linkId: string) =>
+      apiFetch<void>(`/locations/${locationId}/links/${linkId}?clubId=${clubId}`, { method: 'DELETE' }),
+    [clubId],
+  );
+
+  return { createLocation, updateLocation, deleteLocation, createWifi, updateWifi, deleteWifi, createLink, updateLink, deleteLink };
+}

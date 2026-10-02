@@ -3,13 +3,33 @@ import type { Language } from './supportedLanguages';
 type Translation = Record<Language, Record<string, string>>;
 
 // fr/es/pt/it/nl/pl/ru/ja/zh-Hans are first-pass AI translation (ADR-009),
-// pending native-speaker review.
+// pending native-speaker review. ui.* keys are DE/EN only, other languages fall back to EN via t().
 const ComponentTranslation: Translation = {
   en: {
     'confirmation-input-modal.input-placeholder': 'Confirm your action...',
+    'ui.save': 'Save',
+    'ui.cancel': 'Cancel',
+    'ui.delete': 'Delete',
+    'ui.done': 'Done',
+    'ui.today': 'Today',
+    'ui.time': 'Time',
+    'ui.pick-date': 'Pick a date',
+    'ui.clear': 'Clear',
+    'ui.prev-month': 'Previous month',
+    'ui.next-month': 'Next month',
   },
   de: {
     'confirmation-input-modal.input-placeholder': 'Bestätige deine Aktion...',
+    'ui.save': 'Speichern',
+    'ui.cancel': 'Abbrechen',
+    'ui.delete': 'Löschen',
+    'ui.done': 'Fertig',
+    'ui.today': 'Heute',
+    'ui.time': 'Uhrzeit',
+    'ui.pick-date': 'Datum wählen',
+    'ui.clear': 'Leeren',
+    'ui.prev-month': 'Vorheriger Monat',
+    'ui.next-month': 'Nächster Monat',
   },
   fr: {
     'confirmation-input-modal.input-placeholder': 'Confirmez votre action...',

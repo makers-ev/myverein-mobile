@@ -12,12 +12,9 @@ import MaterialTab from '@/components/standorte/MaterialTab';
 type Tab = 'orte' | 'material';
 
 /**
- * Two-tab "Standorte" info center for members: "Orte" is the read-only
- * locations browser (address/hours/contact/WiFi/links -- see `OrteTab.tsx`),
- * "Material" is the self-service inventory tab (browse/borrow/return items,
- * file damage reports -- see `MaterialTab.tsx`). Follows `VereinScreen.tsx`'s
- * tab-pill pattern. Item/location/WiFi/link management is board-only and
- * lives on the separate admin website -- entirely out of scope here.
+ * Two-tab "Standorte" center: "Orte" (locations, WiFi, links -- see `OrteTab.tsx`)
+ * and "Material" (inventory, loans, damage reports -- see `MaterialTab.tsx`).
+ * Management actions inside each tab are gated by `locations:write` / `inventory:write`.
  */
 export default function StandorteScreen() {
   const { t } = useLanguage();

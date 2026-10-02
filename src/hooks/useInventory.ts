@@ -166,3 +166,48 @@ export function useInventoryActions(clubId: string | null, itemId: string | null
 
   return { borrow, returnLoan, reportDamage };
 }
+
+/** Body for POST/PATCH `/inventory-items`; `null` clears a field on PATCH, create omits empty fields. */
+export interface InventoryItemInput {
+  name: string;
+  category?: string | null;
+  condition: string;
+  locationId?: string | null;
+  acquisitionValueCents?: number | null;
+  acquiredAt?: string | null;
+  maintenanceIntervalDays?: number | null;
+  lastMaintenanceAt?: string | null;
+}
+
+export type DamageReportStatus = 'gemeldet' | 'in_bearbeitung' | 'behoben';
+
+/** Mutation-shaped hook for `inventory:write` actions (item CRUD, damage-report triage). */
+export function useInventoryMutations(clubId: string | null) {
+  const createItem = useCallback(
+    (input: InventoryItemInput) =>
+      apiFetch<{ data: InventoryItem }>(`/inventory-items?clubId=${clubId}`, { method: 'POST', body: input }),
+    [clubId],
+  );
+
+  const updateItem = useCallback(
+    (itemId: string, input: InventoryItemInput) =>
+      apiFetch<{ data: InventoryItem }>(`/inventory-items/${itemId}?clubId=${clubId}`, { method: 'PATCH', body: input }),
+    [clubId],
+  );
+
+  const deleteItem = useCallback(
+    (itemId: string) => apiFetch<void>(`/inventory-items/${itemId}?clubId=${clubId}`, { method: 'DELETE' }),
+    [clubId],
+  );
+
+  const setDamageReportStatus = useCallback(
+    (itemId: string, reportId: string, status: DamageReportStatus) =>
+      apiFetch<{ data: DamageReport }>(`/inventory-items/${itemId}/damage-reports/${reportId}?clubId=${clubId}`, {
+        method: 'PATCH',
+        body: { status },
+      }),
+    [clubId],
+  );
+
+  return { createItem, updateItem, deleteItem, setDamageReportStatus };
+}

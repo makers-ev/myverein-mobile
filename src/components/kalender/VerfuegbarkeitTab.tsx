@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
 import { useAvailability } from '@/hooks/useAvailability';
+import DateTimeField, { fromDateString, toDateString } from '@/components/ui/DateTimeField';
 
 interface Props {
   clubId: string;
@@ -27,7 +28,7 @@ const DEFAULT_ROW: RowState = { available: false, startTime: '18:00', endTime: '
  * form -- see the exceptions list below for the one-off-date counterpart.
  */
 export default function VerfuegbarkeitTab({ clubId }: Props) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const themeColors = useThemeColors();
   const { slots, exceptions, loading, upsertSlot, deleteSlotForWeekday, createException, deleteException } =
     useAvailability(clubId);
@@ -86,19 +87,19 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
     }
   };
 
-  const [excDate, setExcDate] = useState('');
+  const [excDate, setExcDate] = useState<Date | null>(null);
   const [excAvailable, setExcAvailable] = useState(true);
   const [excNote, setExcNote] = useState('');
   const [excSaving, setExcSaving] = useState(false);
   const [excError, setExcError] = useState<string | null>(null);
 
   const handleAddException = async () => {
-    if (!excDate.trim() || excSaving) return;
+    if (!excDate || excSaving) return;
     setExcSaving(true);
     setExcError(null);
     try {
-      await createException(excDate.trim(), excAvailable, excNote);
-      setExcDate('');
+      await createException(toDateString(excDate), excAvailable, excNote);
+      setExcDate(null);
       setExcNote('');
       setExcAvailable(true);
     } catch (err) {
@@ -158,6 +159,8 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
                     <TextInput
                       className="bg-muted dark:bg-muted-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
                       placeholder="HH:MM"
+                      keyboardType="numbers-and-punctuation"
+                      maxLength={5}
                       placeholderTextColor={themeColors.mutedForeground}
                       value={row.startTime}
                       onChangeText={(value) => setRows((prev) => ({ ...prev, [day]: { ...(prev[day] ?? DEFAULT_ROW), startTime: value } }))}
@@ -171,6 +174,8 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
                     <TextInput
                       className="bg-muted dark:bg-muted-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
                       placeholder="HH:MM"
+                      keyboardType="numbers-and-punctuation"
+                      maxLength={5}
                       placeholderTextColor={themeColors.mutedForeground}
                       value={row.endTime}
                       onChangeText={(value) => setRows((prev) => ({ ...prev, [day]: { ...(prev[day] ?? DEFAULT_ROW), endTime: value } }))}
@@ -198,7 +203,9 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
             >
               <View className="flex-1">
                 <View className="flex-row items-center flex-wrap" style={{ gap: 8 }}>
-                  <Text className="text-foreground dark:text-foreground-dark text-sm font-medium">{exc.date}</Text>
+                  <Text className="text-foreground dark:text-foreground-dark text-sm font-medium">
+                    {fromDateString(exc.date)?.toLocaleDateString(language, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                  </Text>
                   <View className={`px-2 py-0.5 rounded-full ${exc.isAvailable ? 'bg-success/10' : 'bg-destructive/10'}`}>
                     <Text className={`text-xs font-semibold ${exc.isAvailable ? 'text-success dark:text-success-dark' : 'text-destructive'}`}>
                       {t(exc.isAvailable ? 'verfuegbarkeit.exceptions.available' : 'verfuegbarkeit.exceptions.unavailable')}
@@ -220,13 +227,9 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
           <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('verfuegbarkeit.exceptions.date')}
           </Text>
-          <TextInput
-            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={themeColors.mutedForeground}
-            value={excDate}
-            onChangeText={setExcDate}
-          />
+          <View className="mb-3">
+            <DateTimeField mode="date" value={excDate} onChange={setExcDate} />
+          </View>
 
           <View className="flex-row items-center justify-between mb-3">
             <Text className="text-sm text-foreground dark:text-foreground-dark">
@@ -254,9 +257,9 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
           {excError ? <Text className="text-destructive text-sm mb-3">{excError}</Text> : null}
 
           <TouchableOpacity
-            className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${excSaving ? 'opacity-70' : ''}`}
+            className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${excSaving || !excDate ? 'opacity-70' : ''}`}
             onPress={() => void handleAddException()}
-            disabled={excSaving}
+            disabled={excSaving || !excDate}
           >
             {excSaving ? (
               <ActivityIndicator color={themeColors.primaryForeground} />

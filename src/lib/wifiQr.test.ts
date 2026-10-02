@@ -27,7 +27,11 @@ describe('buildWifiQrPayload', () => {
     );
   });
 
-  it('leaves an empty password escaped consistently', () => {
-    expect(buildWifiQrPayload('Open', '')).toBe('WIFI:S:Open;T:WPA;P:;;');
+  it('escapes colons', () => {
+    expect(buildWifiQrPayload('a:b', 'c:d')).toBe('WIFI:S:a\\:b;T:WPA;P:c\\:d;;');
+  });
+
+  it('emits an open network without P: when the password is empty', () => {
+    expect(buildWifiQrPayload('Open;Net', '')).toBe('WIFI:S:Open\\;Net;T:nopass;;');
   });
 });
