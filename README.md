@@ -322,8 +322,8 @@ None of the above needs `expo-secure-store` — language, theme, and the two tit
 
 | Screen | Access | Purpose |
 |---|---|---|
-| `Home` | public | Initial route for guests. Placeholder feature cards and a sign-up/login CTA; still reachable by signed-in users too (shortcut to Settings) |
-| `Dashboard` | public | Initial route for already-authenticated users on launch/relaunch — placeholder landing screen, replace with your app's real authenticated home |
+| `Home` | public | Initial route for guests. Compact header plus a Bento grid of Kalender/Standorte/Verein tiles (gated via `requireAuth`) and a sign-up/login CTA tile; signed-in users see the shared signed-in-as card |
+| `Dashboard` | public | Initial route for already-authenticated users. Bento home: next upcoming Termin, plus Vorstand shortcuts shown by `club-members/me` permissions |
 | `Verein` | gated (`RequireAuth`) | Tabs: Vereinsinfo (board/departments/documents), Mitglieder (list), Profil (self-service Selbstauskunft: birth date via `DateTimeField`, emergency contact). Shows a "join a club" prompt if the caller has no membership yet |
 | `JoinClub` | gated (`RequireAuth`) | Join-by-slug form, reachable from `Verein`'s no-club state |
 | `Kalender` | gated (`RequireAuth`) | Tabs: Termine (`MonthCalendar` month grid with department-colored dots + agenda of the selected day, RSVP/waitlist; with `calendars:write`: create/edit/delete events in `EventSheet` and manage calendars + visibility grants in `CalendarManageSheet`), Verfügbarkeit (recurring weekly slots + one-off exceptions with date picker, self-service), Treffen (meeting list + detail: agenda/minutes, zu-/absage, Terminfindung overlap check with date-time pickers, attendance, resolutions) |
