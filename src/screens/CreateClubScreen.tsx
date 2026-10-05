@@ -65,14 +65,32 @@ function formatSize(bytes: number): string {
   return bytes >= 1024 * 1024 ? `${(bytes / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
-function errorText(err: unknown, t: Translate, context: 'save' | 'submit'): string {
+function errorText(err: unknown, t: Translate, context: 'create' | 'patch' | 'submit'): string {
   if (err instanceof ApiError) {
-    if (context === 'save' && err.status === 409) return t('create-club.error.open-exists');
+    if (context === 'create' && err.status === 409) return t('create-club.error.open-exists');
+    if (context === 'patch' && err.status === 409) return t('create-club.error.not-editable');
     if (context === 'submit' && err.status === 409) return t('create-club.error.club-exists');
     if (context === 'submit' && err.status === 422) return t('create-club.error.no-document');
     return err.message;
   }
   return t('alert.general-error-description');
+}
+
+function uploadErrorText(status: number | undefined, message: string, t: Translate): string {
+  if (status === 413) return t('create-club.docs.error.size');
+  if (status === 415) return t('create-club.docs.error.type');
+  if (status === 400) return t('create-club.docs.error.upload');
+  return message || t('create-club.docs.error.upload');
+}
+
+// The picker's `mimeType` can be missing: derive it from the extension
+// instead of assuming JPEG. Unknown extensions yield null (rejected).
+function guessMime(name: string): string | null {
+  const ext = name.split('?')[0].split('.').pop()?.toLowerCase();
+  if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
+  if (ext === 'png') return 'image/png';
+  if (ext === 'heic' || ext === 'heif') return 'image/heic';
+  return null;
 }
 
 function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
@@ -153,9 +171,11 @@ interface WizardProps {
   removeDocument: ReturnType<typeof useClubRegistration>['removeDocument'];
   submit: ReturnType<typeof useClubRegistration>['submit'];
   onDone: () => void;
+  /** Message that must survive this wizard unmounting (e.g. after a 409 reload). */
+  onNotice: (message: string) => void;
 }
 
-function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submit, onDone }: WizardProps) {
+function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submit, onDone, onNotice }: WizardProps) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -192,6 +212,14 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
     claimedRole: role,
   });
 
+  // 409s make the hook reload the registration, which may swap this wizard
+  // for the status view -- keep the message in the parent too.
+  const handleSaveError = (err: unknown) => {
+    const message = errorText(err, t, registration ? 'patch' : 'create');
+    setError(message);
+    if (err instanceof ApiError && err.status === 409) onNotice(message);
+  };
+
   const handleSaveData = async () => {
     if (!dataValid || busy) return;
     setError(null);
@@ -200,7 +228,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
       await saveDraft(buildInput());
       setStep(2);
     } catch (err) {
-      setError(errorText(err, t, 'save'));
+      handleSaveError(err);
     } finally {
       setBusy(false);
     }
@@ -221,9 +249,9 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
     if (result.canceled || !result.assets[0]) return;
     const asset = result.assets[0];
-    const name = asset.fileName ?? 'nachweis.jpg';
-    const type = asset.mimeType ?? 'image/jpeg';
-    if (!ALLOWED_MIME.includes(type)) {
+    const name = asset.fileName ?? asset.uri.split('/').pop() ?? 'nachweis';
+    const type = asset.mimeType ?? guessMime(name) ?? guessMime(asset.uri);
+    if (!type || !ALLOWED_MIME.includes(type)) {
       setError(t('create-club.docs.error.type'));
       return;
     }
@@ -238,7 +266,11 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
     const outcome = await uploadDocument({ uri: asset.uri, name, type }, kind);
     setUploads((prev) =>
       outcome.error
-        ? prev.map((u) => (u.localId === localId ? { ...u, status: 'error', error: outcome.error } : u))
+        ? prev.map((u) =>
+            u.localId === localId
+              ? { ...u, status: 'error', error: uploadErrorText(outcome.status, outcome.error ?? '', t) }
+              : u,
+          )
         : prev.filter((u) => u.localId !== localId),
     );
   };
@@ -261,11 +293,18 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
     setBusy(true);
     try {
       // Role may have changed on the summary step -- persist before submit.
-      await saveDraft(buildInput());
-      await submit();
-      onDone();
-    } catch (err) {
-      setError(errorText(err, t, 'submit'));
+      try {
+        await saveDraft(buildInput());
+      } catch (err) {
+        handleSaveError(err);
+        return;
+      }
+      try {
+        await submit();
+        onDone();
+      } catch (err) {
+        setError(errorText(err, t, 'submit'));
+      }
     } finally {
       setBusy(false);
     }
@@ -469,7 +508,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
                 }}
                 disabled={documents.length === 0 || uploading}
               />
-              <SecondaryButton label={t('create-club.back')} onPress={() => setStep(1)} />
+              <SecondaryButton label={t('create-club.back')} onPress={() => setStep(1)} disabled={uploading} />
             </View>
           </>
         )}
@@ -539,8 +578,10 @@ function StatusView({
   onRestart,
   onOpenClub,
   onBack,
+  notice,
 }: {
   registration: ClubRegistration;
+  notice: string | null;
   onEdit: () => void;
   onRestart: () => void;
   onOpenClub: () => void;
@@ -555,6 +596,7 @@ function StatusView({
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 25 }}
     >
       <View className="bg-card dark:bg-card-dark p-6 rounded-2xl">
+        {notice ? <Text className="text-destructive text-sm mb-3 text-center">{notice}</Text> : null}
         <Text className="text-xs font-semibold uppercase text-center mb-1 text-muted-foreground dark:text-muted-foreground-dark">
           {registration.clubName}
         </Text>
@@ -614,6 +656,7 @@ export default function CreateClubScreen({ navigation }: Props) {
   // True while the user chose "edit" (needs_info) or "start a new one"
   // (rejected) from the status view.
   const [editing, setEditing] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   if (loading && !registration) {
     return (
@@ -649,7 +692,14 @@ export default function CreateClubScreen({ navigation }: Props) {
         uploadDocument={uploadDocument}
         removeDocument={removeDocument}
         submit={submit}
-        onDone={() => setEditing(false)}
+        onDone={() => {
+          setNotice(null);
+          setEditing(false);
+        }}
+        onNotice={(message) => {
+          setNotice(message);
+          setEditing(false);
+        }}
       />
     );
   }
@@ -657,8 +707,15 @@ export default function CreateClubScreen({ navigation }: Props) {
   return (
     <StatusView
       registration={registration}
-      onEdit={() => setEditing(true)}
-      onRestart={() => setEditing(true)}
+      notice={notice}
+      onEdit={() => {
+        setNotice(null);
+        setEditing(true);
+      }}
+      onRestart={() => {
+        setNotice(null);
+        setEditing(true);
+      }}
       // VereinScreen reloads its clubs on focus, so just return there.
       onOpenClub={() => navigation.navigate('Verein')}
       onBack={() => navigation.goBack()}

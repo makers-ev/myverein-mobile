@@ -137,7 +137,7 @@ export async function uploadRegistrationDocument<TDocument>(
   registrationId: string,
   kind: string,
   asset: { uri: string; name: string; type: string },
-): Promise<{ document: TDocument } | { error: string }> {
+): Promise<{ document: TDocument } | { error: string; status?: number }> {
   let file: File;
   try {
     file = toUploadableFile(asset.uri, asset.name);
@@ -145,6 +145,9 @@ export async function uploadRegistrationDocument<TDocument>(
     return { error: err instanceof Error ? err.message : 'Failed to prepare file for upload' };
   }
 
+  // Only the content:// copy in the cache is ours to delete -- never the
+  // user's original file:// asset.
+  const isTempCopy = !asset.uri.startsWith('file://');
   try {
     const cookie = await getSessionCookie();
     const result = await file.upload(`${backendUrl}/club-registrations/${registrationId}/documents`, {
@@ -163,12 +166,20 @@ export async function uploadRegistrationDocument<TDocument>(
       parsed = null;
     }
     if (result.status < 200 || result.status >= 300) {
-      return { error: parsed?.error?.message ?? 'Request failed' };
+      return { error: parsed?.error?.message ?? 'Request failed', status: result.status };
     }
     const document = parsed?.data?.document;
     if (!document) return { error: 'Request failed' };
     return { document };
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Request failed' };
+  } finally {
+    if (isTempCopy) {
+      try {
+        file.delete();
+      } catch {
+        // best-effort cache cleanup
+      }
+    }
   }
 }

@@ -80,6 +80,8 @@ export const isEditableStatus = (status: RegistrationStatus) => status === 'draf
 export function useClubRegistration() {
   const { isAuthenticated } = useAuth();
   const [registration, setRegistration] = useState<ClubRegistration | null>(null);
+  // True only until the FIRST load settles. Later refetches (e.g. after a
+  // 409) are silent so the wizard/status view never unmounts for a spinner.
   const [loading, setLoading] = useState(isAuthenticated);
   const [error, setError] = useState(false);
 
@@ -92,6 +94,17 @@ export function useClubRegistration() {
     setRegistration(next);
   }, []);
 
+  // PATCH/submit responses may omit `documents`: keep the local list for the
+  // same registration instead of overwriting it.
+  const merge = useCallback(
+    (incoming: ClubRegistration): ClubRegistration => ({
+      ...incoming,
+      documents:
+        incoming.documents ?? (current.current?.id === incoming.id ? current.current.documents : []),
+    }),
+    [],
+  );
+
   const refetch = useCallback(async () => {
     const id = ++requestId.current;
     if (!isAuthenticated) {
@@ -99,11 +112,10 @@ export function useClubRegistration() {
       setLoading(false);
       return;
     }
-    setLoading(true);
     setError(false);
     try {
       const { data } = await apiFetch<{ data: ClubRegistration[] }>('/club-registrations/mine');
-      if (id === requestId.current) apply(data[0] ?? null);
+      if (id === requestId.current) apply(data[0] ? { ...data[0], documents: data[0].documents ?? [] } : null);
     } catch {
       if (id === requestId.current) setError(true);
     } finally {
@@ -136,41 +148,61 @@ export function useClubRegistration() {
             });
         requestId.current++;
         setLoading(false);
-        apply(data.registration);
-        return data.registration;
+        const next = merge(data.registration);
+        apply(next);
+        return next;
       } catch (err) {
-        if (!editing && err instanceof ApiError && err.status === 409) void refetch();
+        // POST 409: an open registration exists; PATCH 409: it is no longer
+        // editable. Either way the server state is the truth -- reload it.
+        if (err instanceof ApiError && err.status === 409) void refetch();
         throw err;
       }
     },
-    [apply, refetch],
+    [apply, refetch, merge],
   );
 
   const uploadDocument = useCallback(
-    async (asset: { uri: string; name: string; type: string }, kind: DocumentKind): Promise<{ error?: string }> => {
+    async (
+      asset: { uri: string; name: string; type: string },
+      kind: DocumentKind,
+    ): Promise<{ error?: string; status?: number }> => {
       const reg = current.current;
       if (!reg) return { error: 'No registration' };
+      const started = requestId.current;
       const result = await uploadRegistrationDocument<RegistrationDocument>(reg.id, kind, asset);
-      if ('error' in result) return { error: result.error };
-      // Drop the result if the registration was replaced meanwhile.
-      if (current.current?.id === reg.id) {
-        apply({ ...current.current, documents: [...current.current.documents, result.document] });
+      if ('error' in result) {
+        // A timeout/dropped connection may still have stored the file:
+        // reconcile the list with the server to avoid ghost/duplicate rows.
+        void refetch();
+        return { error: result.error, status: result.status };
+      }
+      const cur = current.current;
+      if (cur && cur.id === reg.id && requestId.current === started) {
+        apply({ ...cur, documents: [...(cur.documents ?? []), result.document] });
+      } else {
+        // Registration replaced / a newer request ran meanwhile: don't guess,
+        // take the server's view.
+        void refetch();
       }
       return {};
     },
-    [apply],
+    [apply, refetch],
   );
 
   const removeDocument = useCallback(
     async (docId: string) => {
       const reg = current.current;
       if (!reg) return;
+      const started = requestId.current;
       await apiFetch(`/club-registrations/${reg.id}/documents/${docId}`, { method: 'DELETE' });
-      if (current.current?.id === reg.id) {
-        apply({ ...current.current, documents: current.current.documents.filter((d) => d.id !== docId) });
+      const cur = current.current;
+      if (cur && cur.id === reg.id && requestId.current === started) {
+        apply({ ...cur, documents: (cur.documents ?? []).filter((d) => d.id !== docId) });
+      } else {
+        void refetch();
       }
     },
-    [apply],
+    [apply, refetch],
   );
 
   const submit = useCallback(async (): Promise<ClubRegistration> => {
@@ -182,9 +214,10 @@ export function useClubRegistration() {
     );
     requestId.current++;
     setLoading(false);
-    apply(data.registration);
-    return data.registration;
-  }, [apply]);
+    const next = merge(data.registration);
+    apply(next);
+    return next;
+  }, [apply, merge]);
 
   return { registration, loading, error, refetch, saveDraft, uploadDocument, removeDocument, submit };
 }
