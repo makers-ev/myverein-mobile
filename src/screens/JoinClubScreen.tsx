@@ -17,8 +17,11 @@ const CATEGORIES = ['aktiv', 'passiv', 'foerdernd', 'ehrenmitglied', 'jugend'] a
  * word of mouth) -- there is no public "browse clubs" directory (documented
  * gap, see Concept - MyVerein §7 Future Ideas isn't even the right place,
  * this is a Wave 1 scope call, see the backend's apply-route comment).
- * `POST /club-members/apply` grants membership immediately, no approval
- * queue -- see that route's comment for why.
+ * `POST /club-members/apply` only files an application (201) -- the caller
+ * is NOT a member until the board approves it (`ClubApplications` screen),
+ * so this screen shows a pending state instead of opening the club, and
+ * deliberately loads no membership data. A 409 means "already a member or
+ * an application is already open" and is shown as the same friendly state.
  */
 export default function JoinClubScreen({ navigation }: Props) {
   const { t } = useLanguage();
@@ -27,6 +30,7 @@ export default function JoinClubScreen({ navigation }: Props) {
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>('aktiv');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState<'new' | 'existing' | null>(null);
 
   const handleJoin = async () => {
     if (!slug.trim() || isSubmitting) return;
@@ -34,17 +38,43 @@ export default function JoinClubScreen({ navigation }: Props) {
     setIsSubmitting(true);
     try {
       await apiFetch('/club-members/apply', { method: 'POST', body: { clubSlug: slug.trim(), category } });
-      // `replace`, not `goBack` -- VereinScreen stays mounted across this
-      // push (React Navigation doesn't unmount a screen just because
-      // another one is pushed on top), so its useMyClubs() effect
-      // wouldn't re-run on a plain pop. Replacing it forces a fresh mount.
-      navigation.replace('Verein');
+      setSubmitted('new');
     } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setSubmitted('existing');
+        return;
+      }
       setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (submitted) {
+    return (
+      <KeyboardAwareScreen
+        className="bg-muted dark:bg-muted-dark"
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 25 }}
+      >
+        <View className="bg-card dark:bg-card-dark p-6 rounded-2xl items-center">
+          <Text className="text-xl font-extrabold text-center mb-2 text-foreground dark:text-foreground-dark">
+            {t(submitted === 'new' ? 'join-club.pending.title' : 'join-club.pending.existing-title')}
+          </Text>
+          <Text className="text-sm text-center mb-5 text-muted-foreground dark:text-muted-foreground-dark">
+            {t(submitted === 'new' ? 'join-club.pending.body' : 'join-club.pending.existing-body')}
+          </Text>
+          <TouchableOpacity
+            className="bg-primary dark:bg-primary-dark rounded-lg py-3 px-6 items-center"
+            onPress={() => navigation.goBack()}
+          >
+            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">
+              {t('join-club.pending.back')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScreen>
+    );
+  }
 
   return (
     <KeyboardAwareScreen
