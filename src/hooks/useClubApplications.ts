@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
 
@@ -23,7 +23,12 @@ export function useClubApplications(clubId: string | null) {
   const [loading, setLoading] = useState(!!clubId);
   const [error, setError] = useState(false);
 
+  // Only the newest request may write state: a decision or a clubId change
+  // bumps this so an older in-flight fetch can't resurrect stale data.
+  const requestId = useRef(0);
+
   const refetch = useCallback(async () => {
+    const id = ++requestId.current;
     if (!clubId) {
       setApplications([]);
       setLoading(false);
@@ -33,11 +38,11 @@ export function useClubApplications(clubId: string | null) {
     setError(false);
     try {
       const { data } = await apiFetch<{ data: ClubApplication[] }>(`/club-applications?clubId=${clubId}`);
-      setApplications(data);
+      if (id === requestId.current) setApplications(data);
     } catch {
-      setError(true);
+      if (id === requestId.current) setError(true);
     } finally {
-      setLoading(false);
+      if (id === requestId.current) setLoading(false);
     }
   }, [clubId]);
 
@@ -49,7 +54,10 @@ export function useClubApplications(clubId: string | null) {
     async (id: string, action: 'approve' | 'reject') => {
       if (!clubId) return;
       await apiFetch(`/club-applications/${id}/${action}?clubId=${clubId}`, { method: 'POST' });
-      // The decided application is no longer open -- drop it locally.
+      // The decided application is no longer open -- drop it locally and
+      // invalidate any in-flight fetch that still contains it.
+      requestId.current++;
+      setLoading(false);
       setApplications((prev) => prev.filter((a) => a.id !== id));
     },
     [clubId],

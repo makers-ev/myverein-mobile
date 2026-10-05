@@ -12,11 +12,13 @@ import { useClubApplications, type ClubApplication } from '@/hooks/useClubApplic
 function ApplicationCard({
   application,
   busy,
+  locked,
   onApprove,
   onReject,
 }: {
   application: ClubApplication;
   busy: boolean;
+  locked: boolean;
   onApprove: () => void;
   onReject: () => void;
 }) {
@@ -41,7 +43,7 @@ function ApplicationCard({
       </View>
       {application.birthDate ? (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-2">
-          {t('verein.applications.birth-date')}: {new Date(application.birthDate).toLocaleDateString()}
+          {t('verein.applications.birth-date')}: {new Date(`${application.birthDate.slice(0, 10)}T00:00`).toLocaleDateString()}
         </Text>
       ) : null}
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">
@@ -50,9 +52,9 @@ function ApplicationCard({
 
       <View className="flex-row mt-3" style={{ gap: 8 }}>
         <TouchableOpacity
-          className={`flex-1 bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${busy ? 'opacity-70' : ''}`}
+          className={`flex-1 bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${locked ? 'opacity-70' : ''}`}
           onPress={onApprove}
-          disabled={busy}
+          disabled={locked}
         >
           {busy ? (
             <ActivityIndicator color={themeColors.primaryForeground} />
@@ -63,9 +65,9 @@ function ApplicationCard({
           )}
         </TouchableOpacity>
         <TouchableOpacity
-          className={`flex-1 rounded-lg py-2.5 items-center border border-border dark:border-border-dark ${busy ? 'opacity-70' : ''}`}
+          className={`flex-1 rounded-lg py-2.5 items-center border border-border dark:border-border-dark ${locked ? 'opacity-70' : ''}`}
           onPress={onReject}
-          disabled={busy}
+          disabled={locked}
         >
           <Text className="text-destructive text-sm font-bold">{t('verein.applications.reject')}</Text>
         </TouchableOpacity>
@@ -91,6 +93,7 @@ export default function ClubApplicationsScreen() {
 
   const run = useCallback(
     async (id: string, fn: (id: string) => Promise<void>) => {
+      if (busyId !== null) return;
       setBusyId(id);
       setActionError(null);
       try {
@@ -102,7 +105,7 @@ export default function ClubApplicationsScreen() {
         setBusyId(null);
       }
     },
-    [refetch, t],
+    [busyId, refetch, t],
   );
 
   const confirmReject = (application: ClubApplication) => {
@@ -132,7 +135,7 @@ export default function ClubApplicationsScreen() {
         // Defense in depth: the entry point is hidden without the
         // permission, and the backend would 403 anyway.
         <View className="px-6">
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.applications.error')}</Text>
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.applications.forbidden')}</Text>
         </View>
       ) : (
         <ScrollView
@@ -160,6 +163,7 @@ export default function ClubApplicationsScreen() {
                 key={a.id}
                 application={a}
                 busy={busyId === a.id}
+                locked={busyId !== null}
                 onApprove={() => void run(a.id, approve)}
                 onReject={() => confirmReject(a)}
               />
