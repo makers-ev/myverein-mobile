@@ -125,3 +125,50 @@ export async function downloadMediaUri(clubId: string, key: string): Promise<str
     return null;
   }
 }
+
+/**
+ * Uploads one proof document for a club registration to
+ * `POST /club-registrations/:id/documents` (multipart: `file` + `kind`).
+ * Unlike `uploadMedia` this route is NOT club-scoped (the applicant has no
+ * club yet), so there is no `clubId`; the backend stores the file privately
+ * and returns the document metadata (`{ data: { document } }`).
+ */
+export async function uploadRegistrationDocument<TDocument>(
+  registrationId: string,
+  kind: string,
+  asset: { uri: string; name: string; type: string },
+): Promise<{ document: TDocument } | { error: string }> {
+  let file: File;
+  try {
+    file = toUploadableFile(asset.uri, asset.name);
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to prepare file for upload' };
+  }
+
+  try {
+    const cookie = await getSessionCookie();
+    const result = await file.upload(`${backendUrl}/club-registrations/${registrationId}/documents`, {
+      uploadType: UploadType.MULTIPART,
+      fieldName: 'file',
+      mimeType: asset.type,
+      parameters: { kind },
+      headers: { Cookie: cookie },
+      signal: AbortSignal.timeout(TRANSFER_TIMEOUT_MS),
+    });
+
+    let parsed: { data?: { document?: TDocument }; error?: { message?: string } } | null = null;
+    try {
+      parsed = result.body ? JSON.parse(result.body) : null;
+    } catch {
+      parsed = null;
+    }
+    if (result.status < 200 || result.status >= 300) {
+      return { error: parsed?.error?.message ?? 'Request failed' };
+    }
+    const document = parsed?.data?.document;
+    if (!document) return { error: 'Request failed' };
+    return { document };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Request failed' };
+  }
+}
