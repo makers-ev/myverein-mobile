@@ -17,6 +17,9 @@ import SignupScreen from '@/screens/SignupScreen';
 import TwoFactorScreen from '@/screens/TwoFactorScreen';
 import SettingsScreen from '@/screens/SettingsScreen';
 import VereinScreen from '@/screens/VereinScreen';
+import KalenderScreen from '@/screens/KalenderScreen';
+import StandorteScreen from '@/screens/StandorteScreen';
+import ClubApplicationsScreen from '@/screens/ClubApplicationsScreen';
 import JoinClubScreen from '@/screens/JoinClubScreen';
 import AppLockGate from '@/components/AppLock/AppLockGate';
 import Navbar from '@/components/Navbar';
@@ -40,7 +43,10 @@ export type RootStackParamList = {
   Home: undefined;
   Dashboard: undefined;
   Verein: undefined;
+  Kalender: undefined;
+  Standorte: undefined;
   JoinClub: undefined;
+  ClubApplications: undefined;
   Notifications: undefined;
   Login: { returnTo?: keyof RootStackParamList } | undefined;
   Signup: undefined;
@@ -93,10 +99,34 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
+      <RootStack.Screen name="Kalender">
+        {() => (
+          <RequireAuth>
+            <KalenderScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Standorte">
+        {() => (
+          <RequireAuth>
+            <StandorteScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
       <RootStack.Screen name="JoinClub">
         {(props) => (
           <RequireAuth>
             <JoinClubScreen {...props} />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="ClubApplications">
+        {() => (
+          <RequireAuth>
+            <ClubApplicationsScreen />
           </RequireAuth>
         )}
       </RootStack.Screen>

@@ -7,6 +7,7 @@ import { useThemeColors } from '@/theme/colors';
 import { navigate } from '@/navigation/navigationRef';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import { useClubInfo, type BoardMember, type Department } from '@/hooks/useClubInfo';
+import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { useClubMembers, type ClubMember } from '@/hooks/useClubMembers';
 import { getDepartmentColor } from '@/theme/departmentColors';
 import ProfilTab from '@/components/verein/ProfilTab';
@@ -136,6 +137,17 @@ function MitgliederTab({ clubId }: { clubId: string }) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { members, loading } = useClubMembers(clubId);
+  // Board-only entry point to the open join applications (members:write).
+  const { can } = useOwnMembership(clubId);
+  const applicationsEntry = can('members:write') ? (
+    <TouchableOpacity
+      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3 flex-row items-center justify-between"
+      onPress={() => navigate('ClubApplications')}
+    >
+      <Text className="text-primary dark:text-primary-dark font-bold text-sm">{t('verein.applications.open')}</Text>
+      <Text className="text-primary dark:text-primary-dark font-bold text-sm">›</Text>
+    </TouchableOpacity>
+  ) : null;
 
   if (loading) {
     return (
@@ -146,10 +158,20 @@ function MitgliederTab({ clubId }: { clubId: string }) {
   }
 
   if (members.length === 0) {
-    return <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.members.empty')}</Text>;
+    return (
+      <>
+        {applicationsEntry}
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.members.empty')}</Text>
+      </>
+    );
   }
 
-  return <>{members.map((m) => <MemberRow key={m.id} member={m} />)}</>;
+  return (
+    <>
+      {applicationsEntry}
+      {members.map((m) => <MemberRow key={m.id} member={m} />)}
+    </>
+  );
 }
 
 export default function VereinScreen() {

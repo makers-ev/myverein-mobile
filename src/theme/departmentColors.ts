@@ -8,7 +8,7 @@
 // for CTAs and must not double as a department tag.
 export const DEPARTMENT_COLORS = [
   '#2c4870', // Vereinsblau
-  '#b8860b', // Pokal-Gold
+  '#8a6408', // Pokal-Gold (matches palettes.ts's accent, see that file's contrast note)
   '#3f7a47', // Waldgrün
   '#7a2e3b', // Bordeaux
   '#1f5c5c', // Petrol

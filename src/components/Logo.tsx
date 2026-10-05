@@ -4,7 +4,7 @@ import { Image, Text, View } from 'react-native';
 interface LogoProps {
   /** Pixel size of the square mark. Defaults to a size legible in a header. */
   size?: number;
-  /** Hide the "LPJ IT-Solutions" wordmark and render just the mark. */
+  /** Hide the "MyVerein" wordmark and render just the mark. */
   hideWordmark?: boolean;
 }
 
@@ -21,11 +21,11 @@ export default function Logo({ size = 40, hideWordmark = false }: LogoProps) {
       <Image
         source={require('../../assets/icon.png')}
         style={{ width: size, height: size, borderRadius: size * 0.2 }}
-        accessibilityLabel="LPJ IT-Solutions"
+        accessibilityLabel="MyVerein"
       />
       {!hideWordmark && (
         <Text className="text-xl font-bold tracking-tight text-foreground dark:text-foreground-dark">
-          LPJ IT-Solutions
+          MyVerein
         </Text>
       )}
     </View>

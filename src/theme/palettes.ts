@@ -31,7 +31,7 @@ export const palettes = {
             card: '#ffffff', muted: '#eef0f2', mutedForeground: '#6b7280',
             border: '#e2e4e8',
             primary: '#2c4870', primaryForeground: '#ffffff',
-            accent: '#b8860b', accentForeground: '#ffffff',
+            accent: '#8a6408', accentForeground: '#ffffff',
         },
         dark: {
             background: '#16181d', foreground: '#e8e9ec',
