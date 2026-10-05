@@ -21,6 +21,7 @@ import KalenderScreen from '@/screens/KalenderScreen';
 import StandorteScreen from '@/screens/StandorteScreen';
 import ClubApplicationsScreen from '@/screens/ClubApplicationsScreen';
 import JoinClubScreen from '@/screens/JoinClubScreen';
+import CreateClubScreen from '@/screens/CreateClubScreen';
 import AppLockGate from '@/components/AppLock/AppLockGate';
 import Navbar from '@/components/Navbar';
 import PrivacyPolicyScreen from '@/legal/PrivacyPolicyScreen';
@@ -46,6 +47,7 @@ export type RootStackParamList = {
   Kalender: undefined;
   Standorte: undefined;
   JoinClub: undefined;
+  CreateClub: undefined;
   ClubApplications: undefined;
   Notifications: undefined;
   Login: { returnTo?: keyof RootStackParamList } | undefined;
@@ -119,6 +121,14 @@ function MainNavigator() {
         {(props) => (
           <RequireAuth>
             <JoinClubScreen {...props} />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="CreateClub">
+        {(props) => (
+          <RequireAuth>
+            <CreateClubScreen {...props} />
           </RequireAuth>
         )}
       </RootStack.Screen>
