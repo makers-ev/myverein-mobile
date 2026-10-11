@@ -110,7 +110,8 @@ function buildQuery(clubId: string, filters: ClubMemberFilters, page: number): s
 export function useClubMembers(clubId: string | null, filters: ClubMemberFilters = {}) {
   const [members, setMembers] = useState<ClubMember[]>([]);
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(!!clubId);
+  const [fetching, setFetching] = useState(!!clubId);
+  const [settledKey, setSettledKey] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState(false);
@@ -120,6 +121,8 @@ export function useClubMembers(clubId: string | null, filters: ClubMemberFilters
 
   // Stable primitive key so a new `filters` object with equal content doesn't refetch.
   const filterKey = JSON.stringify([filters.q?.trim() ?? '', filters.status ?? [], filters.category ?? [], filters.pageSize ?? DEFAULT_PAGE_SIZE]);
+
+  const currentKey = `${clubId ?? ''}|${filterKey}`;
 
   const refetch = useCallback(async () => {
     const id = ++requestId.current;
@@ -131,10 +134,11 @@ export function useClubMembers(clubId: string | null, filters: ClubMemberFilters
     if (!clubId) {
       setMembers([]);
       setTotal(0);
-      setLoading(false);
+      setFetching(false);
+      setSettledKey(null);
       return;
     }
-    setLoading(true);
+    setFetching(true);
     setError(false);
     try {
       const res = await apiFetch<MemberPage>(`/club-members?${buildQuery(clubId, active, 1)}`);
@@ -147,7 +151,10 @@ export function useClubMembers(clubId: string | null, filters: ClubMemberFilters
       setTotal(0);
       setError(true);
     } finally {
-      if (id === requestId.current) setLoading(false);
+      if (id === requestId.current) {
+        setFetching(false);
+        setSettledKey(`${clubId ?? ''}|${filterKey}`);
+      }
     }
   }, [clubId, filterKey]);
 
@@ -161,6 +168,8 @@ export function useClubMembers(clubId: string | null, filters: ClubMemberFilters
     setTotal(0);
   }, [clubId]);
 
+  // Derived synchronously: true from the first render with a new club/filter, so no empty-state flash.
+  const loading = fetching || (!!clubId && settledKey !== currentKey);
   const hasMore = members.length < total;
 
   const loadMore = useCallback(async () => {

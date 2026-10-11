@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
@@ -57,12 +57,13 @@ function validate(draft: Draft, t: (key: string) => string): FieldErrors {
  * (birth date, address, phone, contact e-mail, emergency contact) via
  * `PATCH /club-members/me` -- category, memberNumber, status stay board-only
  * (`members:write`). Only changed fields are sent; a cleared text field is
- * sent as "" (the backend stores NULL), a cleared birth date as null.
+ * sent as "" (the backend turns it into NULL), a cleared contact e-mail and a
+ * cleared birth date as null (the backend's e-mail/date schemas reject "").
  */
 export default function ProfilTab({ clubId, onDirtyChange }: Props) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { membership, loading, refetch } = useOwnMembership(clubId);
+  const { membership, refetch } = useOwnMembership(clubId);
 
   const server = useMemo<Draft>(() => {
     if (!membership) return EMPTY_DRAFT;
@@ -84,8 +85,21 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Fresh server values flow into fields the user has not touched since the last
+  // sync; anything typed meanwhile (e.g. during the post-save refetch) is kept.
+  const prevServer = useRef<Draft>(EMPTY_DRAFT);
   useEffect(() => {
-    setDraft(server);
+    const prev = prevServer.current;
+    prevServer.current = server;
+    setDraft((cur) => {
+      const next = { ...cur };
+      for (const k of TEXT_KEYS) {
+        if (cur[k].trim() === prev[k].trim()) next[k] = server[k];
+      }
+      const dayKey = (d: Date | null) => (d ? toDateString(d) : null);
+      if (dayKey(cur.birthDate) === dayKey(prev.birthDate)) next.birthDate = server.birthDate;
+      return next;
+    });
   }, [server]);
 
   const toDateKey = (d: Date | null) => (d ? toDateString(d) : null);
@@ -130,7 +144,10 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
     setSaved(false);
     try {
       const body: Record<string, string | null> = {};
-      for (const k of changedTextKeys) body[k] = draft[k].trim();
+      for (const k of changedTextKeys) {
+        const value = draft[k].trim();
+        body[k] = k === 'contactEmail' && value === '' ? null : value;
+      }
       if (birthDateChanged) body.birthDate = toDateKey(draft.birthDate);
       await apiFetch(`/club-members/me?clubId=${encodeURIComponent(clubId)}`, { method: 'PATCH', body });
       setSaved(true);
@@ -143,7 +160,8 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
     }
   };
 
-  if (loading || !membership) {
+  // Spinner only for the very first load; a refetch after saving keeps the form.
+  if (!membership) {
     return (
       <View className="py-12 items-center">
         <ActivityIndicator color={themeColors.primary} />

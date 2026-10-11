@@ -8,7 +8,7 @@ import { useThemeColors } from '@/theme/colors';
 import { useMyClubs } from '@/hooks/useMyClubs';
 
 /** Club picker (pill + bottom sheet). Renders nothing unless the user belongs to more than one club. */
-export default function ClubSwitcher() {
+export default function ClubSwitcher({ onBeforeSwitch }: { onBeforeSwitch?: (proceed: () => void) => void } = {}) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { clubs, activeClub, setActiveClubId } = useMyClubs();
@@ -48,8 +48,11 @@ export default function ClubSwitcher() {
                     accessibilityRole="radio"
                     accessibilityState={{ selected, checked: selected }}
                     onPress={() => {
-                      if (!selected) setActiveClubId(club.clubId);
                       setOpen(false);
+                      if (selected) return;
+                      const proceed = () => setActiveClubId(club.clubId);
+                      if (onBeforeSwitch) onBeforeSwitch(proceed);
+                      else proceed();
                     }}
                     className={`flex-row items-center justify-between rounded-2xl p-4 mb-2 min-h-[48px] border ${
                       selected ? 'border-primary dark:border-primary-dark bg-primary/10 dark:bg-primary-dark/10' : 'border-border dark:border-border-dark bg-card dark:bg-card-dark'

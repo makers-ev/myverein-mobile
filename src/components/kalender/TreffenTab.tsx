@@ -279,7 +279,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
   const [resSaving, setResSaving] = useState(false);
   const [resError, setResError] = useState<string | null>(null);
 
-  const nameFor = (memberId: string) => members.find((m) => m.memberId === memberId)?.name ?? memberId;
+  const nameFor = (memberId: string) => members.find((m) => m.memberId === memberId)?.name ?? t('verein.members.unknown');
 
   const ownInvite = membership ? invitees.find((i) => i.memberId === membership.memberId) : undefined;
 

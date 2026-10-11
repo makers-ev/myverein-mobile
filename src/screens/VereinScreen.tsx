@@ -1,7 +1,7 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -174,6 +174,29 @@ export default function VereinScreen() {
   const [tab, setTab] = useState<Tab>('info');
   // Unsaved inputs in the Profil tab: leaving the tab would drop them, so ask first.
   const [profileDirty, setProfileDirty] = useState(false);
+  // Leaving via navigation (back, tab bar) while the profile has unsaved inputs.
+  const navigation = useNavigation();
+  useEffect(() => {
+    return navigation.addListener('beforeRemove', (e) => {
+      if (!profileDirty) return;
+      e.preventDefault();
+      Alert.alert(t('profil.discard.title'), t('profil.discard.message'), [
+        { text: t('profil.discard.keep'), style: 'cancel' },
+        { text: t('profil.discard.confirm'), style: 'destructive', onPress: () => navigation.dispatch(e.data.action) },
+      ]);
+    });
+  }, [navigation, profileDirty, t]);
+  // Club switch drops tab state, so ask first (the switcher only switches after proceed()).
+  const guardClubSwitch = (proceed: () => void) => {
+    if (!profileDirty) {
+      proceed();
+      return;
+    }
+    Alert.alert(t('profil.discard.title'), t('profil.discard.message'), [
+      { text: t('profil.discard.keep'), style: 'cancel' },
+      { text: t('profil.discard.confirm'), style: 'destructive', onPress: proceed },
+    ]);
+  };
   const selectTab = (value: Tab) => {
     if (value === tab) return;
     if (tab === 'profil' && profileDirty) {
@@ -206,7 +229,7 @@ export default function VereinScreen() {
         <Text className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">
           {activeClub?.clubName ?? t('nav.verein')}
         </Text>
-        <ClubSwitcher />
+        <ClubSwitcher onBeforeSwitch={guardClubSwitch} />
       </View>
 
       {clubsLoading ? (
@@ -220,7 +243,7 @@ export default function VereinScreen() {
       ) : (
         <>
           <View className="px-6 pt-3">
-            <View className="flex-row mb-4" style={{ gap: 8 }}>
+            <View className="flex-row mb-4" style={{ gap: 8 }} accessibilityRole="tablist">
               {(['info', 'mitglieder', 'profil'] as const).map((value) => (
                 <TouchableOpacity
                   key={value}
