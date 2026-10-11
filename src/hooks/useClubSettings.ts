@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
 
@@ -33,5 +33,17 @@ export function useClubSettings(clubId: string | null) {
     };
   }, [clubId]);
 
-  return { settings: loaded && loaded.clubId === clubId ? loaded.settings : null };
+  /** Re-reads the settings once (e.g. after a 403) and returns them, or `null` on failure. */
+  const refresh = useCallback(async (): Promise<ClubSettings | null> => {
+    if (!clubId) return null;
+    try {
+      const res = await apiFetch<{ data: ClubSettings }>(`/club-settings?clubId=${encodeURIComponent(clubId)}`);
+      setLoaded({ clubId, settings: res.data });
+      return res.data;
+    } catch {
+      return null;
+    }
+  }, [clubId]);
+
+  return { refresh, settings: loaded && loaded.clubId === clubId ? loaded.settings : null };
 }

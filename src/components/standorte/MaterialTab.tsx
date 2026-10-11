@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { AlertTriangle, Camera, MapPin, Package, Wrench } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
@@ -7,6 +7,7 @@ import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import SignedImage from '@/components/ui/SignedImage';
+import { isNetworkFailure, isUnknownMediaKey } from '@/lib/memberPhoto';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useThrottledCallback } from '@/hooks/useThrottledCallback';
 import { useClubSettings } from '@/hooks/useClubSettings';
@@ -269,10 +270,11 @@ function MaterialDetail({
   // Keys only (from `POST /media`); the signed preview URL is not kept.
   const upload = useImageUpload({ clubId, t, onUploaded: (media) => setPhotoKey(media.key) });
   const photoUploading = upload.busy;
+  const lostResponse = useRef(false);
   const onPhotoExpired = useThrottledCallback(() => void refetch(), PHOTO_REFRESH_MS);
 
   // Club switch `allowSelfLoans`; inventory:write holders are exempt. A 403 on borrow also flips it for this session.
-  const { settings } = useClubSettings(clubId);
+  const { settings, refresh: refreshSettings } = useClubSettings(clubId);
   const [borrowForbidden, setBorrowForbidden] = useState(false);
   const selfLoansOff = !canWrite && (settings?.allowSelfLoans === false || borrowForbidden);
 
@@ -282,7 +284,9 @@ function MaterialDetail({
     try {
       await borrow();
     } catch (err) {
-      if (err instanceof ApiError && err.status === 403) {
+      // The 403 carries no dedicated code, so re-read the club setting: only "switched off" gets the special text.
+      const disabled = err instanceof ApiError && err.status === 403 && (await refreshSettings())?.allowSelfLoans === false;
+      if (disabled) {
         setBorrowForbidden(true);
         setBorrowError(t('material.loans.self-disabled'));
       } else {
@@ -322,11 +326,23 @@ function MaterialDetail({
     setDamageError(null);
     try {
       await reportDamage(description.trim(), photoKey ?? undefined);
+      lostResponse.current = false;
       setDescription('');
       setPhotoKey(null);
       setShowDamageForm(false);
     } catch (err) {
-      setDamageError(apiErrorMessage(err, t));
+      if (photoKey && isNetworkFailure(err)) lostResponse.current = true;
+      if (photoKey && lostResponse.current && isUnknownMediaKey(err)) {
+        // The earlier attempt most likely went through: reload and tell the user instead of "invalid".
+        lostResponse.current = false;
+        setDescription('');
+        setPhotoKey(null);
+        setShowDamageForm(false);
+        void refetch();
+        Alert.alert(t('media.maybe-saved'));
+      } else {
+        setDamageError(apiErrorMessage(err, t));
+      }
     } finally {
       setDamageSaving(false);
     }
@@ -493,9 +509,14 @@ function MaterialDetail({
                   </Text>
                 </View>
               ) : photoKey ? (
-                <Text className="text-success dark:text-success-dark text-xs font-semibold">
-                  {t('material.damage-reports.photo-attached')}
-                </Text>
+                <>
+                  <Text className="text-success dark:text-success-dark text-xs font-semibold">
+                    {t('material.damage-reports.photo-attached')}
+                  </Text>
+                  <TouchableOpacity onPress={() => setPhotoKey(null)} accessibilityRole="button" hitSlop={8}>
+                    <Text className="text-destructive text-xs font-semibold">{t('material.damage-reports.photo-remove')}</Text>
+                  </TouchableOpacity>
+                </>
               ) : null}
             </View>
 

@@ -23,9 +23,29 @@ export function photoFailureKey(err: unknown, ownPhoto: boolean): string {
   return apiErrorKey(err);
 }
 
-/** Translation key for a failed generic image upload (`POST /media`, 10 MB). Quota and other coded errors win over "image unusable". */
+function detailsCode(err: ApiError): string | undefined {
+  const d = err.details as { code?: unknown } | null | undefined;
+  return d && typeof d === 'object' && typeof d.code === 'string' ? d.code : undefined;
+}
+
+/**
+ * Translation key for a failed generic image upload (`POST /media`, 10 MB). The backend tells two quota cases
+ * apart via `details.code`: `unattached_cap` (per-user limit of 25 not-yet-saved files / 50 MB, cleaned up after
+ * 24 h) and `club_quota` (club storage); without a code the generic quota text is used.
+ */
 export function imageUploadFailureKey(err: unknown): string {
+  if (err instanceof ApiError && detailsCode(err) === 'unattached_cap') return 'media.error.unattached-cap';
   if (err instanceof ApiError && err.status === 422 && err.code !== 'QUOTA_EXCEEDED') return 'media.error.invalid';
   if (err instanceof ApiError && err.status === 413 && err.code !== 'QUOTA_EXCEEDED') return 'media.error.invalid';
   return apiErrorKey(err);
+}
+
+/** True for failures without a server answer (network, timeout): the request may still have succeeded. */
+export function isNetworkFailure(err: unknown): boolean {
+  return !(err instanceof ApiError);
+}
+
+/** 422 for a `photoKey` the backend no longer has as unattached, i.e. it was already used (e.g. by a lost-response save). */
+export function isUnknownMediaKey(err: unknown): boolean {
+  return err instanceof ApiError && err.status === 422 && /unknown media key/i.test(err.message);
 }

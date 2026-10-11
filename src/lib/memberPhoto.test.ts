@@ -1,5 +1,5 @@
 import { ApiError } from './api';
-import { imageUploadFailureKey, isMinorBirthDate, photoFailureKey } from './memberPhoto';
+import { imageUploadFailureKey, isNetworkFailure, isUnknownMediaKey, isMinorBirthDate, photoFailureKey } from './memberPhoto';
 import { initialsOf } from '@/components/verein/MemberAvatar';
 
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
@@ -47,5 +47,18 @@ describe('imageUploadFailureKey', () => {
     expect(imageUploadFailureKey(new ApiError(422, 'QUOTA_EXCEEDED', 'x'))).toBe('api.error.quota');
     expect(imageUploadFailureKey(new ApiError(413, 'QUOTA_EXCEEDED', 'x'))).toBe('api.error.quota');
     expect(imageUploadFailureKey(new ApiError(429, 'TOO_MANY_REQUESTS', 'x'))).toBe('api.error.rate-limit');
+  });
+  it('tells the per-user unattached cap from the club quota', () => {
+    expect(imageUploadFailureKey(new ApiError(413, 'QUOTA_EXCEEDED', 'x', { code: 'unattached_cap' }))).toBe('media.error.unattached-cap');
+    expect(imageUploadFailureKey(new ApiError(413, 'QUOTA_EXCEEDED', 'x', { code: 'club_quota' }))).toBe('api.error.quota');
+  });
+});
+
+describe('lost-response detection', () => {
+  it('recognises network failures and unknown media keys', () => {
+    expect(isNetworkFailure(new Error('timeout'))).toBe(true);
+    expect(isNetworkFailure(new ApiError(500, 'X', 'x'))).toBe(false);
+    expect(isUnknownMediaKey(new ApiError(422, 'VALIDATION_ERROR', 'Unknown media key: upload the image'))).toBe(true);
+    expect(isUnknownMediaKey(new ApiError(422, 'VALIDATION_ERROR', 'Invalid'))).toBe(false);
   });
 });

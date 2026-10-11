@@ -19,10 +19,27 @@ export interface ResolutionDraft {
 
 export type ResolutionCorrectionBody = Partial<ResolutionFields> & { correctionNote: string };
 
-function count(text: string, fallback: number): number {
+export const MAX_VOTES = 100000;
+
+/** True for a whole number 0..MAX_VOTES (no sign, no decimals). */
+export function isValidVoteCount(text: string): boolean {
   const trimmed = text.trim();
-  if (!/^\d+$/.test(trimmed)) return fallback;
-  return Number(trimmed);
+  return /^\d{1,6}$/.test(trimmed) && Number(trimmed) <= MAX_VOTES;
+}
+
+export type ResolutionDraftError = 'note' | 'votes' | 'required';
+
+/** Field-level problems of a draft (empty = valid). Votes are validated individually via `isValidVoteCount`. */
+export function validateResolutionDraft(draft: ResolutionDraft): { note: boolean; votes: boolean; required: boolean } {
+  return {
+    note: draft.correctionNote.trim() === '',
+    votes: ![draft.votesFor, draft.votesAgainst, draft.votesAbstain].every(isValidVoteCount),
+    required: draft.description.trim() === '' || draft.result.trim() === '',
+  };
+}
+
+function count(text: string, fallback: number): number {
+  return isValidVoteCount(text) ? Number(text.trim()) : fallback;
 }
 
 /**

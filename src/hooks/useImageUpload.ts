@@ -29,6 +29,8 @@ export function useImageUpload({ clubId, t, onUploaded }: Options) {
   });
   useEffect(() => {
     token.current += 1;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- an upload in flight for the previous club is dropped, so its spinner must go too
+    setBusy(false);
     return () => {
       token.current += 1;
     };

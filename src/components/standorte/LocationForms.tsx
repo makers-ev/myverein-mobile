@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { withScheme } from '@/lib/withScheme';
 import SignedImage from '@/components/ui/SignedImage';
+import { isNetworkFailure, isUnknownMediaKey } from '@/lib/memberPhoto';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import {
   useLocationMutations,
@@ -66,6 +67,8 @@ export function LocationForm({
   // `undefined` = photo unchanged, string = key of a freshly uploaded image, `null` = remove. Keys only, never URLs.
   const [photoKey, setPhotoKey] = useState<string | null | undefined>(undefined);
   const [previewUrl, setPreviewUrl] = useState<string | null>(location?.photoUrl ?? null);
+  // A save with a photoKey that failed without a server answer may still have been stored (key claimed).
+  const lostResponse = useRef(false);
   const upload = useImageUpload({
     clubId,
     t,
@@ -94,8 +97,20 @@ export function LocationForm({
       ...(photoKey !== undefined && (location || photoKey !== null) ? { photoKey } : {}),
     };
     void run(async () => {
-      if (location) await updateLocation(location.id, input);
-      else await createLocation(input);
+      try {
+        if (location) await updateLocation(location.id, input);
+        else await createLocation(input);
+      } catch (err) {
+        if (input.photoKey && isNetworkFailure(err)) lostResponse.current = true;
+        if (input.photoKey && lostResponse.current && isUnknownMediaKey(err)) {
+          // The earlier attempt most likely went through: reload and tell the user instead of "invalid".
+          onSaved();
+          onClose();
+          Alert.alert(t('media.maybe-saved'));
+          return;
+        }
+        throw err;
+      }
       onSaved();
       onClose();
     });
@@ -161,7 +176,8 @@ export function LocationForm({
           {previewUrl && !upload.busy ? (
             <TouchableOpacity
               onPress={() => {
-                setPhotoKey(null);
+                // Drops an uploaded-but-unsaved key; an existing stored photo is removed with `null`.
+                setPhotoKey(location?.photoUrl ? null : undefined);
                 setPreviewUrl(null);
               }}
               accessibilityRole="button"

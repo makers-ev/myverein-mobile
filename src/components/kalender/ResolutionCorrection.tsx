@@ -4,7 +4,7 @@ import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'reac
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
-import { buildResolutionCorrection, type ResolutionCorrectionBody } from '@/lib/resolutionCorrection';
+import { buildResolutionCorrection, validateResolutionDraft, type ResolutionCorrectionBody } from '@/lib/resolutionCorrection';
 import type { MeetingResolution } from '@/hooks/useMeetingDetail';
 
 const inputClass =
@@ -32,14 +32,14 @@ export default function ResolutionCorrection({
   const [error, setError] = useState<string | null>(null);
 
   const draft = { description, votesFor, votesAgainst, votesAbstain, result, correctionNote: note };
-  const built = buildResolutionCorrection(resolution, draft);
-  const canSubmit = typeof built === 'object' && !saving;
+  const problems = validateResolutionDraft(draft);
+  const valid = !problems.note && !problems.votes && !problems.required;
+  const built = valid ? buildResolutionCorrection(resolution, draft) : null;
+  const canSubmit = typeof built === 'object' && built !== null && !saving;
+  const [noteTouched, setNoteTouched] = useState(false);
 
   const submit = async () => {
-    if (typeof built !== 'object' || saving) {
-      if (built === 'no-change') setError(t('treffen.resolutions.correct.nochange'));
-      return;
-    }
+    if (typeof built !== 'object' || built === null || saving) return;
     setSaving(true);
     setError(null);
     try {
@@ -56,6 +56,7 @@ export default function ResolutionCorrection({
     <View className="mt-2 pt-3 border-t border-border dark:border-border-dark">
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.resolutions.correct.hint')}</Text>
       <TextInput className={`${inputClass} mb-3`} value={description} onChangeText={setDescription} placeholder={t('treffen.resolutions.description')} placeholderTextColor={themeColors.mutedForeground} />
+      {problems.required ? <Text className="text-destructive text-xs mb-2">{t('treffen.resolutions.error.required')}</Text> : null}
       <View className="flex-row" style={{ gap: 8 }}>
         {(
           [
@@ -70,25 +71,34 @@ export default function ResolutionCorrection({
           </View>
         ))}
       </View>
+      {problems.votes ? <Text className="text-destructive text-xs mt-1">{t('treffen.resolutions.error.votes')}</Text> : null}
       <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 mt-3">{t('treffen.resolutions.result')}</Text>
       <TextInput className={`${inputClass} mb-3`} value={result} onChangeText={setResult} placeholder={t('treffen.resolutions.result.placeholder')} placeholderTextColor={themeColors.mutedForeground} />
       <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1">{t('treffen.resolutions.correction-note')}</Text>
       <TextInput
         className={`${inputClass} mb-3`}
         value={note}
-        onChangeText={setNote}
+        onChangeText={(v) => {
+          setNote(v);
+          setNoteTouched(true);
+        }}
         placeholder={t('treffen.resolutions.correction-note.placeholder')}
         placeholderTextColor={themeColors.mutedForeground}
         multiline
         style={{ minHeight: 64, textAlignVertical: 'top' }}
         maxLength={2000}
+        onBlur={() => setNoteTouched(true)}
       />
+      {noteTouched && problems.note ? <Text className="text-destructive text-xs mb-2">{t('treffen.resolutions.error.note')}</Text> : null}
+      {valid && built === 'no-change' ? (
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{t('treffen.resolutions.correct.nochange')}</Text>
+      ) : null}
       {error ? <Text className="text-destructive text-sm mb-3">{error}</Text> : null}
       <View className="flex-row items-center" style={{ gap: 16 }}>
         <TouchableOpacity
           className={`flex-1 bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${canSubmit ? '' : 'opacity-60'}`}
           onPress={() => void submit()}
-          disabled={saving}
+          disabled={!canSubmit}
           accessibilityRole="button"
         >
           {saving ? (

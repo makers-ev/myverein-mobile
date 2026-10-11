@@ -53,8 +53,21 @@ async function getSessionCookie(): Promise<string> {
 
 /** Backend limit for generic image uploads (`MAX_IMAGE_BYTES`); checked client-side first to spare the upload. */
 export const MAX_MEDIA_IMAGE_BYTES = 10 * 1024 * 1024;
-/** Image types `POST /media` accepts. */
-export const MEDIA_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+/**
+ * No client-side type whitelist: the backend decides (magic bytes). Only fixes up what pickers report badly --
+ * an empty type or `image/jpg` -- so the multipart part carries a sensible content type.
+ */
+export function normalizeImageMime(type: string | null | undefined, name: string): string {
+  const t = (type ?? '').toLowerCase();
+  if (t === 'image/jpg') return 'image/jpeg';
+  if (t) return t;
+  const ext = name.split('.').pop()?.toLowerCase();
+  if (ext === 'png') return 'image/png';
+  if (ext === 'webp') return 'image/webp';
+  if (ext === 'heic' || ext === 'heif') return `image/${ext}`;
+  return 'image/jpeg';
+}
 
 export interface UploadedMedia {
   /** Storage key (`<clubId>/<uuid>.<ext>`) -- pass as `photoKey` to the feature route. */
@@ -76,7 +89,6 @@ export async function uploadMedia(
   clubId: string,
   asset: { uri: string; name: string; type: string; fileSize?: number | null },
 ): Promise<{ media: UploadedMedia } | { error: unknown }> {
-  if (!MEDIA_IMAGE_TYPES.includes(asset.type)) return { error: new ApiError(422, 'VALIDATION_ERROR', 'Unsupported file type') };
   if (asset.fileSize != null && asset.fileSize > MAX_MEDIA_IMAGE_BYTES) {
     return { error: new ApiError(422, 'VALIDATION_ERROR', 'File too large') };
   }
@@ -94,7 +106,7 @@ export async function uploadMedia(
     const result = await file.upload(`${backendUrl}/media?clubId=${encodeURIComponent(clubId)}`, {
       uploadType: UploadType.MULTIPART,
       fieldName: 'file',
-      mimeType: asset.type,
+      mimeType: normalizeImageMime(asset.type, asset.name),
       headers: { Cookie: cookie },
       signal: AbortSignal.timeout(TRANSFER_TIMEOUT_MS),
     });
