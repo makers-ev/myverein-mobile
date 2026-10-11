@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
@@ -100,7 +101,7 @@ export default function ClubApplicationsScreen() {
       try {
         await fn(id);
       } catch (err) {
-        setActionError(err instanceof ApiError ? err.message : t('verein.applications.action-error'));
+        setActionError(apiErrorMessage(err, t, 'verein.applications.action-error'));
         void refetch();
       } finally {
         setBusyId(null);

@@ -11,6 +11,10 @@ export type DocumentKind = 'registerauszug' | 'satzung' | 'freistellungsbescheid
 
 export const LEGAL_FORMS: readonly LegalForm[] = ['e_v', 'nicht_eingetragen', 'sonstige'];
 export const CLAIMED_ROLES: readonly ClaimedRole[] = ['vorsitz', 'stellv_vorsitz'];
+/** Maps a stored role to a claimable one (a pre-Wave-7 draft may carry the removed `schriftfuehrer`); default `vorsitz`. */
+export function normalizeClaimedRole(value: string | null | undefined): ClaimedRole {
+  return CLAIMED_ROLES.find((r) => r === value) ?? 'vorsitz';
+}
 export const DOCUMENT_KINDS: readonly DocumentKind[] = [
   'registerauszug',
   'satzung',

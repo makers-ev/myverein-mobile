@@ -201,3 +201,24 @@ export function formatDay(value: string | null | undefined): string {
   if (!value) return '—';
   return new Date(`${value.slice(0, 10)}T00:00`).toLocaleDateString();
 }
+
+/** Today's calendar day (`YYYY-MM-DD`) in Europe/Berlin, the zone the backend counts exit dates in. */
+export function todayBerlin(now: Date = new Date()): string {
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
+    const get = (type: string) => parts.find((x) => x.type === type)?.value;
+    const [y, m, d] = [get('year'), get('month'), get('day')];
+    if (y && m && d) return `${y}-${m}-${d}`;
+  } catch {
+    // Intl without time zone data: fall through to the device's local day.
+  }
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+/** A pending cancellation, or an approved one whose exit date is still in the future (can be withdrawn). */
+export function activeCancellation(requests: ExitRequest[], today: string): ExitRequest | null {
+  const pending = requests.find((r) => r.status === 'pending' && r.kind === 'cancellation');
+  if (pending) return pending;
+  return requests.find((r) => r.status === 'approved' && r.kind === 'cancellation' && r.effectiveOn !== null && r.effectiveOn > today) ?? null;
+}

@@ -4,6 +4,7 @@ import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } fro
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiFetch, ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import DateTimeField, { fromDateString, toDateString } from '@/components/ui/DateTimeField';
 import { Field, inputClassName } from '@/components/ui/FormSheet';
@@ -155,7 +156,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
       setShowErrors(false);
       await refetch();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setError(apiErrorMessage(err, t));
     } finally {
       setIsSaving(false);
     }

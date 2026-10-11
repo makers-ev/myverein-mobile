@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, X } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useCalendarAdmin, type Calendar, type CalendarVisibility } from '@/hooks/useCalendars';
 import type { Department } from '@/hooks/useClubInfo';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
@@ -52,7 +53,7 @@ export default function CalendarManageSheet({ visible, onClose, clubId, calendar
       setName('');
       setDepartmentId(null);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setError(apiErrorMessage(err, t));
     } finally {
       setCreating(false);
     }
@@ -163,7 +164,7 @@ function CalendarCard({
       .then(setGrants)
       .catch((err) => {
         setGrants([]);
-        onError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+        onError(apiErrorMessage(err, t));
       });
   }, [expanded, grants, calendar.id, listVisibility, onError, t]);
 
@@ -175,7 +176,7 @@ function CalendarCard({
     try {
       await action();
     } catch (err) {
-      onError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      onError(apiErrorMessage(err, t));
     } finally {
       busyRef.current = false;
       setBusy(false);

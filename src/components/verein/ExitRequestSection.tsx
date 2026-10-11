@@ -4,8 +4,8 @@ import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } fro
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
-import { ApiError } from '@/lib/api';
-import { exitErrorCode, formatDay, useMyExitRequests, type ExitPreview } from '@/hooks/useExitRequests';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
+import { activeCancellation, exitErrorCode, formatDay, todayBerlin, useMyExitRequests, type ExitPreview } from '@/hooks/useExitRequests';
 import DateTimeField, { toDateString } from '@/components/ui/DateTimeField';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 
@@ -41,17 +41,16 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
   const [withdrawing, setWithdrawing] = useState(false);
 
   const isOwner = ownerBlocked || (activeClub?.clubId === clubId && (activeClub.orgRole ?? '').split(',').map((r) => r.trim()).includes('owner'));
-  const today = toDateString(new Date());
-  const pending = requests.find((r) => r.status === 'pending' && r.kind === 'cancellation');
-  const scheduled = requests.find((r) => r.status === 'approved' && r.kind === 'cancellation' && r.effectiveOn !== null && r.effectiveOn > today);
-  const active = pending ?? scheduled ?? null;
+  const active = activeCancellation(requests, todayBerlin());
+  const pending = active?.status === 'pending' ? active : null;
   const lastRejected = !active && requests[0]?.status === 'rejected' && requests[0].kind === 'cancellation' ? requests[0] : null;
 
   const mapError = (err: unknown): string => {
     const code = exitErrorCode(err);
     if (code === 'exit_request_pending') return t('exit.error.pending');
     if (code === 'exit_already_scheduled') return t('exit.error.scheduled');
-    return err instanceof ApiError ? err.message : t('alert.general-error-description');
+    if (code === 'board_protected') return t('exit.error.board-protected');
+    return apiErrorMessage(err, t);
   };
 
   const openSheet = () => {
@@ -79,11 +78,13 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
         setOwnerBlocked(true);
         setSheetOpen(false);
       } else {
-        setSheetError(mapError(err));
         if (exitErrorCode(err)) {
+          // State changed under us (open request / scheduled exit): show it on the card and resync.
           setSheetOpen(false);
           setActionError(mapError(err));
           void refetch();
+        } else {
+          setSheetError(mapError(err));
         }
       }
     } finally {
@@ -116,6 +117,19 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
   const cardClass = 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4';
   const titleClass = 'text-foreground dark:text-foreground-dark font-bold text-base mb-2';
   const mutedClass = 'text-muted-foreground dark:text-muted-foreground-dark text-sm';
+
+  // A failed refetch keeps the old data visible but must not look current.
+  const staleBanner =
+    loaded && error ? (
+      <View className="mt-3">
+        <Text className="text-destructive text-sm mb-1" accessibilityRole="alert">
+          {t('exit.refresh-error')}
+        </Text>
+        <TouchableOpacity onPress={() => void refetch()} style={{ minHeight: 44, justifyContent: 'center' }} accessibilityRole="button">
+          <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
+        </TouchableOpacity>
+      </View>
+    ) : null;
 
   let body: React.ReactNode;
   if (!loaded && loading) {
@@ -190,6 +204,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
         {t('exit.title')}
       </Text>
       {body}
+      {staleBanner}
       {notice ? (
         <Text className="text-success dark:text-success-dark text-sm mt-3" accessibilityLiveRegion="polite">
           {notice}

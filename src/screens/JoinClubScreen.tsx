@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 import { apiFetch, ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'JoinClub'>;
@@ -44,7 +45,7 @@ export default function JoinClubScreen({ navigation }: Props) {
         setSubmitted('existing');
         return;
       }
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setError(apiErrorMessage(err, t));
     } finally {
       setIsSubmitting(false);
     }

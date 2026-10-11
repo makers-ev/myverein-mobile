@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import DateTimeField from '@/components/ui/DateTimeField';
 import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { useClubMemberDirectory } from '@/hooks/useClubMembers';
 import { useMeetings, type Meeting, type MeetingStatus } from '@/hooks/useMeetings';
@@ -75,7 +76,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
       setScheduledAt(null);
       setShowCreate(false);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setError(apiErrorMessage(err, t));
     } finally {
       setSaving(false);
     }
@@ -176,7 +177,7 @@ function AgendaMinutes({
       setSaved(true);
       setEditing(false);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setError(apiErrorMessage(err, t));
     } finally {
       setSaving(false);
     }
@@ -289,7 +290,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
     try {
       await respondToInvite(response);
     } catch (err) {
-      setRsvpError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setRsvpError(apiErrorMessage(err, t));
     } finally {
       setRsvpSaving(false);
     }
@@ -311,7 +312,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
       const data = await getOverlap(candidates);
       setOverlapResults(data);
     } catch (err) {
-      setOverlapError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setOverlapError(apiErrorMessage(err, t));
     } finally {
       setOverlapChecking(false);
     }
@@ -330,7 +331,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
       await recordAttendance(entries);
       setAttendanceSaved(true);
     } catch (err) {
-      setAttendanceError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setAttendanceError(apiErrorMessage(err, t));
     } finally {
       setAttendanceSaving(false);
     }
@@ -355,7 +356,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
       setResResult('');
       setShowResolutionForm(false);
     } catch (err) {
-      setResError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setResError(apiErrorMessage(err, t));
     } finally {
       setResSaving(false);
     }

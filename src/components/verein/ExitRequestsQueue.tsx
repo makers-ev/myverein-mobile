@@ -4,6 +4,7 @@ import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'reac
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import {
   exitErrorCode,
   formatDay,
@@ -106,7 +107,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
     if (code === 'self_approval') return t('admin.exits.error.self');
     if (code === 'owner_protected') return t('admin.exits.error.owner');
     if (code === 'exit_already_scheduled') return t('admin.exits.error.scheduled');
-    return err instanceof ApiError ? err.message : t('alert.general-error-description');
+    return apiErrorMessage(err, t);
   };
 
   const handleDecision = async () => {
@@ -133,14 +134,24 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
       }
       setDialog(null);
     } catch (err) {
-      const message = mapError(err);
       if (err instanceof ApiError && err.status === 409 && !exitErrorCode(err)) {
-        // Decided elsewhere meanwhile: close and resync the queue.
-        setDialog(null);
-        setListError(t('admin.exits.error.decided'));
+        // An uncoded 409 is either "already decided" or "member already left / exit already effective":
+        // re-read the request instead of guessing from the English backend text.
         void refetch();
+        let stillPending = false;
+        try {
+          stillPending = (await loadDetail(request.id)).status === 'pending';
+        } catch {
+          // Could not tell: treat as decided elsewhere and let the refreshed list show the truth.
+        }
+        if (stillPending) {
+          setDialogError(t('admin.exits.error.not-possible'));
+        } else {
+          setDialog(null);
+          setListError(t('admin.exits.error.decided'));
+        }
       } else {
-        setDialogError(message);
+        setDialogError(mapError(err));
       }
     } finally {
       setSaving(false);
@@ -148,6 +159,19 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
   };
 
   const muted = 'text-muted-foreground dark:text-muted-foreground-dark text-xs';
+
+  // A failed refetch keeps the old queue visible but must not look current.
+  const staleBanner =
+    loaded && error ? (
+      <View className="mb-2">
+        <Text className="text-destructive text-sm mb-1" accessibilityRole="alert">
+          {t('admin.exits.refresh-error')}
+        </Text>
+        <TouchableOpacity onPress={() => void refetch()} style={{ minHeight: 44, justifyContent: 'center' }} accessibilityRole="button">
+          <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
+        </TouchableOpacity>
+      </View>
+    ) : null;
 
   let body: React.ReactNode;
   if (!loaded && loading) {
@@ -222,6 +246,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
           {listError}
         </Text>
       ) : null}
+      {staleBanner}
       {body}
 
       <FormSheet

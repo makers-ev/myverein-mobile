@@ -5,6 +5,7 @@ import { Trash2 } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useAvailability } from '@/hooks/useAvailability';
 import DateTimeField, { fromDateString, toDateString } from '@/components/ui/DateTimeField';
 
@@ -67,7 +68,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
       }
     } catch (err) {
       setRows((prev) => ({ ...prev, [day]: { ...row, available: !value } }));
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setError(apiErrorMessage(err, t));
     } finally {
       setSavingDay(null);
     }
@@ -81,7 +82,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
     try {
       await upsertSlot(day, `${row.startTime}:00`, `${row.endTime}:00`);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setError(apiErrorMessage(err, t));
     } finally {
       setSavingDay(null);
     }
@@ -103,7 +104,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
       setExcNote('');
       setExcAvailable(true);
     } catch (err) {
-      setExcError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setExcError(apiErrorMessage(err, t));
     } finally {
       setExcSaving(false);
     }
@@ -114,7 +115,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
     try {
       await deleteException(id);
     } catch (err) {
-      setExcError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setExcError(apiErrorMessage(err, t));
     }
   };
 

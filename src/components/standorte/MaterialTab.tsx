@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { uploadMedia, downloadMediaUri } from '@/lib/media';
 import { useLocations, type Location } from '@/hooks/useLocations';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
@@ -303,7 +304,7 @@ function MaterialDetail({
     try {
       await borrow();
     } catch (err) {
-      setBorrowError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setBorrowError(apiErrorMessage(err, t));
     } finally {
       setBorrowSaving(false);
     }
@@ -315,7 +316,7 @@ function MaterialDetail({
     try {
       await returnLoan(loanId);
     } catch (err) {
-      setReturnError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setReturnError(apiErrorMessage(err, t));
     } finally {
       setReturningLoanId(null);
     }
@@ -327,7 +328,7 @@ function MaterialDetail({
       await setDamageReportStatus(itemId, reportId, status);
       await refetch();
     } catch (err) {
-      setTriageError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setTriageError(apiErrorMessage(err, t));
     }
   };
 
@@ -369,7 +370,7 @@ function MaterialDetail({
       setPhotoKey(null);
       setShowDamageForm(false);
     } catch (err) {
-      setDamageError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setDamageError(apiErrorMessage(err, t));
     } finally {
       setDamageSaving(false);
     }
