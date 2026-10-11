@@ -116,3 +116,17 @@ that return-navigation itself past the login screen — see
 guests: the App Lock PIN can only be created from `Settings`, which is
 itself gated, so a guest can never have a PIN configured in the first
 place.
+
+## Media security rule
+
+Every image or document upload and download goes through the central media
+security layer (see the vault's `Implementation Plan - MyVerein Wave 7`, B18,
+modelled on MyCouple's `Implementation Plan - Media-Zugriffskontrolle
+(Sicherheitsfix)`): the upload registry (`media_files`), keys instead of URLs
+in feature tables, short-lived **signed URLs issued only after the feature
+route's own permission check**, sensitive documents streamed only with
+authentication and an audit entry, central magic-byte/size/EXIF checks, quota,
+`Cache-Control: private`. Never persist or return a raw/public media URL, never
+add a feature-specific file-serving path, and never serve user files without
+going through that layer (the only exception is explicitly opted-in
+`public_opt_in` media). New upload features must extend the layer's tests.
