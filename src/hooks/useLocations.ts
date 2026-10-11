@@ -10,6 +10,7 @@ export interface Location {
   latitude: string | null;
   longitude: string | null;
   openingHours: string | null;
+  /** Short-lived signed absolute URL (or `null`); refetch when it expires, never store it. */
   photoUrl: string | null;
   contactPerson: string | null;
   accessNote: string | null;
@@ -241,7 +242,8 @@ export interface LocationInput {
   latitude?: number | null;
   longitude?: number | null;
   openingHours?: string | null;
-  photoUrl?: string | null;
+  /** Storage key from `POST /media`; `null` removes the photo on PATCH, omitted = unchanged. Never a URL (backend 422s `photoUrl`). */
+  photoKey?: string | null;
   contactPerson?: string | null;
   accessNote?: string | null;
 }

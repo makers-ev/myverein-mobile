@@ -10,6 +10,7 @@ import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { useClubMemberDirectory } from '@/hooks/useClubMembers';
 import { MEETING_TYPES, useMeetings, type Meeting, type MeetingStatus, type MeetingType } from '@/hooks/useMeetings';
 import { useMeetingDetail, type OverlapCandidate } from '@/hooks/useMeetingDetail';
+import ResolutionCorrection from './ResolutionCorrection';
 import MeetingManageSection from './MeetingManageSection';
 import MeetingInvitees from './MeetingInvitees';
 import MeetingAttendance from './MeetingAttendance';
@@ -307,6 +308,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
     respondToInvite,
     recordAttendance,
     createResolution,
+    correctResolution,
     getOverlap,
   } = useMeetingDetail(clubId, meetingId);
 
@@ -319,6 +321,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
   const [overlapChecking, setOverlapChecking] = useState(false);
   const [overlapError, setOverlapError] = useState<string | null>(null);
 
+  const [correctingId, setCorrectingId] = useState<string | null>(null);
   const [showResolutionForm, setShowResolutionForm] = useState(false);
   const [resDescription, setResDescription] = useState('');
   const [resFor, setResFor] = useState('0');
@@ -557,6 +560,29 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
                   <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{r.result}</Text>
                 </View>
               </View>
+              {r.correctionNote ? (
+                <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1.5">
+                  {r.correctedAt ? `${t('treffen.resolutions.corrected', { date: new Date(r.correctedAt).toLocaleDateString() })} · ` : ''}
+                  {t('treffen.resolutions.correction-note.label', { note: r.correctionNote })}
+                </Text>
+              ) : null}
+              {canWrite && correctingId !== r.id ? (
+                <TouchableOpacity
+                  className="self-start mt-1.5"
+                  style={{ minHeight: 36, justifyContent: 'center' }}
+                  onPress={() => setCorrectingId(r.id)}
+                  accessibilityRole="button"
+                >
+                  <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('treffen.resolutions.correct')}</Text>
+                </TouchableOpacity>
+              ) : null}
+              {canWrite && correctingId === r.id ? (
+                <ResolutionCorrection
+                  resolution={r}
+                  onSubmit={(body) => correctResolution(r.id, body)}
+                  onClose={() => setCorrectingId(null)}
+                />
+              ) : null}
             </View>
           ))
         )}

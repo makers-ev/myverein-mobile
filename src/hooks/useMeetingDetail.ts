@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
+import type { ResolutionCorrectionBody } from '@/lib/resolutionCorrection';
 import type { Meeting, MeetingPatch } from './useMeetings';
 
 /** Freitext-Beispiele: "ausstehend" | "zugesagt" | "abgesagt", see meetings.ts schema. */
@@ -43,6 +44,10 @@ export interface MeetingResolution extends ResolutionInput {
   id: string;
   meetingId: string;
   createdAt: string;
+  /** Berichtigungsvermerk of the latest correction (the earlier values live in the backend audit log, not in the API). */
+  correctionNote?: string | null;
+  correctedAt?: string | null;
+  correctedBy?: string | null;
 }
 
 export interface OverlapCandidate {
@@ -169,6 +174,21 @@ export function useMeetingDetail(clubId: string | null, meetingId: string | null
     [clubId, meetingId, key],
   );
 
+  /** `PATCH /meetings/:id/resolutions/:rid` (`meetings:write`): changed fields + mandatory `correctionNote`. */
+  const correctResolution = useCallback(
+    async (resolutionId: string, body: ResolutionCorrectionBody) => {
+      const res = await apiFetch<{ data: MeetingResolution }>(
+        `/meetings/${meetingId}/resolutions/${encodeURIComponent(resolutionId)}?clubId=${clubId}`,
+        { method: 'PATCH', body },
+      );
+      setData((prev) =>
+        prev && prev.key === key ? { ...prev, resolutions: prev.resolutions.map((r) => (r.id === resolutionId ? res.data : r)) } : prev,
+      );
+      return res.data;
+    },
+    [clubId, meetingId, key],
+  );
+
   const getOverlap = useCallback(
     async (candidateIsoTimestamps: string[]) => {
       const candidates = candidateIsoTimestamps.map(encodeURIComponent).join(',');
@@ -195,6 +215,7 @@ export function useMeetingDetail(clubId: string | null, meetingId: string | null
     respondToInvite,
     recordAttendance,
     createResolution,
+    correctResolution,
     getOverlap,
   };
 }

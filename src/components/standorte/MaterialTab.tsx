@@ -1,13 +1,15 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { AlertTriangle, Camera, MapPin, Package, Wrench } from 'lucide-react-native';
-import * as ImagePicker from 'expo-image-picker';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
-import { uploadMedia, downloadMediaUri } from '@/lib/media';
+import SignedImage from '@/components/ui/SignedImage';
+import { useImageUpload } from '@/hooks/useImageUpload';
+import { useThrottledCallback } from '@/hooks/useThrottledCallback';
+import { useClubSettings } from '@/hooks/useClubSettings';
 import { useLocations, type Location } from '@/hooks/useLocations';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import {
@@ -15,7 +17,6 @@ import {
   useInventoryItemDetail,
   useInventoryActions,
   useInventoryMutations,
-  damageReportPhotoKey,
   type DamageReportStatus,
   type InventoryItem,
   type InventoryLoan,
@@ -173,59 +174,30 @@ function LoanRow({ loan, isLast }: { loan: InventoryLoan; isLast: boolean }) {
   );
 }
 
-// Loaded lazily per row: each photo needs its own authenticated round-trip (see media.ts's `downloadMediaUri`).
-function DamageReportPhoto({ clubId, photoUrl }: { clubId: string; photoUrl: string | null }) {
-  const themeColors = useThemeColors();
-  const key = damageReportPhotoKey(photoUrl);
-  const [uri, setUri] = useState<string | null>(null);
-  const [loading, setLoading] = useState(!!key);
+// Signed photo URLs expire; an image error triggers one refetch of the detail (fresh URLs), at most once per 10 s.
+const PHOTO_REFRESH_MS = 10_000;
 
-  useEffect(() => {
-    if (!key) {
-      setUri(null);
-      setLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    void downloadMediaUri(clubId, key).then((resolved) => {
-      if (!cancelled) {
-        setUri(resolved);
-        setLoading(false);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [clubId, key]);
-
-  if (loading) {
-    return (
-      <View className="w-16 h-16 rounded-lg items-center justify-center bg-muted dark:bg-muted-dark">
-        <ActivityIndicator size="small" color={themeColors.primary} />
-      </View>
-    );
-  }
-  if (!uri) return null;
-  return <Image source={{ uri }} className="w-16 h-16 rounded-lg" resizeMode="cover" />;
+function DamageReportPhoto({ photoUrl, onExpired }: { photoUrl: string | null; onExpired: () => void }) {
+  if (!photoUrl) return null;
+  return <SignedImage uri={photoUrl} className="w-16 h-16 rounded-lg" onExpired={onExpired} />;
 }
 
 function DamageReportRow({
-  clubId,
   report,
   isLast,
+  onPhotoExpired,
   onStatusChange,
 }: {
-  clubId: string;
   report: DamageReport;
   isLast: boolean;
+  onPhotoExpired: () => void;
   /** Set when the viewer may triage (inventory:write). */
   onStatusChange?: (status: DamageReportStatus) => void;
 }) {
   const { t } = useLanguage();
   return (
     <View className={`flex-row py-2.5 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`} style={{ gap: 10 }}>
-      <DamageReportPhoto clubId={clubId} photoUrl={report.photoUrl} />
+      <DamageReportPhoto photoUrl={report.photoUrl} onExpired={onPhotoExpired} />
       <View className="flex-1">
         <Text className="text-foreground dark:text-foreground-dark text-sm font-medium mb-1">{report.description}</Text>
         <View className="flex-row items-center mb-1" style={{ gap: 8 }}>
@@ -292,11 +264,17 @@ function MaterialDetail({
   const [showDamageForm, setShowDamageForm] = useState(false);
   const [description, setDescription] = useState('');
   const [photoKey, setPhotoKey] = useState<string | null>(null);
-  const [photoUploading, setPhotoUploading] = useState(false);
   const [damageSaving, setDamageSaving] = useState(false);
   const [damageError, setDamageError] = useState<string | null>(null);
-  // Bumped on every pick + form reset so a slow upload can't write into a newer form session.
-  const uploadTokenRef = useRef(0);
+  // Keys only (from `POST /media`); the signed preview URL is not kept.
+  const upload = useImageUpload({ clubId, t, onUploaded: (media) => setPhotoKey(media.key) });
+  const photoUploading = upload.busy;
+  const onPhotoExpired = useThrottledCallback(() => void refetch(), PHOTO_REFRESH_MS);
+
+  // Club switch `allowSelfLoans`; inventory:write holders are exempt. A 403 on borrow also flips it for this session.
+  const { settings } = useClubSettings(clubId);
+  const [borrowForbidden, setBorrowForbidden] = useState(false);
+  const selfLoansOff = !canWrite && (settings?.allowSelfLoans === false || borrowForbidden);
 
   const handleBorrow = async () => {
     setBorrowSaving(true);
@@ -304,7 +282,12 @@ function MaterialDetail({
     try {
       await borrow();
     } catch (err) {
-      setBorrowError(apiErrorMessage(err, t));
+      if (err instanceof ApiError && err.status === 403) {
+        setBorrowForbidden(true);
+        setBorrowError(t('material.loans.self-disabled'));
+      } else {
+        setBorrowError(apiErrorMessage(err, t));
+      }
     } finally {
       setBorrowSaving(false);
     }
@@ -332,32 +315,6 @@ function MaterialDetail({
     }
   };
 
-  const handlePickPhoto = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) return;
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 });
-    if (result.canceled || !result.assets[0]) return;
-    const asset = result.assets[0];
-
-    const token = ++uploadTokenRef.current;
-    setPhotoUploading(true);
-    setDamageError(null);
-    const uploadResult = await uploadMedia(clubId, {
-      uri: asset.uri,
-      name: asset.fileName ?? 'photo.jpg',
-      type: asset.mimeType ?? 'image/jpeg',
-    });
-    // Stale resolve: the form was reset/resubmitted while this was in flight.
-    if (token !== uploadTokenRef.current) return;
-    setPhotoUploading(false);
-
-    if ('error' in uploadResult) {
-      setDamageError(t('alert.general-error-description'));
-      return;
-    }
-    setPhotoKey(uploadResult.key);
-  };
-
   const handleSubmitDamage = async () => {
     // Blocks while uploading so the report can't drop the photo or attach a stale key later.
     if (!description.trim() || damageSaving || photoUploading) return;
@@ -365,7 +322,6 @@ function MaterialDetail({
     setDamageError(null);
     try {
       await reportDamage(description.trim(), photoKey ?? undefined);
-      uploadTokenRef.current++;
       setDescription('');
       setPhotoKey(null);
       setShowDamageForm(false);
@@ -451,7 +407,7 @@ function MaterialDetail({
           loans.map((l, i) => <LoanRow key={l.id} loan={l} isLast={i === loans.length - 1} />)
         )}
 
-        {borrowError ? <Text className="text-destructive text-sm mt-3">{borrowError}</Text> : null}
+        {borrowError && !selfLoansOff ? <Text className="text-destructive text-sm mt-3">{borrowError}</Text> : null}
         {returnError ? <Text className="text-destructive text-sm mt-3">{returnError}</Text> : null}
 
         {ownOpenLoan ? (
@@ -468,6 +424,8 @@ function MaterialDetail({
               </Text>
             )}
           </TouchableOpacity>
+        ) : !hasOpenLoan && selfLoansOff ? (
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-3">{t('material.loans.self-disabled')}</Text>
         ) : !hasOpenLoan ? (
           <TouchableOpacity
             className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${borrowSaving ? 'opacity-70' : ''}`}
@@ -494,8 +452,8 @@ function MaterialDetail({
           damageReports.map((r, i) => (
             <DamageReportRow
               key={r.id}
-              clubId={clubId}
               report={r}
+              onPhotoExpired={onPhotoExpired}
               isLast={i === damageReports.length - 1}
               onStatusChange={canWrite ? (s) => void handleTriage(r.id, s) : undefined}
             />
@@ -519,7 +477,7 @@ function MaterialDetail({
               <TouchableOpacity
                 className={`flex-row items-center bg-muted dark:bg-muted-dark rounded-lg py-2 px-3 ${photoUploading ? 'opacity-70' : ''}`}
                 style={{ gap: 6 }}
-                onPress={() => void handlePickPhoto()}
+                onPress={upload.choose}
                 disabled={photoUploading}
               >
                 <Camera size={14} color={themeColors.foreground} />
@@ -541,7 +499,7 @@ function MaterialDetail({
               ) : null}
             </View>
 
-            {damageError ? <Text className="text-destructive text-sm mb-3">{damageError}</Text> : null}
+            {damageError ?? upload.error ? <Text className="text-destructive text-sm mb-3">{damageError ?? upload.error}</Text> : null}
 
             <TouchableOpacity
               className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${damageSaving || photoUploading ? 'opacity-70' : ''}`}

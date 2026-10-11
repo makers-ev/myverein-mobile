@@ -5,19 +5,14 @@ import { ApiError, apiErrorFromResponse } from '@/lib/api';
 import { sanitizeMediaFilename } from '@/lib/mediaKey';
 
 /**
- * Authenticated upload/download helpers for this backend's `/media` route
- * (see myverein-backend's `src/routes/media.ts`). Adapted from
- * mycouple-mobile's `src/api/client.ts` (`mediaApi`/`toUploadableFile`), but
- * this backend's contract differs in three ways that matter here:
- *  - every route (including `/media`) is club-scoped via `clubGuard`, so
- *    both the upload and the download URL need `?clubId=`.
- *  - the upload response is `{ data: { key } }` -- no `url`/`sizeBytes`.
- *  - `GET /media/:key` is NOT public (session + club-id-prefix check), so a
- *    plain `<Image source={{ uri }}>` can't load it directly -- React
- *    Native's native image loader doesn't share the JS-side cookie jar
- *    `authClient` uses. `downloadMediaUri` fetches the bytes with the
- *    session cookie attached and writes them to a local cache file instead,
- *    returning a `file://` URI that `<Image>` can load like any other.
+ * Authenticated upload helpers for this backend's media layer (see
+ * myverein-backend's `src/routes/media.ts`, Wave 7 B18). Uploads go to the
+ * club-scoped `POST /media?clubId=` and return a storage `key` that feature
+ * requests carry as `photoKey`. There is no download helper on purpose:
+ * `GET /media/<key>` is only reachable with a short-lived signed URL that a
+ * feature route hands out in its response (`photoUrl`), which a plain
+ * `<Image source={{ uri }}>` loads without cookies. Keys/URLs are never
+ * persisted client-side.
  */
 
 // On Android, `expo-image-picker` can return a `content://` URI (its Photo
@@ -56,83 +51,72 @@ async function getSessionCookie(): Promise<string> {
   return (authClient as unknown as { getCookie: () => Promise<string> }).getCookie();
 }
 
+/** Backend limit for generic image uploads (`MAX_IMAGE_BYTES`); checked client-side first to spare the upload. */
+export const MAX_MEDIA_IMAGE_BYTES = 10 * 1024 * 1024;
+/** Image types `POST /media` accepts. */
+export const MEDIA_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+export interface UploadedMedia {
+  /** Storage key (`<clubId>/<uuid>.<ext>`) -- pass as `photoKey` to the feature route. */
+  key: string;
+  /** Short-lived signed preview URL; for immediate preview only, never store it. */
+  url: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
 /**
  * Uploads an image asset (e.g. from `expo-image-picker`) to
- * `POST /media?clubId=`. Returns the media key on success -- already
- * prefixed with `<clubId>/...`, pass it straight through as `photoKey` to
- * `POST /inventory-items/:id/damage-reports`.
+ * `POST /media?clubId=` (multipart `file`, JPEG/PNG/WebP, up to 10 MB). On
+ * success returns `{ media }`; failures come back as an `ApiError` (so
+ * `apiErrorMessage` maps `QUOTA_EXCEEDED`, 422 etc.) or a plain `Error` for
+ * local problems.
  */
 export async function uploadMedia(
   clubId: string,
-  asset: { uri: string; name: string; type: string },
-): Promise<{ key: string } | { error: string }> {
-  // toUploadableFile throws synchronously (not a rejected promise) on
-  // failure -- without this catch, that exception skips past the caller's
-  // `await uploadMedia(...)` as an unhandled rejection instead of the
-  // `{ error }` shape it checks for.
+  asset: { uri: string; name: string; type: string; fileSize?: number | null },
+): Promise<{ media: UploadedMedia } | { error: unknown }> {
+  if (!MEDIA_IMAGE_TYPES.includes(asset.type)) return { error: new ApiError(422, 'VALIDATION_ERROR', 'Unsupported file type') };
+  if (asset.fileSize != null && asset.fileSize > MAX_MEDIA_IMAGE_BYTES) {
+    return { error: new ApiError(422, 'VALIDATION_ERROR', 'File too large') };
+  }
+  // toUploadableFile throws synchronously (not a rejected promise) on failure.
   let file: File;
   try {
     file = toUploadableFile(asset.uri, asset.name);
   } catch (err) {
-    return { error: err instanceof Error ? err.message : 'Failed to prepare file for upload' };
+    return { error: err };
   }
-
+  // Delete the file afterwards if it is a copy made here or the picker's output in the app cache -- never a user original.
+  const isTempCopy = !asset.uri.startsWith('file://') || isInAppCache(asset.uri);
   try {
     const cookie = await getSessionCookie();
-    const result = await file.upload(`${backendUrl}/media?clubId=${clubId}`, {
+    const result = await file.upload(`${backendUrl}/media?clubId=${encodeURIComponent(clubId)}`, {
       uploadType: UploadType.MULTIPART,
       fieldName: 'file',
       mimeType: asset.type,
       headers: { Cookie: cookie },
       signal: AbortSignal.timeout(TRANSFER_TIMEOUT_MS),
     });
-
-    const parsed: { data?: { key?: string }; error?: { message?: string } } | null = result.body ? JSON.parse(result.body) : null;
-    if (result.status < 200 || result.status >= 300) {
-      // This backend's error envelope: `{ error: { code, message, details } }`.
-      return { error: parsed?.error?.message ?? 'Request failed' };
+    if (result.status < 200 || result.status >= 300) return { error: apiErrorFromResponse(result.status, result.body) };
+    let media: UploadedMedia | undefined;
+    try {
+      media = (result.body ? JSON.parse(result.body) : null)?.data;
+    } catch {
+      media = undefined;
     }
-    const key = parsed?.data?.key;
-    if (!key) return { error: 'Request failed' };
-    return { key };
+    if (!media?.key) return { error: apiErrorFromResponse(500, null) };
+    return { media };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : 'Request failed' };
-  }
-}
-
-/**
- * Fetches `GET /media/:key?clubId=` with the session cookie attached and
- * writes the bytes to a cache file, returning its `file://` URI for use in
- * `<Image source={{ uri }}>`. Plain global `fetch` (not `authClient.$fetch`)
- * -- this just needs the raw bytes, not JSON parsing. Returns `null` on any
- * non-2xx response (404 = no photo, this is not an error condition), a
- * timed-out/dropped connection, or any other network failure -- callers
- * render "no photo" rather than an error state.
- *
- * The destination filename is derived from `key` alone (not `Date.now()`),
- * so a `key` already cached on disk is reused instead of re-fetched -- every
- * remount of a photo thumbnail (e.g. revisiting a damage-report list) would
- * otherwise re-download the same bytes over the network on every mount,
- * which is the most expensive place to be redundant under a bad connection.
- */
-export async function downloadMediaUri(clubId: string, key: string): Promise<string | null> {
-  const filename = sanitizeMediaFilename(key.replace(/\//g, '_'));
-  const destination = new File(Paths.cache, filename);
-  if (destination.exists) return destination.uri;
-
-  try {
-    const cookie = await getSessionCookie();
-    const response = await fetch(`${backendUrl}/media/${key}?clubId=${clubId}`, {
-      headers: { Cookie: cookie },
-      signal: AbortSignal.timeout(TRANSFER_TIMEOUT_MS),
-    });
-    if (!response.ok) return null;
-
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    destination.write(bytes);
-    return destination.uri;
-  } catch {
-    return null;
+    return { error: err };
+  } finally {
+    if (isTempCopy) {
+      try {
+        file.delete();
+      } catch {
+        // best-effort cache cleanup
+      }
+    }
   }
 }
 

@@ -22,3 +22,10 @@ export function photoFailureKey(err: unknown, ownPhoto: boolean): string {
   if (err instanceof ApiError && err.status === 422 && err.code !== 'QUOTA_EXCEEDED') return 'member-photo.error.invalid';
   return apiErrorKey(err);
 }
+
+/** Translation key for a failed generic image upload (`POST /media`, 10 MB). Quota and other coded errors win over "image unusable". */
+export function imageUploadFailureKey(err: unknown): string {
+  if (err instanceof ApiError && err.status === 422 && err.code !== 'QUOTA_EXCEEDED') return 'media.error.invalid';
+  if (err instanceof ApiError && err.status === 413 && err.code !== 'QUOTA_EXCEEDED') return 'media.error.invalid';
+  return apiErrorKey(err);
+}

@@ -1,5 +1,5 @@
 import { ApiError } from './api';
-import { isMinorBirthDate, photoFailureKey } from './memberPhoto';
+import { imageUploadFailureKey, isMinorBirthDate, photoFailureKey } from './memberPhoto';
 import { initialsOf } from '@/components/verein/MemberAvatar';
 
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
@@ -38,5 +38,14 @@ describe('photoFailureKey', () => {
   it('explains 403 only for the own photo', () => {
     expect(photoFailureKey(new ApiError(403, 'FORBIDDEN', 'x'), true)).toBe('member-photo.error.minor');
     expect(photoFailureKey(new ApiError(403, 'FORBIDDEN', 'x'), false)).toBe('api.error.forbidden');
+  });
+});
+
+describe('imageUploadFailureKey', () => {
+  it('maps invalid uploads, quota and others', () => {
+    expect(imageUploadFailureKey(new ApiError(422, 'VALIDATION_ERROR', 'x'))).toBe('media.error.invalid');
+    expect(imageUploadFailureKey(new ApiError(422, 'QUOTA_EXCEEDED', 'x'))).toBe('api.error.quota');
+    expect(imageUploadFailureKey(new ApiError(413, 'QUOTA_EXCEEDED', 'x'))).toBe('api.error.quota');
+    expect(imageUploadFailureKey(new ApiError(429, 'TOO_MANY_REQUESTS', 'x'))).toBe('api.error.rate-limit');
   });
 });

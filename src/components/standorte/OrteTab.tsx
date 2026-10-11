@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Image, Linking, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Linking, Text, TouchableOpacity, View } from 'react-native';
 import { Clock, ExternalLink, Eye, EyeOff, Info, Link2, MapPin, User, Wifi } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 
@@ -8,9 +8,14 @@ import { useThemeColors } from '@/theme/colors';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { useLocations, useLocationDetail, type Location, type WifiNetwork, type WifiSecurity, type LocationLink } from '@/hooks/useLocations';
 import { buildWifiQrPayload } from '@/lib/wifiQr';
+import SignedImage from '@/components/ui/SignedImage';
+import { useThrottledCallback } from '@/hooks/useThrottledCallback';
 import KeysSection from './KeysSection';
 import { LinkForm, LocationForm, WifiForm } from './LocationForms';
 import { EmptyState, IconButton, SectionCard, StatusChip } from './shared';
+
+// Signed photo URLs expire; an image error triggers one refetch for fresh URLs, at most once per 10 s.
+const PHOTO_REFRESH_MS = 10_000;
 
 // Tinted pin placeholder so a location without a photo still looks intentional.
 function LocationPhotoPlaceholder({ className }: { className: string }) {
@@ -24,14 +29,19 @@ function LocationPhotoPlaceholder({ className }: { className: string }) {
   );
 }
 
-function LocationCard({ location, onPress }: { location: Location; onPress: () => void }) {
+function LocationCard({ location, onPress, onPhotoExpired }: { location: Location; onPress: () => void; onPhotoExpired: () => void }) {
   return (
     <TouchableOpacity
       onPress={onPress}
       className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl mb-4 overflow-hidden shadow-sm"
     >
       {location.photoUrl ? (
-        <Image source={{ uri: location.photoUrl }} className="w-full h-36" resizeMode="cover" />
+        <SignedImage
+          uri={location.photoUrl}
+          className="w-full h-36"
+          onExpired={onPhotoExpired}
+          fallback={<LocationPhotoPlaceholder className="w-full h-36" />}
+        />
       ) : (
         <LocationPhotoPlaceholder className="w-full h-36" />
       )}
@@ -52,6 +62,7 @@ function LocationList({ clubId, canWrite, onSelect }: { clubId: string; canWrite
   const themeColors = useThemeColors();
   const { locations, loading, refetch } = useLocations(clubId);
   const [creating, setCreating] = useState(false);
+  const onPhotoExpired = useThrottledCallback(() => void refetch(), PHOTO_REFRESH_MS);
 
   if (loading && locations.length === 0) {
     return (
@@ -73,7 +84,7 @@ function LocationList({ clubId, canWrite, onSelect }: { clubId: string; canWrite
       {locations.length === 0 ? (
         <EmptyState icon={<MapPin size={26} color={themeColors.primary} />} text={t('standorte.list.empty')} />
       ) : (
-        locations.map((loc) => <LocationCard key={loc.id} location={loc} onPress={() => onSelect(loc.id)} />)
+        locations.map((loc) => <LocationCard key={loc.id} location={loc} onPress={() => onSelect(loc.id)} onPhotoExpired={onPhotoExpired} />)
       )}
 
       {creating && <LocationForm clubId={clubId} onClose={() => setCreating(false)} onSaved={() => void refetch()} />}
@@ -180,6 +191,7 @@ function LocationDetail({
   const [sheet, setSheet] = useState<Sheet>(null);
   const closeSheet = () => setSheet(null);
   const reload = () => void refetch();
+  const onPhotoExpired = useThrottledCallback(() => void refetch(), PHOTO_REFRESH_MS);
 
   // Plain Google Maps search URL: opens the default maps app or a browser, no native SDK needed.
   const handleDirections = () => {
@@ -232,7 +244,12 @@ function LocationDetail({
       )}
 
       {location.photoUrl ? (
-        <Image source={{ uri: location.photoUrl }} className="w-full h-40 rounded-2xl mb-4" resizeMode="cover" />
+        <SignedImage
+          uri={location.photoUrl}
+          className="w-full h-40 rounded-2xl mb-4"
+          onExpired={onPhotoExpired}
+          fallback={<LocationPhotoPlaceholder className="w-full h-40 rounded-2xl mb-4" />}
+        />
       ) : (
         <LocationPhotoPlaceholder className="w-full h-40 rounded-2xl mb-4" />
       )}
