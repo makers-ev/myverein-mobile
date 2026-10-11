@@ -3,7 +3,7 @@ export type WifiQrSecurity = 'open' | 'wpa' | 'wep' | 'wpa3';
 // `;`, `,`, `"`, `:` and `\` are backslash-escaped so they can't terminate a field early.
 // An all-hex value would be read as a raw hex SSID/key by scanners, so it is quoted (same as the backend).
 function escapeWifiField(value: string): string {
-  const escaped = value.replace(/([\;,":])/g, '\\$1');
+  const escaped = value.replace(/([\\;,":])/g, '\\$1');
   return /^[0-9a-fA-F]+$/.test(value) ? `"${escaped}"` : escaped;
 }
 
