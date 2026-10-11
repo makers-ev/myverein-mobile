@@ -601,7 +601,7 @@ export default function MaterialTab({ clubId }: { clubId: string }) {
         <MaterialDetail
           clubId={clubId}
           itemId={selectedItemId}
-          membershipId={membership?.id ?? null}
+          membershipId={membership?.memberId ?? null}
           canWrite={canWrite}
           locations={locations}
           categories={categories}

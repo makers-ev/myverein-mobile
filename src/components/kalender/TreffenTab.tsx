@@ -7,7 +7,7 @@ import { useThemeColors } from '@/theme/colors';
 import DateTimeField from '@/components/ui/DateTimeField';
 import { ApiError } from '@/lib/api';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
-import { useClubMembers } from '@/hooks/useClubMembers';
+import { useClubMemberDirectory } from '@/hooks/useClubMembers';
 import { useMeetings, type Meeting, type MeetingStatus } from '@/hooks/useMeetings';
 import { useMeetingDetail, type AttendanceEntry, type OverlapCandidate } from '@/hooks/useMeetingDetail';
 
@@ -243,7 +243,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
   const { membership, can } = useOwnMembership(clubId);
   // Everything that writes meeting data needs meetings:write (backend 403s otherwise); RSVP stays self-service.
   const canWrite = can('meetings:write');
-  const { members } = useClubMembers(clubId);
+  const { members } = useClubMemberDirectory(clubId);
   const {
     meeting,
     invitees,
@@ -279,9 +279,9 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
   const [resSaving, setResSaving] = useState(false);
   const [resError, setResError] = useState<string | null>(null);
 
-  const nameFor = (memberId: string) => members.find((m) => m.id === memberId)?.name ?? memberId;
+  const nameFor = (memberId: string) => members.find((m) => m.memberId === memberId)?.name ?? memberId;
 
-  const ownInvite = membership ? invitees.find((i) => i.memberId === membership.id) : undefined;
+  const ownInvite = membership ? invitees.find((i) => i.memberId === membership.memberId) : undefined;
 
   const handleRespond = async (response: 'zugesagt' | 'abgesagt') => {
     setRsvpSaving(true);

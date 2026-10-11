@@ -12,7 +12,11 @@ export type ClubPermission =
   | 'calendars:write'
   | 'meetings:write'
   | 'locations:write'
-  | 'inventory:write';
+  | 'inventory:write'
+  | 'meetings:read_board'
+  | 'locations:read_access'
+  // Not a ClubPermission in the backend, but appended to /club-members/me for UI gating (board roles).
+  | 'club_stats:read';
 
 /** Fetch-shaped hook for `GET /club-members/me?clubId=`, always includes sensitive fields (it's the caller's own row). */
 export function useOwnMembership(clubId: string | null) {
