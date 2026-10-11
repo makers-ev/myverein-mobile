@@ -7,6 +7,7 @@ import { useThemeColors } from '@/theme/colors';
 import { navigate } from '@/navigation/navigationRef';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
+import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import OrteTab from '@/components/standorte/OrteTab';
 import MaterialTab from '@/components/standorte/MaterialTab';
 
@@ -21,7 +22,7 @@ export default function StandorteScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const [tab, setTab] = useState<Tab>('orte');
-  const { activeClub, loading: clubsLoading } = useMyClubs();
+  const { activeClub, error: clubsError, loading: clubsLoading } = useMyClubs();
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
@@ -36,6 +37,8 @@ export default function StandorteScreen() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={themeColors.primary} />
         </View>
+      ) : !activeClub && clubsError ? (
+        <ClubsLoadError />
       ) : !activeClub ? (
         // Same "no club" copy/UX as VereinScreen -- a member with no club
         // shouldn't see a different empty state per screen.

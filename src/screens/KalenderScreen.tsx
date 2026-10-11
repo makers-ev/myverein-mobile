@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
+import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import TermineTab from '@/components/kalender/TermineTab';
 import VerfuegbarkeitTab from '@/components/kalender/VerfuegbarkeitTab';
 import TreffenTab from '@/components/kalender/TreffenTab';
@@ -22,12 +23,17 @@ export default function KalenderScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const [tab, setTab] = useState<Tab>('termine');
-  const { activeClub, loading: clubsLoading } = useMyClubs();
+  const { activeClub, error: clubsError, loading: clubsLoading } = useMyClubs();
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="px-6 pt-4">
         <Text className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">{t('nav.kalender')}</Text>
+        {activeClub ? (
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-2" numberOfLines={1}>
+            {activeClub.clubName}
+          </Text>
+        ) : null}
         <ClubSwitcher />
       </View>
 
@@ -35,6 +41,8 @@ export default function KalenderScreen() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={themeColors.primary} />
         </View>
+      ) : !activeClub && clubsError ? (
+        <ClubsLoadError />
       ) : !activeClub ? (
         <View className="px-6 pt-6">
           <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t('verein.no-club.title')}</Text>

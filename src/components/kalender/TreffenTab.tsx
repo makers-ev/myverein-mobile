@@ -413,147 +413,147 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
       )}
 
       {canWrite && (
-      <SectionCard title={t('treffen.overlap.title')}>
-        {candidates.length === 0 ? (
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.overlap.empty')}</Text>
-        ) : (
-          candidates.map((c, i) => (
-            <Text key={c + i} className="text-foreground dark:text-foreground-dark text-xs mb-1">
-              {new Date(c).toLocaleString()}
-            </Text>
-          ))
-        )}
-        <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
-          <View className="flex-1">
-            <DateTimeField value={candidateInput} onChange={setCandidateInput} placeholder={t('treffen.overlap.candidate-placeholder')} />
-          </View>
-          <TouchableOpacity className="bg-muted dark:bg-muted-dark rounded-lg py-2.5 px-3" onPress={handleAddCandidate}>
-            <Text className="text-foreground dark:text-foreground-dark text-xs font-bold">{t('treffen.overlap.add-candidate')}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {overlapError ? <Text className="text-destructive text-sm mt-2">{overlapError}</Text> : null}
-
-        <TouchableOpacity
-          className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${overlapChecking || candidates.length === 0 ? 'opacity-70' : ''}`}
-          onPress={() => void handleCheckOverlap()}
-          disabled={overlapChecking || candidates.length === 0}
-        >
-          {overlapChecking ? (
-            <ActivityIndicator color={themeColors.primaryForeground} size="small" />
+        <SectionCard title={t('treffen.overlap.title')}>
+          {candidates.length === 0 ? (
+            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.overlap.empty')}</Text>
           ) : (
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
-              {t('treffen.overlap.check')}
-            </Text>
+            candidates.map((c, i) => (
+              <Text key={c + i} className="text-foreground dark:text-foreground-dark text-xs mb-1">
+                {new Date(c).toLocaleString()}
+              </Text>
+            ))
           )}
-        </TouchableOpacity>
-
-        {overlapResults && (
-          <View className="mt-3">
-            {overlapResults.map((result) => {
-              const available = result.availability.filter((a) => a.available).length;
-              return (
-                <View key={result.candidate} className="py-2 border-t border-border dark:border-border-dark">
-                  <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold mb-1">
-                    {new Date(result.candidate).toLocaleString()}
-                  </Text>
-                  <View className="flex-row items-center flex-wrap" style={{ gap: 4 }}>
-                    {result.availability.map((a) => (
-                      <View
-                        key={a.memberId}
-                        className={`w-5 h-5 rounded-full items-center justify-center ${a.available ? 'bg-success/20' : 'bg-destructive/20'}`}
-                      >
-                        {a.available ? (
-                          <Check size={12} color={themeColors.success} />
-                        ) : (
-                          <X size={12} color={themeColors.destructive} />
-                        )}
-                      </View>
-                    ))}
-                    <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs ml-1">
-                      {t('treffen.overlap.count', { available, total: result.availability.length })}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })}
+          <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
+            <View className="flex-1">
+              <DateTimeField value={candidateInput} onChange={setCandidateInput} placeholder={t('treffen.overlap.candidate-placeholder')} />
+            </View>
+            <TouchableOpacity className="bg-muted dark:bg-muted-dark rounded-lg py-2.5 px-3" onPress={handleAddCandidate}>
+              <Text className="text-foreground dark:text-foreground-dark text-xs font-bold">{t('treffen.overlap.add-candidate')}</Text>
+            </TouchableOpacity>
           </View>
-        )}
-      </SectionCard>
+
+          {overlapError ? <Text className="text-destructive text-sm mt-2">{overlapError}</Text> : null}
+
+          <TouchableOpacity
+            className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${overlapChecking || candidates.length === 0 ? 'opacity-70' : ''}`}
+            onPress={() => void handleCheckOverlap()}
+            disabled={overlapChecking || candidates.length === 0}
+          >
+            {overlapChecking ? (
+              <ActivityIndicator color={themeColors.primaryForeground} size="small" />
+            ) : (
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
+                {t('treffen.overlap.check')}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          {overlapResults && (
+            <View className="mt-3">
+              {overlapResults.map((result) => {
+                const available = result.availability.filter((a) => a.available).length;
+                return (
+                  <View key={result.candidate} className="py-2 border-t border-border dark:border-border-dark">
+                    <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold mb-1">
+                      {new Date(result.candidate).toLocaleString()}
+                    </Text>
+                    <View className="flex-row items-center flex-wrap" style={{ gap: 4 }}>
+                      {result.availability.map((a) => (
+                        <View
+                          key={a.memberId}
+                          className={`w-5 h-5 rounded-full items-center justify-center ${a.available ? 'bg-success/20' : 'bg-destructive/20'}`}
+                        >
+                          {a.available ? (
+                            <Check size={12} color={themeColors.success} />
+                          ) : (
+                            <X size={12} color={themeColors.destructive} />
+                          )}
+                        </View>
+                      ))}
+                      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs ml-1">
+                        {t('treffen.overlap.count', { available, total: result.availability.length })}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </SectionCard>
 
       )}
 
       {canWrite && (
-      <SectionCard title={t('treffen.attendance.title')}>
-        {invitees.length === 0 ? (
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.attendance.empty')}</Text>
-        ) : (
-          invitees.map((inv, i) => {
-            const row = attendance[inv.memberId] ?? { present: false, hasVotingRight: true };
-            return (
-              <View
-                key={inv.id}
-                className={`py-2.5 ${i === invitees.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}
-              >
-                <Text className="text-foreground dark:text-foreground-dark text-sm font-medium mb-2">{nameFor(inv.memberId)}</Text>
-                <View className="flex-row items-center" style={{ gap: 16 }}>
-                  <TouchableOpacity
-                    className="flex-row items-center"
-                    style={{ gap: 6 }}
-                    onPress={() =>
-                      setAttendance((prev) => ({
-                        ...prev,
-                        [inv.memberId]: { ...row, present: !row.present },
-                      }))
-                    }
-                  >
-                    <View
-                      className={`w-4 h-4 rounded ${row.present ? 'bg-primary dark:bg-primary-dark' : 'border border-border dark:border-border-dark'}`}
-                    />
-                    <Text className="text-xs text-foreground dark:text-foreground-dark">{t('treffen.attendance.present')}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    className="flex-row items-center"
-                    style={{ gap: 6 }}
-                    onPress={() =>
-                      setAttendance((prev) => ({
-                        ...prev,
-                        [inv.memberId]: { ...row, hasVotingRight: !row.hasVotingRight },
-                      }))
-                    }
-                  >
-                    <View
-                      className={`w-4 h-4 rounded ${row.hasVotingRight ? 'bg-primary dark:bg-primary-dark' : 'border border-border dark:border-border-dark'}`}
-                    />
-                    <Text className="text-xs text-foreground dark:text-foreground-dark">{t('treffen.attendance.voting-right')}</Text>
-                  </TouchableOpacity>
+        <SectionCard title={t('treffen.attendance.title')}>
+          {invitees.length === 0 ? (
+            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.attendance.empty')}</Text>
+          ) : (
+            invitees.map((inv, i) => {
+              const row = attendance[inv.memberId] ?? { present: false, hasVotingRight: true };
+              return (
+                <View
+                  key={inv.id}
+                  className={`py-2.5 ${i === invitees.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}
+                >
+                  <Text className="text-foreground dark:text-foreground-dark text-sm font-medium mb-2">{nameFor(inv.memberId)}</Text>
+                  <View className="flex-row items-center" style={{ gap: 16 }}>
+                    <TouchableOpacity
+                      className="flex-row items-center"
+                      style={{ gap: 6 }}
+                      onPress={() =>
+                        setAttendance((prev) => ({
+                          ...prev,
+                          [inv.memberId]: { ...row, present: !row.present },
+                        }))
+                      }
+                    >
+                      <View
+                        className={`w-4 h-4 rounded ${row.present ? 'bg-primary dark:bg-primary-dark' : 'border border-border dark:border-border-dark'}`}
+                      />
+                      <Text className="text-xs text-foreground dark:text-foreground-dark">{t('treffen.attendance.present')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className="flex-row items-center"
+                      style={{ gap: 6 }}
+                      onPress={() =>
+                        setAttendance((prev) => ({
+                          ...prev,
+                          [inv.memberId]: { ...row, hasVotingRight: !row.hasVotingRight },
+                        }))
+                      }
+                    >
+                      <View
+                        className={`w-4 h-4 rounded ${row.hasVotingRight ? 'bg-primary dark:bg-primary-dark' : 'border border-border dark:border-border-dark'}`}
+                      />
+                      <Text className="text-xs text-foreground dark:text-foreground-dark">{t('treffen.attendance.voting-right')}</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            );
-          })
-        )}
+              );
+            })
+          )}
 
-        {attendanceError ? <Text className="text-destructive text-sm mt-3">{attendanceError}</Text> : null}
-        {attendanceSaved && !attendanceError ? (
-          <Text className="text-success dark:text-success-dark text-xs mt-3">{t('treffen.attendance.saved')}</Text>
-        ) : null}
+          {attendanceError ? <Text className="text-destructive text-sm mt-3">{attendanceError}</Text> : null}
+          {attendanceSaved && !attendanceError ? (
+            <Text className="text-success dark:text-success-dark text-xs mt-3">{t('treffen.attendance.saved')}</Text>
+          ) : null}
 
-        {invitees.length > 0 && (
-          <TouchableOpacity
-            className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${attendanceSaving ? 'opacity-70' : ''}`}
-            onPress={() => void handleSaveAttendance()}
-            disabled={attendanceSaving}
-          >
-            {attendanceSaving ? (
-              <ActivityIndicator color={themeColors.primaryForeground} size="small" />
-            ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
-                {t('treffen.attendance.save')}
-              </Text>
-            )}
-          </TouchableOpacity>
-        )}
-      </SectionCard>
+          {invitees.length > 0 && (
+            <TouchableOpacity
+              className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${attendanceSaving ? 'opacity-70' : ''}`}
+              onPress={() => void handleSaveAttendance()}
+              disabled={attendanceSaving}
+            >
+              {attendanceSaving ? (
+                <ActivityIndicator color={themeColors.primaryForeground} size="small" />
+              ) : (
+                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
+                  {t('treffen.attendance.save')}
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
+        </SectionCard>
 
       )}
 

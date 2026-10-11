@@ -16,11 +16,12 @@ export type ClubPermission =
 
 /** Fetch-shaped hook for `GET /club-members/me?clubId=`, always includes sensitive fields (it's the caller's own row). */
 export function useOwnMembership(clubId: string | null) {
-  const [membership, setMembership] = useState<ClubMember | null>(null);
+  // Kept together with the club it belongs to, so a stale club's permissions are never exposed.
+  const [stored, setStored] = useState<{ clubId: string; member: ClubMember } | null>(null);
+  const membership = stored && stored.clubId === clubId ? stored.member : null;
   const [loading, setLoading] = useState(!!clubId);
 
-  // Only the newest request may write state, and the previous club's
-  // membership (and thus its permissions) is dropped as soon as clubId changes.
+  // Only the newest request may write state.
   const requestId = useRef(0);
 
   const refetch = useCallback(async () => {
@@ -32,14 +33,12 @@ export function useOwnMembership(clubId: string | null) {
     setLoading(true);
     try {
       const { data } = await apiFetch<{ data: ClubMember }>(`/club-members/me?clubId=${clubId}`);
-      if (id === requestId.current) setMembership(data);
+      if (id === requestId.current) setStored({ clubId, member: data });
+    } catch {
+      // Keep no membership; can() stays false (deny by default).
     } finally {
       if (id === requestId.current) setLoading(false);
     }
-  }, [clubId]);
-
-  useEffect(() => {
-    setMembership(null);
   }, [clubId]);
 
   useEffect(() => {

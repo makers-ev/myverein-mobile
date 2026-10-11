@@ -20,18 +20,20 @@ export default function ClubSwitcher() {
     <>
       <TouchableOpacity
         accessibilityRole="button"
-        accessibilityLabel={t('club-switcher.open')}
+        accessibilityLabel={`${t('club-switcher.open')}: ${activeClub.clubName ?? t('club-switcher.unnamed')}`}
         onPress={() => setOpen(true)}
-        className="flex-row items-center self-start bg-muted dark:bg-muted-dark rounded-full px-3 py-1.5 min-h-[36px]"
-        style={{ gap: 6 }}
+        className="flex-row items-center self-start bg-muted dark:bg-muted-dark rounded-full px-3 py-1.5 min-h-[44px]"
+        style={{ gap: 6, maxWidth: '100%' }}
       >
-        <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold">{t('club-switcher.switch')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold flex-shrink" numberOfLines={1}>
+          {activeClub.clubName ?? t('club-switcher.unnamed')}
+        </Text>
         <ChevronDown size={14} color={themeColors.mutedForeground} />
       </TouchableOpacity>
 
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
-        <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
-          <Pressable className="flex-1" onPress={() => setOpen(false)} accessibilityLabel={t('ui.cancel')} />
+        <View accessibilityViewIsModal className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
+          <Pressable className="flex-1" onPress={() => setOpen(false)} accessibilityRole="button" accessibilityLabel={t('ui.cancel')} />
           <SafeAreaView edges={['bottom']} className="bg-background dark:bg-background-dark rounded-t-3xl" style={{ maxHeight: '70%' }}>
             <View className="items-center pt-2">
               <View className="w-10 h-1 rounded-full bg-border dark:bg-border-dark" />
@@ -43,8 +45,8 @@ export default function ClubSwitcher() {
                 return (
                   <TouchableOpacity
                     key={club.clubId}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected, checked: selected }}
                     onPress={() => {
                       if (!selected) setActiveClubId(club.clubId);
                       setOpen(false);

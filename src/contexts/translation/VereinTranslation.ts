@@ -11,10 +11,10 @@ type Translation = Record<Language, Record<string, string>>;
 const authored = {
   de: {
     'nav.verein': 'Verein',
-    'club-switcher.switch': 'Verein wechseln',
     'club-switcher.open': 'Verein wechseln, Auswahl öffnen',
     'club-switcher.title': 'Verein auswählen',
     'club-switcher.unnamed': 'Unbenannter Verein',
+    'club-switcher.error': 'Deine Vereine konnten nicht geladen werden.',
     'verein.no-club.title': 'Noch kein Verein',
     'verein.no-club.body': 'Du bist noch in keinem Verein Mitglied. Wende dich an deinen Vorstand, um beizutreten.',
     'verein.no-club.join': 'Verein beitreten',
@@ -150,10 +150,10 @@ const authored = {
   },
   en: {
     'nav.verein': 'Club',
-    'club-switcher.switch': 'Switch club',
     'club-switcher.open': 'Switch club, open selection',
     'club-switcher.title': 'Select club',
     'club-switcher.unnamed': 'Unnamed club',
+    'club-switcher.error': 'Your clubs could not be loaded.',
     'verein.no-club.title': 'No club yet',
     'verein.no-club.body': "You're not a member of a club yet. Ask your club's board how to join.",
     'verein.no-club.join': 'Join a club',

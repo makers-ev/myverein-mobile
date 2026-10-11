@@ -14,6 +14,7 @@ import { useClubMembers, type ClubMember } from '@/hooks/useClubMembers';
 import { getDepartmentColor } from '@/theme/departmentColors';
 import ProfilTab from '@/components/verein/ProfilTab';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
+import ClubsLoadError from '@/components/verein/ClubsLoadError';
 
 type Tab = 'info' | 'mitglieder' | 'profil';
 
@@ -245,7 +246,7 @@ export default function VereinScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const [tab, setTab] = useState<Tab>('info');
-  const { activeClub, loading: clubsLoading, refetch: refetchClubs } = useMyClubs();
+  const { activeClub, error: clubsError, loading: clubsLoading, refetch: refetchClubs } = useMyClubs();
 
   // Returning from CreateClub after an approval: reload the memberships so
   // the new club shows up (the hook instance here keeps its old state).
@@ -273,6 +274,8 @@ export default function VereinScreen() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={themeColors.primary} />
         </View>
+      ) : !activeClub && clubsError ? (
+        <ClubsLoadError />
       ) : !activeClub ? (
         <NoClubState />
       ) : (

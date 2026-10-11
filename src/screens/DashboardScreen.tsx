@@ -76,7 +76,7 @@ function Skeleton({ className = '' }: { className?: string }) {
 export default function DashboardScreen({ navigation }: Props) {
   const { t, language } = useLanguage();
   const colors = useThemeColors();
-  const { activeClub, loading: clubsLoading } = useMyClubs();
+  const { activeClub, error: clubsError, loading: clubsLoading, refetch: refetchClubs } = useMyClubs();
   const clubId = activeClub?.clubId ?? null;
   const { event, loading: eventLoading, error, refetch } = useNextEvent(clubId);
   const { can } = useOwnMembership(clubId);
@@ -101,6 +101,20 @@ export default function DashboardScreen({ navigation }: Props) {
           accessibilityRole="button"
           accessibilityLabel={t('connection.retry')}
           onPress={() => void refetch()}
+          className="min-h-[44px] justify-center self-start"
+        >
+          <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  } else if (!activeClub && clubsError) {
+    eventBody = (
+      <View>
+        <Text className="text-destructive text-sm">{t('club-switcher.error')}</Text>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={t('connection.retry')}
+          onPress={() => void refetchClubs()}
           className="min-h-[44px] justify-center self-start"
         >
           <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>

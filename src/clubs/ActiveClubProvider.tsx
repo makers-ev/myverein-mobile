@@ -16,6 +16,8 @@ interface ActiveClubContextValue {
   /** The selected club, falling back to the first membership; null without any membership. */
   activeClub: MyClub | null;
   loading: boolean;
+  /** `/my-clubs` failed: distinct from "no membership" so screens can offer a retry. */
+  error: boolean;
   refetch: () => Promise<void>;
   setActiveClubId: (clubId: string) => void;
 }
@@ -32,6 +34,9 @@ export function ActiveClubProvider({ children }: { children: React.ReactNode }) 
   const { isAuthenticated } = useAuth();
   const [clubs, setClubs] = useState<MyClub[]>([]);
   const [loading, setLoading] = useState(isAuthenticated);
+  const [error, setError] = useState(false);
+  // True once a fetch finished for the current sign-in; lets `loading` be derived synchronously at sign-in.
+  const [fetched, setFetched] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectionLoaded, setSelectionLoaded] = useState(false);
 
@@ -58,16 +63,23 @@ export function ActiveClubProvider({ children }: { children: React.ReactNode }) 
     if (!isAuthenticated) {
       setClubs([]);
       setLoading(false);
+      setError(false);
+      setFetched(false);
       return;
     }
     setLoading(true);
+    setError(false);
     try {
       const { data } = await apiFetch<{ data: MyClub[] }>('/my-clubs');
       if (id === requestId.current) setClubs(data);
     } catch {
-      // Keep the previous list; consumers show their own empty/error state.
+      // Keep the previous list and flag the failure instead of reporting "no club".
+      if (id === requestId.current) setError(true);
     } finally {
-      if (id === requestId.current) setLoading(false);
+      if (id === requestId.current) {
+        setLoading(false);
+        setFetched(true);
+      }
     }
   }, [isAuthenticated]);
 
@@ -96,11 +108,12 @@ export function ActiveClubProvider({ children }: { children: React.ReactNode }) 
       clubs,
       activeClub,
       // Wait for the stored choice too, so the first club never flashes before the saved one.
-      loading: loading || (isAuthenticated && !selectionLoaded),
+      loading: isAuthenticated && (loading || !fetched || !selectionLoaded),
+      error,
       refetch,
       setActiveClubId,
     };
-  }, [clubs, selectedId, loading, isAuthenticated, selectionLoaded, refetch, setActiveClubId]);
+  }, [clubs, selectedId, loading, error, fetched, isAuthenticated, selectionLoaded, refetch, setActiveClubId]);
 
   return <ActiveClubContext.Provider value={value}>{children}</ActiveClubContext.Provider>;
 }
