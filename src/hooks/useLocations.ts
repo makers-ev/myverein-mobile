@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { apiFetch } from '@/lib/api';
+import { ApiError, apiFetch } from '@/lib/api';
 
 export interface Location {
   id: string;
@@ -20,7 +20,24 @@ export interface Location {
 export interface LocationKeyHolder {
   id: string;
   locationId: string;
+  /** Better Auth `member.id` of the holder (accounts only). */
   memberId: string;
+  keyLabel?: string | null;
+}
+
+export type WifiSecurity = 'open' | 'wpa' | 'wep' | 'wpa3';
+export const WIFI_SECURITIES: readonly WifiSecurity[] = ['open', 'wpa', 'wpa3', 'wep'];
+
+export interface KeyHistoryEntry {
+  id: string;
+  action: 'issued' | 'returned';
+  memberId: string | null;
+  memberName: string;
+  keyLabel: string | null;
+  note: string | null;
+  recordedBy: string | null;
+  recordedByName: string;
+  createdAt: string;
 }
 
 export interface WifiNetwork {
@@ -29,6 +46,10 @@ export interface WifiNetwork {
   label: string;
   ssid: string;
   password: string;
+  /** Missing on older backends: treated as open/wpa derived from the password. */
+  security?: WifiSecurity;
+  /** Ready-made `WIFI:` string from the backend; preferred over building one locally. */
+  qrPayload?: string;
   visibleToGuests: boolean;
   createdAt: string;
 }
@@ -79,31 +100,40 @@ export function useLocations(clubId: string | null) {
  * whatever comes back without any further client-side filtering.
  */
 export function useLocationDetail(clubId: string | null, locationId: string | null) {
-  const [location, setLocation] = useState<(Location & { keyHolders: LocationKeyHolder[] }) | null>(null);
-  const [wifiNetworks, setWifiNetworks] = useState<WifiNetwork[]>([]);
-  const [links, setLinks] = useState<LocationLink[]>([]);
+  type Detail = {
+    key: string;
+    location: Location & { keyHolders: LocationKeyHolder[] };
+    wifiNetworks: WifiNetwork[];
+    links: LocationLink[];
+  };
+  const [stored, setStored] = useState<Detail | null>(null);
   const [loading, setLoading] = useState(!!(clubId && locationId));
+  const [error, setError] = useState(false);
+  // Only the newest request may write state.
+  const requestId = useRef(0);
+  const key = `${clubId ?? ''}|${locationId ?? ''}`;
 
   const refetch = useCallback(async () => {
+    const id = ++requestId.current;
     if (!clubId || !locationId) {
-      setLocation(null);
-      setWifiNetworks([]);
-      setLinks([]);
       setLoading(false);
       return;
     }
     setLoading(true);
+    setError(false);
     try {
       const [locationRes, wifiRes, linksRes] = await Promise.all([
         apiFetch<{ data: Location & { keyHolders: LocationKeyHolder[] } }>(`/locations/${locationId}?clubId=${clubId}`),
         apiFetch<{ data: WifiNetwork[] }>(`/locations/${locationId}/wifi?clubId=${clubId}`),
         apiFetch<{ data: LocationLink[] }>(`/locations/${locationId}/links?clubId=${clubId}`),
       ]);
-      setLocation(locationRes.data);
-      setWifiNetworks(wifiRes.data);
-      setLinks(linksRes.data);
+      if (id === requestId.current) {
+        setStored({ key: `${clubId}|${locationId}`, location: locationRes.data, wifiNetworks: wifiRes.data, links: linksRes.data });
+      }
+    } catch {
+      if (id === requestId.current) setError(true);
     } finally {
-      setLoading(false);
+      if (id === requestId.current) setLoading(false);
     }
   }, [clubId, locationId]);
 
@@ -111,7 +141,92 @@ export function useLocationDetail(clubId: string | null, locationId: string | nu
     void refetch();
   }, [refetch]);
 
-  return { location, wifiNetworks, links, loading, refetch };
+  const current = stored && stored.key === key ? stored : null;
+  return {
+    location: current?.location ?? null,
+    wifiNetworks: current?.wifiNetworks ?? [],
+    links: current?.links ?? [],
+    loading,
+    error,
+    refetch,
+  };
+}
+
+const KEY_HISTORY_PAGE_SIZE = 20;
+
+/**
+ * Paged key history (`GET /locations/:id/key-history`, newest first). Needs
+ * `locations:write` or `locations:read_access`; pass `enabled=false` otherwise
+ * so no request is made. A 403 sets `forbidden` and the UI hides the section.
+ * Page 1 reloads on club/location change; `loadMore` appends. Only the newest
+ * request may write state.
+ */
+export function useKeyHistory(clubId: string | null, locationId: string | null, enabled: boolean) {
+  const [stored, setStored] = useState<{ key: string; entries: KeyHistoryEntry[]; total: number; page: number } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState(false);
+  const [forbidden, setForbidden] = useState(false);
+  const requestId = useRef(0);
+  const key = `${clubId ?? ''}|${locationId ?? ''}`;
+
+  const path = useCallback(
+    (page: number) => `/locations/${locationId}/key-history?clubId=${clubId}&page=${page}&pageSize=${KEY_HISTORY_PAGE_SIZE}`,
+    [clubId, locationId],
+  );
+
+  const refetch = useCallback(async () => {
+    const id = ++requestId.current;
+    setLoadingMore(false);
+    setForbidden(false);
+    if (!clubId || !locationId || !enabled) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await apiFetch<{ data: KeyHistoryEntry[]; page: number; total: number }>(path(1));
+      if (id === requestId.current) setStored({ key: `${clubId}|${locationId}`, entries: res.data, total: res.total, page: 1 });
+    } catch (err) {
+      if (id !== requestId.current) return;
+      if (err instanceof ApiError && err.status === 403) setForbidden(true);
+      else setError(true);
+    } finally {
+      if (id === requestId.current) setLoading(false);
+    }
+  }, [clubId, locationId, enabled, path]);
+
+  useEffect(() => {
+    void refetch();
+  }, [refetch]);
+
+  const current = enabled && !forbidden && stored && stored.key === key ? stored : null;
+  const entries = current?.entries ?? [];
+  const hasMore = !!current && entries.length < current.total;
+
+  const loadMore = useCallback(async () => {
+    if (!current || loading || loadingMore || !hasMore) return;
+    const id = ++requestId.current;
+    const nextPage = current.page + 1;
+    setLoadingMore(true);
+    setError(false);
+    try {
+      const res = await apiFetch<{ data: KeyHistoryEntry[]; total: number }>(path(nextPage));
+      if (id !== requestId.current) return;
+      setStored((prev) => {
+        if (!prev || prev.key !== key) return prev;
+        const seen = new Set(prev.entries.map((e) => e.id));
+        return { ...prev, entries: [...prev.entries, ...res.data.filter((e) => !seen.has(e.id))], total: res.total, page: nextPage };
+      });
+    } catch {
+      if (id === requestId.current) setError(true);
+    } finally {
+      if (id === requestId.current) setLoadingMore(false);
+    }
+  }, [current, loading, loadingMore, hasMore, path, key]);
+
+  return { entries, loading, loadingMore, error, forbidden, hasMore, refetch, loadMore };
 }
 
 /** Body for POST/PATCH `/locations`; `null` clears a field on PATCH, create omits empty fields. */
@@ -130,6 +245,7 @@ export interface WifiNetworkInput {
   label: string;
   ssid: string;
   password: string;
+  security?: WifiSecurity;
   visibleToGuests: boolean;
 }
 
@@ -139,7 +255,7 @@ export interface LocationLinkInput {
   visibleToGuests: boolean;
 }
 
-/** Mutation-shaped hook for `locations:write` actions (location, WiFi and link CRUD). */
+/** Mutation-shaped hook for `locations:write` actions (location, WiFi, link CRUD, key issue/return). */
 export function useLocationMutations(clubId: string | null) {
   const createLocation = useCallback(
     (input: LocationInput) => apiFetch<{ data: Location }>(`/locations?clubId=${clubId}`, { method: 'POST', body: input }),
@@ -187,5 +303,19 @@ export function useLocationMutations(clubId: string | null) {
     [clubId],
   );
 
-  return { createLocation, updateLocation, deleteLocation, createWifi, updateWifi, deleteWifi, createLink, updateLink, deleteLink };
+  const issueKey = useCallback(
+    (locationId: string, input: { memberId: string; keyLabel?: string; note?: string }) =>
+      apiFetch<{ data: LocationKeyHolder }>(`/locations/${locationId}/key-holders?clubId=${clubId}`, { method: 'POST', body: input }),
+    [clubId],
+  );
+  const returnKey = useCallback(
+    (locationId: string, memberId: string, note?: string) =>
+      apiFetch<void>(`/locations/${locationId}/key-holders/${encodeURIComponent(memberId)}?clubId=${clubId}`, {
+        method: 'DELETE',
+        body: note ? { note } : undefined,
+      }),
+    [clubId],
+  );
+
+  return { issueKey, returnKey, createLocation, updateLocation, deleteLocation, createWifi, updateWifi, deleteWifi, createLink, updateLink, deleteLink };
 }

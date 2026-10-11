@@ -7,12 +7,14 @@ import { useThemeColors } from '@/theme/colors';
 import { withScheme } from '@/lib/withScheme';
 import {
   useLocationMutations,
+  WIFI_SECURITIES,
+  type WifiSecurity,
   type Location,
   type LocationInput,
   type LocationLink,
   type WifiNetwork,
 } from '@/hooks/useLocations';
-import { confirmDelete, orBlank, SwitchRow, useSubmit } from './shared';
+import { ChipPicker, confirmDelete, orBlank, SwitchRow, useSubmit } from './shared';
 import { parseCoordinate } from './parse';
 
 function Input(props: React.ComponentProps<typeof TextInput>) {
@@ -160,10 +162,12 @@ export function WifiForm({
   const [label, setLabel] = useState(network?.label ?? '');
   const [ssid, setSsid] = useState(network?.ssid ?? '');
   const [password, setPassword] = useState(network?.password ?? '');
+  const [security, setSecurity] = useState<WifiSecurity>(network?.security ?? (network?.password === '' ? 'open' : 'wpa'));
   const [visibleToGuests, setVisibleToGuests] = useState(network?.visibleToGuests ?? false);
+  const isOpen = security === 'open';
 
   const handleSubmit = () => {
-    const input = { label: label.trim(), ssid: ssid.trim(), password, visibleToGuests };
+    const input = { label: label.trim(), ssid: ssid.trim(), password: isOpen ? '' : password, security, visibleToGuests };
     void run(async () => {
       if (network) await updateWifi(locationId, network.id, input);
       else await createWifi(locationId, input);
@@ -189,7 +193,7 @@ export function WifiForm({
       title={t(network ? 'standorte.wifi.edit' : 'standorte.wifi.add')}
       onClose={onClose}
       onSubmit={handleSubmit}
-      submitDisabled={!label.trim() || !ssid.trim()}
+      submitDisabled={!label.trim() || !ssid.trim() || (!isOpen && !password)}
       saving={saving}
       onDelete={network ? handleDelete : undefined}
       error={error}
@@ -200,9 +204,18 @@ export function WifiForm({
       <Field label={t('standorte.wifi.ssid')}>
         <Input value={ssid} onChangeText={setSsid} autoCapitalize="none" autoCorrect={false} />
       </Field>
-      <Field label={t('standorte.wifi.password')}>
-        <Input value={password} onChangeText={setPassword} autoCapitalize="none" autoCorrect={false} />
+      <Field label={t('standorte.wifi.security')}>
+        <ChipPicker
+          options={WIFI_SECURITIES.map((v) => ({ value: v, label: t(`standorte.wifi.security.${v}`) }))}
+          value={security}
+          onChange={setSecurity}
+        />
       </Field>
+      {!isOpen && (
+        <Field label={t('standorte.wifi.password')}>
+          <Input value={password} onChangeText={setPassword} autoCapitalize="none" autoCorrect={false} />
+        </Field>
+      )}
       <SwitchRow label={t('standorte.visible-to-guests')} value={visibleToGuests} onChange={setVisibleToGuests} />
     </FormSheet>
   );
