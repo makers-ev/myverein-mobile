@@ -33,6 +33,15 @@ function toUploadableFile(uri: string, name: string): File {
   return dest;
 }
 
+/** True if `uri` lies inside the app's cache directory (picker/manipulator output, safe to delete after use). */
+export function isInAppCache(uri: string): boolean {
+  try {
+    return uri.startsWith(Paths.cache.uri);
+  } catch {
+    return false;
+  }
+}
+
 // Without a bound, a stalled/dropped connection (or the app backgrounded
 // mid-transfer) leaves the upload/download promise pending forever -- the
 // caller's loading state never resolves and there's no way to retry.
@@ -211,7 +220,8 @@ export async function uploadMemberPhoto<TMember>(
   } catch (err) {
     return { error: err };
   }
-  const isTempCopy = !asset.uri.startsWith('file://');
+  // Delete the file afterwards if it is a copy made here or the picker's output in the app cache -- never a user original.
+  const isTempCopy = !asset.uri.startsWith('file://') || isInAppCache(asset.uri);
   try {
     const cookie = await getSessionCookie();
     const result = await file.upload(`${backendUrl}/club-members/${encodeURIComponent(target)}/photo?clubId=${encodeURIComponent(clubId)}`, {

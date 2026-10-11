@@ -17,7 +17,7 @@ interface Props {
   hint?: string;
   /** Own photo of a minor: no edit controls, only the hint. */
   readOnly?: boolean;
-  onChanged: (member: ClubMember | null) => void;
+  onChanged: (member: ClubMember | null, target: string) => void;
   onPhotoExpired?: () => void;
 }
 

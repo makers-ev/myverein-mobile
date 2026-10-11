@@ -46,7 +46,7 @@ interface Props {
   /** `members:write`: may set/remove the member's photo (`PUT/DELETE /club-members/:id/photo`). */
   canEditPhoto?: boolean;
   /** The photo was set (`ClubMember`) or removed (`null`); the owner refreshes its list. */
-  onPhotoChanged?: (member: ClubMember | null) => void;
+  onPhotoChanged?: (member: ClubMember | null, memberId: string) => void;
   /** The shown photo URL failed to load (expired signature): the owner refetches the resource. */
   onPhotoExpired?: () => void;
 }
@@ -78,7 +78,7 @@ export default function MemberDetailSheet({ member, onClose, clubId, canEditPhot
           name={member.name}
           photoUrl={member.photoUrl}
           hint={isMinorBirthDate(member.birthDate) ? t('member-photo.board-minor-hint') : t('member-photo.board-hint')}
-          onChanged={(m) => onPhotoChanged?.(m)}
+          onChanged={(m, id) => onPhotoChanged?.(m, id)}
           onPhotoExpired={onPhotoExpired}
         />
       ) : member.photoUrl ? (

@@ -30,12 +30,16 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "MyVerein braucht Zugriff auf deine Fotos, damit du ein Profilfoto oder Fotos hochladen kannst.",
-          "cameraPermission": "MyVerein braucht Zugriff auf die Kamera, damit du ein Profilfoto aufnehmen kannst.",
+          "photosPermission": "MyVerein needs access to your photos so you can choose a profile photo. It is also used for photos in damage reports and proof documents when founding a club.",
+          "cameraPermission": "MyVerein needs access to the camera so you can take a profile photo.",
           "microphonePermission": false
         }
       ]
     ],
+    "locales": {
+      "de": "./locales/de.json",
+      "en": "./locales/en.json"
+    },
     "extra": {
       "description": "MyVerein ist die Vereinsverwaltung für Mitglieder, Vorstand und externe Kontakte.",
       "author": "LPJ IT-Solutions",

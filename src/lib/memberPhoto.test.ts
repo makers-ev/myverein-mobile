@@ -1,5 +1,8 @@
-import { isMinorBirthDate } from './memberPhoto';
+import { ApiError } from './api';
+import { isMinorBirthDate, photoFailureKey } from './memberPhoto';
 import { initialsOf } from '@/components/verein/MemberAvatar';
+
+jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
 
 describe('isMinorBirthDate', () => {
   const today = new Date(2026, 9, 11); // 2026-10-11
@@ -24,5 +27,16 @@ describe('initialsOf', () => {
     expect(initialsOf('  anna ')).toBe('A');
     expect(initialsOf(null)).toBe('?');
     expect(initialsOf('')).toBe('?');
+  });
+});
+
+describe('photoFailureKey', () => {
+  it('maps quota before the generic 422', () => {
+    expect(photoFailureKey(new ApiError(422, 'QUOTA_EXCEEDED', 'x'), true)).toBe('api.error.quota');
+    expect(photoFailureKey(new ApiError(422, 'VALIDATION_ERROR', 'x'), true)).toBe('member-photo.error.invalid');
+  });
+  it('explains 403 only for the own photo', () => {
+    expect(photoFailureKey(new ApiError(403, 'FORBIDDEN', 'x'), true)).toBe('member-photo.error.minor');
+    expect(photoFailureKey(new ApiError(403, 'FORBIDDEN', 'x'), false)).toBe('api.error.forbidden');
   });
 });

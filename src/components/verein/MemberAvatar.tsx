@@ -32,6 +32,11 @@ export default function MemberAvatar({ name, photoUrl, size = 40, onExpired }: P
   useEffect(() => {
     onExpiredRef.current = onExpired;
   });
+  // The streak resets when an image loads (onLoad) or the photo is gone; a refreshed URL that fails again keeps the
+  // initials instead of looping refetches.
+  useEffect(() => {
+    if (!photoUrl) retried.current = false;
+  }, [photoUrl]);
 
   const showImage = !!photoUrl && failedUrl !== photoUrl;
   const radius = size / 2;

@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
-import { apiFetch, ApiError } from '@/lib/api';
-import { apiErrorMessage } from '@/lib/apiErrorMessage';
+import { apiFetch } from '@/lib/api';
+import { photoFailureKey } from '@/lib/memberPhoto';
 import { uploadMemberPhoto } from '@/lib/media';
 import type { ClubMember } from './useClubMembers';
 
@@ -17,7 +17,7 @@ interface Options {
   target: string;
   t: Translate;
   /** Called after a successful set (with the updated member shape incl. fresh `photoUrl`) or remove (`null`). */
-  onChanged: (member: ClubMember | null) => void;
+  onChanged: (member: ClubMember | null, target: string) => void;
 }
 
 /**
@@ -48,21 +48,20 @@ export function useMemberPhoto({ clubId, target, t, onChanged }: Options) {
   // Switching club/member invalidates anything in flight (the editor is also keyed per member, belt and braces).
   useEffect(() => {
     token.current += 1;
+    return () => {
+      token.current += 1;
+    };
   }, [clubId, target]);
 
-  const failureText = useCallback(
-    (err: unknown) => {
-      if (err instanceof ApiError && err.status === 403 && target === 'me') return t('member-photo.error.minor');
-      if (err instanceof ApiError && err.status === 422) return t('member-photo.error.invalid');
-      return apiErrorMessage(err, t);
-    },
-    [t, target],
-  );
+  const failureText = useCallback((err: unknown) => t(photoFailureKey(err, target === 'me')), [t, target]);
 
   const runPicker = useCallback(
     async (source: 'camera' | 'library') => {
+      // Taken before the picker opens: leaving the screen or switching club/member while it is open invalidates this run.
+      const my = ++token.current;
       const permission =
         source === 'camera' ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (my !== token.current) return;
       if (!permission.granted) {
         setError(t(source === 'camera' ? 'member-photo.error.camera-permission' : 'member-photo.error.library-permission'));
         return;
@@ -70,7 +69,7 @@ export function useMemberPhoto({ clubId, target, t, onChanged }: Options) {
       const options: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.8 };
       const result = source === 'camera' ? await ImagePicker.launchCameraAsync(options) : await ImagePicker.launchImageLibraryAsync(options);
       const asset = result.canceled ? undefined : result.assets[0];
-      if (!asset) return;
+      if (!asset || my !== token.current) return;
 
       const mimeType = asset.mimeType ?? 'image/jpeg';
       if (!ALLOWED_TYPES.includes(mimeType)) {
@@ -78,7 +77,7 @@ export function useMemberPhoto({ clubId, target, t, onChanged }: Options) {
         return;
       }
 
-      const my = ++token.current;
+      if (my !== token.current) return;
       setBusy(true);
       setError(null);
       const res = await uploadMemberPhoto<ClubMember>(clubId, target, {
@@ -93,7 +92,7 @@ export function useMemberPhoto({ clubId, target, t, onChanged }: Options) {
         setError(failureText(res.error));
         return;
       }
-      onChangedRef.current(res.member);
+      onChangedRef.current(res.member, target);
     },
     [clubId, target, t, failureText, setBusy, setError],
   );
@@ -124,7 +123,7 @@ export function useMemberPhoto({ clubId, target, t, onChanged }: Options) {
               await apiFetch(`/club-members/${encodeURIComponent(target)}/photo?clubId=${encodeURIComponent(clubId)}`, { method: 'DELETE' });
               if (my !== token.current) return;
               setBusy(false);
-              onChangedRef.current(null);
+              onChangedRef.current(null, target);
             } catch (err) {
               if (my !== token.current) return;
               setBusy(false);

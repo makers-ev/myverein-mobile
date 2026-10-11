@@ -18,6 +18,7 @@ import MemberAvatar from './MemberAvatar';
 import MemberDetailSheet, { categoryLabel, formatDay } from './MemberDetailSheet';
 
 const SEARCH_DEBOUNCE_MS = 350;
+const PHOTO_REFRESH_MS = 10_000;
 
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   return (
@@ -158,23 +159,42 @@ export default function MembersTab({ clubId }: { clubId: string }) {
 
   // Expired photo signatures: refetch the list (fresh URLs), at most once per 10 s however many avatars fail at once.
   const lastPhotoRefresh = useRef(0);
+  const photoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const refreshForPhotos = useCallback(() => {
-    const now = Date.now();
-    if (now - lastPhotoRefresh.current < 10_000) return;
-    lastPhotoRefresh.current = now;
+    const wait = PHOTO_REFRESH_MS - (Date.now() - lastPhotoRefresh.current);
+    if (wait > 0) {
+      // Throttled: schedule one trailing refetch so avatars that failed meanwhile still get fresh URLs.
+      if (!photoTimer.current) {
+        photoTimer.current = setTimeout(() => {
+          photoTimer.current = null;
+          lastPhotoRefresh.current = Date.now();
+          void refetch();
+        }, wait);
+      }
+      return;
+    }
+    lastPhotoRefresh.current = Date.now();
     void refetch();
   }, [refetch]);
+  useEffect(
+    () => () => {
+      if (photoTimer.current) clearTimeout(photoTimer.current);
+    },
+    [],
+  );
 
   // The sheet shows the freshest list row, falling back to the tapped snapshot (e.g. after a refetch dropped page 2).
   // Right after a photo change the response's fresh URL wins until the list refetch has settled.
   const [photoOverride, setPhotoOverride] = useState<{ id: string; url: string | null } | null>(null);
   const sheetRow = selected ? (members.find((m) => m.id === selected.id) ?? selected) : null;
   const sheetMember = sheetRow && loading && photoOverride?.id === sheetRow.id ? { ...sheetRow, photoUrl: photoOverride.url } : sheetRow;
-  const handlePhotoChanged = (updated: ClubMember | null) => {
-    if (!selected) return;
-    const url = updated?.photoUrl ?? null;
-    setSelected({ ...selected, photoUrl: url });
-    setPhotoOverride({ id: selected.id, url });
+  const handlePhotoChanged = (updated: ClubMember | null, memberId: string) => {
+    // Only touch the open sheet if it still shows the member the result is for (never re-select or open another one).
+    if (selected && selected.id === memberId) {
+      const url = updated?.photoUrl ?? null;
+      setSelected({ ...selected, photoUrl: url });
+      setPhotoOverride({ id: memberId, url });
+    }
     lastPhotoRefresh.current = Date.now();
     void refetch();
   };
