@@ -5,12 +5,14 @@ import { Check, X } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import DateTimeField from '@/components/ui/DateTimeField';
-import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { useClubMemberDirectory } from '@/hooks/useClubMembers';
-import { useMeetings, type Meeting, type MeetingStatus } from '@/hooks/useMeetings';
-import { useMeetingDetail, type AttendanceEntry, type OverlapCandidate } from '@/hooks/useMeetingDetail';
+import { MEETING_TYPES, useMeetings, type Meeting, type MeetingStatus, type MeetingType } from '@/hooks/useMeetings';
+import { useMeetingDetail, type OverlapCandidate } from '@/hooks/useMeetingDetail';
+import MeetingManageSection from './MeetingManageSection';
+import MeetingInvitees from './MeetingInvitees';
+import MeetingAttendance from './MeetingAttendance';
 
 interface Props {
   clubId: string;
@@ -34,15 +36,41 @@ function StatusBadge({ status }: { status: MeetingStatus }) {
   );
 }
 
+/** Localised meeting type; unknown legacy values are shown as they are. */
+function useTypeLabel() {
+  const { t } = useLanguage();
+  return (type: string) => ((MEETING_TYPES as readonly string[]).includes(type) ? t(`treffen.type.${type}`) : type);
+}
+
+function ErrorRetry({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { t } = useLanguage();
+  return (
+    <View className="py-6">
+      <Text className="text-destructive text-sm mb-3" accessibilityRole="alert">
+        {message}
+      </Text>
+      <TouchableOpacity
+        onPress={onRetry}
+        className="self-start px-5 justify-center rounded-lg bg-primary dark:bg-primary-dark"
+        style={{ minHeight: 44 }}
+        accessibilityRole="button"
+      >
+        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('verein.retry')}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 function MeetingListRow({ meeting, onPress }: { meeting: Meeting; onPress: () => void }) {
   const { t } = useLanguage();
+  const typeLabel = useTypeLabel();
   return (
     <TouchableOpacity
       onPress={onPress}
       className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3"
     >
       <Text className="text-foreground dark:text-foreground-dark font-bold text-sm mb-1">{meeting.title}</Text>
-      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{meeting.type}</Text>
+      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{typeLabel(meeting.type)}</Text>
       <View className="flex-row items-center justify-between">
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
           {meeting.scheduledAt ? new Date(meeting.scheduledAt).toLocaleString() : t('treffen.scheduled-at.pending')}
@@ -56,23 +84,24 @@ function MeetingListRow({ meeting, onPress }: { meeting: Meeting; onPress: () =>
 function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite: boolean; onSelect: (id: string) => void }) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { meetings, loading, createMeeting } = useMeetings(clubId);
+  const { meetings, loading, error: loadError, refetch, createMeeting } = useMeetings(clubId);
+  const typeLabel = useTypeLabel();
 
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState('');
-  const [type, setType] = useState('');
+  const [type, setType] = useState<MeetingType | null>(null);
   const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const handleCreate = async () => {
-    if (!title.trim() || !type.trim() || saving) return;
+    if (!title.trim() || !type || saving) return;
     setSaving(true);
     setError(null);
     try {
-      await createMeeting({ title: title.trim(), type: type.trim(), scheduledAt: scheduledAt?.toISOString() });
+      await createMeeting({ title: title.trim(), type, scheduledAt: scheduledAt?.toISOString() });
       setTitle('');
-      setType('');
+      setType(null);
       setScheduledAt(null);
       setShowCreate(false);
     } catch (err) {
@@ -82,13 +111,15 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
     }
   };
 
-  if (loading) {
+  if (loading && meetings.length === 0) {
     return (
       <View className="py-12 items-center">
         <ActivityIndicator color={themeColors.primary} />
       </View>
     );
   }
+
+  if (loadError && meetings.length === 0) return <ErrorRetry message={t('treffen.list.error')} onRetry={() => void refetch()} />;
 
   return (
     <>
@@ -112,13 +143,28 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
           <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.type')}
           </Text>
-          <TextInput
-            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
-            placeholder={t('treffen.type.placeholder')}
-            placeholderTextColor={themeColors.mutedForeground}
-            value={type}
-            onChangeText={setType}
-          />
+          <View className="flex-row flex-wrap mb-3" style={{ gap: 8 }}>
+            {MEETING_TYPES.map((value) => {
+              const selected = type === value;
+              return (
+                <TouchableOpacity
+                  key={value}
+                  onPress={() => setType(value)}
+                  className={`px-3 rounded-full justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark'}`}
+                  style={{ minHeight: 44 }}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={typeLabel(value)}
+                >
+                  <Text
+                    className={`text-xs font-semibold ${selected ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}
+                  >
+                    {typeLabel(value)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
           <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.scheduled-at')}
           </Text>
@@ -127,9 +173,9 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
           </View>
           {error ? <Text className="text-destructive text-sm mb-3">{error}</Text> : null}
           <TouchableOpacity
-            className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${saving ? 'opacity-70' : ''}`}
+            className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${saving || !title.trim() || !type ? 'opacity-50' : ''}`}
             onPress={() => void handleCreate()}
-            disabled={saving}
+            disabled={saving || !title.trim() || !type}
           >
             {saving ? (
               <ActivityIndicator color={themeColors.primaryForeground} />
@@ -245,12 +291,19 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
   // Everything that writes meeting data needs meetings:write (backend 403s otherwise); RSVP stays self-service.
   const canWrite = can('meetings:write');
   const { members } = useClubMemberDirectory(clubId);
+  const typeLabel = useTypeLabel();
   const {
     meeting,
     invitees,
     resolutions,
+    attendance,
     loading,
+    error: loadError,
+    refetch,
     updateMeeting,
+    deleteMeeting,
+    addInvitee,
+    removeInvitee,
     respondToInvite,
     recordAttendance,
     createResolution,
@@ -265,11 +318,6 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
   const [overlapResults, setOverlapResults] = useState<OverlapCandidate[] | null>(null);
   const [overlapChecking, setOverlapChecking] = useState(false);
   const [overlapError, setOverlapError] = useState<string | null>(null);
-
-  const [attendance, setAttendance] = useState<Record<string, { present: boolean; hasVotingRight: boolean }>>({});
-  const [attendanceSaving, setAttendanceSaving] = useState(false);
-  const [attendanceSaved, setAttendanceSaved] = useState(false);
-  const [attendanceError, setAttendanceError] = useState<string | null>(null);
 
   const [showResolutionForm, setShowResolutionForm] = useState(false);
   const [resDescription, setResDescription] = useState('');
@@ -318,25 +366,6 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
     }
   };
 
-  const handleSaveAttendance = async () => {
-    setAttendanceSaving(true);
-    setAttendanceError(null);
-    setAttendanceSaved(false);
-    try {
-      const entries: AttendanceEntry[] = invitees.map((inv) => ({
-        memberId: inv.memberId,
-        present: attendance[inv.memberId]?.present ?? false,
-        hasVotingRight: attendance[inv.memberId]?.hasVotingRight ?? true,
-      }));
-      await recordAttendance(entries);
-      setAttendanceSaved(true);
-    } catch (err) {
-      setAttendanceError(apiErrorMessage(err, t));
-    } finally {
-      setAttendanceSaving(false);
-    }
-  };
-
   const handleCreateResolution = async () => {
     if (!resDescription.trim() || !resResult.trim() || resSaving) return;
     setResSaving(true);
@@ -362,11 +391,20 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
     }
   };
 
-  if (loading || !meeting) {
+  if (!meeting) {
     return (
-      <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
-      </View>
+      <>
+        <TouchableOpacity onPress={onBack} className="mb-3 self-start justify-center" style={{ minHeight: 44 }} accessibilityRole="button">
+          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('treffen.back')}</Text>
+        </TouchableOpacity>
+        {loadError ? (
+          <ErrorRetry message={t('treffen.detail.error')} onRetry={() => void refetch()} />
+        ) : (
+          <View className="py-12 items-center" accessibilityLabel={loading ? t('treffen.detail.loading') : undefined}>
+            <ActivityIndicator color={themeColors.primary} />
+          </View>
+        )}
+      </>
     );
   }
 
@@ -379,10 +417,23 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
       <View className="mb-4">
         <Text className="text-xl font-black text-foreground dark:text-foreground-dark mb-1">{meeting.title}</Text>
         <View className="flex-row items-center" style={{ gap: 8 }}>
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{meeting.type}</Text>
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{typeLabel(meeting.type)}</Text>
           <StatusBadge status={meeting.status} />
         </View>
       </View>
+
+      {canWrite && (
+        <MeetingManageSection
+          // Re-sync the date field when the server value changes (e.g. after another save).
+          key={`${meeting.id}|${meeting.scheduledAt ?? ''}`}
+          meeting={meeting}
+          onUpdate={updateMeeting}
+          onDelete={async () => {
+            await deleteMeeting();
+            onBack();
+          }}
+        />
+      )}
 
       <AgendaMinutes meeting={meeting} canWrite={canWrite} onSave={(agenda, minutes) => updateMeeting({ agenda, minutes }).then(() => undefined)} />
 
@@ -484,79 +535,9 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
 
       )}
 
-      {canWrite && (
-        <SectionCard title={t('treffen.attendance.title')}>
-          {invitees.length === 0 ? (
-            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.attendance.empty')}</Text>
-          ) : (
-            invitees.map((inv, i) => {
-              const row = attendance[inv.memberId] ?? { present: false, hasVotingRight: true };
-              return (
-                <View
-                  key={inv.id}
-                  className={`py-2.5 ${i === invitees.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}
-                >
-                  <Text className="text-foreground dark:text-foreground-dark text-sm font-medium mb-2">{nameFor(inv.memberId)}</Text>
-                  <View className="flex-row items-center" style={{ gap: 16 }}>
-                    <TouchableOpacity
-                      className="flex-row items-center"
-                      style={{ gap: 6 }}
-                      onPress={() =>
-                        setAttendance((prev) => ({
-                          ...prev,
-                          [inv.memberId]: { ...row, present: !row.present },
-                        }))
-                      }
-                    >
-                      <View
-                        className={`w-4 h-4 rounded ${row.present ? 'bg-primary dark:bg-primary-dark' : 'border border-border dark:border-border-dark'}`}
-                      />
-                      <Text className="text-xs text-foreground dark:text-foreground-dark">{t('treffen.attendance.present')}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      className="flex-row items-center"
-                      style={{ gap: 6 }}
-                      onPress={() =>
-                        setAttendance((prev) => ({
-                          ...prev,
-                          [inv.memberId]: { ...row, hasVotingRight: !row.hasVotingRight },
-                        }))
-                      }
-                    >
-                      <View
-                        className={`w-4 h-4 rounded ${row.hasVotingRight ? 'bg-primary dark:bg-primary-dark' : 'border border-border dark:border-border-dark'}`}
-                      />
-                      <Text className="text-xs text-foreground dark:text-foreground-dark">{t('treffen.attendance.voting-right')}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              );
-            })
-          )}
+      {canWrite && <MeetingInvitees invitees={invitees} directory={members} nameFor={nameFor} onAdd={addInvitee} onRemove={removeInvitee} />}
 
-          {attendanceError ? <Text className="text-destructive text-sm mt-3">{attendanceError}</Text> : null}
-          {attendanceSaved && !attendanceError ? (
-            <Text className="text-success dark:text-success-dark text-xs mt-3">{t('treffen.attendance.saved')}</Text>
-          ) : null}
-
-          {invitees.length > 0 && (
-            <TouchableOpacity
-              className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${attendanceSaving ? 'opacity-70' : ''}`}
-              onPress={() => void handleSaveAttendance()}
-              disabled={attendanceSaving}
-            >
-              {attendanceSaving ? (
-                <ActivityIndicator color={themeColors.primaryForeground} size="small" />
-              ) : (
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
-                  {t('treffen.attendance.save')}
-                </Text>
-              )}
-            </TouchableOpacity>
-          )}
-        </SectionCard>
-
-      )}
+      {canWrite && <MeetingAttendance invitees={invitees} attendance={attendance} directory={members} nameFor={nameFor} onSave={recordAttendance} />}
 
       <SectionCard title={t('treffen.resolutions.title')}>
         {resolutions.length === 0 ? (

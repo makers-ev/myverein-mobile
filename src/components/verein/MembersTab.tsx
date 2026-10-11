@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View, ScrollView } from 'react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
@@ -14,6 +14,7 @@ import {
   type MemberStatus,
 } from '@/hooks/useClubMembers';
 import MemberStatsCard from './MemberStatsCard';
+import MemberAvatar from './MemberAvatar';
 import MemberDetailSheet, { categoryLabel, formatDay } from './MemberDetailSheet';
 
 const SEARCH_DEBOUNCE_MS = 350;
@@ -39,7 +40,17 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
   );
 }
 
-function MemberRow({ member, showStatus, onPress }: { member: ClubMember; showStatus: boolean; onPress?: () => void }) {
+function MemberRow({
+  member,
+  showStatus,
+  onPress,
+  onPhotoExpired,
+}: {
+  member: ClubMember;
+  showStatus: boolean;
+  onPress?: () => void;
+  onPhotoExpired?: () => void;
+}) {
   const { t, language } = useLanguage();
   const category = categoryLabel(member);
   const activeDepartments = member.departments.filter((d) => d.until === null).map((d) => d.name);
@@ -47,7 +58,8 @@ function MemberRow({ member, showStatus, onPress }: { member: ClubMember; showSt
 
   const content = (
     <>
-      <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
+      <View className="flex-row items-center justify-between" style={{ gap: 10 }}>
+        <MemberAvatar name={member.name} photoUrl={member.photoUrl} size={40} onExpired={onPhotoExpired} />
         <Text className="flex-1 text-foreground dark:text-foreground-dark font-bold text-sm">{member.name ?? '—'}</Text>
         {category ? (
           <View className="bg-muted dark:bg-muted-dark px-2 py-0.5 rounded-full">
@@ -143,6 +155,29 @@ export default function MembersTab({ clubId }: { clubId: string }) {
     membershipLoading ? null : clubId,
     filters,
   );
+
+  // Expired photo signatures: refetch the list (fresh URLs), at most once per 10 s however many avatars fail at once.
+  const lastPhotoRefresh = useRef(0);
+  const refreshForPhotos = useCallback(() => {
+    const now = Date.now();
+    if (now - lastPhotoRefresh.current < 10_000) return;
+    lastPhotoRefresh.current = now;
+    void refetch();
+  }, [refetch]);
+
+  // The sheet shows the freshest list row, falling back to the tapped snapshot (e.g. after a refetch dropped page 2).
+  // Right after a photo change the response's fresh URL wins until the list refetch has settled.
+  const [photoOverride, setPhotoOverride] = useState<{ id: string; url: string | null } | null>(null);
+  const sheetRow = selected ? (members.find((m) => m.id === selected.id) ?? selected) : null;
+  const sheetMember = sheetRow && loading && photoOverride?.id === sheetRow.id ? { ...sheetRow, photoUrl: photoOverride.url } : sheetRow;
+  const handlePhotoChanged = (updated: ClubMember | null) => {
+    if (!selected) return;
+    const url = updated?.photoUrl ?? null;
+    setSelected({ ...selected, photoUrl: url });
+    setPhotoOverride({ id: selected.id, url });
+    lastPhotoRefresh.current = Date.now();
+    void refetch();
+  };
 
   const filtersActive = isManager && (debouncedSearch.trim() !== '' || statusFilter.length > 0 || categoryKey !== null);
   const resetFilters = () => {
@@ -252,7 +287,13 @@ export default function MembersTab({ clubId }: { clubId: string }) {
             {t('verein.members.count', { shown: members.length, total })}
           </Text>
           {members.map((m) => (
-            <MemberRow key={m.id} member={m} showStatus={isManager} onPress={isManager ? () => setSelected(m) : undefined} />
+            <MemberRow
+              key={m.id}
+              member={m}
+              showStatus={isManager}
+              onPress={isManager ? () => setSelected(m) : undefined}
+              onPhotoExpired={refreshForPhotos}
+            />
           ))}
           {loadMoreError ? (
             <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
@@ -278,7 +319,14 @@ export default function MembersTab({ clubId }: { clubId: string }) {
         </View>
       )}
 
-      <MemberDetailSheet member={selected} onClose={() => setSelected(null)} />
+      <MemberDetailSheet
+        member={sheetMember}
+        onClose={() => setSelected(null)}
+        clubId={clubId}
+        canEditPhoto={can('members:write')}
+        onPhotoChanged={handlePhotoChanged}
+        onPhotoExpired={refreshForPhotos}
+      />
     </>
   );
 }

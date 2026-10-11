@@ -1,6 +1,7 @@
 import { File, Paths, UploadType } from 'expo-file-system';
 
 import { authClient, backendUrl } from '@/auth/auth-client';
+import { ApiError, apiErrorFromResponse } from '@/lib/api';
 import { sanitizeMediaFilename } from '@/lib/mediaKey';
 
 /**
@@ -173,6 +174,65 @@ export async function uploadRegistrationDocument<TDocument>(
     return { document };
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Request failed' };
+  } finally {
+    if (isTempCopy) {
+      try {
+        file.delete();
+      } catch {
+        // best-effort cache cleanup
+      }
+    }
+  }
+}
+
+/** Backend limit for profile photos (`MAX_PHOTO_BYTES`); checked client-side first to spare the upload. */
+export const MAX_MEMBER_PHOTO_BYTES = 5 * 1024 * 1024;
+
+/**
+ * Uploads a profile photo: `PUT /club-members/me/photo` (`target = 'me'`) or
+ * `PUT /club-members/:id/photo` (board, `members:write`), multipart field
+ * `file`, JPEG/PNG/WebP, 5 MB. The backend returns the updated member shape
+ * (incl. a fresh signed `photoUrl`), which is returned untouched; nothing is
+ * persisted client-side. Failures come back as an `ApiError` (so
+ * `apiErrorMessage` and status checks, e.g. 403 = minor, work as elsewhere)
+ * or a plain `Error` for local problems.
+ */
+export async function uploadMemberPhoto<TMember>(
+  clubId: string,
+  target: 'me' | string,
+  asset: { uri: string; name: string; type: string; fileSize?: number | null },
+): Promise<{ member: TMember } | { error: unknown }> {
+  if (asset.fileSize != null && asset.fileSize > MAX_MEMBER_PHOTO_BYTES) {
+    return { error: new ApiError(422, 'VALIDATION_ERROR', 'File too large') };
+  }
+  let file: File;
+  try {
+    file = toUploadableFile(asset.uri, asset.name);
+  } catch (err) {
+    return { error: err };
+  }
+  const isTempCopy = !asset.uri.startsWith('file://');
+  try {
+    const cookie = await getSessionCookie();
+    const result = await file.upload(`${backendUrl}/club-members/${encodeURIComponent(target)}/photo?clubId=${encodeURIComponent(clubId)}`, {
+      httpMethod: 'PUT',
+      uploadType: UploadType.MULTIPART,
+      fieldName: 'file',
+      mimeType: asset.type,
+      headers: { Cookie: cookie },
+      signal: AbortSignal.timeout(TRANSFER_TIMEOUT_MS),
+    });
+    if (result.status < 200 || result.status >= 300) return { error: apiErrorFromResponse(result.status, result.body) };
+    let member: TMember | undefined;
+    try {
+      member = (result.body ? JSON.parse(result.body) : null)?.data;
+    } catch {
+      member = undefined;
+    }
+    if (!member) return { error: apiErrorFromResponse(500, null) };
+    return { member };
+  } catch (err) {
+    return { error: err };
   } finally {
     if (isTempCopy) {
       try {

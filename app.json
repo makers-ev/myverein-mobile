@@ -26,7 +26,15 @@
     "plugins": [
       "expo-secure-store",
       "expo-web-browser",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "MyVerein braucht Zugriff auf deine Fotos, damit du ein Profilfoto oder Fotos hochladen kannst.",
+          "cameraPermission": "MyVerein braucht Zugriff auf die Kamera, damit du ein Profilfoto aufnehmen kannst.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "extra": {
       "description": "MyVerein ist die Vereinsverwaltung für Mitglieder, Vorstand und externe Kontakte.",

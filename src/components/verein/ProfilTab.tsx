@@ -3,12 +3,14 @@ import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } fro
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
-import { apiFetch, ApiError } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import DateTimeField, { fromDateString, toDateString } from '@/components/ui/DateTimeField';
 import { Field, inputClassName } from '@/components/ui/FormSheet';
+import { isMinorBirthDate } from '@/lib/memberPhoto';
 import ExitRequestSection from './ExitRequestSection';
+import MemberPhotoEditor from './MemberPhotoEditor';
 
 interface Props {
   clubId: string;
@@ -185,8 +187,24 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
     </Field>
   );
 
+  const minor = isMinorBirthDate(membership.birthDate);
+
   return (
     <View>
+      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('member-photo.title')}</Text>
+        <MemberPhotoEditor
+          clubId={clubId}
+          target="me"
+          name={membership.name}
+          photoUrl={membership.photoUrl}
+          readOnly={minor}
+          hint={minor ? t('member-photo.minor-hint') : t('member-photo.privacy-hint')}
+          onChanged={() => void refetch()}
+          onPhotoExpired={() => void refetch()}
+        />
+      </View>
+
       <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
         <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('profil.section.personal')}</Text>
         <Field label={t('profil.birth-date')}>

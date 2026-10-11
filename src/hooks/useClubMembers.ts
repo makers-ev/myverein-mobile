@@ -67,6 +67,11 @@ export interface ClubMember {
   phone?: string | null;
   emergencyContactName?: string | null;
   emergencyContactPhone?: string | null;
+  /**
+   * Short-lived signed photo URL (B13/B18) or null. Only delivered for the own row, `members:write`,
+   * `members:read_sensitive` and linked guardians. Never persisted; on an image load error the resource is refetched once.
+   */
+  photoUrl?: string | null;
   // Only on GET /club-members/me: the caller's ClubPermission list and own club_members.id.
   permissions?: string[];
   clubMemberId?: string;

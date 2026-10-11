@@ -1,4 +1,4 @@
-import { ApiError } from './api';
+import { ApiError, apiErrorFromResponse } from './api';
 import { apiErrorKey, apiErrorMessage } from './apiErrorMessage';
 
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
@@ -20,5 +20,19 @@ describe('apiErrorKey', () => {
   it('never returns the raw backend message', () => {
     const t = (key: string) => `[${key}]`;
     expect(apiErrorMessage(new ApiError(404, 'NOT_FOUND', 'Exit request not found'), t)).toBe('[api.error.not-found]');
+  });
+});
+
+describe('apiErrorFromResponse', () => {
+  it('parses the nested backend envelope', () => {
+    const err = apiErrorFromResponse(403, JSON.stringify({ error: { code: 'FORBIDDEN', message: 'x', details: { a: 1 } } }));
+    expect(err.status).toBe(403);
+    expect(err.code).toBe('FORBIDDEN');
+    expect(err.details).toEqual({ a: 1 });
+  });
+
+  it('falls back to UNKNOWN for an empty or broken body', () => {
+    expect(apiErrorFromResponse(500, null).code).toBe('UNKNOWN');
+    expect(apiErrorFromResponse(502, '<html>').code).toBe('UNKNOWN');
   });
 });

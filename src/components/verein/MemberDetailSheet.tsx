@@ -4,6 +4,9 @@ import { Text, View } from 'react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import FormSheet from '@/components/ui/FormSheet';
 import type { ClubMember } from '@/hooks/useClubMembers';
+import { isMinorBirthDate } from '@/lib/memberPhoto';
+import MemberPhotoEditor from './MemberPhotoEditor';
+import MemberAvatar from './MemberAvatar';
 
 /** Display name of a member's category: backend name first, the key as fallback. */
 export function categoryLabel(member: ClubMember): string | null {
@@ -36,12 +39,25 @@ function Heading({ children }: { children: string }) {
   );
 }
 
+interface Props {
+  member: ClubMember | null;
+  onClose: () => void;
+  clubId: string;
+  /** `members:write`: may set/remove the member's photo (`PUT/DELETE /club-members/:id/photo`). */
+  canEditPhoto?: boolean;
+  /** The photo was set (`ClubMember`) or removed (`null`); the owner refreshes its list. */
+  onPhotoChanged?: (member: ClubMember | null) => void;
+  /** The shown photo URL failed to load (expired signature): the owner refetches the resource. */
+  onPhotoExpired?: () => void;
+}
+
 /**
- * Read-only member detail (no editing in the app: create/edit/import stay on
- * the website). Shows only what the list delivered -- sensitive fields that
- * are `undefined` (no members:read_sensitive) or empty are not rendered.
+ * Member detail. Profile data is read-only here (create/edit/import stay on
+ * the website); the one write action is the photo, for `members:write`. Shows
+ * only what the list delivered -- sensitive fields that are `undefined` (no
+ * members:read_sensitive) or empty are not rendered.
  */
-export default function MemberDetailSheet({ member, onClose }: { member: ClubMember | null; onClose: () => void }) {
+export default function MemberDetailSheet({ member, onClose, clubId, canEditPhoto, onPhotoChanged, onPhotoExpired }: Props) {
   const { t, language } = useLanguage();
 
   if (!member) return <FormSheet visible={false} title="" onClose={onClose}>{null}</FormSheet>;
@@ -53,6 +69,23 @@ export default function MemberDetailSheet({ member, onClose }: { member: ClubMem
 
   return (
     <FormSheet visible title={member.name ?? '—'} onClose={onClose} cancelLabel={t('verein.members.close')}>
+      {canEditPhoto ? (
+        <MemberPhotoEditor
+          // Fresh hook state per member: an upload in flight must not leak into the next sheet.
+          key={member.id}
+          clubId={clubId}
+          target={member.id}
+          name={member.name}
+          photoUrl={member.photoUrl}
+          hint={isMinorBirthDate(member.birthDate) ? t('member-photo.board-minor-hint') : t('member-photo.board-hint')}
+          onChanged={(m) => onPhotoChanged?.(m)}
+          onPhotoExpired={onPhotoExpired}
+        />
+      ) : member.photoUrl ? (
+        <View className="mb-3 items-start">
+          <MemberAvatar name={member.name} photoUrl={member.photoUrl} size={72} onExpired={onPhotoExpired} />
+        </View>
+      ) : null}
       <Row label={t('verein.members.status')} value={t(`verein.status.${member.effectiveStatus}`)} />
       <Row label={t('verein.members.category')} value={categoryLabel(member)} />
       <Row label={t('verein.members.account')} value={member.hasAccount ? t('verein.members.account.yes') : t('verein.members.account.no')} />
