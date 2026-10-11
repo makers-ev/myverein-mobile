@@ -13,6 +13,7 @@ import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { useClubMembers, type ClubMember } from '@/hooks/useClubMembers';
 import { getDepartmentColor } from '@/theme/departmentColors';
 import ProfilTab from '@/components/verein/ProfilTab';
+import ClubSwitcher from '@/components/verein/ClubSwitcher';
 
 type Tab = 'info' | 'mitglieder' | 'profil';
 
@@ -265,6 +266,7 @@ export default function VereinScreen() {
         <Text className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">
           {activeClub?.clubName ?? t('nav.verein')}
         </Text>
+        <ClubSwitcher />
       </View>
 
       {clubsLoading ? (
@@ -295,7 +297,7 @@ export default function VereinScreen() {
             </View>
           </View>
 
-          <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
+          <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
             {tab === 'info' && <VereinsinfoTab clubId={activeClub.clubId} />}
             {tab === 'mitglieder' && <MitgliederTab clubId={activeClub.clubId} />}
             {tab === 'profil' && <ProfilTab clubId={activeClub.clubId} />}

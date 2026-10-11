@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
 import type { ClubMember } from './useClubMembers';
@@ -19,19 +19,27 @@ export function useOwnMembership(clubId: string | null) {
   const [membership, setMembership] = useState<ClubMember | null>(null);
   const [loading, setLoading] = useState(!!clubId);
 
+  // Only the newest request may write state, and the previous club's
+  // membership (and thus its permissions) is dropped as soon as clubId changes.
+  const requestId = useRef(0);
+
   const refetch = useCallback(async () => {
+    const id = ++requestId.current;
     if (!clubId) {
-      setMembership(null);
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
       const { data } = await apiFetch<{ data: ClubMember }>(`/club-members/me?clubId=${clubId}`);
-      setMembership(data);
+      if (id === requestId.current) setMembership(data);
     } finally {
-      setLoading(false);
+      if (id === requestId.current) setLoading(false);
     }
+  }, [clubId]);
+
+  useEffect(() => {
+    setMembership(null);
   }, [clubId]);
 
   useEffect(() => {

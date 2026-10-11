@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { useMyClubs } from '@/hooks/useMyClubs';
+import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import TermineTab from '@/components/kalender/TermineTab';
 import VerfuegbarkeitTab from '@/components/kalender/VerfuegbarkeitTab';
 import TreffenTab from '@/components/kalender/TreffenTab';
@@ -27,6 +28,7 @@ export default function KalenderScreen() {
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="px-6 pt-4">
         <Text className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">{t('nav.kalender')}</Text>
+        <ClubSwitcher />
       </View>
 
       {clubsLoading ? (
@@ -62,7 +64,7 @@ export default function KalenderScreen() {
             </View>
           </View>
 
-          <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
+          <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
             {tab === 'termine' && <TermineTab clubId={activeClub.clubId} />}
             {tab === 'verfuegbarkeit' && <VerfuegbarkeitTab clubId={activeClub.clubId} />}
             {tab === 'treffen' && <TreffenTab clubId={activeClub.clubId} />}

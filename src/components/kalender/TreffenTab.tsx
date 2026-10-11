@@ -52,7 +52,7 @@ function MeetingListRow({ meeting, onPress }: { meeting: Meeting; onPress: () =>
   );
 }
 
-function MeetingList({ clubId, onSelect }: { clubId: string; onSelect: (id: string) => void }) {
+function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite: boolean; onSelect: (id: string) => void }) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { meetings, loading, createMeeting } = useMeetings(clubId);
@@ -97,7 +97,7 @@ function MeetingList({ clubId, onSelect }: { clubId: string; onSelect: (id: stri
         meetings.map((m) => <MeetingListRow key={m.id} meeting={m} onPress={() => onSelect(m.id)} />)
       )}
 
-      {showCreate ? (
+      {!canWrite ? null : showCreate ? (
         <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4">
           <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.title')}
@@ -149,7 +149,15 @@ function MeetingList({ clubId, onSelect }: { clubId: string; onSelect: (id: stri
   );
 }
 
-function AgendaMinutes({ meeting, onSave }: { meeting: Meeting; onSave: (agenda: string, minutes: string) => Promise<void> }) {
+function AgendaMinutes({
+  meeting,
+  canWrite,
+  onSave,
+}: {
+  meeting: Meeting;
+  canWrite: boolean;
+  onSave: (agenda: string, minutes: string) => Promise<void>;
+}) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const [editing, setEditing] = useState(false);
@@ -183,9 +191,11 @@ function AgendaMinutes({ meeting, onSave }: { meeting: Meeting; onSave: (agenda:
         <Text className="text-foreground dark:text-foreground-dark font-bold text-sm mb-1">{t('treffen.minutes')}</Text>
         <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">{meeting.minutes || t('treffen.minutes.empty')}</Text>
         {saved ? <Text className="text-success dark:text-success-dark text-xs mb-2">{t('treffen.agenda-minutes.saved')}</Text> : null}
-        <TouchableOpacity onPress={() => setEditing(true)} className="self-start">
-          <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('treffen.agenda-minutes.save')}</Text>
-        </TouchableOpacity>
+        {canWrite ? (
+          <TouchableOpacity onPress={() => setEditing(true)} className="self-start">
+            <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('treffen.agenda-minutes.save')}</Text>
+          </TouchableOpacity>
+        ) : null}
       </SectionCard>
     );
   }
@@ -230,7 +240,9 @@ function AgendaMinutes({ meeting, onSave }: { meeting: Meeting; onSave: (agenda:
 function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingId: string; onBack: () => void }) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { membership } = useOwnMembership(clubId);
+  const { membership, can } = useOwnMembership(clubId);
+  // Everything that writes meeting data needs meetings:write (backend 403s otherwise); RSVP stays self-service.
+  const canWrite = can('meetings:write');
   const { members } = useClubMembers(clubId);
   const {
     meeting,
@@ -371,7 +383,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
         </View>
       </View>
 
-      <AgendaMinutes meeting={meeting} onSave={(agenda, minutes) => updateMeeting({ agenda, minutes }).then(() => undefined)} />
+      <AgendaMinutes meeting={meeting} canWrite={canWrite} onSave={(agenda, minutes) => updateMeeting({ agenda, minutes }).then(() => undefined)} />
 
       {ownInvite && (
         <SectionCard title={t('treffen.rsvp.title')}>
@@ -400,6 +412,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
         </SectionCard>
       )}
 
+      {canWrite && (
       <SectionCard title={t('treffen.overlap.title')}>
         {candidates.length === 0 ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.overlap.empty')}</Text>
@@ -468,6 +481,9 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
         )}
       </SectionCard>
 
+      )}
+
+      {canWrite && (
       <SectionCard title={t('treffen.attendance.title')}>
         {invitees.length === 0 ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.attendance.empty')}</Text>
@@ -539,6 +555,8 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
         )}
       </SectionCard>
 
+      )}
+
       <SectionCard title={t('treffen.resolutions.title')}>
         {resolutions.length === 0 ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.resolutions.empty')}</Text>
@@ -561,7 +579,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
           ))
         )}
 
-        {showResolutionForm ? (
+        {!canWrite ? null : showResolutionForm ? (
           <View className="mt-3 pt-3 border-t border-border dark:border-border-dark">
             <TextInput
               className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
@@ -641,11 +659,12 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
 }
 
 export default function TreffenTab({ clubId }: Props) {
+  const { can } = useOwnMembership(clubId);
   const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null);
 
   return selectedMeetingId ? (
     <MeetingDetail clubId={clubId} meetingId={selectedMeetingId} onBack={() => setSelectedMeetingId(null)} />
   ) : (
-    <MeetingList clubId={clubId} onSelect={setSelectedMeetingId} />
+    <MeetingList clubId={clubId} canWrite={can('meetings:write')} onSelect={setSelectedMeetingId} />
   );
 }

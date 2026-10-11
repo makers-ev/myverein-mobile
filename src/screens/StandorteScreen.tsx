@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { navigate } from '@/navigation/navigationRef';
 import { useMyClubs } from '@/hooks/useMyClubs';
+import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import OrteTab from '@/components/standorte/OrteTab';
 import MaterialTab from '@/components/standorte/MaterialTab';
 
@@ -28,6 +29,7 @@ export default function StandorteScreen() {
         <Text className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">
           {activeClub?.clubName ?? t('standorte.title')}
         </Text>
+        <ClubSwitcher />
       </View>
 
       {clubsLoading ? (
@@ -71,7 +73,7 @@ export default function StandorteScreen() {
             </View>
           </View>
 
-          <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
+          <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
             {tab === 'orte' && <OrteTab clubId={activeClub.clubId} />}
             {tab === 'material' && <MaterialTab clubId={activeClub.clubId} />}
           </ScrollView>

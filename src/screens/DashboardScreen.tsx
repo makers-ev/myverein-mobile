@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CalendarDays, ChevronRight } from 'lucide-react-native';
@@ -8,6 +8,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiFetch } from '@/lib/api';
 import { useMyClubs } from '@/hooks/useMyClubs';
+import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import { useOwnMembership, type ClubPermission } from '@/hooks/useOwnMembership';
 import type { CalendarEvent } from '@/hooks/useEvents';
 import Logo from '@/components/Logo';
@@ -33,12 +34,17 @@ function useNextEvent(clubId: string | null) {
   const [loading, setLoading] = useState(!!clubId);
   const [error, setError] = useState(false);
 
+  // Only the newest request may write state (club switch / retry bump this).
+  const requestId = useRef(0);
+
   const refetch = useCallback(async () => {
+    const reqId = ++requestId.current;
     if (!clubId) {
       setEvent(null);
       setLoading(false);
       return;
     }
+    setEvent(null);
     setLoading(true);
     setError(false);
     try {
@@ -48,11 +54,11 @@ function useNextEvent(clubId: string | null) {
       const { data } = await apiFetch<{ data: CalendarEvent[] }>(`/events?${params.toString()}`);
       const now = from.toISOString();
       const upcoming = data.filter((e) => e.startsAt >= now).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-      setEvent(upcoming[0] ?? null);
+      if (reqId === requestId.current) setEvent(upcoming[0] ?? null);
     } catch {
-      setError(true);
+      if (reqId === requestId.current) setError(true);
     } finally {
-      setLoading(false);
+      if (reqId === requestId.current) setLoading(false);
     }
   }, [clubId]);
 
@@ -132,6 +138,7 @@ export default function DashboardScreen({ navigation }: Props) {
             <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-2xl font-extrabold mt-4">
               {activeClub?.clubName ?? t('dashboard.title')}
             </Text>
+            <ClubSwitcher />
           </View>
 
           <SignedInCard onOpenSettings={() => navigation.navigate('Settings')} />
