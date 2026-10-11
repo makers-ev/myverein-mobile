@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { KeyRound, Undo2 } from 'lucide-react-native';
 
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
-import { useClubMemberDirectory, type ClubMember } from '@/hooks/useClubMembers';
+import { useMemberSearch, type ClubMember } from '@/hooks/useClubMembers';
 import { useKeyHistory, useLocationMutations, type KeyHistoryEntry, type LocationKeyHolder } from '@/hooks/useLocations';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { eligibleKeyMembers, holderName, keyErrorKey } from './keys';
 import { EmptyState, IconButton, SectionCard, StatusChip } from './shared';
 
@@ -50,14 +51,12 @@ function TextField({ label, ...props }: { label: string } & React.ComponentProps
 function IssueKeySheet({
   clubId,
   locationId,
-  members,
   holders,
   onClose,
   onDone,
 }: {
   clubId: string;
   locationId: string;
-  members: ClubMember[];
   holders: LocationKeyHolder[];
   onClose: () => void;
   onDone: () => void;
@@ -70,7 +69,14 @@ function IssueKeySheet({
   const [keyLabel, setKeyLabel] = useState('');
   const [note, setNote] = useState('');
 
-  const candidates = eligibleKeyMembers(members, holders, query);
+  // Server-side search (debounced), only while this sheet is mounted.
+  const [debounced, setDebounced] = useState('');
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(query), 300);
+    return () => clearTimeout(id);
+  }, [query]);
+  const search = useMemberSearch(clubId, debounced, true);
+  const candidates = eligibleKeyMembers(search.members, holders, query);
 
   const submit = () => {
     if (!selected?.memberId) return;
@@ -100,7 +106,7 @@ function IssueKeySheet({
         {selected ? (
           <View className="flex-row items-center justify-between">
             <StatusChip label={selected.name ?? '—'} tone="primary" />
-            <TouchableOpacity onPress={() => setSelected(null)}>
+            <TouchableOpacity onPress={() => setSelected(null)} accessibilityRole="button" hitSlop={8}>
               <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.keys.change-member')}</Text>
             </TouchableOpacity>
           </View>
@@ -112,22 +118,35 @@ function IssueKeySheet({
               className={inputClassName}
               placeholder={t('standorte.keys.search')}
               autoCorrect={false}
+              autoCapitalize="none"
             />
             <View className="mt-2">
-              {candidates.length === 0 ? (
+              {search.error ? (
+                <View className="py-2">
+                  <Text className="text-destructive text-sm mb-1">
+                    {t('standorte.keys.search-error')} {apiErrorMessage(search.error, t)}
+                  </Text>
+                  <TouchableOpacity onPress={() => void search.refetch()} accessibilityRole="button" hitSlop={8} className="self-start">
+                    <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.keys.retry')}</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : search.loading ? (
+                <ActivityIndicator className="py-2" />
+              ) : candidates.length === 0 ? (
                 <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm py-2">{t('standorte.keys.no-candidates')}</Text>
               ) : (
                 candidates.slice(0, PICKER_LIMIT).map((m) => (
                   <TouchableOpacity
                     key={m.id}
                     onPress={() => setSelected(m)}
+                    accessibilityRole="button"
                     className="py-2.5 border-b border-border dark:border-border-dark"
                   >
                     <Text className="text-foreground dark:text-foreground-dark text-sm">{m.name ?? '—'}</Text>
                   </TouchableOpacity>
                 ))
               )}
-              {candidates.length > PICKER_LIMIT && (
+              {search.total > search.members.length || candidates.length > PICKER_LIMIT && (
                 <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs pt-2">{t('standorte.keys.narrow-search')}</Text>
               )}
             </View>
@@ -228,12 +247,11 @@ export default function KeysSection({
 }) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { members } = useClubMemberDirectory(clubId);
   const history = useKeyHistory(clubId, locationId, true);
   const [issuing, setIssuing] = useState(false);
   const [returning, setReturning] = useState<LocationKeyHolder | null>(null);
 
-  const nameOf = (h: LocationKeyHolder) => holderName(h.memberId, members, history.entries) ?? t('standorte.keys.unknown-member');
+  const nameOf = (h: LocationKeyHolder) => holderName(h, history.entries) ?? t('standorte.keys.unknown-member');
   const changed = () => {
     onChanged();
     void history.refetch();
@@ -262,6 +280,8 @@ export default function KeysSection({
               {canWrite && (
                 <TouchableOpacity
                   onPress={() => setReturning(h)}
+                  accessibilityRole="button"
+                  hitSlop={8}
                   accessibilityLabel={t('standorte.keys.return')}
                   className="flex-row items-center px-3 py-1.5 rounded-full border border-border dark:border-border-dark"
                   style={{ gap: 4 }}
@@ -282,7 +302,7 @@ export default function KeysSection({
           ) : history.error && history.entries.length === 0 ? (
             <View>
               <Text className="text-destructive text-sm mb-2">{t('standorte.keys.history-error')}</Text>
-              <TouchableOpacity onPress={() => void history.refetch()} className="self-start">
+              <TouchableOpacity onPress={() => void history.refetch()} accessibilityRole="button" hitSlop={8} className="self-start">
                 <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.keys.retry')}</Text>
               </TouchableOpacity>
             </View>
@@ -295,7 +315,7 @@ export default function KeysSection({
               ))}
               {history.error && <Text className="text-destructive text-xs mt-2">{t('standorte.keys.history-error')}</Text>}
               {history.hasMore && (
-                <TouchableOpacity onPress={() => void history.loadMore()} disabled={history.loadingMore} className="self-start mt-2">
+                <TouchableOpacity onPress={() => void history.loadMore()} disabled={history.loadingMore} accessibilityRole="button" hitSlop={8} className="self-start mt-2">
                   {history.loadingMore ? (
                     <ActivityIndicator color={themeColors.primary} size="small" />
                   ) : (
@@ -312,7 +332,6 @@ export default function KeysSection({
         <IssueKeySheet
           clubId={clubId}
           locationId={locationId}
-          members={members}
           holders={holders}
           onClose={() => setIssuing(false)}
           onDone={changed}

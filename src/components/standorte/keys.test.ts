@@ -25,10 +25,11 @@ describe('eligibleKeyMembers', () => {
 });
 
 describe('holderName', () => {
-  it('falls back to history', () => {
-    const history = [{ id: 'h', action: 'issued', memberId: 'x', memberName: 'Xaver', keyLabel: null, note: null, recordedBy: null, recordedByName: '', createdAt: '' }] as const;
-    expect(holderName('x', [], history)).toBe('Xaver');
-    expect(holderName('y', [], history)).toBeNull();
+  const history = [{ id: 'h', action: 'issued', memberId: 'x', memberName: 'Xaver', keyLabel: null, note: null, recordedBy: null, recordedByName: '', createdAt: '' }] as const;
+  it('prefers the backend name, then history, else null', () => {
+    expect(holderName({ id: 'k', locationId: 'l', memberId: 'x', memberName: 'Direkt' }, history)).toBe('Direkt');
+    expect(holderName({ id: 'k', locationId: 'l', memberId: 'x' }, history)).toBe('Xaver');
+    expect(holderName({ id: 'k', locationId: 'l', memberId: 'y' }, history)).toBeNull();
   });
 });
 

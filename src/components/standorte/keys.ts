@@ -16,11 +16,10 @@ export function eligibleKeyMembers(members: readonly ClubMember[], holders: read
     .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 }
 
-/** Display name of a holder: directory first, then the newest history entry, else null. */
-export function holderName(memberId: string, members: readonly ClubMember[], history: readonly KeyHistoryEntry[]): string | null {
-  const fromDirectory = members.find((m) => m.memberId === memberId)?.name;
-  if (fromDirectory) return fromDirectory;
-  return history.find((e) => e.memberId === memberId && e.memberName)?.memberName ?? null;
+/** Display name of a holder: backend `memberName` first, then the newest history entry, else null. */
+export function holderName(holder: LocationKeyHolder, history: readonly KeyHistoryEntry[]): string | null {
+  if (holder.memberName) return holder.memberName;
+  return history.find((e) => e.memberId === holder.memberId && e.memberName)?.memberName ?? null;
 }
 
 /** Translation key for a failed issue/return call; specific for the conflict/not-found cases, generic otherwise. */

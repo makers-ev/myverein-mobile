@@ -270,3 +270,53 @@ export function useMemberCategories(clubId: string | null, enabled = true) {
 
   return { categories: stored && stored.clubId === clubId ? stored.categories : [] };
 }
+
+const SEARCH_PAGE_SIZE = 30;
+
+/**
+ * Server-side member search for pickers: `GET /club-members?q=&hasAccount=true&status=probe,aktiv,ruhend&pageSize=30`.
+ * Makes no request while `enabled` is false (e.g. the picker sheet is closed). Failures (incl. 429) are exposed
+ * as `error` for a visible retry. Only the newest request may write state.
+ */
+export function useMemberSearch(clubId: string | null, query: string, enabled: boolean) {
+  const [stored, setStored] = useState<{ key: string; members: ClubMember[]; total: number } | null>(null);
+  const [fetching, setFetching] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const requestId = useRef(0);
+  const q = query.trim();
+  const key = `${clubId ?? ''}|${q}`;
+
+  const refetch = useCallback(async () => {
+    const id = ++requestId.current;
+    setError(null);
+    if (!clubId || !enabled) {
+      setFetching(false);
+      return;
+    }
+    setFetching(true);
+    try {
+      const parts = [
+        `clubId=${encodeURIComponent(clubId)}`,
+        'hasAccount=true',
+        `status=${LIVE_MEMBER_STATUSES.join(',')}`,
+        `pageSize=${SEARCH_PAGE_SIZE}`,
+        'page=1',
+      ];
+      if (q) parts.push(`q=${encodeURIComponent(q)}`);
+      const res = await apiFetch<MemberPage>(`/club-members?${parts.join('&')}`);
+      if (id === requestId.current) setStored({ key: `${clubId}|${q}`, members: res.data, total: res.total });
+    } catch (err) {
+      if (id === requestId.current) setError(err);
+    } finally {
+      if (id === requestId.current) setFetching(false);
+    }
+  }, [clubId, q, enabled]);
+
+  useEffect(() => {
+    void refetch();
+  }, [refetch]);
+
+  const current = enabled && stored && stored.key === key ? stored : null;
+  const loading = enabled && !!clubId && !error && (fetching || !current);
+  return { members: current?.members ?? [], total: current?.total ?? 0, loading, error, refetch };
+}

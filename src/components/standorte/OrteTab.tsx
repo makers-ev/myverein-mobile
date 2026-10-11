@@ -88,7 +88,7 @@ function WifiCard({ network, onEdit }: { network: WifiNetwork; onEdit?: () => vo
   const [showQr, setShowQr] = useState(false);
   // Older backends omit `security`: derive it from the password like the server does.
   const security: WifiSecurity = network.security ?? (network.password ? 'wpa' : 'open');
-  const qrValue = network.qrPayload || buildWifiQrPayload(network.ssid, network.password);
+  const qrValue = network.qrPayload || buildWifiQrPayload(network.ssid, network.password, security);
 
   return (
     <View className="border border-border dark:border-border-dark rounded-xl p-3 mb-3">
@@ -106,20 +106,20 @@ function WifiCard({ network, onEdit }: { network: WifiNetwork; onEdit?: () => vo
       {showQr ? (
         <View>
           {security !== 'open' && (
-            <Text className="text-foreground dark:text-foreground-dark text-xs mb-2" selectable>
+            <Text className="text-foreground dark:text-foreground-dark text-xs mb-2">
               {t('standorte.wifi.password')}: {network.password}
             </Text>
           )}
           <View className="items-center bg-white p-3 rounded-lg self-start">
             <QRCode value={qrValue} size={140} color="#000000" backgroundColor="#FFFFFF" />
           </View>
-          <TouchableOpacity onPress={() => setShowQr(false)} className="self-start mt-2 flex-row items-center" style={{ gap: 4 }}>
+          <TouchableOpacity onPress={() => setShowQr(false)} accessibilityRole="button" hitSlop={8} className="self-start mt-2 flex-row items-center" style={{ gap: 4 }}>
             <EyeOff size={14} color={themeColors.primary} />
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.wifi.hide-qr')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        <TouchableOpacity onPress={() => setShowQr(true)} className="self-start flex-row items-center" style={{ gap: 4 }}>
+        <TouchableOpacity onPress={() => setShowQr(true)} accessibilityRole="button" hitSlop={8} className="self-start flex-row items-center" style={{ gap: 4 }}>
           <Eye size={14} color={themeColors.primary} />
           <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.wifi.show-qr')}</Text>
         </TouchableOpacity>
@@ -198,13 +198,13 @@ function LocationDetail({
   if (!location) {
     return (
       <View className="py-8 items-start">
-        <TouchableOpacity onPress={onBack} className="mb-3">
+        <TouchableOpacity onPress={onBack} accessibilityRole="button" hitSlop={8} className="mb-3">
           <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('standorte.back')}</Text>
         </TouchableOpacity>
         {error && (
           <>
             <Text className="text-destructive text-sm mb-2">{t('standorte.detail.error')}</Text>
-            <TouchableOpacity onPress={reload}>
+            <TouchableOpacity onPress={reload} accessibilityRole="button" hitSlop={8}>
               <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('standorte.keys.retry')}</Text>
             </TouchableOpacity>
           </>
@@ -218,9 +218,18 @@ function LocationDetail({
 
   return (
     <>
-      <TouchableOpacity onPress={onBack} className="mb-3 self-start">
+      <TouchableOpacity onPress={onBack} accessibilityRole="button" hitSlop={8} className="mb-3 self-start">
         <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('standorte.back')}</Text>
       </TouchableOpacity>
+
+      {error && (
+        <View className="flex-row items-center mb-3" style={{ gap: 8 }}>
+          <Text className="flex-1 text-destructive text-xs">{t('standorte.keys.refresh-error')}</Text>
+          <TouchableOpacity onPress={reload} accessibilityRole="button" hitSlop={8}>
+            <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.keys.retry')}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {location.photoUrl ? (
         <Image source={{ uri: location.photoUrl }} className="w-full h-40 rounded-2xl mb-4" resizeMode="cover" />
