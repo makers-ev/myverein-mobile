@@ -10,13 +10,13 @@ describe('buildWifiQrPayload', () => {
     expect(buildWifiQrPayload('n', 'secret1', 'wpa')).toBe('WIFI:T:WPA;S:n;P:secret1;;');
   });
   it('escapes special characters without double-escaping', () => {
-    expect(buildWifiQrPayload('Guest;Net,"1"', 'p\\a;s,s"w:x')).toBe('WIFI:T:WPA;S:Guest\;Net\\,\\"1\\";P:p\\\\a\;s\\,s\\"w\\:x;;');
+    expect(buildWifiQrPayload('Guest;Net,"1"', 'p\\a;s,s"w:x')).toBe('WIFI:T:WPA;S:Guest\\;Net\\,\\"1\\";P:p\\\\a\\;s\\,s\\"w\\:x;;');
   });
   it('quotes all-hex values like the backend', () => {
     expect(buildWifiQrPayload('abcdef', '12345678')).toBe('WIFI:T:WPA;S:"abcdef";P:"12345678";;');
   });
   it('emits an open network without P: (explicit or empty password)', () => {
-    expect(buildWifiQrPayload('Open;Net', '')).toBe('WIFI:T:nopass;S:Open\;Net;;');
+    expect(buildWifiQrPayload('Open;Net', '')).toBe('WIFI:T:nopass;S:Open\\;Net;;');
     expect(buildWifiQrPayload('x', 'ignored', 'open')).toBe('WIFI:T:nopass;S:x;;');
   });
 });
