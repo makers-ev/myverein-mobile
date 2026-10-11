@@ -180,7 +180,10 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
   const themeColors = useThemeColors();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [form, setForm] = useState<FormState>(() => initialForm(registration));
-  const [role, setRole] = useState<ClaimedRole>(registration?.claimedRole ?? 'vorsitz');
+  const [role, setRole] = useState<ClaimedRole>(
+    // A draft saved before Wave 7 may still carry 'schriftfuehrer' (no longer claimable, B16).
+    CLAIMED_ROLES.find((r) => r === registration?.claimedRole) ?? 'vorsitz',
+  );
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

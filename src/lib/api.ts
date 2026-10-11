@@ -34,7 +34,16 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
   });
 
   if (error) {
-    throw new ApiError(error.status, (error as { code?: string }).code ?? 'UNKNOWN', error.message ?? 'Request failed');
+    // The backend answers `{ error: { code, message, details } }`; better-fetch spreads that body into `error`.
+    // Older flat shapes (`{ code, message }`) keep working.
+    const flat = error as { code?: string; message?: string; details?: unknown; error?: { code?: string; message?: string; details?: unknown } };
+    const body = flat.error && typeof flat.error === 'object' ? flat.error : flat;
+    throw new ApiError(
+      error.status,
+      body.code ?? flat.code ?? 'UNKNOWN',
+      body.message ?? error.message ?? 'Request failed',
+      body.details ?? flat.details,
+    );
   }
 
   return data as T;

@@ -7,6 +7,7 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import DateTimeField, { fromDateString, toDateString } from '@/components/ui/DateTimeField';
 import { Field, inputClassName } from '@/components/ui/FormSheet';
+import ExitRequestSection from './ExitRequestSection';
 
 interface Props {
   clubId: string;
@@ -256,6 +257,10 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
           <Text className="text-destructive text-sm font-semibold">{t('profil.discard')}</Text>
         </TouchableOpacity>
       ) : null}
+
+      <View className="mt-6">
+        <ExitRequestSection clubId={clubId} />
+      </View>
     </View>
   );
 }

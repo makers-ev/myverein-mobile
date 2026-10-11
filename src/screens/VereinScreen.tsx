@@ -12,10 +12,12 @@ import { useClubInfo, type BoardMember, type Department } from '@/hooks/useClubI
 import { getDepartmentColor } from '@/theme/departmentColors';
 import ProfilTab from '@/components/verein/ProfilTab';
 import MembersTab from '@/components/verein/MembersTab';
+import VerwaltungTab, { canSeeVerwaltung } from '@/components/verein/VerwaltungTab';
+import { useOwnMembership } from '@/hooks/useOwnMembership';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 
-type Tab = 'info' | 'mitglieder' | 'profil';
+type Tab = 'info' | 'mitglieder' | 'profil' | 'verwaltung';
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -209,6 +211,11 @@ export default function VereinScreen() {
     setTab(value);
   };
   const { activeClub, error: clubsError, loading: clubsLoading, refetch: refetchClubs } = useMyClubs();
+  // Role-dependent admin entry: only board roles with the matching permissions get the tab.
+  const { can } = useOwnMembership(activeClub?.clubId ?? null);
+  const showVerwaltung = canSeeVerwaltung(can);
+  const tabs: Tab[] = showVerwaltung ? ['info', 'mitglieder', 'verwaltung', 'profil'] : ['info', 'mitglieder', 'profil'];
+  const activeTab: Tab = tabs.includes(tab) ? tab : 'info';
 
   // Returning from CreateClub after an approval: reload the memberships so
   // the new club shows up (the hook instance here keeps its old state).
@@ -244,18 +251,18 @@ export default function VereinScreen() {
         <>
           <View className="px-6 pt-3">
             <View className="flex-row mb-4" style={{ gap: 8 }} accessibilityRole="tablist">
-              {(['info', 'mitglieder', 'profil'] as const).map((value) => (
+              {tabs.map((value) => (
                 <TouchableOpacity
                   key={value}
                   onPress={() => selectTab(value)}
                   accessibilityRole="tab"
-                  accessibilityState={{ selected: tab === value }}
+                  accessibilityState={{ selected: activeTab === value }}
                   style={{ minHeight: 44, justifyContent: 'center' }}
-                  className={`px-4 py-2 rounded-full ${tab === value ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}
+                  className={`px-4 py-2 rounded-full ${activeTab === value ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}
                 >
                   <Text
                     className={`text-sm font-semibold ${
-                      tab === value ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'
+                      activeTab === value ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'
                     }`}
                   >
                     {t(`verein.tab.${value}`)}
@@ -266,9 +273,10 @@ export default function VereinScreen() {
           </View>
 
           <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
-            {tab === 'info' && <VereinsinfoTab clubId={activeClub.clubId} />}
-            {tab === 'mitglieder' && <MembersTab clubId={activeClub.clubId} />}
-            {tab === 'profil' && <ProfilTab clubId={activeClub.clubId} onDirtyChange={setProfileDirty} />}
+            {activeTab === 'info' && <VereinsinfoTab clubId={activeClub.clubId} />}
+            {activeTab === 'mitglieder' && <MembersTab clubId={activeClub.clubId} />}
+            {activeTab === 'verwaltung' && <VerwaltungTab clubId={activeClub.clubId} onOpenMembers={() => selectTab('mitglieder')} />}
+            {activeTab === 'profil' && <ProfilTab clubId={activeClub.clubId} onDirtyChange={setProfileDirty} />}
           </ScrollView>
         </>
       )}
