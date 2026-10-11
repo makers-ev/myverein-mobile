@@ -240,7 +240,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: error.message ?? 'Unable to enable two-factor authentication.' };
     }
 
-    return { success: true, totpUri: data?.totpURI };
+    // `data` is a discriminated union ({ method: "otp" } | { method: "totp"; totpURI; backupCodes })
+    // because the plugin also supports email-OTP as a second factor -- this
+    // backend only configures TOTP, so the "otp" branch never actually comes
+    // back, but the type doesn't know that.
+    return { success: true, totpUri: data?.method === 'totp' ? data.totpURI : undefined };
   }, []);
 
   const disableTwoFactor = useCallback(async (password: string): Promise<AuthResult> => {
