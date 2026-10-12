@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
+import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { useClubApplications, type ClubApplication } from '@/hooks/useClubApplications';
@@ -84,7 +86,7 @@ function ApplicationCard({
 export default function ClubApplicationsScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { activeClub, loading: clubsLoading } = useMyClubs();
+  const { activeClub, error: clubsError, loading: clubsLoading } = useMyClubs();
   const clubId = activeClub?.clubId ?? null;
   const { can, loading: membershipLoading } = useOwnMembership(clubId);
   const { applications, loading, error, refetch, approve, reject } = useClubApplications(clubId);
@@ -99,7 +101,7 @@ export default function ClubApplicationsScreen() {
       try {
         await fn(id);
       } catch (err) {
-        setActionError(err instanceof ApiError ? err.message : t('verein.applications.action-error'));
+        setActionError(apiErrorMessage(err, t, 'verein.applications.action-error'));
         void refetch();
       } finally {
         setBusyId(null);
@@ -131,6 +133,8 @@ export default function ClubApplicationsScreen() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={themeColors.primary} />
         </View>
+      ) : !activeClub && clubsError ? (
+        <ClubsLoadError />
       ) : !can('members:write') ? (
         // Defense in depth: the entry point is hidden without the
         // permission, and the backend would 403 anyway.

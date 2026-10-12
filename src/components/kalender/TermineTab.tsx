@@ -5,6 +5,7 @@ import { Plus, Settings2 } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useClubInfo } from '@/hooks/useClubInfo';
 import { useCalendars } from '@/hooks/useCalendars';
 import { useEvents, useEventMutations, useEventRsvp, type CalendarEvent, type EventInput } from '@/hooks/useEvents';
@@ -87,7 +88,7 @@ export default function TermineTab({ clubId }: Props) {
       const status = await action();
       setRsvpStates((prev) => ({ ...prev, [eventId]: status }));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setError(apiErrorMessage(err, t));
     } finally {
       setPendingIds((prev) => ({ ...prev, [eventId]: false }));
     }

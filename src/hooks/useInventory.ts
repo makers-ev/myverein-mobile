@@ -2,12 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
 
-// Re-exported here (not just from `@/lib/mediaKey`) so `MaterialTab.tsx`
-// can pull every inventory-domain type/helper from this one hook module --
-// the function itself lives in a dependency-free file so it stays
-// unit-testable without pulling in `apiFetch`'s `authClient` import chain.
-export { damageReportPhotoKey } from '@/lib/mediaKey';
-
 export interface InventoryItem {
   id: string;
   clubId: string;
@@ -44,10 +38,9 @@ export interface DamageReport {
   reportedBy: string;
   description: string;
   /**
-   * A media *path* (`/media/<key>`), not a key and not a display URL -- the
-   * backend's `withPhotoUrl` prepends `/media/` to the stored key. `null`
-   * when no photo was attached. Use `damageReportPhotoKey()` below to get
-   * back the bare key `downloadMediaUri` needs.
+   * Short-lived signed absolute URL for a plain `<Image>` (Wave 7 B18), or
+   * `null` when no photo was attached. Refetch when it expires; never store.
+   * The report is created with a `photoKey` from `POST /media`.
    */
   photoUrl: string | null;
   status: string;

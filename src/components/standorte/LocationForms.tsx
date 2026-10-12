@@ -1,18 +1,23 @@
-import React, { useState } from 'react';
-import { TextInput } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { withScheme } from '@/lib/withScheme';
+import SignedImage from '@/components/ui/SignedImage';
+import { isNetworkFailure, isUnknownMediaKey } from '@/lib/memberPhoto';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import {
   useLocationMutations,
+  WIFI_SECURITIES,
+  type WifiSecurity,
   type Location,
   type LocationInput,
   type LocationLink,
   type WifiNetwork,
 } from '@/hooks/useLocations';
-import { confirmDelete, orBlank, SwitchRow, useSubmit } from './shared';
+import { ChipPicker, confirmDelete, orBlank, SwitchRow, useSubmit } from './shared';
 import { parseCoordinate } from './parse';
 
 function Input(props: React.ComponentProps<typeof TextInput>) {
@@ -59,7 +64,19 @@ export function LocationForm({
   const [openingHours, setOpeningHours] = useState(location?.openingHours ?? '');
   const [contactPerson, setContactPerson] = useState(location?.contactPerson ?? '');
   const [accessNote, setAccessNote] = useState(location?.accessNote ?? '');
-  const [photoUrl, setPhotoUrl] = useState(location?.photoUrl ?? '');
+  // `undefined` = photo unchanged, string = key of a freshly uploaded image, `null` = remove. Keys only, never URLs.
+  const [photoKey, setPhotoKey] = useState<string | null | undefined>(undefined);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(location?.photoUrl ?? null);
+  // A save with a photoKey that failed without a server answer may still have been stored (key claimed).
+  const lostResponse = useRef(false);
+  const upload = useImageUpload({
+    clubId,
+    t,
+    onUploaded: (media) => {
+      setPhotoKey(media.key);
+      setPreviewUrl(media.url);
+    },
+  });
 
   const handleSubmit = () => {
     const lat = parseCoordinate(latitude, 90);
@@ -69,7 +86,6 @@ export function LocationForm({
       return;
     }
     const blank = location ? null : undefined;
-    const photo = orBlank(photoUrl, blank);
     const input: LocationInput = {
       name: name.trim(),
       address: orBlank(address, blank),
@@ -78,11 +94,23 @@ export function LocationForm({
       openingHours: orBlank(openingHours, blank),
       contactPerson: orBlank(contactPerson, blank),
       accessNote: orBlank(accessNote, blank),
-      photoUrl: photo ? withScheme(photo) : photo,
+      ...(photoKey !== undefined && (location || photoKey !== null) ? { photoKey } : {}),
     };
     void run(async () => {
-      if (location) await updateLocation(location.id, input);
-      else await createLocation(input);
+      try {
+        if (location) await updateLocation(location.id, input);
+        else await createLocation(input);
+      } catch (err) {
+        if (input.photoKey && isNetworkFailure(err)) lostResponse.current = true;
+        if (input.photoKey && lostResponse.current && isUnknownMediaKey(err)) {
+          // The earlier attempt most likely went through: reload and tell the user instead of "invalid".
+          onSaved();
+          onClose();
+          Alert.alert(t('media.maybe-saved'));
+          return;
+        }
+        throw err;
+      }
       onSaved();
       onClose();
     });
@@ -105,10 +133,10 @@ export function LocationForm({
       title={t(location ? 'standorte.edit' : 'standorte.add')}
       onClose={onClose}
       onSubmit={handleSubmit}
-      submitDisabled={!name.trim()}
+      submitDisabled={!name.trim() || upload.busy}
       saving={saving}
       onDelete={location ? handleDelete : undefined}
-      error={error}
+      error={error ?? upload.error}
     >
       <Field label={t('standorte.form.name')}>
         <Input value={name} onChangeText={setName} />
@@ -131,8 +159,34 @@ export function LocationForm({
       <Field label={t('standorte.detail.access-note')}>
         <Input value={accessNote} onChangeText={setAccessNote} multiline />
       </Field>
-      <Field label={t('standorte.form.photo-url')}>
-        <Input value={photoUrl} onChangeText={setPhotoUrl} autoCapitalize="none" keyboardType="url" placeholder="https://" />
+      <Field label={t('standorte.form.photo')}>
+        {previewUrl ? (
+          <SignedImage uri={previewUrl} className="w-full h-36 rounded-xl mb-2" fallback={null} />
+        ) : null}
+        <View className="flex-row items-center" style={{ gap: 16 }}>
+          <TouchableOpacity onPress={upload.choose} disabled={upload.busy} accessibilityRole="button" style={{ minHeight: 44, justifyContent: 'center' }}>
+            {upload.busy ? (
+              <ActivityIndicator size="small" />
+            ) : (
+              <Text className="text-primary dark:text-primary-dark text-sm font-semibold">
+                {t(previewUrl ? 'standorte.form.photo-change' : 'standorte.form.photo-add')}
+              </Text>
+            )}
+          </TouchableOpacity>
+          {previewUrl && !upload.busy ? (
+            <TouchableOpacity
+              onPress={() => {
+                // Drops an uploaded-but-unsaved key; an existing stored photo is removed with `null`.
+                setPhotoKey(location?.photoUrl ? null : undefined);
+                setPreviewUrl(null);
+              }}
+              accessibilityRole="button"
+              style={{ minHeight: 44, justifyContent: 'center' }}
+            >
+              <Text className="text-destructive text-sm font-semibold">{t('standorte.form.photo-remove')}</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
       </Field>
     </FormSheet>
   );
@@ -160,10 +214,12 @@ export function WifiForm({
   const [label, setLabel] = useState(network?.label ?? '');
   const [ssid, setSsid] = useState(network?.ssid ?? '');
   const [password, setPassword] = useState(network?.password ?? '');
+  const [security, setSecurity] = useState<WifiSecurity>(network?.security ?? (network?.password === '' ? 'open' : 'wpa'));
   const [visibleToGuests, setVisibleToGuests] = useState(network?.visibleToGuests ?? false);
+  const isOpen = security === 'open';
 
   const handleSubmit = () => {
-    const input = { label: label.trim(), ssid: ssid.trim(), password, visibleToGuests };
+    const input = { label: label.trim(), ssid: ssid.trim(), password: isOpen ? '' : password, security, visibleToGuests };
     void run(async () => {
       if (network) await updateWifi(locationId, network.id, input);
       else await createWifi(locationId, input);
@@ -189,7 +245,7 @@ export function WifiForm({
       title={t(network ? 'standorte.wifi.edit' : 'standorte.wifi.add')}
       onClose={onClose}
       onSubmit={handleSubmit}
-      submitDisabled={!label.trim() || !ssid.trim()}
+      submitDisabled={!label.trim() || !ssid.trim() || (!isOpen && !password)}
       saving={saving}
       onDelete={network ? handleDelete : undefined}
       error={error}
@@ -200,9 +256,18 @@ export function WifiForm({
       <Field label={t('standorte.wifi.ssid')}>
         <Input value={ssid} onChangeText={setSsid} autoCapitalize="none" autoCorrect={false} />
       </Field>
-      <Field label={t('standorte.wifi.password')}>
-        <Input value={password} onChangeText={setPassword} autoCapitalize="none" autoCorrect={false} />
+      <Field label={t('standorte.wifi.security')}>
+        <ChipPicker
+          options={WIFI_SECURITIES.map((v) => ({ value: v, label: t(`standorte.wifi.security.${v}`) }))}
+          value={security}
+          onChange={setSecurity}
+        />
       </Field>
+      {!isOpen && (
+        <Field label={t('standorte.wifi.password')}>
+          <Input value={password} onChangeText={setPassword} autoCapitalize="none" autoCorrect={false} />
+        </Field>
+      )}
       <SwitchRow label={t('standorte.visible-to-guests')} value={visibleToGuests} onChange={setVisibleToGuests} />
     </FormSheet>
   );

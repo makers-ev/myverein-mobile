@@ -1,12 +1,18 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
 
 export type MeetingStatus = 'terminfindung' | 'geplant' | 'abgehalten' | 'protokolliert';
 
+/** Controlled meeting types (backend `MEETING_TYPES`, other values are a 422). Only `vorstandssitzung` is read-scoped. */
+export const MEETING_TYPES = ['vorstandssitzung', 'mitgliederversammlung', 'sonstige'] as const;
+export type MeetingType = (typeof MEETING_TYPES)[number];
+export const MEETING_STATUSES: readonly MeetingStatus[] = ['terminfindung', 'geplant', 'abgehalten', 'protokolliert'];
+
 export interface Meeting {
   id: string;
   clubId: string;
+  /** One of `MEETING_TYPES`; typed as string because legacy rows are mapped server-side only. */
   type: string;
   title: string;
   scheduledAt: string | null;
@@ -18,16 +24,16 @@ export interface Meeting {
   updatedAt: string;
 }
 
-/** `POST /meetings` body -- `type` is free-text (Freitext-Beispiele), not a fixed enum, see meetings.ts schema. */
+/** `POST /meetings` body. */
 export interface MeetingInput {
-  type: string;
+  type: MeetingType;
   title: string;
   scheduledAt?: string;
 }
 
 /** `PATCH /meetings/:id` body. */
 export interface MeetingPatch {
-  type?: string;
+  type?: MeetingType;
   title?: string;
   scheduledAt?: string | null;
   agenda?: string | null;
@@ -35,23 +41,32 @@ export interface MeetingPatch {
   status?: MeetingStatus;
 }
 
-/** Fetch-shaped hook for `GET /meetings?clubId=`, see README.md's "Adding a new API request". */
+/**
+ * Fetch-shaped hook for `GET /meetings?clubId=`, see README.md's "Adding a new API request".
+ * Club-aware (a stale club's meetings are never exposed) and race-safe (only the newest request writes state).
+ */
 export function useMeetings(clubId: string | null) {
-  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [stored, setStored] = useState<{ clubId: string; meetings: Meeting[] } | null>(null);
+  const meetings = stored && stored.clubId === clubId ? stored.meetings : [];
   const [loading, setLoading] = useState(!!clubId);
+  const [error, setError] = useState(false);
+  const requestId = useRef(0);
 
   const refetch = useCallback(async () => {
+    const id = ++requestId.current;
     if (!clubId) {
-      setMeetings([]);
       setLoading(false);
       return;
     }
     setLoading(true);
+    setError(false);
     try {
-      const { data } = await apiFetch<{ data: Meeting[] }>(`/meetings?clubId=${clubId}`);
-      setMeetings(data);
+      const { data } = await apiFetch<{ data: Meeting[] }>(`/meetings?clubId=${encodeURIComponent(clubId)}`);
+      if (id === requestId.current) setStored({ clubId, meetings: data });
+    } catch {
+      if (id === requestId.current) setError(true);
     } finally {
-      setLoading(false);
+      if (id === requestId.current) setLoading(false);
     }
   }, [clubId]);
 
@@ -88,5 +103,5 @@ export function useMeetings(clubId: string | null) {
     [clubId, refetch],
   );
 
-  return { meetings, loading, refetch, createMeeting, updateMeeting, deleteMeeting };
+  return { meetings, loading, error, refetch, createMeeting, updateMeeting, deleteMeeting };
 }

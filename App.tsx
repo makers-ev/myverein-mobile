@@ -9,6 +9,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { LanguageProvider } from './src/contexts/translation/LanguageContext';
 import { PaletteProvider } from './src/theme/PaletteProvider';
 import { AuthProvider } from './src/auth/AuthProvider';
+import { ActiveClubProvider } from './src/clubs/ActiveClubProvider';
 import { ErrorBoundary } from './src/error/ErrorBoundary';
 import AppNavigator from './src/navigation/AppNavigator';
 import { getStoredTheme } from './src/theme/themePreferenceStorage';
@@ -39,7 +40,9 @@ export default function App() {
                       theme instead. */}
                   <StatusBar style="auto" />
                   <NavigationBar style="auto" />
-                  <AppNavigator />
+                  <ActiveClubProvider>
+                    <AppNavigator />
+                  </ActiveClubProvider>
                 </AuthProvider>
               </LanguageProvider>
             </PaletteProvider>

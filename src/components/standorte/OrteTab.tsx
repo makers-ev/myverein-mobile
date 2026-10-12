@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Image, Linking, Text, TouchableOpacity, View } from 'react-native';
-import { Clock, ExternalLink, Eye, EyeOff, Info, KeyRound, Link2, MapPin, User, Wifi } from 'lucide-react-native';
+import { ActivityIndicator, Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Clock, ExternalLink, Eye, EyeOff, Info, Link2, MapPin, User, Wifi } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
-import { useLocations, useLocationDetail, type Location, type WifiNetwork, type LocationLink } from '@/hooks/useLocations';
+import { useLocations, useLocationDetail, type Location, type WifiNetwork, type WifiSecurity, type LocationLink } from '@/hooks/useLocations';
 import { buildWifiQrPayload } from '@/lib/wifiQr';
+import SignedImage from '@/components/ui/SignedImage';
+import { useThrottledCallback } from '@/hooks/useThrottledCallback';
+import KeysSection from './KeysSection';
 import { LinkForm, LocationForm, WifiForm } from './LocationForms';
 import { EmptyState, IconButton, SectionCard, StatusChip } from './shared';
+
+// Signed photo URLs expire; an image error triggers one refetch for fresh URLs, at most once per 10 s.
+const PHOTO_REFRESH_MS = 10_000;
 
 // Tinted pin placeholder so a location without a photo still looks intentional.
 function LocationPhotoPlaceholder({ className }: { className: string }) {
@@ -23,14 +29,19 @@ function LocationPhotoPlaceholder({ className }: { className: string }) {
   );
 }
 
-function LocationCard({ location, onPress }: { location: Location; onPress: () => void }) {
+function LocationCard({ location, onPress, onPhotoExpired }: { location: Location; onPress: () => void; onPhotoExpired: () => void }) {
   return (
     <TouchableOpacity
       onPress={onPress}
       className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl mb-4 overflow-hidden shadow-sm"
     >
       {location.photoUrl ? (
-        <Image source={{ uri: location.photoUrl }} className="w-full h-36" resizeMode="cover" />
+        <SignedImage
+          uri={location.photoUrl}
+          className="w-full h-36"
+          onExpired={onPhotoExpired}
+          fallback={<LocationPhotoPlaceholder className="w-full h-36" />}
+        />
       ) : (
         <LocationPhotoPlaceholder className="w-full h-36" />
       )}
@@ -51,6 +62,7 @@ function LocationList({ clubId, canWrite, onSelect }: { clubId: string; canWrite
   const themeColors = useThemeColors();
   const { locations, loading, refetch } = useLocations(clubId);
   const [creating, setCreating] = useState(false);
+  const onPhotoExpired = useThrottledCallback(() => void refetch(), PHOTO_REFRESH_MS);
 
   if (loading && locations.length === 0) {
     return (
@@ -72,7 +84,7 @@ function LocationList({ clubId, canWrite, onSelect }: { clubId: string; canWrite
       {locations.length === 0 ? (
         <EmptyState icon={<MapPin size={26} color={themeColors.primary} />} text={t('standorte.list.empty')} />
       ) : (
-        locations.map((loc) => <LocationCard key={loc.id} location={loc} onPress={() => onSelect(loc.id)} />)
+        locations.map((loc) => <LocationCard key={loc.id} location={loc} onPress={() => onSelect(loc.id)} onPhotoExpired={onPhotoExpired} />)
       )}
 
       {creating && <LocationForm clubId={clubId} onClose={() => setCreating(false)} onSaved={() => void refetch()} />}
@@ -85,6 +97,9 @@ function WifiCard({ network, onEdit }: { network: WifiNetwork; onEdit?: () => vo
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const [showQr, setShowQr] = useState(false);
+  // Older backends omit `security`: derive it from the password like the server does.
+  const security: WifiSecurity = network.security ?? (network.password ? 'wpa' : 'open');
+  const qrValue = network.qrPayload || buildWifiQrPayload(network.ssid, network.password, security);
 
   return (
     <View className="border border-border dark:border-border-dark rounded-xl p-3 mb-3">
@@ -94,27 +109,28 @@ function WifiCard({ network, onEdit }: { network: WifiNetwork; onEdit?: () => vo
         {onEdit && <IconButton kind="edit" label={t('standorte.wifi.edit')} onPress={onEdit} />}
       </View>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{network.ssid}</Text>
-      {onEdit && network.visibleToGuests && (
-        <View className="mb-2">
-          <StatusChip label={t('standorte.visible-to-guests')} tone="muted" />
-        </View>
-      )}
+      <View className="flex-row flex-wrap mb-2" style={{ gap: 6 }}>
+        <StatusChip label={t(`standorte.wifi.security.${security}`)} tone={security === 'open' ? 'warning' : 'primary'} />
+        {onEdit && network.visibleToGuests && <StatusChip label={t('standorte.visible-to-guests')} tone="muted" />}
+      </View>
 
       {showQr ? (
         <View>
-          <Text className="text-foreground dark:text-foreground-dark text-xs mb-2">
-            {t('standorte.wifi.password')}: {network.password || t('standorte.wifi.open')}
-          </Text>
+          {security !== 'open' && (
+            <Text className="text-foreground dark:text-foreground-dark text-xs mb-2">
+              {t('standorte.wifi.password')}: {network.password}
+            </Text>
+          )}
           <View className="items-center bg-white p-3 rounded-lg self-start">
-            <QRCode value={buildWifiQrPayload(network.ssid, network.password)} size={140} color="#000000" backgroundColor="#FFFFFF" />
+            <QRCode value={qrValue} size={140} color="#000000" backgroundColor="#FFFFFF" />
           </View>
-          <TouchableOpacity onPress={() => setShowQr(false)} className="self-start mt-2 flex-row items-center" style={{ gap: 4 }}>
+          <TouchableOpacity onPress={() => setShowQr(false)} accessibilityRole="button" hitSlop={8} className="self-start mt-2 flex-row items-center" style={{ gap: 4 }}>
             <EyeOff size={14} color={themeColors.primary} />
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.wifi.hide-qr')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        <TouchableOpacity onPress={() => setShowQr(true)} className="self-start flex-row items-center" style={{ gap: 4 }}>
+        <TouchableOpacity onPress={() => setShowQr(true)} accessibilityRole="button" hitSlop={8} className="self-start flex-row items-center" style={{ gap: 4 }}>
           <Eye size={14} color={themeColors.primary} />
           <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.wifi.show-qr')}</Text>
         </TouchableOpacity>
@@ -160,19 +176,22 @@ function LocationDetail({
   clubId,
   locationId,
   canWrite,
+  canSeeKeys,
   onBack,
 }: {
   clubId: string;
   locationId: string;
   canWrite: boolean;
+  canSeeKeys: boolean;
   onBack: () => void;
 }) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { location, wifiNetworks, links, loading, refetch } = useLocationDetail(clubId, locationId);
+  const { location, wifiNetworks, links, loading, error, refetch } = useLocationDetail(clubId, locationId);
   const [sheet, setSheet] = useState<Sheet>(null);
   const closeSheet = () => setSheet(null);
   const reload = () => void refetch();
+  const onPhotoExpired = useThrottledCallback(() => void refetch(), PHOTO_REFRESH_MS);
 
   // Plain Google Maps search URL: opens the default maps app or a browser, no native SDK needed.
   const handleDirections = () => {
@@ -188,19 +207,49 @@ function LocationDetail({
       </View>
     );
   }
-  if (!location) return null;
+  if (!location) {
+    return (
+      <View className="py-8 items-start">
+        <TouchableOpacity onPress={onBack} accessibilityRole="button" hitSlop={8} className="mb-3">
+          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('standorte.back')}</Text>
+        </TouchableOpacity>
+        {error && (
+          <>
+            <Text className="text-destructive text-sm mb-2">{t('standorte.detail.error')}</Text>
+            <TouchableOpacity onPress={reload} accessibilityRole="button" hitSlop={8}>
+              <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('standorte.keys.retry')}</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+    );
+  }
 
   const muted = themeColors.mutedForeground;
   const hasInfo = !!(location.openingHours || location.contactPerson || location.accessNote);
 
   return (
     <>
-      <TouchableOpacity onPress={onBack} className="mb-3 self-start">
+      <TouchableOpacity onPress={onBack} accessibilityRole="button" hitSlop={8} className="mb-3 self-start">
         <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('standorte.back')}</Text>
       </TouchableOpacity>
 
+      {error && (
+        <View className="flex-row items-center mb-3" style={{ gap: 8 }}>
+          <Text className="flex-1 text-destructive text-xs">{t('standorte.keys.refresh-error')}</Text>
+          <TouchableOpacity onPress={reload} accessibilityRole="button" hitSlop={8}>
+            <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.keys.retry')}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {location.photoUrl ? (
-        <Image source={{ uri: location.photoUrl }} className="w-full h-40 rounded-2xl mb-4" resizeMode="cover" />
+        <SignedImage
+          uri={location.photoUrl}
+          className="w-full h-40 rounded-2xl mb-4"
+          onExpired={onPhotoExpired}
+          fallback={<LocationPhotoPlaceholder className="w-full h-40 rounded-2xl mb-4" />}
+        />
       ) : (
         <LocationPhotoPlaceholder className="w-full h-40 rounded-2xl mb-4" />
       )}
@@ -240,17 +289,10 @@ function LocationDetail({
         </SectionCard>
       )}
 
-      {/* Member ids aren't resolvable to names without an extra fetch; a count is enough here. */}
-      <SectionCard title={t('standorte.detail.key-holders')}>
-        <View className="flex-row items-center" style={{ gap: 8 }}>
-          <KeyRound size={16} color={muted} />
-          <Text className="text-foreground dark:text-foreground-dark text-sm">
-            {location.keyHolders.length === 0
-              ? t('standorte.detail.key-holders.empty')
-              : t('standorte.detail.key-holders.count', { count: location.keyHolders.length })}
-          </Text>
-        </View>
-      </SectionCard>
+      {/* Holders and history are access info: the backend only delivers them with locations:write / locations:read_access. */}
+      {canSeeKeys && (
+        <KeysSection clubId={clubId} locationId={locationId} holders={location.keyHolders} canWrite={canWrite} onChanged={reload} />
+      )}
 
       <SectionCard
         title={t('standorte.detail.wifi')}
@@ -298,15 +340,17 @@ function LocationDetail({
 
 /**
  * Locations info center: address/hours/contact, WiFi (with QR) and links.
- * `locations:write` additionally manages locations, WiFi networks and links.
+ * `locations:write` additionally manages locations, WiFi networks, links and key issue/return;
+ * `locations:read_access` shows key holders and history read-only.
  */
 export default function OrteTab({ clubId }: { clubId: string }) {
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
   const { can } = useOwnMembership(clubId);
   const canWrite = can('locations:write');
+  const canSeeKeys = canWrite || can('locations:read_access');
 
   return selectedLocationId ? (
-    <LocationDetail clubId={clubId} locationId={selectedLocationId} canWrite={canWrite} onBack={() => setSelectedLocationId(null)} />
+    <LocationDetail clubId={clubId} locationId={selectedLocationId} canWrite={canWrite} canSeeKeys={canSeeKeys} onBack={() => setSelectedLocationId(null)} />
   ) : (
     <LocationList clubId={clubId} canWrite={canWrite} onSelect={setSelectedLocationId} />
   );

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
 import type { ClubMember } from './useClubMembers';
@@ -12,25 +12,36 @@ export type ClubPermission =
   | 'calendars:write'
   | 'meetings:write'
   | 'locations:write'
-  | 'inventory:write';
+  | 'inventory:write'
+  | 'meetings:read_board'
+  | 'locations:read_access'
+  // Not a ClubPermission in the backend, but appended to /club-members/me for UI gating (board roles).
+  | 'club_stats:read';
 
 /** Fetch-shaped hook for `GET /club-members/me?clubId=`, always includes sensitive fields (it's the caller's own row). */
 export function useOwnMembership(clubId: string | null) {
-  const [membership, setMembership] = useState<ClubMember | null>(null);
+  // Kept together with the club it belongs to, so a stale club's permissions are never exposed.
+  const [stored, setStored] = useState<{ clubId: string; member: ClubMember } | null>(null);
+  const membership = stored && stored.clubId === clubId ? stored.member : null;
   const [loading, setLoading] = useState(!!clubId);
 
+  // Only the newest request may write state.
+  const requestId = useRef(0);
+
   const refetch = useCallback(async () => {
+    const id = ++requestId.current;
     if (!clubId) {
-      setMembership(null);
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
       const { data } = await apiFetch<{ data: ClubMember }>(`/club-members/me?clubId=${clubId}`);
-      setMembership(data);
+      if (id === requestId.current) setStored({ clubId, member: data });
+    } catch {
+      // Keep no membership; can() stays false (deny by default).
     } finally {
-      setLoading(false);
+      if (id === requestId.current) setLoading(false);
     }
   }, [clubId]);
 

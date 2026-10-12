@@ -8,10 +8,12 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { withScheme } from '@/lib/withScheme';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import {
   CLAIMED_ROLES,
+  normalizeClaimedRole,
   DOCUMENT_KINDS,
   LEGAL_FORMS,
   MAX_DOCUMENTS,
@@ -71,16 +73,16 @@ function errorText(err: unknown, t: Translate, context: 'create' | 'patch' | 'su
     if (context === 'patch' && err.status === 409) return t('create-club.error.not-editable');
     if (context === 'submit' && err.status === 409) return t('create-club.error.club-exists');
     if (context === 'submit' && err.status === 422) return t('create-club.error.no-document');
-    return err.message;
+    return apiErrorMessage(err, t);
   }
   return t('alert.general-error-description');
 }
 
-function uploadErrorText(status: number | undefined, message: string, t: Translate): string {
+function uploadErrorText(status: number | undefined, t: Translate): string {
   if (status === 413) return t('create-club.docs.error.size');
   if (status === 415) return t('create-club.docs.error.type');
   if (status === 400) return t('create-club.docs.error.upload');
-  return message || t('create-club.docs.error.upload');
+  return t('create-club.docs.error.upload');
 }
 
 // The picker's `mimeType` can be missing: derive it from the extension
@@ -180,7 +182,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
   const themeColors = useThemeColors();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [form, setForm] = useState<FormState>(() => initialForm(registration));
-  const [role, setRole] = useState<ClaimedRole>(registration?.claimedRole ?? 'vorsitz');
+  const [role, setRole] = useState<ClaimedRole>(normalizeClaimedRole(registration?.claimedRole));
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -268,7 +270,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
       outcome.error
         ? prev.map((u) =>
             u.localId === localId
-              ? { ...u, status: 'error', error: uploadErrorText(outcome.status, outcome.error ?? '', t) }
+              ? { ...u, status: 'error', error: uploadErrorText(outcome.status, t) }
               : u,
           )
         : prev.filter((u) => u.localId !== localId),
@@ -281,7 +283,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
     try {
       await removeDocument(docId);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setError(apiErrorMessage(err, t));
     } finally {
       setRemovingId(null);
     }

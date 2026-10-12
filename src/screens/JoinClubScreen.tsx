@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 import { apiFetch, ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'JoinClub'>;
@@ -20,8 +21,9 @@ const CATEGORIES = ['aktiv', 'passiv', 'foerdernd', 'ehrenmitglied', 'jugend'] a
  * `POST /club-members/apply` only files an application (201) -- the caller
  * is NOT a member until the board approves it (`ClubApplications` screen),
  * so this screen shows a pending state instead of opening the club, and
- * deliberately loads no membership data. A 409 means "already a member or
- * an application is already open" and is shown as the same friendly state.
+ * deliberately loads no membership data. The two 409 codes `ALREADY_MEMBER` and
+ * `APPLICATION_PENDING` get their own message each; any other failure (e.g. a
+ * blocked re-join) shows the localised error text from `apiErrorMessage`.
  */
 export default function JoinClubScreen({ navigation }: Props) {
   const { t } = useLanguage();
@@ -30,7 +32,7 @@ export default function JoinClubScreen({ navigation }: Props) {
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>('aktiv');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState<'new' | 'existing' | null>(null);
+  const [submitted, setSubmitted] = useState<'new' | 'already-member' | 'application-pending' | null>(null);
 
   const handleJoin = async () => {
     if (!slug.trim() || isSubmitting) return;
@@ -40,11 +42,16 @@ export default function JoinClubScreen({ navigation }: Props) {
       await apiFetch('/club-members/apply', { method: 'POST', body: { clubSlug: slug.trim(), category } });
       setSubmitted('new');
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
-        setSubmitted('existing');
+      // Distinguishable 409 codes (B15): everything else (e.g. a blocked re-join) falls through to the localised error text.
+      if (err instanceof ApiError && err.code === 'ALREADY_MEMBER') {
+        setSubmitted('already-member');
         return;
       }
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      if (err instanceof ApiError && err.code === 'APPLICATION_PENDING') {
+        setSubmitted('application-pending');
+        return;
+      }
+      setError(apiErrorMessage(err, t));
     } finally {
       setIsSubmitting(false);
     }
@@ -58,14 +65,16 @@ export default function JoinClubScreen({ navigation }: Props) {
       >
         <View className="bg-card dark:bg-card-dark p-6 rounded-2xl items-center">
           <Text className="text-xl font-extrabold text-center mb-2 text-foreground dark:text-foreground-dark">
-            {t(submitted === 'new' ? 'join-club.pending.title' : 'join-club.pending.existing-title')}
+            {t(`join-club.result.${submitted}.title`)}
           </Text>
           <Text className="text-sm text-center mb-5 text-muted-foreground dark:text-muted-foreground-dark">
-            {t(submitted === 'new' ? 'join-club.pending.body' : 'join-club.pending.existing-body')}
+            {t(`join-club.result.${submitted}.body`)}
           </Text>
           <TouchableOpacity
             className="bg-primary dark:bg-primary-dark rounded-lg py-3 px-6 items-center"
+            style={{ minHeight: 44 }}
             onPress={() => navigation.goBack()}
+            accessibilityRole="button"
           >
             <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">
               {t('join-club.pending.back')}

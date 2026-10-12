@@ -5,6 +5,7 @@ import { Pencil, Plus } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 
 export function SectionCard({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -148,7 +149,7 @@ export function useSubmit() {
       try {
         await action();
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+        setError(apiErrorMessage(err, t));
       } finally {
         setSaving(false);
       }

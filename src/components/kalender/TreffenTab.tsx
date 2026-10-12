@@ -5,11 +5,15 @@ import { Check, X } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import DateTimeField from '@/components/ui/DateTimeField';
-import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
-import { useClubMembers } from '@/hooks/useClubMembers';
-import { useMeetings, type Meeting, type MeetingStatus } from '@/hooks/useMeetings';
-import { useMeetingDetail, type AttendanceEntry, type OverlapCandidate } from '@/hooks/useMeetingDetail';
+import { useClubMemberDirectory } from '@/hooks/useClubMembers';
+import { MEETING_TYPES, useMeetings, type Meeting, type MeetingStatus, type MeetingType } from '@/hooks/useMeetings';
+import { useMeetingDetail, type OverlapCandidate } from '@/hooks/useMeetingDetail';
+import ResolutionCorrection from './ResolutionCorrection';
+import MeetingManageSection from './MeetingManageSection';
+import MeetingInvitees from './MeetingInvitees';
+import MeetingAttendance from './MeetingAttendance';
 
 interface Props {
   clubId: string;
@@ -33,15 +37,41 @@ function StatusBadge({ status }: { status: MeetingStatus }) {
   );
 }
 
+/** Localised meeting type; unknown legacy values are shown as they are. */
+function useTypeLabel() {
+  const { t } = useLanguage();
+  return (type: string) => ((MEETING_TYPES as readonly string[]).includes(type) ? t(`treffen.type.${type}`) : type);
+}
+
+function ErrorRetry({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { t } = useLanguage();
+  return (
+    <View className="py-6">
+      <Text className="text-destructive text-sm mb-3" accessibilityRole="alert">
+        {message}
+      </Text>
+      <TouchableOpacity
+        onPress={onRetry}
+        className="self-start px-5 justify-center rounded-lg bg-primary dark:bg-primary-dark"
+        style={{ minHeight: 44 }}
+        accessibilityRole="button"
+      >
+        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('verein.retry')}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 function MeetingListRow({ meeting, onPress }: { meeting: Meeting; onPress: () => void }) {
   const { t } = useLanguage();
+  const typeLabel = useTypeLabel();
   return (
     <TouchableOpacity
       onPress={onPress}
       className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3"
     >
       <Text className="text-foreground dark:text-foreground-dark font-bold text-sm mb-1">{meeting.title}</Text>
-      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{meeting.type}</Text>
+      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{typeLabel(meeting.type)}</Text>
       <View className="flex-row items-center justify-between">
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
           {meeting.scheduledAt ? new Date(meeting.scheduledAt).toLocaleString() : t('treffen.scheduled-at.pending')}
@@ -52,42 +82,45 @@ function MeetingListRow({ meeting, onPress }: { meeting: Meeting; onPress: () =>
   );
 }
 
-function MeetingList({ clubId, onSelect }: { clubId: string; onSelect: (id: string) => void }) {
+function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite: boolean; onSelect: (id: string) => void }) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { meetings, loading, createMeeting } = useMeetings(clubId);
+  const { meetings, loading, error: loadError, refetch, createMeeting } = useMeetings(clubId);
+  const typeLabel = useTypeLabel();
 
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState('');
-  const [type, setType] = useState('');
+  const [type, setType] = useState<MeetingType | null>(null);
   const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const handleCreate = async () => {
-    if (!title.trim() || !type.trim() || saving) return;
+    if (!title.trim() || !type || saving) return;
     setSaving(true);
     setError(null);
     try {
-      await createMeeting({ title: title.trim(), type: type.trim(), scheduledAt: scheduledAt?.toISOString() });
+      await createMeeting({ title: title.trim(), type, scheduledAt: scheduledAt?.toISOString() });
       setTitle('');
-      setType('');
+      setType(null);
       setScheduledAt(null);
       setShowCreate(false);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setError(apiErrorMessage(err, t));
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
+  if (loading && meetings.length === 0) {
     return (
       <View className="py-12 items-center">
         <ActivityIndicator color={themeColors.primary} />
       </View>
     );
   }
+
+  if (loadError && meetings.length === 0) return <ErrorRetry message={t('treffen.list.error')} onRetry={() => void refetch()} />;
 
   return (
     <>
@@ -97,7 +130,7 @@ function MeetingList({ clubId, onSelect }: { clubId: string; onSelect: (id: stri
         meetings.map((m) => <MeetingListRow key={m.id} meeting={m} onPress={() => onSelect(m.id)} />)
       )}
 
-      {showCreate ? (
+      {!canWrite ? null : showCreate ? (
         <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4">
           <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.title')}
@@ -111,13 +144,28 @@ function MeetingList({ clubId, onSelect }: { clubId: string; onSelect: (id: stri
           <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.type')}
           </Text>
-          <TextInput
-            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
-            placeholder={t('treffen.type.placeholder')}
-            placeholderTextColor={themeColors.mutedForeground}
-            value={type}
-            onChangeText={setType}
-          />
+          <View className="flex-row flex-wrap mb-3" style={{ gap: 8 }}>
+            {MEETING_TYPES.map((value) => {
+              const selected = type === value;
+              return (
+                <TouchableOpacity
+                  key={value}
+                  onPress={() => setType(value)}
+                  className={`px-3 rounded-full justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark'}`}
+                  style={{ minHeight: 44 }}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={typeLabel(value)}
+                >
+                  <Text
+                    className={`text-xs font-semibold ${selected ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}
+                  >
+                    {typeLabel(value)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
           <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.scheduled-at')}
           </Text>
@@ -126,9 +174,9 @@ function MeetingList({ clubId, onSelect }: { clubId: string; onSelect: (id: stri
           </View>
           {error ? <Text className="text-destructive text-sm mb-3">{error}</Text> : null}
           <TouchableOpacity
-            className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${saving ? 'opacity-70' : ''}`}
+            className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${saving || !title.trim() || !type ? 'opacity-50' : ''}`}
             onPress={() => void handleCreate()}
-            disabled={saving}
+            disabled={saving || !title.trim() || !type}
           >
             {saving ? (
               <ActivityIndicator color={themeColors.primaryForeground} />
@@ -149,7 +197,15 @@ function MeetingList({ clubId, onSelect }: { clubId: string; onSelect: (id: stri
   );
 }
 
-function AgendaMinutes({ meeting, onSave }: { meeting: Meeting; onSave: (agenda: string, minutes: string) => Promise<void> }) {
+function AgendaMinutes({
+  meeting,
+  canWrite,
+  onSave,
+}: {
+  meeting: Meeting;
+  canWrite: boolean;
+  onSave: (agenda: string, minutes: string) => Promise<void>;
+}) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const [editing, setEditing] = useState(false);
@@ -168,7 +224,7 @@ function AgendaMinutes({ meeting, onSave }: { meeting: Meeting; onSave: (agenda:
       setSaved(true);
       setEditing(false);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setError(apiErrorMessage(err, t));
     } finally {
       setSaving(false);
     }
@@ -183,9 +239,11 @@ function AgendaMinutes({ meeting, onSave }: { meeting: Meeting; onSave: (agenda:
         <Text className="text-foreground dark:text-foreground-dark font-bold text-sm mb-1">{t('treffen.minutes')}</Text>
         <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">{meeting.minutes || t('treffen.minutes.empty')}</Text>
         {saved ? <Text className="text-success dark:text-success-dark text-xs mb-2">{t('treffen.agenda-minutes.saved')}</Text> : null}
-        <TouchableOpacity onPress={() => setEditing(true)} className="self-start">
-          <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('treffen.agenda-minutes.save')}</Text>
-        </TouchableOpacity>
+        {canWrite ? (
+          <TouchableOpacity onPress={() => setEditing(true)} className="self-start">
+            <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('treffen.agenda-minutes.save')}</Text>
+          </TouchableOpacity>
+        ) : null}
       </SectionCard>
     );
   }
@@ -230,17 +288,27 @@ function AgendaMinutes({ meeting, onSave }: { meeting: Meeting; onSave: (agenda:
 function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingId: string; onBack: () => void }) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { membership } = useOwnMembership(clubId);
-  const { members } = useClubMembers(clubId);
+  const { membership, can } = useOwnMembership(clubId);
+  // Everything that writes meeting data needs meetings:write (backend 403s otherwise); RSVP stays self-service.
+  const canWrite = can('meetings:write');
+  const { members } = useClubMemberDirectory(clubId);
+  const typeLabel = useTypeLabel();
   const {
     meeting,
     invitees,
     resolutions,
+    attendance,
     loading,
+    error: loadError,
+    refetch,
     updateMeeting,
+    deleteMeeting,
+    addInvitee,
+    removeInvitee,
     respondToInvite,
     recordAttendance,
     createResolution,
+    correctResolution,
     getOverlap,
   } = useMeetingDetail(clubId, meetingId);
 
@@ -253,11 +321,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
   const [overlapChecking, setOverlapChecking] = useState(false);
   const [overlapError, setOverlapError] = useState<string | null>(null);
 
-  const [attendance, setAttendance] = useState<Record<string, { present: boolean; hasVotingRight: boolean }>>({});
-  const [attendanceSaving, setAttendanceSaving] = useState(false);
-  const [attendanceSaved, setAttendanceSaved] = useState(false);
-  const [attendanceError, setAttendanceError] = useState<string | null>(null);
-
+  const [correctingId, setCorrectingId] = useState<string | null>(null);
   const [showResolutionForm, setShowResolutionForm] = useState(false);
   const [resDescription, setResDescription] = useState('');
   const [resFor, setResFor] = useState('0');
@@ -267,9 +331,9 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
   const [resSaving, setResSaving] = useState(false);
   const [resError, setResError] = useState<string | null>(null);
 
-  const nameFor = (memberId: string) => members.find((m) => m.id === memberId)?.name ?? memberId;
+  const nameFor = (memberId: string) => members.find((m) => m.memberId === memberId)?.name ?? t('verein.members.unknown');
 
-  const ownInvite = membership ? invitees.find((i) => i.memberId === membership.id) : undefined;
+  const ownInvite = membership ? invitees.find((i) => i.memberId === membership.memberId) : undefined;
 
   const handleRespond = async (response: 'zugesagt' | 'abgesagt') => {
     setRsvpSaving(true);
@@ -277,7 +341,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
     try {
       await respondToInvite(response);
     } catch (err) {
-      setRsvpError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setRsvpError(apiErrorMessage(err, t));
     } finally {
       setRsvpSaving(false);
     }
@@ -299,28 +363,9 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
       const data = await getOverlap(candidates);
       setOverlapResults(data);
     } catch (err) {
-      setOverlapError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setOverlapError(apiErrorMessage(err, t));
     } finally {
       setOverlapChecking(false);
-    }
-  };
-
-  const handleSaveAttendance = async () => {
-    setAttendanceSaving(true);
-    setAttendanceError(null);
-    setAttendanceSaved(false);
-    try {
-      const entries: AttendanceEntry[] = invitees.map((inv) => ({
-        memberId: inv.memberId,
-        present: attendance[inv.memberId]?.present ?? false,
-        hasVotingRight: attendance[inv.memberId]?.hasVotingRight ?? true,
-      }));
-      await recordAttendance(entries);
-      setAttendanceSaved(true);
-    } catch (err) {
-      setAttendanceError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
-    } finally {
-      setAttendanceSaving(false);
     }
   };
 
@@ -343,17 +388,26 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
       setResResult('');
       setShowResolutionForm(false);
     } catch (err) {
-      setResError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setResError(apiErrorMessage(err, t));
     } finally {
       setResSaving(false);
     }
   };
 
-  if (loading || !meeting) {
+  if (!meeting) {
     return (
-      <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
-      </View>
+      <>
+        <TouchableOpacity onPress={onBack} className="mb-3 self-start justify-center" style={{ minHeight: 44 }} accessibilityRole="button">
+          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('treffen.back')}</Text>
+        </TouchableOpacity>
+        {loadError ? (
+          <ErrorRetry message={t('treffen.detail.error')} onRetry={() => void refetch()} />
+        ) : (
+          <View className="py-12 items-center" accessibilityLabel={loading ? t('treffen.detail.loading') : undefined}>
+            <ActivityIndicator color={themeColors.primary} />
+          </View>
+        )}
+      </>
     );
   }
 
@@ -366,12 +420,25 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
       <View className="mb-4">
         <Text className="text-xl font-black text-foreground dark:text-foreground-dark mb-1">{meeting.title}</Text>
         <View className="flex-row items-center" style={{ gap: 8 }}>
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{meeting.type}</Text>
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{typeLabel(meeting.type)}</Text>
           <StatusBadge status={meeting.status} />
         </View>
       </View>
 
-      <AgendaMinutes meeting={meeting} onSave={(agenda, minutes) => updateMeeting({ agenda, minutes }).then(() => undefined)} />
+      {canWrite && (
+        <MeetingManageSection
+          // Re-sync the date field when the server value changes (e.g. after another save).
+          key={`${meeting.id}|${meeting.scheduledAt ?? ''}`}
+          meeting={meeting}
+          onUpdate={updateMeeting}
+          onDelete={async () => {
+            await deleteMeeting();
+            onBack();
+          }}
+        />
+      )}
+
+      <AgendaMinutes meeting={meeting} canWrite={canWrite} onSave={(agenda, minutes) => updateMeeting({ agenda, minutes }).then(() => undefined)} />
 
       {ownInvite && (
         <SectionCard title={t('treffen.rsvp.title')}>
@@ -400,144 +467,80 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
         </SectionCard>
       )}
 
-      <SectionCard title={t('treffen.overlap.title')}>
-        {candidates.length === 0 ? (
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.overlap.empty')}</Text>
-        ) : (
-          candidates.map((c, i) => (
-            <Text key={c + i} className="text-foreground dark:text-foreground-dark text-xs mb-1">
-              {new Date(c).toLocaleString()}
-            </Text>
-          ))
-        )}
-        <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
-          <View className="flex-1">
-            <DateTimeField value={candidateInput} onChange={setCandidateInput} placeholder={t('treffen.overlap.candidate-placeholder')} />
-          </View>
-          <TouchableOpacity className="bg-muted dark:bg-muted-dark rounded-lg py-2.5 px-3" onPress={handleAddCandidate}>
-            <Text className="text-foreground dark:text-foreground-dark text-xs font-bold">{t('treffen.overlap.add-candidate')}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {overlapError ? <Text className="text-destructive text-sm mt-2">{overlapError}</Text> : null}
-
-        <TouchableOpacity
-          className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${overlapChecking || candidates.length === 0 ? 'opacity-70' : ''}`}
-          onPress={() => void handleCheckOverlap()}
-          disabled={overlapChecking || candidates.length === 0}
-        >
-          {overlapChecking ? (
-            <ActivityIndicator color={themeColors.primaryForeground} size="small" />
+      {canWrite && (
+        <SectionCard title={t('treffen.overlap.title')}>
+          {candidates.length === 0 ? (
+            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.overlap.empty')}</Text>
           ) : (
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
-              {t('treffen.overlap.check')}
-            </Text>
+            candidates.map((c, i) => (
+              <Text key={c + i} className="text-foreground dark:text-foreground-dark text-xs mb-1">
+                {new Date(c).toLocaleString()}
+              </Text>
+            ))
           )}
-        </TouchableOpacity>
-
-        {overlapResults && (
-          <View className="mt-3">
-            {overlapResults.map((result) => {
-              const available = result.availability.filter((a) => a.available).length;
-              return (
-                <View key={result.candidate} className="py-2 border-t border-border dark:border-border-dark">
-                  <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold mb-1">
-                    {new Date(result.candidate).toLocaleString()}
-                  </Text>
-                  <View className="flex-row items-center flex-wrap" style={{ gap: 4 }}>
-                    {result.availability.map((a) => (
-                      <View
-                        key={a.memberId}
-                        className={`w-5 h-5 rounded-full items-center justify-center ${a.available ? 'bg-success/20' : 'bg-destructive/20'}`}
-                      >
-                        {a.available ? (
-                          <Check size={12} color={themeColors.success} />
-                        ) : (
-                          <X size={12} color={themeColors.destructive} />
-                        )}
-                      </View>
-                    ))}
-                    <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs ml-1">
-                      {t('treffen.overlap.count', { available, total: result.availability.length })}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })}
+          <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
+            <View className="flex-1">
+              <DateTimeField value={candidateInput} onChange={setCandidateInput} placeholder={t('treffen.overlap.candidate-placeholder')} />
+            </View>
+            <TouchableOpacity className="bg-muted dark:bg-muted-dark rounded-lg py-2.5 px-3" onPress={handleAddCandidate}>
+              <Text className="text-foreground dark:text-foreground-dark text-xs font-bold">{t('treffen.overlap.add-candidate')}</Text>
+            </TouchableOpacity>
           </View>
-        )}
-      </SectionCard>
 
-      <SectionCard title={t('treffen.attendance.title')}>
-        {invitees.length === 0 ? (
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.attendance.empty')}</Text>
-        ) : (
-          invitees.map((inv, i) => {
-            const row = attendance[inv.memberId] ?? { present: false, hasVotingRight: true };
-            return (
-              <View
-                key={inv.id}
-                className={`py-2.5 ${i === invitees.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}
-              >
-                <Text className="text-foreground dark:text-foreground-dark text-sm font-medium mb-2">{nameFor(inv.memberId)}</Text>
-                <View className="flex-row items-center" style={{ gap: 16 }}>
-                  <TouchableOpacity
-                    className="flex-row items-center"
-                    style={{ gap: 6 }}
-                    onPress={() =>
-                      setAttendance((prev) => ({
-                        ...prev,
-                        [inv.memberId]: { ...row, present: !row.present },
-                      }))
-                    }
-                  >
-                    <View
-                      className={`w-4 h-4 rounded ${row.present ? 'bg-primary dark:bg-primary-dark' : 'border border-border dark:border-border-dark'}`}
-                    />
-                    <Text className="text-xs text-foreground dark:text-foreground-dark">{t('treffen.attendance.present')}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    className="flex-row items-center"
-                    style={{ gap: 6 }}
-                    onPress={() =>
-                      setAttendance((prev) => ({
-                        ...prev,
-                        [inv.memberId]: { ...row, hasVotingRight: !row.hasVotingRight },
-                      }))
-                    }
-                  >
-                    <View
-                      className={`w-4 h-4 rounded ${row.hasVotingRight ? 'bg-primary dark:bg-primary-dark' : 'border border-border dark:border-border-dark'}`}
-                    />
-                    <Text className="text-xs text-foreground dark:text-foreground-dark">{t('treffen.attendance.voting-right')}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            );
-          })
-        )}
+          {overlapError ? <Text className="text-destructive text-sm mt-2">{overlapError}</Text> : null}
 
-        {attendanceError ? <Text className="text-destructive text-sm mt-3">{attendanceError}</Text> : null}
-        {attendanceSaved && !attendanceError ? (
-          <Text className="text-success dark:text-success-dark text-xs mt-3">{t('treffen.attendance.saved')}</Text>
-        ) : null}
-
-        {invitees.length > 0 && (
           <TouchableOpacity
-            className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${attendanceSaving ? 'opacity-70' : ''}`}
-            onPress={() => void handleSaveAttendance()}
-            disabled={attendanceSaving}
+            className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${overlapChecking || candidates.length === 0 ? 'opacity-70' : ''}`}
+            onPress={() => void handleCheckOverlap()}
+            disabled={overlapChecking || candidates.length === 0}
           >
-            {attendanceSaving ? (
+            {overlapChecking ? (
               <ActivityIndicator color={themeColors.primaryForeground} size="small" />
             ) : (
               <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
-                {t('treffen.attendance.save')}
+                {t('treffen.overlap.check')}
               </Text>
             )}
           </TouchableOpacity>
-        )}
-      </SectionCard>
+
+          {overlapResults && (
+            <View className="mt-3">
+              {overlapResults.map((result) => {
+                const available = result.availability.filter((a) => a.available).length;
+                return (
+                  <View key={result.candidate} className="py-2 border-t border-border dark:border-border-dark">
+                    <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold mb-1">
+                      {new Date(result.candidate).toLocaleString()}
+                    </Text>
+                    <View className="flex-row items-center flex-wrap" style={{ gap: 4 }}>
+                      {result.availability.map((a) => (
+                        <View
+                          key={a.memberId}
+                          className={`w-5 h-5 rounded-full items-center justify-center ${a.available ? 'bg-success/20' : 'bg-destructive/20'}`}
+                        >
+                          {a.available ? (
+                            <Check size={12} color={themeColors.success} />
+                          ) : (
+                            <X size={12} color={themeColors.destructive} />
+                          )}
+                        </View>
+                      ))}
+                      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs ml-1">
+                        {t('treffen.overlap.count', { available, total: result.availability.length })}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </SectionCard>
+
+      )}
+
+      {canWrite && <MeetingInvitees invitees={invitees} directory={members} nameFor={nameFor} onAdd={addInvitee} onRemove={removeInvitee} />}
+
+      {canWrite && <MeetingAttendance invitees={invitees} attendance={attendance} directory={members} nameFor={nameFor} onSave={recordAttendance} />}
 
       <SectionCard title={t('treffen.resolutions.title')}>
         {resolutions.length === 0 ? (
@@ -557,11 +560,34 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
                   <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{r.result}</Text>
                 </View>
               </View>
+              {r.correctionNote ? (
+                <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1.5">
+                  {r.correctedAt ? `${t('treffen.resolutions.corrected', { date: new Date(r.correctedAt).toLocaleDateString() })} · ` : ''}
+                  {t('treffen.resolutions.correction-note.label', { note: r.correctionNote })}
+                </Text>
+              ) : null}
+              {canWrite && correctingId !== r.id ? (
+                <TouchableOpacity
+                  className="self-start mt-1.5"
+                  style={{ minHeight: 36, justifyContent: 'center' }}
+                  onPress={() => setCorrectingId(r.id)}
+                  accessibilityRole="button"
+                >
+                  <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('treffen.resolutions.correct')}</Text>
+                </TouchableOpacity>
+              ) : null}
+              {canWrite && correctingId === r.id ? (
+                <ResolutionCorrection
+                  resolution={r}
+                  onSubmit={(body) => correctResolution(r.id, body)}
+                  onClose={() => setCorrectingId(null)}
+                />
+              ) : null}
             </View>
           ))
         )}
 
-        {showResolutionForm ? (
+        {!canWrite ? null : showResolutionForm ? (
           <View className="mt-3 pt-3 border-t border-border dark:border-border-dark">
             <TextInput
               className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
@@ -641,11 +667,12 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
 }
 
 export default function TreffenTab({ clubId }: Props) {
+  const { can } = useOwnMembership(clubId);
   const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null);
 
   return selectedMeetingId ? (
     <MeetingDetail clubId={clubId} meetingId={selectedMeetingId} onBack={() => setSelectedMeetingId(null)} />
   ) : (
-    <MeetingList clubId={clubId} onSelect={setSelectedMeetingId} />
+    <MeetingList clubId={clubId} canWrite={can('meetings:write')} onSelect={setSelectedMeetingId} />
   );
 }

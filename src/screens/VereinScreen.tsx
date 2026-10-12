@@ -1,7 +1,7 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -9,12 +9,15 @@ import { navigate } from '@/navigation/navigationRef';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import { useClubRegistration } from '@/hooks/useClubRegistration';
 import { useClubInfo, type BoardMember, type Department } from '@/hooks/useClubInfo';
-import { useOwnMembership } from '@/hooks/useOwnMembership';
-import { useClubMembers, type ClubMember } from '@/hooks/useClubMembers';
 import { getDepartmentColor } from '@/theme/departmentColors';
 import ProfilTab from '@/components/verein/ProfilTab';
+import MembersTab from '@/components/verein/MembersTab';
+import VerwaltungTab, { canSeeVerwaltung } from '@/components/verein/VerwaltungTab';
+import { useOwnMembership } from '@/hooks/useOwnMembership';
+import ClubSwitcher from '@/components/verein/ClubSwitcher';
+import ClubsLoadError from '@/components/verein/ClubsLoadError';
 
-type Tab = 'info' | 'mitglieder' | 'profil';
+type Tab = 'info' | 'mitglieder' | 'profil' | 'verwaltung';
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -103,79 +106,6 @@ function VereinsinfoTab({ clubId }: { clubId: string }) {
   );
 }
 
-function MemberRow({ member }: { member: ClubMember }) {
-  const { t } = useLanguage();
-  return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3">
-      <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
-        <Text className="flex-1 text-foreground dark:text-foreground-dark font-bold text-sm">{member.name ?? '—'}</Text>
-        {member.category && (
-          <View className="bg-muted dark:bg-muted-dark px-2 py-0.5 rounded-full">
-            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">
-              {t(`verein.category.${member.category}`)}
-            </Text>
-          </View>
-        )}
-      </View>
-      {member.roles.length > 0 && (
-        <View className="flex-row flex-wrap mt-2" style={{ gap: 6 }}>
-          {member.roles.map((r) => (
-            <View key={r.id} className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-0.5 rounded-full">
-              <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t(`verein.role.${r.roleType}`)}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-      {member.joinedAt && (
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-2">
-          {t('verein.members.joined')}: {new Date(member.joinedAt).toLocaleDateString()}
-        </Text>
-      )}
-    </View>
-  );
-}
-
-function MitgliederTab({ clubId }: { clubId: string }) {
-  const { t } = useLanguage();
-  const themeColors = useThemeColors();
-  const { members, loading } = useClubMembers(clubId);
-  // Board-only entry point to the open join applications (members:write).
-  const { can } = useOwnMembership(clubId);
-  const applicationsEntry = can('members:write') ? (
-    <TouchableOpacity
-      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3 flex-row items-center justify-between"
-      onPress={() => navigate('ClubApplications')}
-    >
-      <Text className="text-primary dark:text-primary-dark font-bold text-sm">{t('verein.applications.open')}</Text>
-      <Text className="text-primary dark:text-primary-dark font-bold text-sm">›</Text>
-    </TouchableOpacity>
-  ) : null;
-
-  if (loading) {
-    return (
-      <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
-      </View>
-    );
-  }
-
-  if (members.length === 0) {
-    return (
-      <>
-        {applicationsEntry}
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.members.empty')}</Text>
-      </>
-    );
-  }
-
-  return (
-    <>
-      {applicationsEntry}
-      {members.map((m) => <MemberRow key={m.id} member={m} />)}
-    </>
-  );
-}
-
 function NoClubState() {
   const { t } = useLanguage();
   const { registration, refetch } = useClubRegistration();
@@ -244,7 +174,48 @@ export default function VereinScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const [tab, setTab] = useState<Tab>('info');
-  const { activeClub, loading: clubsLoading, refetch: refetchClubs } = useMyClubs();
+  // Unsaved inputs in the Profil tab: leaving the tab would drop them, so ask first.
+  const [profileDirty, setProfileDirty] = useState(false);
+  // Leaving via navigation (back, tab bar) while the profile has unsaved inputs.
+  const navigation = useNavigation();
+  useEffect(() => {
+    return navigation.addListener('beforeRemove', (e) => {
+      if (!profileDirty) return;
+      e.preventDefault();
+      Alert.alert(t('profil.discard.title'), t('profil.discard.message'), [
+        { text: t('profil.discard.keep'), style: 'cancel' },
+        { text: t('profil.discard.confirm'), style: 'destructive', onPress: () => navigation.dispatch(e.data.action) },
+      ]);
+    });
+  }, [navigation, profileDirty, t]);
+  // Club switch drops tab state, so ask first (the switcher only switches after proceed()).
+  const guardClubSwitch = (proceed: () => void) => {
+    if (!profileDirty) {
+      proceed();
+      return;
+    }
+    Alert.alert(t('profil.discard.title'), t('profil.discard.message'), [
+      { text: t('profil.discard.keep'), style: 'cancel' },
+      { text: t('profil.discard.confirm'), style: 'destructive', onPress: proceed },
+    ]);
+  };
+  const selectTab = (value: Tab) => {
+    if (value === tab) return;
+    if (tab === 'profil' && profileDirty) {
+      Alert.alert(t('profil.discard.title'), t('profil.discard.message'), [
+        { text: t('profil.discard.keep'), style: 'cancel' },
+        { text: t('profil.discard.confirm'), style: 'destructive', onPress: () => setTab(value) },
+      ]);
+      return;
+    }
+    setTab(value);
+  };
+  const { activeClub, error: clubsError, loading: clubsLoading, refetch: refetchClubs } = useMyClubs();
+  // Role-dependent admin entry: only board roles with the matching permissions get the tab.
+  const { can } = useOwnMembership(activeClub?.clubId ?? null);
+  const showVerwaltung = canSeeVerwaltung(can);
+  const tabs: Tab[] = showVerwaltung ? ['info', 'mitglieder', 'verwaltung', 'profil'] : ['info', 'mitglieder', 'profil'];
+  const activeTab: Tab = tabs.includes(tab) ? tab : 'info';
 
   // Returning from CreateClub after an approval: reload the memberships so
   // the new club shows up (the hook instance here keeps its old state).
@@ -265,27 +236,33 @@ export default function VereinScreen() {
         <Text className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">
           {activeClub?.clubName ?? t('nav.verein')}
         </Text>
+        <ClubSwitcher onBeforeSwitch={guardClubSwitch} />
       </View>
 
       {clubsLoading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={themeColors.primary} />
         </View>
+      ) : !activeClub && clubsError ? (
+        <ClubsLoadError />
       ) : !activeClub ? (
         <NoClubState />
       ) : (
         <>
           <View className="px-6 pt-3">
-            <View className="flex-row mb-4" style={{ gap: 8 }}>
-              {(['info', 'mitglieder', 'profil'] as const).map((value) => (
+            <View className="flex-row mb-4" style={{ gap: 8 }} accessibilityRole="tablist">
+              {tabs.map((value) => (
                 <TouchableOpacity
                   key={value}
-                  onPress={() => setTab(value)}
-                  className={`px-4 py-2 rounded-full ${tab === value ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}
+                  onPress={() => selectTab(value)}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: activeTab === value }}
+                  style={{ minHeight: 44, justifyContent: 'center' }}
+                  className={`px-4 py-2 rounded-full ${activeTab === value ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}
                 >
                   <Text
                     className={`text-sm font-semibold ${
-                      tab === value ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'
+                      activeTab === value ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'
                     }`}
                   >
                     {t(`verein.tab.${value}`)}
@@ -295,10 +272,11 @@ export default function VereinScreen() {
             </View>
           </View>
 
-          <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
-            {tab === 'info' && <VereinsinfoTab clubId={activeClub.clubId} />}
-            {tab === 'mitglieder' && <MitgliederTab clubId={activeClub.clubId} />}
-            {tab === 'profil' && <ProfilTab clubId={activeClub.clubId} />}
+          <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
+            {activeTab === 'info' && <VereinsinfoTab clubId={activeClub.clubId} />}
+            {activeTab === 'mitglieder' && <MembersTab clubId={activeClub.clubId} />}
+            {activeTab === 'verwaltung' && <VerwaltungTab clubId={activeClub.clubId} onOpenMembers={() => selectTab('mitglieder')} />}
+            {activeTab === 'profil' && <ProfilTab clubId={activeClub.clubId} onDirtyChange={setProfileDirty} />}
           </ScrollView>
         </>
       )}

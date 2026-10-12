@@ -8,6 +8,16 @@ const GeneralTranslation: Translation = {
   en: {
     'alert.general-error-title': 'Error',
     'alert.general-error-description': 'An unexpected error occurred. Please try again later.',
+    'api.error.unauthorized': 'Please sign in again.',
+    'api.error.forbidden': 'You do not have permission for this action.',
+    'api.error.not-found': 'The requested entry was not found. It may have been removed.',
+    'api.error.conflict': 'This action conflicts with the current state. Please reload and try again.',
+    'api.error.invalid': 'Some of your input is not valid. Please check it and try again.',
+    'api.error.rate-limit': 'Too many requests. Please wait a moment and try again.',
+    'api.error.server': 'The server has a problem right now. Please try again later.',
+    'api.error.already-member': 'You are already a member of this club.',
+    'api.error.application-pending': 'Your application is already being reviewed.',
+    'api.error.quota': 'The storage limit has been reached.',
 
     'page.no-content-found': 'No content found.',
 
@@ -26,6 +36,16 @@ const GeneralTranslation: Translation = {
   de: {
     'alert.general-error-title': 'Fehler',
     'alert.general-error-description': 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.',
+    'api.error.unauthorized': 'Bitte melde dich erneut an.',
+    'api.error.forbidden': 'Dir fehlt die Berechtigung für diese Aktion.',
+    'api.error.not-found': 'Der Eintrag wurde nicht gefunden. Möglicherweise wurde er entfernt.',
+    'api.error.conflict': 'Die Aktion passt nicht zum aktuellen Stand. Bitte lade neu und versuche es erneut.',
+    'api.error.invalid': 'Einige Eingaben sind ungültig. Bitte prüfe sie und versuche es erneut.',
+    'api.error.rate-limit': 'Zu viele Anfragen. Bitte warte einen Moment und versuche es erneut.',
+    'api.error.server': 'Der Server hat gerade ein Problem. Bitte versuche es später erneut.',
+    'api.error.already-member': 'Du bist bereits Mitglied in diesem Verein.',
+    'api.error.application-pending': 'Dein Antrag wird bereits geprüft.',
+    'api.error.quota': 'Das Speicherlimit ist erreicht.',
 
     'page.no-content-found': 'Keine Inhalte gefunden.',
 

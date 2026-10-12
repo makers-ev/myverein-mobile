@@ -4,6 +4,7 @@ import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } fro
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import type { Calendar } from '@/hooks/useCalendars';
 import type { CalendarEvent, EventInput } from '@/hooks/useEvents';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
@@ -200,7 +201,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
       if (isCreate) onClose();
       else setEditing(false);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setError(apiErrorMessage(err, t));
     } finally {
       setSaving(false);
     }
@@ -219,7 +220,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
             await onDelete(event.id);
             onClose();
           } catch (err) {
-            setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+            setError(apiErrorMessage(err, t));
           } finally {
             setSaving(false);
           }
