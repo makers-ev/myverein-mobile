@@ -344,6 +344,8 @@ export default function MembersTab({ clubId }: { clubId: string }) {
         onClose={() => setSelected(null)}
         clubId={clubId}
         canEditPhoto={can('members:write')}
+        showCustomFields={can('members:write')}
+        canReadSensitive={can('members:read_sensitive')}
         onPhotoChanged={handlePhotoChanged}
         onPhotoExpired={refreshForPhotos}
       />

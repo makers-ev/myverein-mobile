@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
+import type { ExitSubmission } from '@/lib/exitForm';
 
 export type ExitKind = 'cancellation' | 'exclusion';
 export type ExitStatus = 'pending' | 'approved' | 'rejected' | 'withdrawn';
@@ -32,7 +33,8 @@ export interface ExitChecklist {
   isEmpty: boolean;
 }
 
-export type ExitRequestDetail = ExitRequest & { checklist: ExitChecklist };
+/** `submission`: the answers of the exit form (sensitive ones redacted unless `members:read_sensitive`); `null` if no form was filled in. */
+export type ExitRequestDetail = ExitRequest & { checklist: ExitChecklist; submission?: ExitSubmission | null };
 
 export interface ExitPreview {
   requestedOn: string;
@@ -81,12 +83,10 @@ export function useMyExitRequests(clubId: string | null) {
     void refetch();
   }, [refetch]);
 
+  /** `body` is built by `exitRequestBody` (date, answers, pinned form version); the answers are never logged or stored. */
   const submit = useCallback(
-    async (input: { desiredEffectiveOn: string | null; reason: string }) => {
+    async (body: Record<string, unknown>) => {
       if (!clubId) throw new Error('no club');
-      const body: Record<string, string> = {};
-      if (input.desiredEffectiveOn) body.desiredEffectiveOn = input.desiredEffectiveOn;
-      if (input.reason.trim()) body.reason = input.reason.trim();
       const res = await apiFetch<{ data: ExitRequest & { adjustedToEarliest: boolean } }>(`/club-exit-requests?${q(clubId)}`, {
         method: 'POST',
         body,

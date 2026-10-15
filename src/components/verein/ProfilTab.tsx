@@ -10,6 +10,7 @@ import DateTimeField, { fromDateString, toDateString } from '@/components/ui/Dat
 import { Field, inputClassName } from '@/components/ui/FormSheet';
 import { isMinorBirthDate } from '@/lib/memberPhoto';
 import ExitRequestSection from './ExitRequestSection';
+import MemberCustomFields from './MemberCustomFields';
 import MemberPhotoEditor from './MemberPhotoEditor';
 
 interface Props {
@@ -88,6 +89,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [customDirty, setCustomDirty] = useState(false);
 
   // Fresh server values flow into fields the user has not touched since the last
   // sync; anything typed meanwhile (e.g. during the post-save refetch) is kept.
@@ -111,9 +113,10 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
   const birthDateChanged = toDateKey(draft.birthDate) !== toDateKey(server.birthDate);
   const dirty = !!membership && (changedTextKeys.length > 0 || birthDateChanged);
 
+  const anyDirty = dirty || customDirty;
   useEffect(() => {
-    onDirtyChange?.(dirty);
-  }, [dirty, onDirtyChange]);
+    onDirtyChange?.(anyDirty);
+  }, [anyDirty, onDirtyChange]);
   useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
 
   const errors = validate(draft, t);
@@ -278,6 +281,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
       ) : null}
 
       <View className="mt-6">
+        <MemberCustomFields clubId={clubId} target="me" card onDirtyChange={setCustomDirty} />
         <ExitRequestSection clubId={clubId} />
       </View>
     </View>

@@ -12,12 +12,37 @@ import {
   type ExitRequest,
   type ExitRequestDetail,
 } from '@/hooks/useExitRequests';
+import AnswerList from '@/components/forms/AnswerList';
 import DateTimeField, { fromDateString, toDateString } from '@/components/ui/DateTimeField';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 
 type Dialog = { kind: 'approve' | 'reject'; request: ExitRequest } | null;
 
 /** Return checklist (open loans, keys) of the member concerned, loaded when the decision sheet opens. */
+/** Answers of the exit form the member filled in (`Geschützt` marker for protected ones); nothing here influences the dates. */
+function ExitAnswers({ detail }: { detail: ExitRequestDetail | null }) {
+  const { t } = useLanguage();
+  const submission = detail?.submission;
+  if (!submission) return null;
+  const muted = 'text-muted-foreground dark:text-muted-foreground-dark text-xs';
+  return (
+    <View className="mb-3">
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-0.5" accessibilityRole="header">
+        {t('forms.exit.answers.title')}
+      </Text>
+      <Text className={`${muted} mb-2`}>
+        {t('forms.exit.answers.hint', { version: submission.version, date: submission.submittedAt ? formatDay(submission.submittedAt) : '—' })}
+      </Text>
+      {submission.answers.length === 0 ? (
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('forms.review.answers.none')}</Text>
+      ) : (
+        <AnswerList answers={submission.answers} />
+      )}
+      {submission.answers.some((a) => a.redacted) ? <Text className={`${muted} mt-2`}>{t('forms.review.redacted.note')}</Text> : null}
+    </View>
+  );
+}
+
 function Checklist({ detail, loading, error }: { detail: ExitRequestDetail | null; loading: boolean; error: boolean }) {
   const { t } = useLanguage();
   const muted = 'text-muted-foreground dark:text-muted-foreground-dark text-xs';
@@ -262,6 +287,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
           <>
             <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-3">{dialog.request.memberName ?? '—'}</Text>
             <Checklist detail={detail} loading={detailLoading} error={detailError} />
+            <ExitAnswers detail={detail} />
             {dialog.kind === 'approve' ? (
               <Field label={t('admin.exits.effective.label')}>
                 <DateTimeField mode="date" value={effective} onChange={setEffective} />

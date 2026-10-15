@@ -7,6 +7,7 @@ import type { ClubMember } from '@/hooks/useClubMembers';
 import { isMinorBirthDate } from '@/lib/memberPhoto';
 import MemberPhotoEditor from './MemberPhotoEditor';
 import MemberAvatar from './MemberAvatar';
+import MemberCustomFields from './MemberCustomFields';
 
 /** Display name of a member's category: backend name first, the key as fallback. */
 export function categoryLabel(member: ClubMember): string | null {
@@ -49,15 +50,20 @@ interface Props {
   onPhotoChanged?: (member: ClubMember | null, memberId: string) => void;
   /** The shown photo URL failed to load (expired signature): the owner refetches the resource. */
   onPhotoExpired?: () => void;
+  /** `members:write`: shows the member's custom fields (read-only; the board edits them on the website). The server filters by visibility. */
+  showCustomFields?: boolean;
+  /** The caller has `members:read_sensitive`; without it a note says protected fields are not shown. */
+  canReadSensitive?: boolean;
 }
 
 /**
  * Member detail. Profile data is read-only here (create/edit/import stay on
  * the website); the one write action is the photo, for `members:write`. Shows
  * only what the list delivered -- sensitive fields that are `undefined` (no
- * members:read_sensitive) or empty are not rendered.
+ * members:read_sensitive) or empty are not rendered. The custom fields (Wave 8 M4)
+ * are loaded separately and shown read-only for `members:write`.
  */
-export default function MemberDetailSheet({ member, onClose, clubId, canEditPhoto, onPhotoChanged, onPhotoExpired }: Props) {
+export default function MemberDetailSheet({ member, onClose, clubId, canEditPhoto, onPhotoChanged, onPhotoExpired, showCustomFields, canReadSensitive }: Props) {
   const { t, language } = useLanguage();
 
   if (!member) return <FormSheet visible={false} title="" onClose={onClose}>{null}</FormSheet>;
@@ -128,6 +134,11 @@ export default function MemberDetailSheet({ member, onClose, clubId, canEditPhot
           <Row label={t('profil.contact-email')} value={member.contactEmail} />
           <Row label={t('profil.section.emergency')} value={emergency} />
         </>
+      ) : null}
+
+      {showCustomFields ? (
+        // Fresh hook state per member: values of one person must never show on another's sheet.
+        <MemberCustomFields key={member.id} clubId={clubId} target={member.id} readOnlyView showSensitiveNote={!canReadSensitive} />
       ) : null}
     </FormSheet>
   );
