@@ -35,14 +35,14 @@ function EntryRow({ title, hint, onPress }: { title: string; hint?: string; onPr
 /** Row to the join applications with the number of open ones. */
 function ApplicationsEntry({ clubId }: { clubId: string }) {
   const { t } = useLanguage();
-  const { applications, loading, error } = useClubApplications(clubId);
+  const { applications, total, loading, error } = useClubApplications(clubId);
   const hint = error
     ? t('admin.applications.hint-error')
     : loading && applications.length === 0
       ? undefined
-      : applications.length === 0
+      : total === 0
         ? t('admin.applications.hint-zero')
-        : t('admin.applications.hint', { count: applications.length });
+        : t('admin.applications.hint', { count: total });
   return <EntryRow title={t('verein.applications.open')} hint={hint} onPress={() => navigate('ClubApplications')} />;
 }
 

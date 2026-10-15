@@ -6,6 +6,7 @@ import type { ClubMember } from './useClubMembers';
 export type ClubPermission =
   | 'members:write'
   | 'members:read_sensitive'
+  | 'forms:write'
   | 'roles:write'
   | 'departments:write'
   | 'club_info:write'

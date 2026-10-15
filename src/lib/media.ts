@@ -1,7 +1,8 @@
-import { File, Paths, UploadType } from 'expo-file-system';
+import { Directory, File, Paths, UploadType } from 'expo-file-system';
 
 import { authClient, backendUrl } from '@/auth/auth-client';
 import { ApiError, apiErrorFromResponse } from '@/lib/api';
+import { isReviewFilePath } from '@/lib/applicationReview';
 import { progressPercent } from '@/lib/formSchema';
 import { sanitizeMediaFilename } from '@/lib/mediaKey';
 
@@ -251,6 +252,81 @@ export async function uploadSubmissionFile<TFile>(
         // best-effort cache cleanup
       }
     }
+  }
+}
+
+const REVIEW_CACHE_DIR = 'review-files';
+let reviewFileCounter = 0;
+
+/**
+ * Deletes every file `downloadReviewImage` left in the app cache (called when the review screen opens and closes, so a
+ * crashed or killed session cannot leave applicant photos behind).
+ */
+export function clearReviewFileCache(): void {
+  try {
+    const dir = new Directory(Paths.cache, REVIEW_CACHE_DIR);
+    if (dir.exists) dir.delete();
+  } catch {
+    // best-effort cache cleanup
+  }
+}
+
+/**
+ * Authenticated download of an application's image file for the board (`GET /form-submissions/:id/files/:fileId` with the
+ * session cookie; the backend checks `members:write`, redacts protected files and audits every retrieval). `path` must be
+ * the review file path from `GET /club-applications/:id` -- anything else is refused before a request is made, so the
+ * cookie never leaves the backend's file route. The bytes go to a private file in the app cache (`review-files/`); the
+ * caller shows it and calls `remove()` as soon as it is hidden or the detail closes. No URL or key is stored. Failures come
+ * back as an `ApiError` (status parsed from the native error) or a plain `Error` (abort, local problem).
+ */
+export async function downloadReviewImage(
+  path: string,
+  signal?: AbortSignal,
+): Promise<{ uri: string; remove: () => void } | { error: unknown }> {
+  if (!isReviewFilePath(path)) return { error: new ApiError(404, 'NOT_FOUND', 'Not a review file path') };
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TRANSFER_TIMEOUT_MS);
+  const forwardAbort = () => controller.abort();
+  if (signal?.aborted) controller.abort();
+  else signal?.addEventListener('abort', forwardAbort, { once: true });
+  let dest: File | null = null;
+  try {
+    const dir = new Directory(Paths.cache, REVIEW_CACHE_DIR);
+    dir.create({ idempotent: true, intermediates: true });
+    dest = new File(dir, `${Date.now()}-${++reviewFileCounter}.img`);
+    const cookie = await getSessionCookie();
+    const downloaded = await File.downloadFileAsync(`${backendUrl}${path}`, dest, {
+      headers: { Cookie: cookie },
+      idempotent: true,
+      signal: controller.signal,
+    });
+    const target = downloaded;
+    return {
+      uri: target.uri,
+      remove: () => {
+        try {
+          target.delete();
+        } catch {
+          // best-effort cache cleanup
+        }
+      },
+    };
+  } catch (err) {
+    try {
+      // A failed Android download can leave a partial file behind.
+      if (dest?.exists) dest.delete();
+    } catch {
+      // best-effort cache cleanup
+    }
+    if (!controller.signal.aborted && err instanceof Error) {
+      // expo-file-system reports a non-2xx answer as `UnableToDownload` with the status code in the message.
+      const status = /\b([45]\d{2})\b/.exec(err.message)?.[1];
+      if (status) return { error: new ApiError(Number(status), 'UNKNOWN', 'Download failed') };
+    }
+    return { error: err };
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', forwardAbort);
   }
 }
 
