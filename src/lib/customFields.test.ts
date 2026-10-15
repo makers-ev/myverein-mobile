@@ -120,4 +120,14 @@ describe('values of a member', () => {
     expect(displayValue(fields[3]!, texts)).toBeNull();
     expect(displayValue({ ...fields[3]!, value: '' }, texts)).toBeNull();
   });
+
+  it('keeps board-maintained fields read-only on the own record, even if the server flags them editable', () => {
+    const own = [field({ key: 'self_f', editableBy: 'self' }), field({ key: 'board_f', editableBy: 'vorstand', editable: true })];
+    expect(editableFields(own, true).map((f) => f.key)).toEqual(['self_f']);
+    expect(readOnlyFields(own, true).map((f) => f.key)).toEqual(['board_f']);
+    expect(partitionFields(own, false, true).readOnly.map((f) => f.key)).toEqual(['board_f']);
+    const saved = valuesToAnswers(own);
+    expect(valuesPatch(own, saved, { board_f: 'x', self_f: 'y' }, true)).toEqual({ self_f: 'y' });
+    expect(valuesPatch(own, saved, { board_f: 'x' }, true)).toBeNull();
+  });
 });

@@ -1,5 +1,5 @@
 import type { RenderedAnswer } from './applicationReview';
-import { type Answers, carryAnswers, droppedLabels, type FormDefinition, isEmptyAnswer, outdatedFrom, visibleAnswers } from './formSchema';
+import { type Answers, carryAnswers, droppedLabels, type FormDefinition, type FormField, isEmptyAnswer, outdatedFrom, visibleAnswers } from './formSchema';
 
 /**
  * Pure helpers of the exit form (Wave 8 M4), ported from the website's `exitForm.ts`: the cancellation sheet renders the
@@ -28,7 +28,7 @@ export function exitRequestBody(
 ): Record<string, unknown> {
   return {
     ...(desiredEffectiveOn ? { desiredEffectiveOn } : {}),
-    answers: visibleAnswers(definition.fields, answers),
+    answers: visibleAnswers(exitFormFields(definition.fields), answers),
     formVersionId: definition.formVersionId,
   };
 }
@@ -50,6 +50,20 @@ export function repinExit(err: unknown, definition: Pick<FormDefinition, 'fields
   if (!info?.current) return null;
   const carried = carryAnswers(info.current.fields, answers);
   return { definition: info.current, answers: carried.answers, dropped: droppedLabels(definition.fields, carried.dropped) };
+}
+
+/**
+ * The fields the cancellation sheet can show: it has no upload, so file and photo fields are left out (neither rendered, nor
+ * validated, nor required -- a required upload field must never block a cancellation).
+ */
+export function exitFormFields(fields: readonly FormField[]): FormField[] {
+  return fields.filter((f) => f.type !== 'file' && f.type !== 'image');
+}
+
+/** Body of a cancellation without the form (the form could not be loaded): the wished date and an optional plain reason. */
+export function plainExitBody(desiredEffectiveOn: string | null, reason: string): Record<string, unknown> {
+  const text = reason.trim();
+  return { ...(desiredEffectiveOn ? { desiredEffectiveOn } : {}), ...(text ? { reason: text } : {}) };
 }
 
 /** Whether the person typed anything into the sheet (closing then asks for confirmation). */

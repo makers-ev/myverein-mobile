@@ -44,8 +44,17 @@ export function toFormField(field: MemberCustomField): FormField {
   };
 }
 
-export const editableFields = (fields: readonly MemberCustomField[]): MemberCustomField[] => fields.filter((f) => f.editable && !f.archived);
-export const readOnlyFields = (fields: readonly MemberCustomField[]): MemberCustomField[] => fields.filter((f) => !f.editable);
+/**
+ * Fields shown as inputs. On the person's own record (`own`) only `editable_by = self` fields qualify: a board-maintained field
+ * stays read-only there even if the server flags it editable (the caller may hold `members:write`, but the own-profile route
+ * is the self route and would refuse it).
+ */
+export const editableFields = (fields: readonly MemberCustomField[], own = false): MemberCustomField[] =>
+  fields.filter((f) => f.editable && !f.archived && (!own || f.editableBy === 'self'));
+export const readOnlyFields = (fields: readonly MemberCustomField[], own = false): MemberCustomField[] => {
+  const editable = new Set(editableFields(fields, own).map((f) => f.key));
+  return fields.filter((f) => !editable.has(f.key));
+};
 
 /**
  * Which fields are shown as inputs and which as plain values. In a read-only view (details of another member) nothing is an
@@ -54,9 +63,10 @@ export const readOnlyFields = (fields: readonly MemberCustomField[]): MemberCust
 export function partitionFields(
   fields: readonly MemberCustomField[],
   readOnlyView: boolean,
+  own = false,
 ): { editable: MemberCustomField[]; readOnly: MemberCustomField[] } {
   if (readOnlyView) return { editable: [], readOnly: [...fields] };
-  return { editable: editableFields(fields), readOnly: readOnlyFields(fields) };
+  return { editable: editableFields(fields, own), readOnly: readOnlyFields(fields, own) };
 }
 
 /** Answers (key -> value) of the fields that have a value; empty values are left out like on the server. */
@@ -70,8 +80,8 @@ export function valuesToAnswers(fields: readonly MemberCustomField[]): Answers {
  * The write body of a value edit: only the editable fields whose answer changed; a cleared answer is `null` (the server removes
  * the value). Read-only fields are never part of it. `null` = nothing changed.
  */
-export function valuesPatch(fields: readonly MemberCustomField[], saved: Answers, current: Answers): Record<string, unknown> | null {
-  const editable = new Set(editableFields(fields).map((f) => f.key));
+export function valuesPatch(fields: readonly MemberCustomField[], saved: Answers, current: Answers, own = false): Record<string, unknown> | null {
+  const editable = new Set(editableFields(fields, own).map((f) => f.key));
   const restrict = (a: Answers): Answers => Object.fromEntries(Object.entries(a).filter(([k]) => editable.has(k)));
   const patch = diffAnswers(restrict(saved), restrict(current));
   return Object.keys(patch).length === 0 ? null : patch;

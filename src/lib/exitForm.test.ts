@@ -1,8 +1,8 @@
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
 
 import { ApiError } from './api';
-import { exitDialogTouched, exitRequestBody, repinExit } from './exitForm';
-import type { FormDefinition, FormField } from './formSchema';
+import { exitDialogTouched, exitFormFields, exitRequestBody, plainExitBody, repinExit } from './exitForm';
+import { type FormDefinition, type FormField, validateAnswers } from './formSchema';
 
 const field = (key: string, extra: Partial<FormField> = {}): FormField => ({ key, type: 'text', label: key, ...extra });
 const definition = (fields: FormField[], formVersionId = 'v1'): FormDefinition => ({
@@ -66,5 +66,33 @@ describe('closing the sheet', () => {
     expect(exitDialogTouched('2026-12-31', {})).toBe(true);
     expect(exitDialogTouched(null, { reason: 'x' })).toBe(true);
     expect(exitDialogTouched(null, { confirm: true })).toBe(true);
+  });
+});
+
+describe('upload fields in the exit form', () => {
+  const fields: FormField[] = [
+    field('reason'),
+    { key: 'beleg', type: 'file', label: 'Beleg', required: true },
+    { key: 'foto', type: 'image', label: 'Foto', required: true },
+    { key: 'confirm', type: 'checkbox', label: 'ok', required: true },
+  ];
+
+  it('leaves upload fields out so a required one never blocks the cancellation', () => {
+    expect(exitFormFields(fields).map((f) => f.key)).toEqual(['reason', 'confirm']);
+    expect(validateAnswers(fields, { confirm: true }, { mode: 'submit' })).toEqual({ beleg: 'required', foto: 'required' });
+    expect(validateAnswers(exitFormFields(fields), { confirm: true }, { mode: 'submit' })).toEqual({});
+  });
+
+  it('never sends answers for upload fields', () => {
+    const body = exitRequestBody(null, definition(fields), { reason: 'x', confirm: true, beleg: 'x' });
+    expect(body.answers).toEqual({ reason: 'x', confirm: true });
+  });
+});
+
+describe('cancellation without the form', () => {
+  it('sends only the date and a trimmed reason, no answers', () => {
+    expect(plainExitBody('2026-12-31', '  Umzug ')).toEqual({ desiredEffectiveOn: '2026-12-31', reason: 'Umzug' });
+    expect(plainExitBody(null, '  ')).toEqual({});
+    expect(plainExitBody(null, 'x')).not.toHaveProperty('answers');
   });
 });

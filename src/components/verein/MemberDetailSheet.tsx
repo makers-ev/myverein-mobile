@@ -50,10 +50,6 @@ interface Props {
   onPhotoChanged?: (member: ClubMember | null, memberId: string) => void;
   /** The shown photo URL failed to load (expired signature): the owner refetches the resource. */
   onPhotoExpired?: () => void;
-  /** `members:write`: shows the member's custom fields (read-only; the board edits them on the website). The server filters by visibility. */
-  showCustomFields?: boolean;
-  /** The caller has `members:read_sensitive`; without it a note says protected fields are not shown. */
-  canReadSensitive?: boolean;
 }
 
 /**
@@ -61,9 +57,9 @@ interface Props {
  * the website); the one write action is the photo, for `members:write`. Shows
  * only what the list delivered -- sensitive fields that are `undefined` (no
  * members:read_sensitive) or empty are not rendered. The custom fields (Wave 8 M4)
- * are loaded separately and shown read-only for `members:write`.
+ * are loaded separately and shown read-only, filtered by the server.
  */
-export default function MemberDetailSheet({ member, onClose, clubId, canEditPhoto, onPhotoChanged, onPhotoExpired, showCustomFields, canReadSensitive }: Props) {
+export default function MemberDetailSheet({ member, onClose, clubId, canEditPhoto, onPhotoChanged, onPhotoExpired }: Props) {
   const { t, language } = useLanguage();
 
   if (!member) return <FormSheet visible={false} title="" onClose={onClose}>{null}</FormSheet>;
@@ -136,10 +132,9 @@ export default function MemberDetailSheet({ member, onClose, clubId, canEditPhot
         </>
       ) : null}
 
-      {showCustomFields ? (
-        // Fresh hook state per member: values of one person must never show on another's sheet.
-        <MemberCustomFields key={member.id} clubId={clubId} target={member.id} readOnlyView showSensitiveNote={!canReadSensitive} />
-      ) : null}
+      {/* Not gated by a permission here: the server decides which fields this caller sees (403/404 or none = nothing is rendered).
+          Fresh hook state per member: values of one person must never show on another's sheet. */}
+      <MemberCustomFields key={member.id} clubId={clubId} target={member.id} readOnlyView />
     </FormSheet>
   );
 }

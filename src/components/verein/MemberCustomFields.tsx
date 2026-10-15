@@ -15,8 +15,6 @@ interface Props {
   target: string;
   /** Show everything as plain values (board looking at another member): nothing can be changed here. */
   readOnlyView?: boolean;
-  /** The caller may not read protected fields (`members:read_sensitive` missing): a note says that more may exist. */
-  showSensitiveNote?: boolean;
   /** Reports unsaved edits so the parent can guard leaving the tab. */
   onDirtyChange?: (dirty: boolean) => void;
   /** Card styling for the Profil tab; the detail sheet renders it flat. */
@@ -36,7 +34,7 @@ function formatDate(value: string, locale: string): string {
  * labels; protected fields carry a lock marker. Only changed editable values are sent (`PATCH`, cleared = null). Guests (403)
  * and members without any visible field render nothing. Values are never logged or persisted.
  */
-export default function MemberCustomFields({ clubId, target, readOnlyView = false, showSensitiveNote = false, onDirtyChange, card = false }: Props) {
+export default function MemberCustomFields({ clubId, target, readOnlyView = false, onDirtyChange, card = false }: Props) {
   const { t, language } = useLanguage();
   const themeColors = useThemeColors();
   const { fields, status, reload, save } = useMemberCustomFields(clubId, target);
@@ -72,9 +70,9 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
     setErrors({});
   }, [fields]);
 
-  const { editable, readOnly } = useMemo(() => partitionFields(fields ?? [], readOnlyView || target !== 'me'), [fields, readOnlyView, target]);
+  const { editable, readOnly } = useMemo(() => partitionFields(fields ?? [], readOnlyView || target !== 'me', target === 'me'), [fields, readOnlyView, target]);
   const renderFields = useMemo(() => editable.map(toFormField), [editable]);
-  const patch = fields && editable.length > 0 ? valuesPatch(fields, saved, answers) : null;
+  const patch = fields && editable.length > 0 ? valuesPatch(fields, saved, answers, true) : null;
   const dirty = patch !== null;
 
   useEffect(() => {
@@ -150,7 +148,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
     );
   }
   // Nothing to show (and nothing hidden from this caller): keep the screen free of an empty box.
-  if (fields.length === 0 && !showSensitiveNote) return null;
+  if (fields.length === 0) return null;
 
   const texts = { yes: t('forms.review.yes'), no: t('forms.review.no'), formatDate: (v: string) => formatDate(v, language) };
   const sensitiveEditable = editable.filter((f) => f.sensitive);
@@ -161,8 +159,6 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
         {title}
       </Text>
       <Text className={`${mutedClass} mb-3`}>{own ? t('forms.cf.values.hintOwn') : t('forms.cf.values.hint')}</Text>
-
-      {fields.length === 0 ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('forms.cf.values.none')}</Text> : null}
 
       {readOnly.length > 0 ? (
         <View style={{ gap: 8 }}>
@@ -235,8 +231,6 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
           </TouchableOpacity>
         </View>
       ) : null}
-
-      {showSensitiveNote ? <Text className={`${mutedClass} mt-3`}>{t('forms.cf.values.sensitiveHidden')}</Text> : null}
     </View>
   );
 }

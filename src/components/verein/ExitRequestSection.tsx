@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
@@ -7,11 +7,11 @@ import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import FormRenderer, { type FormRendererHandle } from '@/components/forms/FormRenderer';
 import { useExitForm } from '@/hooks/useExitForm';
-import { exitDialogTouched, exitRequestBody, repinExit } from '@/lib/exitForm';
-import { type Answers, type FieldErrorCode, fieldErrorsFromError, formErrorKey, validateAnswers } from '@/lib/formSchema';
+import { exitDialogTouched, exitFormFields, exitRequestBody, plainExitBody, repinExit } from '@/lib/exitForm';
+import { type Answers, type FieldErrorCode, fieldErrorsFromError, formErrorKey, outdatedFrom, validateAnswers } from '@/lib/formSchema';
 import { activeCancellation, exitErrorCode, formatDay, todayBerlin, useMyExitRequests, type ExitPreview } from '@/hooks/useExitRequests';
 import DateTimeField, { toDateString } from '@/components/ui/DateTimeField';
-import FormSheet, { Field } from '@/components/ui/FormSheet';
+import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 
 function noticeHint(preview: ExitPreview | null, t: (key: string, params?: Record<string, string | number>) => string): string {
   if (!preview || (preview.noticePeriodDays === null && preview.noticeMode === null)) return t('exit.notice.none');
@@ -46,12 +46,19 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
   const [answers, setAnswers] = useState<Answers>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, FieldErrorCode>>({});
   const [formNotice, setFormNotice] = useState<string | null>(null);
+  // The form could not be loaded even after a retry: the person may cancel without it (date and plain reason only).
+  const [withoutForm, setWithoutForm] = useState(false);
+  const [reason, setReason] = useState('');
+  const [formRetries, setFormRetries] = useState(0);
   const rendererRef = useRef<FormRendererHandle>(null);
   const exitForm = useExitForm(clubId, sheetOpen);
 
   // Answers do not outlive the sheet (they are personal data and only held in memory while it is open).
   useEffect(() => {
-    if (!sheetOpen) setAnswers({});
+    if (!sheetOpen) {
+      setAnswers({});
+      setReason('');
+    }
   }, [sheetOpen]);
   const [saving, setSaving] = useState(false);
   const [sheetError, setSheetError] = useState<string | null>(null);
@@ -75,6 +82,9 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
   const openSheet = () => {
     setDesired(null);
     setAnswers({});
+    setReason('');
+    setWithoutForm(false);
+    setFormRetries(0);
     setFieldErrors({});
     setFormNotice(null);
     setSheetError(null);
@@ -86,7 +96,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
 
   const closeSheet = () => {
     if (saving) return;
-    if (!exitDialogTouched(desiredKey, answers)) {
+    if (!exitDialogTouched(desiredKey, answers) && reason.trim() === '') {
       setSheetOpen(false);
       return;
     }
@@ -107,9 +117,10 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
   };
 
   const handleSubmit = async () => {
-    const definition = exitForm.definition;
-    if (saving || !definition) return;
-    const local = validateAnswers(definition.fields, answers, { mode: 'submit' });
+    const definition = withoutForm ? null : exitForm.definition;
+    if (saving || (!definition && !withoutForm)) return;
+    // Upload fields are neither shown nor required here: the sheet has no upload and must never block a cancellation.
+    const local = definition ? validateAnswers(exitFormFields(definition.fields), answers, { mode: 'submit' }) : {};
     const firstKey = Object.keys(local)[0];
     if (firstKey) {
       setFieldErrors(local);
@@ -121,7 +132,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
     setSheetError(null);
     setFieldErrors({});
     try {
-      const created = await submit(exitRequestBody(desiredKey, definition, answers));
+      const created = await submit(definition ? exitRequestBody(desiredKey, definition, answers) : plainExitBody(desiredKey, reason));
       setSheetOpen(false);
       setNotice(
         created.adjustedToEarliest
@@ -129,8 +140,12 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
           : t('exit.submitted'),
       );
     } catch (err) {
-      const repin = repinExit(err, definition, answers);
-      if (repin) {
+      const repin = definition ? repinExit(err, definition, answers) : null;
+      if (definition && !repin && outdatedFrom(err)) {
+        // The form changed and the club has no current one to show: reload instead of staying stuck on the old version.
+        setFormNotice(t('forms.exit.outdated'));
+        void exitForm.reload();
+      } else if (repin) {
         // The club changed the form meanwhile: show the new one with the answers that still fit, nothing was filed.
         exitForm.replace(repin.definition);
         setAnswers(repin.answers);
@@ -283,7 +298,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
         onClose={closeSheet}
         onSubmit={() => void handleSubmit()}
         submitLabel={t('exit.submit')}
-        submitDisabled={!exitForm.definition}
+        submitDisabled={!exitForm.definition && !withoutForm}
         saving={saving}
         error={sheetError}
       >
@@ -309,10 +324,28 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
             </TouchableOpacity>
           </View>
         ) : null}
-        {exitForm.definition ? (
+        {withoutForm ? (
+          <View>
+            <Text className="text-sm text-foreground dark:text-foreground-dark mb-3" accessibilityRole="alert">
+              {t('forms.exit.withoutForm')}
+            </Text>
+            <Field label={t('exit.reason.label')}>
+              <TextInput
+                className={inputClassName}
+                style={{ minHeight: 80, textAlignVertical: 'top' }}
+                multiline
+                maxLength={2000}
+                value={reason}
+                onChangeText={setReason}
+                placeholderTextColor={themeColors.mutedForeground}
+                accessibilityLabel={t('exit.reason.label')}
+              />
+            </Field>
+          </View>
+        ) : exitForm.definition ? (
           <FormRenderer
             handleRef={rendererRef}
-            fields={exitForm.definition.fields}
+            fields={exitFormFields(exitForm.definition.fields)}
             privacyNotice={exitForm.definition.privacyNotice}
             answers={answers}
             onChange={handleAnswer}
@@ -325,13 +358,26 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
               {t('forms.exit.loadError')}
             </Text>
             <TouchableOpacity
-              onPress={() => void exitForm.reload()}
+              onPress={() => {
+                setFormRetries((n) => n + 1);
+                void exitForm.reload();
+              }}
               className="self-start px-4 justify-center rounded-lg border border-border dark:border-border-dark"
               style={{ minHeight: 44 }}
               accessibilityRole="button"
             >
               <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
             </TouchableOpacity>
+            {formRetries >= 1 ? (
+              <TouchableOpacity
+                onPress={() => setWithoutForm(true)}
+                className="self-start mt-2 px-4 justify-center rounded-lg border border-border dark:border-border-dark"
+                style={{ minHeight: 44 }}
+                accessibilityRole="button"
+              >
+                <Text className="text-destructive text-sm font-bold">{t('forms.exit.skipForm')}</Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         ) : (
           <ActivityIndicator color={themeColors.primary} accessibilityLabel={t('forms.exit.loading')} />

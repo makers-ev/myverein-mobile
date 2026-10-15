@@ -31,6 +31,9 @@ export function useMemberCustomFields(clubId: string | null, target: string | nu
       setLoading(false);
       return;
     }
+    // Another club/member: drop what belongs to the previous one right away (personal data must not linger in memory).
+    setStored((cur) => (cur && cur.key !== key ? null : cur));
+    setFailure((cur) => (cur && cur.key !== key ? null : cur));
     setLoading(true);
     try {
       const res = await apiFetch<FieldsResponse>(path);
@@ -63,10 +66,18 @@ export function useMemberCustomFields(clubId: string | null, target: string | nu
     async (values: Record<string, unknown>): Promise<MemberCustomField[] | null> => {
       if (!path || !key || target !== 'me') throw new Error('not editable');
       const ticket = ++seq.current;
-      const res = await apiFetch<FieldsResponse>(path, { method: 'PATCH', body: { values } });
+      let res: FieldsResponse;
+      try {
+        res = await apiFetch<FieldsResponse>(path, { method: 'PATCH', body: { values } });
+      } catch (err) {
+        if (ticket === seq.current) setLoading(false);
+        throw err;
+      }
       if (ticket !== seq.current) return null;
       setStored({ key, fields: res.data.fields });
       setFailure(null);
+      // The write superseded a reload that may still be in flight (its answer is dropped): never leave `loading` stuck.
+      setLoading(false);
       return res.data.fields;
     },
     [path, key, target],
