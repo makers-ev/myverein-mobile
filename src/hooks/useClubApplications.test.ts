@@ -9,7 +9,7 @@ jest.mock('@/lib/api', () => ({ ...jest.requireActual('@/lib/api'), apiFetch: je
 const apiFetchMock = apiFetch as jest.Mock;
 
 const row = (id: string) => ({ id, name: id, status: 'pending', onBehalfOf: 'self', summary: [], fileCount: 0, consentGiven: true });
-const pageOf = (ids: string[], page: number, total: number) => ({ data: ids.map(row), page, pageSize: 10, total });
+const pageOf = (ids: string[], page: number, total: number) => ({ data: ids.map(row), page, pageSize: 20, total });
 
 beforeEach(() => apiFetchMock.mockReset());
 
@@ -22,7 +22,7 @@ describe('useClubApplications', () => {
     });
     const { result } = await renderHook(() => useClubApplications('c1'));
     await act(async () => undefined);
-    expect(apiFetchMock).toHaveBeenCalledWith('/club-applications?clubId=c1&page=1&pageSize=10');
+    expect(apiFetchMock).toHaveBeenCalledWith('/club-applications?clubId=c1&page=1&pageSize=20');
     expect(result.current.total).toBe(11);
     expect(result.current.applications.map((a) => a.id)).toEqual(['a', 'b']);
 

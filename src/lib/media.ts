@@ -39,10 +39,26 @@ export function isInAppCache(uri: string): boolean {
   }
 }
 
+/**
+ * Deletes a picker output copy in the app cache when no upload will consume it (client-side rejection, aborted before the
+ * request, unmounted, draft could not be created). `uploadSubmissionFile` and the other upload helpers delete their own
+ * input afterwards. Never touches a file outside the app cache -- the user's originals are safe.
+ */
+export function discardPickerFile(uri: string): void {
+  try {
+    if (isInAppCache(uri)) new File(uri).delete();
+  } catch {
+    // best-effort cache cleanup
+  }
+}
+
 // Without a bound, a stalled/dropped connection (or the app backgrounded
 // mid-transfer) leaves the upload/download promise pending forever -- the
 // caller's loading state never resolves and there's no way to retry.
 const TRANSFER_TIMEOUT_MS = 30_000;
+// Form photos go through the media layer (EXIF stripping, magic bytes, quota) on possibly slow mobile networks: the upload
+// is only cancelled after this long WITHOUT progress, so a big photo on a slow line still completes.
+const FORM_UPLOAD_IDLE_TIMEOUT_MS = 60_000;
 
 // `File.upload()` is a native request, not `authClient.$fetch` -- the
 // session cookie isn't attached automatically, so it's read from the same
@@ -197,8 +213,8 @@ export async function uploadRegistrationDocument<TDocument>(
  * checks magic bytes, the type allowed for the field, size, quota and rate limit and registers the file in the media
  * layer -- no URL or key is kept here). Not club-scoped (the applicant has no club yet). Success returns the file DTO
  * (`{ data: { file } }`, a signed preview `url` for non-sensitive images -- memory only, never stored); failures come
- * back as an `ApiError` or a plain `Error` for local problems / aborts. `signal` cancels the transfer, `onProgress`
- * reports 0..100 (null = unknown). The picker's cache copy is deleted afterwards.
+ * back as an `ApiError` or a plain `Error` for local problems / aborts. `signal` cancels the transfer (as does 60 s
+ * without progress), `onProgress` reports 0..100 (null = unknown). The picker's cache copy is deleted afterwards.
  */
 export async function uploadSubmissionFile<TFile>(
   submissionId: string,
@@ -216,7 +232,11 @@ export async function uploadSubmissionFile<TFile>(
   const isTempCopy = !asset.uri.startsWith('file://') || isInAppCache(asset.uri);
   // A caller abort and the transfer timeout both end the request through one controller.
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TRANSFER_TIMEOUT_MS);
+  let timer = setTimeout(() => controller.abort(), FORM_UPLOAD_IDLE_TIMEOUT_MS);
+  const rearm = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => controller.abort(), FORM_UPLOAD_IDLE_TIMEOUT_MS);
+  };
   const forwardAbort = () => controller.abort();
   if (options.signal?.aborted) controller.abort();
   else options.signal?.addEventListener('abort', forwardAbort, { once: true });
@@ -229,7 +249,10 @@ export async function uploadSubmissionFile<TFile>(
       parameters: { fieldKey },
       headers: { Cookie: cookie },
       signal: controller.signal,
-      onProgress: options.onProgress ? (p) => options.onProgress?.(progressPercent(p.bytesSent, p.totalBytes)) : undefined,
+      onProgress: (p) => {
+        rearm();
+        options.onProgress?.(progressPercent(p.bytesSent, p.totalBytes));
+      },
     });
     if (result.status < 200 || result.status >= 300) return { error: apiErrorFromResponse(result.status, result.body) };
     let uploaded: TFile | undefined;

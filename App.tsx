@@ -13,8 +13,14 @@ import { ActiveClubProvider } from './src/clubs/ActiveClubProvider';
 import { ErrorBoundary } from './src/error/ErrorBoundary';
 import AppNavigator from './src/navigation/AppNavigator';
 import { getStoredTheme } from './src/theme/themePreferenceStorage';
+import { clearReviewFileCache } from './src/lib/media';
 
 export default function App() {
+  useEffect(() => {
+    // Applicant photos viewed in the board review live in the cache only while shown; a killed session may have left some.
+    clearReviewFileCache();
+  }, []);
+
   useEffect(() => {
     // nativewind's colorScheme override doesn't persist itself.
     getStoredTheme().then((stored) => {

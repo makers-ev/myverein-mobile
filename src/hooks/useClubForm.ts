@@ -85,8 +85,10 @@ export function useClubForm() {
               `/form-submissions/${draft.id}`,
             );
             resume = detail.data;
-          } catch {
-            // A draft that cannot be read is skipped: the person starts a fresh form (the old draft expires by itself).
+          } catch (err) {
+            // Only a draft that is gone (404, e.g. swept meanwhile) is skipped. Any other failure must be visible: showing a
+            // fresh empty form would let the person create a SECOND draft next to the one that could not be read.
+            if (!(err instanceof ApiError && err.status === 404)) throw err;
           }
         }
         if (!alive.current || seq !== loadSeq.current) return false;

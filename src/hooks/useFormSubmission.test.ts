@@ -2,11 +2,12 @@ import { act, renderHook } from '@testing-library/react-native';
 
 import { ApiError, apiFetch } from '@/lib/api';
 import type { FormDefinition, Submission } from '@/lib/formSchema';
+import { discardPickerFile, uploadSubmissionFile } from '@/lib/media';
 import { AUTOSAVE_DELAY_MS, useFormSubmission } from './useFormSubmission';
 
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
 jest.mock('@/lib/api', () => ({ ...jest.requireActual('@/lib/api'), apiFetch: jest.fn() }));
-jest.mock('@/lib/media', () => ({ uploadSubmissionFile: jest.fn() }));
+jest.mock('@/lib/media', () => ({ uploadSubmissionFile: jest.fn(), discardPickerFile: jest.fn() }));
 
 const apiFetchMock = apiFetch as jest.Mock;
 
@@ -190,5 +191,63 @@ describe('useFormSubmission', () => {
     });
     expect(apiFetchMock).toHaveBeenCalledWith('/form-submissions/s1', { method: 'DELETE' });
     expect(cb.onDiscarded).toHaveBeenCalled();
+  });
+
+  it('deletes the picker copy when no upload starts (aborted, draft cannot be created)', async () => {
+    (discardPickerFile as jest.Mock).mockClear();
+    const asset = { uri: 'file:///cache/x.jpg', name: 'x.jpg', type: 'image/jpeg' };
+    const aborted = new AbortController();
+    aborted.abort();
+    apiFetchMock.mockResolvedValueOnce({ data: { submission: submission({}) } });
+    const { result } = await renderHook(() => useFormSubmission({ slug: 'demo', mode: 'self', current: def(), ...callbacks() }));
+    await act(async () => {
+      await expect(result.current.uploadFile('photo', asset, () => undefined, aborted.signal)).rejects.toThrow('aborted');
+    });
+    expect(discardPickerFile).toHaveBeenCalledWith('file:///cache/x.jpg');
+    expect(uploadSubmissionFile).not.toHaveBeenCalled();
+
+    (discardPickerFile as jest.Mock).mockClear();
+    apiFetchMock.mockRejectedValue(new ApiError(500, 'INTERNAL', 'x'));
+    const { result: r2 } = await renderHook(() => useFormSubmission({ slug: 'demo', mode: 'self', current: def(), ...callbacks() }));
+    await act(async () => {
+      await expect(r2.current.uploadFile('photo', asset, () => undefined, new AbortController().signal)).rejects.toBeInstanceOf(ApiError);
+    });
+    expect(discardPickerFile).toHaveBeenCalledWith('file:///cache/x.jpg');
+  });
+
+  it('blocks submit and discard while a photo uploads', async () => {
+    let release: (v: unknown) => void = () => undefined;
+    (uploadSubmissionFile as jest.Mock).mockImplementation(() => new Promise((resolve) => (release = resolve)));
+    apiFetchMock.mockResolvedValue({ data: { submission: submission({}) } });
+    const cb = callbacks();
+    const { result } = await renderHook(() => useFormSubmission({ slug: 'demo', mode: 'self', current: def(), ...cb }));
+    let upload: Promise<void> = Promise.resolve();
+    await act(async () => {
+      upload = result.current.uploadFile('photo', { uri: 'file:///cache/x.jpg', name: 'x.jpg', type: 'image/jpeg' }, () => undefined, new AbortController().signal);
+      await Promise.resolve();
+    });
+    await act(async () => undefined);
+    expect(result.current.uploading).toBe(1);
+    apiFetchMock.mockClear();
+    await act(async () => {
+      await result.current.submit();
+      await result.current.discard();
+    });
+    expect(apiFetchMock).not.toHaveBeenCalled();
+    expect(result.current.submitErrorKey).toBe('forms.apply.uploadRunning');
+    await act(async () => {
+      release({ file: { id: 'f1', fieldKey: 'photo', filename: 'x', mimeType: 'image/jpeg', sizeBytes: 1, kind: 'image', url: null } });
+      await upload;
+    });
+    expect(result.current.uploading).toBe(0);
+  });
+
+  it('reports email_not_verified of a child draft to the owner', async () => {
+    const cb = { ...callbacks(), onBlocked: jest.fn() };
+    apiFetchMock.mockRejectedValueOnce(new ApiError(403, 'FORBIDDEN', 'x', { code: 'email_not_verified' }));
+    const { result } = await renderHook(() => useFormSubmission({ slug: 'demo', mode: 'guardian', current: def(), ...cb }));
+    await act(async () => result.current.setAnswer('first_name', 'Kind'));
+    await flushTimers();
+    expect(cb.onBlocked).toHaveBeenCalledWith('email_not_verified');
   });
 });

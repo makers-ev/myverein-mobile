@@ -44,8 +44,8 @@ describe('FormRenderer', () => {
     await render(<FormRenderer fields={FIELDS} privacyNotice="Wir speichern deine Daten." answers={{}} onChange={() => undefined} />);
     expect(screen.getByText('Wir speichern deine Daten.')).toBeTruthy();
     // markup in a label is shown literally, not interpreted
-    expect(screen.getByText(/Vorname <b>fett<\/b>/)).toBeTruthy();
-    expect(screen.queryByText('Hinweis Eltern')).toBeNull();
+    expect(screen.getByText(/Vorname <b>fett<\/b>/, { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.queryByText('Hinweis Eltern', { includeHiddenElements: true })).toBeNull();
   });
 
   it('shows a conditional field once its condition holds and reports changes', async () => {
@@ -54,7 +54,9 @@ describe('FormRenderer', () => {
     await fireEvent.press(screen.getByRole('radio', { name: 'Jugend' }));
     expect(onChange).toHaveBeenCalledWith('category', 'jugend');
     await rerender(<FormRenderer fields={FIELDS} answers={{ category: 'jugend' }} onChange={onChange} />);
-    expect(screen.getByText('Hinweis Eltern')).toBeTruthy();
+    expect(screen.getByText('Hinweis Eltern', { includeHiddenElements: true })).toBeTruthy();
+    // a control with its own label hides the visible label from screen readers (no double announcement)
+    expect(screen.getAllByLabelText(/Vorname/)).toHaveLength(1);
   });
 
   it('toggles a consent and shows a per-field error with a role of alert', async () => {

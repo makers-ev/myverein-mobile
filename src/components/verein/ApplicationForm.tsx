@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Alert, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, Alert, AppState, Text, TouchableOpacity, View } from 'react-native';
 import { RefreshCw } from 'lucide-react-native';
 
 import FormRenderer, { type FormRendererHandle } from '@/components/forms/FormRenderer';
@@ -30,6 +30,21 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
     return () => registerFlush(null);
   }, [registerFlush, flush]);
 
+  const { saveState, retrySave } = form;
+  const saveStateRef = useRef(saveState);
+  useEffect(() => {
+    saveStateRef.current = saveState;
+  });
+  // Backgrounding the app saves what was typed right away; coming back retries a save that failed meanwhile.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (next) => {
+      if (next !== 'active') void flush();
+      else if (saveStateRef.current === 'error') retrySave();
+    });
+    return () => sub.remove();
+  }, [flush, retrySave]);
+
+  const waitingForUpload = form.uploading > 0;
   const busy = form.submitting || form.discarding;
   const { definition, errors } = form;
 
@@ -133,7 +148,7 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
                   onPress={() => rendererRef.current?.focusField(e.key)}
                   accessibilityRole="button"
                   accessibilityLabel={`${e.label}: ${t(fieldErrorKey(e.code))}`}
-                  style={{ minHeight: 32, justifyContent: 'center' }}
+                  style={{ minHeight: 44, justifyContent: 'center' }}
                 >
                   <Text className="text-destructive text-sm">
                     {'• '}
@@ -146,12 +161,17 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
         </View>
       ) : null}
 
+      {waitingForUpload ? (
+        <Text className="text-xs mt-3 text-muted-foreground dark:text-muted-foreground-dark" accessibilityLiveRegion="polite">
+          {t('forms.apply.uploadRunning')}
+        </Text>
+      ) : null}
       <TouchableOpacity
-        className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-4 ${busy ? 'opacity-70' : ''}`}
+        className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-4 ${busy || waitingForUpload ? 'opacity-70' : ''}`}
         onPress={() => void submit()}
-        disabled={busy}
+        disabled={busy || waitingForUpload}
         accessibilityRole="button"
-        accessibilityState={{ busy, disabled: busy }}
+        accessibilityState={{ busy, disabled: busy || waitingForUpload }}
         style={{ minHeight: 48 }}
       >
         {form.submitting ? (
@@ -163,7 +183,7 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
       {form.hasDraft ? (
         <TouchableOpacity
           onPress={confirmDiscard}
-          disabled={busy}
+          disabled={busy || waitingForUpload}
           accessibilityRole="button"
           className={`items-center mt-2 ${busy ? 'opacity-60' : ''}`}
           style={{ minHeight: 44, justifyContent: 'center' }}

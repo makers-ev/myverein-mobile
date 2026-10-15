@@ -6,7 +6,7 @@ import { formErrorKey } from './formSchema';
  * with a short answer summary) and `GET /club-applications/:id` (answers rendered against the version the person filled in).
  */
 
-export const APPLICATIONS_PAGE_SIZE = 10;
+export const APPLICATIONS_PAGE_SIZE = 20;
 
 export interface AnswerSummaryItem {
   key: string;
@@ -263,4 +263,12 @@ export type ReviewFileView = 'image' | 'document' | 'protected';
 export function reviewFileView(file: Pick<ReviewFile, 'path' | 'mimeType' | 'redacted'>): ReviewFileView {
   if (file.redacted || !isReviewFilePath(file.path)) return 'protected';
   return typeof file.mimeType === 'string' && /^image\/(jpeg|png|webp)$/i.test(file.mimeType) ? 'image' : 'document';
+}
+
+/**
+ * Whether the board can still decide: only a pending application, and not after a decision turned out stale (another board
+ * member decided, the applicant withdrew). A stale sheet is read-only and offers only "close".
+ */
+export function canDecide(status: string | undefined, stale: boolean): boolean {
+  return status === 'pending' && !stale;
 }

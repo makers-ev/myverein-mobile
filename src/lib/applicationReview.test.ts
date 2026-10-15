@@ -23,12 +23,12 @@ const t = (key: string, params?: Record<string, string | number>) => (params ? `
 
 describe('request helpers', () => {
   it('builds the paged list query', () => {
-    expect(listQuery('c1', 2)).toBe('clubId=c1&page=2&pageSize=10');
+    expect(listQuery('c1', 2)).toBe('clubId=c1&page=2&pageSize=20');
     expect(listQuery('c 1', 0, 5)).toBe('clubId=c%201&page=1&pageSize=5');
   });
   it('clamps the page after decisions emptied the last one', () => {
-    expect(clampPage(3, 21)).toBe(3);
-    expect(clampPage(3, 20)).toBe(2);
+    expect(clampPage(3, 41)).toBe(3);
+    expect(clampPage(3, 40)).toBe(2);
     expect(clampPage(2, 0)).toBe(1);
     expect(clampPage(0, 10)).toBe(1);
   });

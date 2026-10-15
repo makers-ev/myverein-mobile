@@ -565,3 +565,8 @@ export function progressPercent(sent: number, total: number): number | null {
   if (!Number.isFinite(total) || total <= 0) return null;
   return Math.max(0, Math.min(100, Math.round((sent / total) * 100)));
 }
+
+/** `403 email_not_verified`: a child application needs a verified e-mail address of the parent. */
+export function isEmailNotVerified(err: unknown): boolean {
+  return err instanceof ApiError && (err.details as { code?: unknown } | undefined)?.code === 'email_not_verified';
+}

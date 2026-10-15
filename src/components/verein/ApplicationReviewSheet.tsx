@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, AppState, Image, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AlertTriangle, Baby, Check, FileText, Lock, ShieldCheck, X } from 'lucide-react-native';
@@ -12,6 +12,7 @@ import {
   type ApproveResult,
   duplicateKindKey,
   isStaleDecision,
+  canDecide,
   mappingReasonKey,
   mappingTargetText,
   NOTE_MAX_LENGTH,
@@ -124,7 +125,18 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
     };
   }, []);
 
-  const pending = review?.application.status === 'pending' && !stale;
+  // Leaving the app (app switcher snapshot, another app in front) removes the applicant's photo from the cache and the screen.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (next) => {
+      if (next !== 'active') {
+        dropPreview();
+        clearReviewFileCache();
+      }
+    });
+    return () => sub.remove();
+  }, [dropPreview]);
+
+  const pending = canDecide(review?.application.status, stale);
   const child = (review?.application.onBehalfOf ?? application.onBehalfOf) === 'guardian';
   const subjectName = review?.subject.displayName ?? application.subjectName ?? application.name ?? '—';
 
@@ -279,7 +291,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
         >
           {error ? (
             <View className="mt-4" accessibilityRole="alert">
-              <Text className="text-destructive text-sm mb-3">{t('forms.review.loadFailed')}</Text>
+              <Text className="text-destructive text-sm mb-3">{t(reviewErrorKey(error))}</Text>
               <TouchableOpacity
                 onPress={() => void refetch()}
                 accessibilityRole="button"

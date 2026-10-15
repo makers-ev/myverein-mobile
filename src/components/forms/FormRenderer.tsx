@@ -18,7 +18,7 @@ import {
   privacyNoticeIndex,
   visibleFields,
 } from '@/lib/formSchema';
-import { normalizeImageMime } from '@/lib/media';
+import { discardPickerFile, normalizeImageMime } from '@/lib/media';
 import { useThemeColors } from '@/theme/colors';
 
 /** A photo the person picked (camera or library); `type` is a normalised image MIME type. */
@@ -69,12 +69,15 @@ function FieldShell({
   field,
   error,
   extraError,
+  labelledByControl = false,
   children,
 }: {
   field: FormField;
   error?: FieldErrorCode;
   /** Error text outside the validation codes (upload failures). */
   extraError?: string | null;
+  /** The control carries label and hint itself: hide the visible texts from screen readers so they are not read twice. */
+  labelledByControl?: boolean;
   children: React.ReactNode;
 }) {
   const { t } = useLanguage();
@@ -85,12 +88,18 @@ function FieldShell({
       <Text
         className="text-sm font-semibold text-foreground dark:text-foreground-dark"
         accessibilityLabel={field.required ? `${field.label}, ${t('forms.required')}` : field.label}
+        {...(labelledByControl ? { importantForAccessibility: 'no' as const, accessibilityElementsHidden: true } : {})}
       >
         {field.label}
         {field.required ? <Text className="text-destructive"> *</Text> : null}
       </Text>
       {field.helpText ? (
-        <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mt-0.5">{field.helpText}</Text>
+        <Text
+          className="text-xs text-muted-foreground dark:text-muted-foreground-dark mt-0.5"
+          {...(labelledByControl ? { importantForAccessibility: 'no' as const, accessibilityElementsHidden: true } : {})}
+        >
+          {field.helpText}
+        </Text>
       ) : null}
       <View className="mt-1.5">{children}</View>
       {errorText ? (
@@ -383,6 +392,8 @@ function UploadField({ field, files, error, disabled, onUploadFile, onRemoveFile
     async (asset: PickedAsset) => {
       const problem = checkFieldFile(field, { type: asset.type, size: asset.fileSize });
       if (problem) {
+        // No upload starts, so nobody else deletes the picker's cache copy.
+        discardPickerFile(asset.uri);
         setUploadError(t(problem === 'file_type' ? 'forms.err.field.file_type' : 'forms.err.fileSize'));
         return;
       }
@@ -410,11 +421,13 @@ function UploadField({ field, files, error, disabled, onUploadFile, onRemoveFile
   const pick = useCallback(
     async (source: 'camera' | 'library') => {
       try {
-        const permission =
-          source === 'camera' ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permission.granted) {
-          if (alive.current) setUploadError(t(source === 'camera' ? 'forms.file.cameraDenied' : 'forms.file.libraryDenied'));
-          return;
+        // The system photo picker needs no library permission; only the camera asks.
+        if (source === 'camera') {
+          const permission = await ImagePicker.requestCameraPermissionsAsync();
+          if (!permission.granted) {
+            if (alive.current) setUploadError(t('forms.file.cameraDenied'));
+            return;
+          }
         }
         // Photo fields get the system crop (square); documents are taken as they are.
         const options: ImagePicker.ImagePickerOptions = {
@@ -424,7 +437,11 @@ function UploadField({ field, files, error, disabled, onUploadFile, onRemoveFile
         };
         const result = source === 'camera' ? await ImagePicker.launchCameraAsync(options) : await ImagePicker.launchImageLibraryAsync(options);
         const asset = result.canceled ? undefined : result.assets[0];
-        if (!asset || !alive.current) return;
+        if (!asset) return;
+        if (!alive.current) {
+          discardPickerFile(asset.uri);
+          return;
+        }
         const name = asset.fileName ?? (image ? 'foto.jpg' : 'dokument.jpg');
         await upload({ uri: asset.uri, name, type: normalizeImageMime(asset.mimeType, name), fileSize: asset.fileSize });
       } catch {
@@ -460,7 +477,11 @@ function UploadField({ field, files, error, disabled, onUploadFile, onRemoveFile
   const previewUri = busy ? localUri : current?.url && current.url !== failedUrl ? current.url : null;
 
   const cancelButton = (
-    <TouchableOpacity onPress={() => controller.current?.abort()} accessibilityRole="button" hitSlop={8}>
+    <TouchableOpacity
+      onPress={() => controller.current?.abort()}
+      accessibilityRole="button"
+      style={{ minHeight: 44, minWidth: 44, justifyContent: 'center', alignItems: 'center' }}
+    >
       <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('forms.file.cancel')}</Text>
     </TouchableOpacity>
   );
@@ -539,8 +560,7 @@ function UploadField({ field, files, error, disabled, onUploadFile, onRemoveFile
                     disabled={disabled || busy || removing === f.id}
                     accessibilityRole="button"
                     accessibilityLabel={t('forms.file.removeNamed', { name: f.filename })}
-                    hitSlop={8}
-                    style={{ minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}
+                    style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
                   >
                     <Trash2 size={18} color={themeColors.destructive} />
                   </TouchableOpacity>
@@ -633,7 +653,7 @@ export default function FormRenderer({
       case 'text':
       case 'textarea':
         return (
-          <FieldShell field={field} error={error}>
+          <FieldShell field={field} error={error} labelledByControl>
             <TextInput
               ref={setInput(field.key)}
               className={inputClass(Boolean(error))}
@@ -655,7 +675,7 @@ export default function FormRenderer({
 
       case 'number':
         return (
-          <FieldShell field={field} error={error}>
+          <FieldShell field={field} error={error} labelledByControl>
             <NumberInput
               field={field}
               value={value}
@@ -682,7 +702,7 @@ export default function FormRenderer({
 
       case 'select':
         return (
-          <FieldShell field={field} error={error}>
+          <FieldShell field={field} error={error} labelledByControl>
             <SelectField field={field} value={value} error={Boolean(error)} disabled={disabled} onChange={(next) => onChange(field.key, next)} />
           </FieldShell>
         );

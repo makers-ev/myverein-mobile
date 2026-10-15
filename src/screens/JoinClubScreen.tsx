@@ -4,6 +4,7 @@ import type { KeyboardAwareScrollViewRef } from 'react-native-keyboard-controlle
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CheckCircle2, Clock } from 'lucide-react-native';
 
+import { useAuth } from '@/auth/AuthProvider';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
@@ -38,7 +39,12 @@ export default function JoinClubScreen({ navigation }: Props) {
   const themeColors = useThemeColors();
   const { club, phase, loadErrorKey, refreshing, refreshFailed, load, reset, markSubmitted, withdraw } = useClubForm();
   const [slug, setSlug] = useState('');
+  const { user, resendVerificationEmail, refetchSession } = useAuth();
   const [conflict, setConflict] = useState<Conflict | null>(null);
+  // A child application needs a verified e-mail address: known from the session, or reported by the server (403).
+  const [serverBlocked, setServerBlocked] = useState(false);
+  const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
+  const [checking, setChecking] = useState(false);
   const [banner, setBanner] = useState<{ warnings: string[] } | null>(null);
   const [withdrawBusy, setWithdrawBusy] = useState(false);
   const [actionErrorKey, setActionErrorKey] = useState<string | null>(null);
@@ -77,6 +83,8 @@ export default function JoinClubScreen({ navigation }: Props) {
     setWithdrawBusy(true);
     setActionErrorKey(null);
     try {
+      // Typing that is still waiting for its autosave must not be lost by the reload that follows.
+      await flushRef.current?.().catch(() => undefined);
       await withdraw(id);
       setBanner(null);
       await load(club.slug, club.mode ?? undefined);
@@ -107,6 +115,25 @@ export default function JoinClubScreen({ navigation }: Props) {
 
   const handleConflict = (kind: ApplyConflict) => {
     if (kind !== 'other') setConflict(kind);
+  };
+
+  const handleBlocked = () => setServerBlocked(true);
+
+  const resend = async () => {
+    if (!user?.email || resendState === 'sending') return;
+    setResendState('sending');
+    const result = await resendVerificationEmail(user.email);
+    setResendState(result.success ? 'sent' : 'failed');
+  };
+
+  const recheckVerification = async () => {
+    setChecking(true);
+    try {
+      await refetchSession();
+      setServerBlocked(false);
+    } finally {
+      setChecking(false);
+    }
   };
 
   const handleDiscarded = () => {
@@ -332,6 +359,50 @@ export default function JoinClubScreen({ navigation }: Props) {
                     ))}
                   </View>
                 ) : null}
+                {club.mode === 'guardian' && (user?.emailVerified === false || serverBlocked) ? (
+                  <View
+                    className="mt-4 rounded-lg border border-warning/40 dark:border-warning-dark/40 bg-warning/10 dark:bg-warning-dark/10 p-3"
+                    accessibilityRole="alert"
+                    accessibilityLiveRegion="polite"
+                  >
+                    <Text className="text-sm font-semibold text-foreground dark:text-foreground-dark">{t('forms.apply.unverified.title')}</Text>
+                    <Text className="text-sm mt-1 text-foreground dark:text-foreground-dark">{t('forms.err.emailNotVerified')}</Text>
+                    {resendState === 'sent' ? (
+                      <Text className="text-sm mt-2 text-foreground dark:text-foreground-dark">{t('forms.apply.unverified.sent')}</Text>
+                    ) : null}
+                    {resendState === 'failed' ? <Text className="text-destructive text-sm mt-2">{t('forms.apply.unverified.failed')}</Text> : null}
+                    <View className="flex-row flex-wrap mt-2" style={{ gap: 8 }}>
+                      <TouchableOpacity
+                        onPress={() => void resend()}
+                        disabled={resendState === 'sending' || !user?.email}
+                        accessibilityRole="button"
+                        className="bg-primary dark:bg-primary-dark rounded-lg px-4 items-center justify-center"
+                        style={{ minHeight: 44 }}
+                      >
+                        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('forms.apply.unverified.resend')}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => void recheckVerification()}
+                        disabled={checking}
+                        accessibilityRole="button"
+                        className="border border-border dark:border-border-dark rounded-lg px-4 items-center justify-center"
+                        style={{ minHeight: 44 }}
+                      >
+                        <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('forms.apply.unverified.check')}</Text>
+                      </TouchableOpacity>
+                      {club.modes.includes('self') ? (
+                        <TouchableOpacity
+                          onPress={() => void changeMode('self')}
+                          accessibilityRole="button"
+                          className="rounded-lg px-4 items-center justify-center"
+                          style={{ minHeight: 44 }}
+                        >
+                          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('forms.apply.mode.self')}</Text>
+                        </TouchableOpacity>
+                      ) : null}
+                    </View>
+                  </View>
+                ) : (
                 <ApplicationForm
                   key={`${club.formKey}:${club.mode}`}
                   slug={club.slug}
@@ -342,7 +413,9 @@ export default function JoinClubScreen({ navigation }: Props) {
                   onSubmitted={handleSubmitted}
                   onConflict={handleConflict}
                   onDiscarded={handleDiscarded}
+                  onBlocked={handleBlocked}
                 />
+                )}
               </>
             )}
           </>

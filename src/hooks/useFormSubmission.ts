@@ -10,6 +10,7 @@ import {
   diffAnswers,
   type FieldErrorCode,
   fieldErrorsFromError,
+  isEmailNotVerified,
   type FormDefinition,
   type FormFile,
   formErrorKey,
@@ -22,7 +23,7 @@ import {
   validateAnswers,
   visibleAnswers,
 } from '@/lib/formSchema';
-import { uploadSubmissionFile } from '@/lib/media';
+import { discardPickerFile, uploadSubmissionFile } from '@/lib/media';
 import { createSerialQueue } from '@/lib/serialQueue';
 
 export const AUTOSAVE_DELAY_MS = 800;
@@ -54,6 +55,8 @@ export interface UseFormSubmissionOptions {
   onConflict: (kind: ApplyConflict) => void;
   /** The draft was discarded (deleted): start over. */
   onDiscarded: () => void;
+  /** The server refuses this applicant mode for a reason the owner explains (`email_not_verified` for a child application). */
+  onBlocked?: (reason: 'email_not_verified') => void;
 }
 
 /**
@@ -66,7 +69,7 @@ export interface UseFormSubmissionOptions {
  * per field. No answer content is logged, cached or written to AsyncStorage -- it lives in React state/refs while the
  * form is open and in the backend draft.
  */
-export function useFormSubmission({ slug, mode, current, resume, onSubmitted, onConflict, onDiscarded }: UseFormSubmissionOptions) {
+export function useFormSubmission({ slug, mode, current, resume, onSubmitted, onConflict, onDiscarded, onBlocked }: UseFormSubmissionOptions) {
   const [definition, setDefinition] = useState<FormDefinition>(resume?.form ?? current);
   const [answers, setAnswers] = useState<Answers>(resume?.submission.answers ?? {});
   const [files, setFiles] = useState<FormFile[]>(resume?.submission.files ?? []);
@@ -79,6 +82,9 @@ export function useFormSubmission({ slug, mode, current, resume, onSubmitted, on
   const [submitting, setSubmitting] = useState(false);
   const [hasDraft, setHasDraft] = useState(Boolean(resume));
   const [discarding, setDiscarding] = useState(false);
+  // Photos currently uploading: submit and discard wait for them (a submit would race the upload, a discard delete the draft under it).
+  const [uploading, setUploading] = useState(0);
+  const uploadingRef = useRef(0);
 
   // Mutable truth of the autosave machinery (state is only the display of it).
   const defRef = useRef(definition);
@@ -94,7 +100,7 @@ export function useFormSubmission({ slug, mode, current, resume, onSubmitted, on
   const alive = useRef(true);
   const outdatedSeen = useRef(false);
   const latest = useRef<{ save: () => Promise<SaveOutcome>; outdated: (info: OutdatedInfo) => Promise<void> } | null>(null);
-  const propsRef = useRef({ slug, mode, current, onConflict, onSubmitted, onDiscarded });
+  const propsRef = useRef({ slug, mode, current, onConflict, onSubmitted, onDiscarded, onBlocked });
 
   function setAnswersBoth(next: Answers) {
     answersRef.current = next;
@@ -180,6 +186,7 @@ export function useFormSubmission({ slug, mode, current, resume, onSubmitted, on
         await savePending(attempt + 1);
         return 'blocked';
       }
+      if (isEmailNotVerified(err)) propsRef.current.onBlocked?.('email_not_verified');
       if (alive.current) {
         setSaveState('error');
         setSaveErrorKey(formErrorKey(err));
@@ -276,7 +283,7 @@ export function useFormSubmission({ slug, mode, current, resume, onSubmitted, on
   }
 
   useEffect(() => {
-    propsRef.current = { slug, mode, current, onConflict, onSubmitted, onDiscarded };
+    propsRef.current = { slug, mode, current, onConflict, onSubmitted, onDiscarded, onBlocked };
     latest.current = { save: () => savePending(), outdated: (info) => handleOutdated(info) };
   });
 
@@ -341,6 +348,7 @@ export function useFormSubmission({ slug, mode, current, resume, onSubmitted, on
           lastErrorRef.current = err;
           const conflict = applyConflictKind(err);
           if (conflict && conflict !== 'other') propsRef.current.onConflict(conflict);
+          if (isEmailNotVerified(err)) propsRef.current.onBlocked?.('email_not_verified');
           const outdated = outdatedFrom(err);
           if (outdated) await handleOutdated(outdated);
         }
@@ -364,26 +372,40 @@ export function useFormSubmission({ slug, mode, current, resume, onSubmitted, on
 
   const uploadFile = useCallback(
     async (fieldKey: string, asset: PickedPhoto, onProgress: (percent: number | null) => void, signal: AbortSignal): Promise<void> => {
-      const id = await ensureDraft();
-      if (signal.aborted) throw new Error('aborted');
-      const result = await uploadSubmissionFile<FormFile>(id, fieldKey, asset, { signal, onProgress });
-      if ('error' in result) {
-        const err = result.error;
-        const outdated = outdatedFrom(err);
-        if (outdated && !signal.aborted) await enqueue(() => handleOutdated(outdated));
-        // No server answer (network, timeout, abort): the photo may have been stored anyway -- reconcile the list.
-        else if (!(err instanceof ApiError)) void refreshFiles();
-        throw err;
+      uploadingRef.current += 1;
+      setUploading(uploadingRef.current);
+      try {
+        let id: string;
+        try {
+          id = await ensureDraft();
+          if (signal.aborted) throw new Error('aborted');
+        } catch (err) {
+          // No upload starts, so nobody else deletes the picker's cache copy.
+          discardPickerFile(asset.uri);
+          throw err;
+        }
+        const result = await uploadSubmissionFile<FormFile>(id, fieldKey, asset, { signal, onProgress });
+        if ('error' in result) {
+          const err = result.error;
+          const outdated = outdatedFrom(err);
+          if (outdated && !signal.aborted) await enqueue(() => handleOutdated(outdated));
+          // No server answer (network, timeout, abort): the photo may have been stored anyway -- reconcile the list.
+          else if (!(err instanceof ApiError)) void refreshFiles();
+          throw err;
+        }
+        const file = result.file;
+        const field = defRef.current.fields.find((f) => f.key === fieldKey);
+        setFilesBoth((prev) => (field?.type === 'image' ? [...prev.filter((f) => f.fieldKey !== fieldKey), file] : [...prev, file]));
+        setErrors((e) => {
+          if (!(fieldKey in e)) return e;
+          const copy = { ...e };
+          delete copy[fieldKey];
+          return copy;
+        });
+      } finally {
+        uploadingRef.current -= 1;
+        if (alive.current) setUploading(uploadingRef.current);
       }
-      const file = result.file;
-      const field = defRef.current.fields.find((f) => f.key === fieldKey);
-      setFilesBoth((prev) => (field?.type === 'image' ? [...prev.filter((f) => f.fieldKey !== fieldKey), file] : [...prev, file]));
-      setErrors((e) => {
-        if (!(fieldKey in e)) return e;
-        const copy = { ...e };
-        delete copy[fieldKey];
-        return copy;
-      });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- helpers read refs only
     [refreshFiles, enqueue],
@@ -402,6 +424,10 @@ export function useFormSubmission({ slug, mode, current, resume, onSubmitted, on
 
   /** Validates, saves and files the application. Returns the field errors to focus (empty = sent or failed with a message). */
   const submit = useCallback(async (): Promise<Record<string, FieldErrorCode>> => {
+    if (uploadingRef.current > 0) {
+      setSubmitErrorKey('forms.apply.uploadRunning');
+      return {};
+    }
     setSubmitErrorKey(null);
     outdatedSeen.current = false;
     const def = defRef.current;
@@ -453,6 +479,7 @@ export function useFormSubmission({ slug, mode, current, resume, onSubmitted, on
         setSubmitErrorKey('forms.err.outdated');
         return found;
       }
+      if (isEmailNotVerified(err)) propsRef.current.onBlocked?.('email_not_verified');
       const fieldErrors = fieldErrorsFromError(err);
       if (fieldErrors) {
         found = fieldErrors;
@@ -468,6 +495,10 @@ export function useFormSubmission({ slug, mode, current, resume, onSubmitted, on
 
   /** Deletes the draft (answers and files) on the server and tells the owner to start over. */
   const discard = useCallback(async (): Promise<void> => {
+    if (uploadingRef.current > 0) {
+      setSubmitErrorKey('forms.apply.uploadRunning');
+      return;
+    }
     setDiscarding(true);
     setSubmitErrorKey(null);
     try {
@@ -494,6 +525,11 @@ export function useFormSubmission({ slug, mode, current, resume, onSubmitted, on
     }
   }, [enqueue]);
 
+  /** Tries a failed autosave again (the app came back to the foreground, the network may be back). */
+  const retrySave = useCallback(() => {
+    void enqueue(() => latest.current!.save());
+  }, [enqueue]);
+
   const dismissNotice = useCallback(() => setNotice(null), []);
 
   return {
@@ -509,6 +545,8 @@ export function useFormSubmission({ slug, mode, current, resume, onSubmitted, on
     submitting,
     hasDraft,
     discarding,
+    uploading,
+    retrySave,
     setAnswer,
     uploadFile,
     removeFile,

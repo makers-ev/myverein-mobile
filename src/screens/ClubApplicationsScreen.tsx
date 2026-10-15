@@ -108,17 +108,18 @@ export default function ClubApplicationsScreen() {
   const clubId = activeClub?.clubId ?? null;
   const { can, loading: membershipLoading } = useOwnMembership(clubId);
   const { applications, page, pageSize, total, loading, error, refetch, goToPage, approve, reject } = useClubApplications(clubId);
-  const [openId, setOpenId] = useState<string | null>(null);
+  // Snapshot of the opened application: the list reloads behind the sheet and may drop the row (decided elsewhere), the
+  // sheet must stay open and show that instead of vanishing.
+  const [opened, setOpened] = useState<ClubApplication | null>(null);
   const [outcome, setOutcome] = useState<DecisionOutcome | null>(null);
 
-  const opened = applications.find((a) => a.id === openId) ?? null;
   const pages = Math.max(1, Math.ceil(total / Math.max(1, pageSize)));
 
   const handleDecided = useCallback(
     (result: DecisionOutcome | null) => {
       if (result) {
         setOutcome(result);
-        setOpenId(null);
+        setOpened(null);
       } else {
         // stale: someone else decided -- the sheet stays (read-only) and the list reloads behind it
         void refetch(true);
@@ -201,7 +202,7 @@ export default function ClubApplicationsScreen() {
           {!error && applications.length === 0 ? (
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.applications.empty')}</Text>
           ) : (
-            applications.map((a) => <ApplicationCard key={a.id} application={a} onOpen={() => setOpenId(a.id)} />)
+            applications.map((a) => <ApplicationCard key={a.id} application={a} onOpen={() => setOpened(a)} />)
           )}
 
           {pages > 1 ? (
@@ -235,7 +236,7 @@ export default function ClubApplicationsScreen() {
           key={opened.id}
           clubId={clubId}
           application={opened}
-          onClose={() => setOpenId(null)}
+          onClose={() => setOpened(null)}
           onDecided={handleDecided}
           approve={approve}
           reject={reject}

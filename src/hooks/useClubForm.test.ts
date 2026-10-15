@@ -130,4 +130,28 @@ describe('useClubForm', () => {
     expect(result.current.refreshFailed).toBe(true);
     expect(result.current.phase).toBe('ready');
   });
+
+  it('skips a draft that is gone (404) but shows any other failure instead of an empty second form', async () => {
+    const table = {
+      '/club-forms/demo/aufnahme': { data: definition('Demo') },
+      '/form-submissions/mine': { data: [mine('demo', 'draft')] },
+      '/form-submissions/demo-draft': new ApiError(404, 'NOT_FOUND', 'x'),
+    };
+    route(table);
+    const { result } = await renderHook(() => useClubForm());
+    await act(async () => {
+      await result.current.load('demo');
+    });
+    expect(result.current.phase).toBe('ready');
+    expect(result.current.club?.resume).toBeUndefined();
+
+    route({ ...table, '/form-submissions/demo-draft': new ApiError(500, 'INTERNAL', 'x') });
+    const { result: r2 } = await renderHook(() => useClubForm());
+    await act(async () => {
+      await r2.current.load('demo');
+    });
+    expect(r2.current.club).toBeNull();
+    expect(r2.current.phase).toBe('slug');
+    expect(r2.current.loadErrorKey).toBe('api.error.server');
+  });
 });
