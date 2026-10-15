@@ -2,6 +2,7 @@ import { File, Paths, UploadType } from 'expo-file-system';
 
 import { authClient, backendUrl } from '@/auth/auth-client';
 import { ApiError, apiErrorFromResponse } from '@/lib/api';
+import { progressPercent } from '@/lib/formSchema';
 import { sanitizeMediaFilename } from '@/lib/mediaKey';
 
 /**
@@ -180,6 +181,69 @@ export async function uploadRegistrationDocument<TDocument>(
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Request failed' };
   } finally {
+    if (isTempCopy) {
+      try {
+        file.delete();
+      } catch {
+        // best-effort cache cleanup
+      }
+    }
+  }
+}
+
+/**
+ * Uploads one photo of a form draft to `POST /form-submissions/:id/files` (multipart `file` + `fieldKey`; the backend
+ * checks magic bytes, the type allowed for the field, size, quota and rate limit and registers the file in the media
+ * layer -- no URL or key is kept here). Not club-scoped (the applicant has no club yet). Success returns the file DTO
+ * (`{ data: { file } }`, a signed preview `url` for non-sensitive images -- memory only, never stored); failures come
+ * back as an `ApiError` or a plain `Error` for local problems / aborts. `signal` cancels the transfer, `onProgress`
+ * reports 0..100 (null = unknown). The picker's cache copy is deleted afterwards.
+ */
+export async function uploadSubmissionFile<TFile>(
+  submissionId: string,
+  fieldKey: string,
+  asset: { uri: string; name: string; type: string; fileSize?: number | null },
+  options: { signal?: AbortSignal; onProgress?: (percent: number | null) => void } = {},
+): Promise<{ file: TFile } | { error: unknown }> {
+  let file: File;
+  try {
+    file = toUploadableFile(asset.uri, asset.name);
+  } catch (err) {
+    return { error: err };
+  }
+  // Delete the file afterwards if it is a copy made here or the picker's output in the app cache -- never a user original.
+  const isTempCopy = !asset.uri.startsWith('file://') || isInAppCache(asset.uri);
+  // A caller abort and the transfer timeout both end the request through one controller.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TRANSFER_TIMEOUT_MS);
+  const forwardAbort = () => controller.abort();
+  if (options.signal?.aborted) controller.abort();
+  else options.signal?.addEventListener('abort', forwardAbort, { once: true });
+  try {
+    const cookie = await getSessionCookie();
+    const result = await file.upload(`${backendUrl}/form-submissions/${encodeURIComponent(submissionId)}/files`, {
+      uploadType: UploadType.MULTIPART,
+      fieldName: 'file',
+      mimeType: normalizeImageMime(asset.type, asset.name),
+      parameters: { fieldKey },
+      headers: { Cookie: cookie },
+      signal: controller.signal,
+      onProgress: options.onProgress ? (p) => options.onProgress?.(progressPercent(p.bytesSent, p.totalBytes)) : undefined,
+    });
+    if (result.status < 200 || result.status >= 300) return { error: apiErrorFromResponse(result.status, result.body) };
+    let uploaded: TFile | undefined;
+    try {
+      uploaded = (result.body ? JSON.parse(result.body) : null)?.data?.file;
+    } catch {
+      uploaded = undefined;
+    }
+    if (!uploaded) return { error: apiErrorFromResponse(500, null) };
+    return { file: uploaded };
+  } catch (err) {
+    return { error: err };
+  } finally {
+    clearTimeout(timer);
+    options.signal?.removeEventListener('abort', forwardAbort);
     if (isTempCopy) {
       try {
         file.delete();
