@@ -226,6 +226,16 @@ const authored = {
     'forms.info.label': 'Hinweis',
     'forms.summary.title': 'Bitte prüfe diese Felder:',
     'forms.err.rejoinBlocked': 'Ein Wiedereintritt ist für dein Konto in diesem Verein derzeit nicht möglich. Bitte wende dich an den Vorstand.',
+    // Application flow on mobile (M2)
+    'forms.apply.notFound': 'Kein Verein mit diesem Kürzel gefunden.',
+    'forms.apply.submit': 'Aufnahmeantrag senden',
+    'forms.apply.loading': 'Formular wird geladen …',
+    'forms.apply.retry': 'Erneut versuchen',
+    'forms.apply.back': 'Zurück',
+    'forms.apply.club': 'Verein: {{slug}}',
+    'forms.apply.submitted.title': 'Antrag eingereicht',
+    'forms.apply.submitted.body': 'Dein Aufnahmeantrag wurde eingereicht und wartet auf Bestätigung durch den Vorstand. Du musst nichts weiter tun.',
+    'forms.apply.working': 'Einen Moment …',
   },
   en: {
     'forms.required': 'required',
@@ -440,6 +450,16 @@ const authored = {
     'forms.info.label': 'Note',
     'forms.summary.title': 'Please check these fields:',
     'forms.err.rejoinBlocked': 'Rejoining this club is currently not possible for your account. Please contact the board.',
+    // Application flow on mobile (M2)
+    'forms.apply.notFound': 'No club found with this code.',
+    'forms.apply.submit': 'Send application',
+    'forms.apply.loading': 'Loading the form …',
+    'forms.apply.retry': 'Try again',
+    'forms.apply.back': 'Back',
+    'forms.apply.club': 'Club: {{slug}}',
+    'forms.apply.submitted.title': 'Application submitted',
+    'forms.apply.submitted.body': 'Your application has been submitted and is waiting for confirmation by the club board. There is nothing more to do.',
+    'forms.apply.working': 'One moment …',
   },
 };
 
