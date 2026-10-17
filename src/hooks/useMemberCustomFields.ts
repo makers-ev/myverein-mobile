@@ -11,13 +11,13 @@ interface FieldsResponse {
 
 /**
  * Custom fields of one member (Wave 8 M4): `target` is `'me'` (the caller's own record, `GET/PATCH /club-members/me/custom-fields`)
- * or a `club_members.id` (read-only in the app, `GET /club-members/:id/custom-fields`). The server decides what is visible and
+ * or a `club_members.id` (read-only in the app unless `writable`: a guardian saving the values of their child via `PATCH`, `GET /club-members/:id/custom-fields`). The server decides what is visible and
  * editable. Race-safe: the data is kept together with its club and target, every load takes a sequence number and only the
  * newest may write state (a late answer for another club/member is dropped, so values of one person never show up on
  * another's sheet); unmounting drops everything. Nothing is cached or persisted -- values only live in this hook's state.
  * `hidden` = no custom fields for this person (guest, record not readable): nothing to show, no error.
  */
-export function useMemberCustomFields(clubId: string | null, target: string | null) {
+export function useMemberCustomFields(clubId: string | null, target: string | null, writable: boolean = target === 'me') {
   const [stored, setStored] = useState<{ key: string; fields: MemberCustomField[] } | null>(null);
   const [failure, setFailure] = useState<{ key: string; hidden: boolean } | null>(null);
   const [loading, setLoading] = useState(!!clubId && !!target);
@@ -64,7 +64,7 @@ export function useMemberCustomFields(clubId: string | null, target: string | nu
    */
   const save = useCallback(
     async (values: Record<string, unknown>): Promise<MemberCustomField[] | null> => {
-      if (!path || !key || target !== 'me') throw new Error('not editable');
+      if (!path || !key || !writable) throw new Error('not editable');
       const ticket = ++seq.current;
       let res: FieldsResponse;
       try {
@@ -80,7 +80,7 @@ export function useMemberCustomFields(clubId: string | null, target: string | nu
       setLoading(false);
       return res.data.fields;
     },
-    [path, key, target],
+    [path, key, writable],
   );
 
   const fields = stored && stored.key === key ? stored.fields : null;

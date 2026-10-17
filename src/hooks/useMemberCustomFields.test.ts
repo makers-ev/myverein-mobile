@@ -94,4 +94,19 @@ describe('useMemberCustomFields', () => {
     await waitFor(() => expect(result.current.status).toBe('ready'));
     await expect(result.current.save({ a: 'y' })).rejects.toThrow();
   });
+
+  it('saves for a child only when writable (guardian)', async () => {
+    apiFetchMock.mockResolvedValue({ data: { fields: [field('a', 'x')] } });
+    const ro = await renderHook(() => useMemberCustomFields('c1', 'k1'));
+    await waitFor(() => expect(ro.result.current.status).toBe('ready'));
+    await expect(ro.result.current.save({ a: 'y' })).rejects.toThrow('not editable');
+
+    const rw = await renderHook(() => useMemberCustomFields('c1', 'k1', true));
+    await waitFor(() => expect(rw.result.current.status).toBe('ready'));
+    apiFetchMock.mockResolvedValueOnce({ data: { fields: [field('a', 'y')] } });
+    await act(async () => {
+      await rw.result.current.save({ a: 'y' });
+    });
+    expect(apiFetchMock).toHaveBeenLastCalledWith('/club-members/k1/custom-fields?clubId=c1', { method: 'PATCH', body: { values: { a: 'y' } } });
+  });
 });

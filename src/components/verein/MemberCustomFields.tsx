@@ -27,6 +27,8 @@ interface Props {
    * hint with a link to "Bausteine" shows instead of nothing. Everybody else still sees nothing.
    */
   manageHint?: boolean;
+  /** Guardian view of a linked child (`target` = the child's `club_members.id`): editable like the own record, titled with the child's name. */
+  guardianOfName?: string;
 }
 
 /**
@@ -35,11 +37,12 @@ interface Props {
  * labels; protected fields carry a lock marker. Only changed editable values are sent (`PATCH`, cleared = null). Guests (403)
  * and members without any visible field render nothing. Values are never logged or persisted.
  */
-export default function MemberCustomFields({ clubId, target, readOnlyView = false, onDirtyChange, card = false, manageHint = false }: Props) {
+export default function MemberCustomFields({ clubId, target, readOnlyView = false, onDirtyChange, card = false, manageHint = false, guardianOfName }: Props) {
   const { t, language } = useLanguage();
   const lang = contentLang(language);
   const themeColors = useThemeColors();
-  const { fields, status, reload, save } = useMemberCustomFields(clubId, target);
+  const writable = target === 'me' || guardianOfName !== undefined;
+  const { fields, status, reload, save } = useMemberCustomFields(clubId, target, writable);
   const rendererRef = useRef<FormRendererHandle>(null);
 
   const [saved, setSaved] = useState<Answers>({});
@@ -72,7 +75,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
     setErrors({});
   }, [fields]);
 
-  const { editable, readOnly } = useMemo(() => partitionFields(fields ?? [], readOnlyView || target !== 'me', target === 'me'), [fields, readOnlyView, target]);
+  const { editable, readOnly } = useMemo(() => partitionFields(fields ?? [], readOnlyView || !writable, writable), [fields, readOnlyView, writable]);
   const renderFields = useMemo(() => editable.map((f) => toFormField(f, lang)), [editable, lang]);
   const patch = fields && editable.length > 0 ? valuesPatch(fields, saved, answers, true) : null;
   const dirty = patch !== null;
@@ -123,7 +126,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
   const own = target === 'me';
   const boardView = readOnlyView || !own;
   const wrapper = card ? 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4' : 'mt-2';
-  const title = own ? t('forms.cf.values.titleOwn') : t('forms.cf.values.title');
+  const title = guardianOfName !== undefined ? t('forms.cf.values.titleChild', { name: guardianOfName }) : own ? t('forms.cf.values.titleOwn') : t('forms.cf.values.title');
   const mutedClass = 'text-muted-foreground dark:text-muted-foreground-dark text-xs';
 
   if (status === 'loading') {
@@ -186,7 +189,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
       <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1" accessibilityRole="header">
         {title}
       </Text>
-      <Text className={`${mutedClass} mb-3`}>{own ? t('forms.cf.values.hintOwn') : t('forms.cf.values.hint')}</Text>
+      <Text className={`${mutedClass} mb-3`}>{guardianOfName !== undefined ? t('forms.cf.values.hintChild') : own ? t('forms.cf.values.hintOwn') : t('forms.cf.values.hint')}</Text>
 
       {readOnly.length > 0 ? (
         <View style={{ gap: 8 }}>
@@ -195,7 +198,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
             const label = localizedLabel(f, lang);
             const helpText = localizedHelpText(f, lang);
             const entryKey = boardView && text !== null ? unverifiedEntryKey(f) : null;
-            const hint = readOnlyView || !own ? null : f.editableBy === 'vorstand' ? t('forms.cf.values.readonlyBoard') : null;
+            const hint = readOnlyView || !writable ? null : f.editableBy === 'vorstand' ? t('forms.cf.values.readonlyBoard') : null;
             return (
               <View
                 key={f.id}

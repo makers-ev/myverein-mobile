@@ -12,6 +12,7 @@ import DateTimeField, { fromDateString, toDateString } from '@/components/ui/Dat
 import { Field, inputClassName } from '@/components/ui/FormSheet';
 import { isMinorBirthDate } from '@/lib/memberPhoto';
 import { type NameErrors, nameDraftFromMember, nameFieldErrorsFromApi, namePatch, validateName } from '@/lib/memberName';
+import ChildrenCustomFields from './ChildrenCustomFields';
 import ExitRequestSection from './ExitRequestSection';
 import MemberCustomFields from './MemberCustomFields';
 import MemberPhotoEditor from './MemberPhotoEditor';
@@ -101,6 +102,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [customDirty, setCustomDirty] = useState(false);
+  const [childDirty, setChildDirty] = useState(false);
   const [serverNameErrors, setServerNameErrors] = useState<NameErrors>({});
   const inputs = useRef<Partial<Record<TextKey, TextInput | null>>>({});
   // "Next" on the keyboard moves through the name fields.
@@ -133,7 +135,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
   const nameChanged = Object.keys(nameBody).length > 0;
   const dirty = !!membership && (changedTextKeys.length > 0 || birthDateChanged || nameChanged);
 
-  const anyDirty = dirty || customDirty;
+  const anyDirty = dirty || customDirty || childDirty;
   useEffect(() => {
     onDirtyChange?.(anyDirty);
   }, [anyDirty, onDirtyChange]);
@@ -349,6 +351,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
 
       <View className="mt-6">
         <MemberCustomFields clubId={clubId} target="me" card onDirtyChange={setCustomDirty} manageHint={can('forms:write')} />
+        <ChildrenCustomFields clubId={clubId} onDirtyChange={setChildDirty} />
         <ExitRequestSection clubId={clubId} />
       </View>
     </View>
