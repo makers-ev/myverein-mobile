@@ -14,6 +14,24 @@ export type CustomFieldType = (typeof CUSTOM_FIELD_TYPES)[number];
 export type VisibleTo = 'vorstand' | 'funktionstraeger' | 'mitglied';
 export type EditableBy = 'vorstand' | 'self';
 
+/** Language of club content texts the backend can serve (`?lang=de|en`); every other app language falls back to English. */
+export type ContentLang = 'de' | 'en';
+export const contentLang = (language: string): ContentLang => (language === 'de' ? 'de' : 'en');
+
+/**
+ * Built-in translations of a profile-module definition (backend `translations`): `null` once the board renamed the field or
+ * changed its help text (club content is never translated) and for manual fields.
+ */
+export type TextTranslations = Partial<Record<ContentLang, { label?: string | null; description?: string | null; helpText?: string | null }>> | null;
+
+/** `translations[lang]?.label ?? label`: the text of a field/module in the display language. */
+export const localizedLabel = (item: { label: string; translations?: TextTranslations }, lang: ContentLang): string =>
+  item.translations?.[lang]?.label ?? item.label;
+
+/** `translations[lang]?.helpText ?? helpText`; `null` when there is none. */
+export const localizedHelpText = (item: { helpText?: string | null; translations?: TextTranslations }, lang: ContentLang): string | null =>
+  item.translations?.[lang]?.helpText ?? item.helpText ?? null;
+
 export const isChoice = (type: string): boolean => type === 'select' || type === 'multiselect';
 
 /** One field of a member as the custom-fields endpoints return it: definition + value + what the caller may do. */
@@ -27,6 +45,8 @@ export interface MemberCustomField {
   /** Form-engine limits (text length, number range, free-text credential level); absent on an older backend. */
   validation?: FormField['validation'] | null;
   helpText?: string | null;
+  /** Built-in DE/EN texts (`null` = board-edited or manual field, show `label`/`helpText` as they are). */
+  translations?: TextTranslations;
   visibleTo: VisibleTo;
   editableBy: EditableBy;
   sensitive: boolean;
@@ -44,13 +64,14 @@ export interface MemberCustomField {
 }
 
 /** The form-engine view of a custom field so the shared `FormRenderer` can render and edit it. */
-export function toFormField(field: MemberCustomField): FormField {
+export function toFormField(field: MemberCustomField, lang: ContentLang = 'de'): FormField {
+  const helpText = localizedHelpText(field, lang);
   return {
     key: field.key,
     type: field.type,
-    label: field.label,
+    label: localizedLabel(field, lang),
     ...((isChoice(field.type) || field.type === 'credential') && field.options ? { options: field.options } : {}),
-    ...(field.helpText ? { helpText: field.helpText } : {}),
+    ...(helpText ? { helpText } : {}),
     ...(field.validation ? { validation: field.validation } : {}),
     ...(field.type === 'credential' ? { expiry: field.expiry ?? null } : {}),
   };

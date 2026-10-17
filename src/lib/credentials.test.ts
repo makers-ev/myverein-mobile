@@ -9,6 +9,7 @@ import {
   expiryLabel,
   formatValueCount,
   isUnverifiedSelfEntry,
+  unverifiedEntryKey,
   normalizeOverviewQuery,
   overviewPageCount,
   overviewPath,
@@ -124,6 +125,10 @@ describe('enteredBy / limits / valueCount', () => {
   it('flags only self-entered credential or protected values as unverified', () => {
     expect(isUnverifiedSelfEntry({ type: 'credential', enteredBy: 'self' })).toBe(true);
     expect(isUnverifiedSelfEntry({ type: 'text', sensitive: true, enteredBy: 'self' })).toBe(true);
+    expect(isUnverifiedSelfEntry({ type: 'credential', enteredBy: 'guardian' })).toBe(true);
+    expect(unverifiedEntryKey({ type: 'credential', enteredBy: 'guardian' })).toBe('forms.cred.guardianEntered');
+    expect(unverifiedEntryKey({ type: 'credential', enteredBy: 'self' })).toBe('forms.cred.selfEntered');
+    expect(unverifiedEntryKey({ type: 'credential', enteredBy: 'board' })).toBeNull();
     expect(isUnverifiedSelfEntry({ type: 'credential', enteredBy: 'board' })).toBe(false);
     expect(isUnverifiedSelfEntry({ type: 'credential', enteredBy: null })).toBe(false);
     expect(isUnverifiedSelfEntry({ type: 'text', enteredBy: 'self' })).toBe(false);

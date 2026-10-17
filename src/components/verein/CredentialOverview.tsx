@@ -8,9 +8,10 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useCredentialOverview } from '@/hooks/useCredentialOverview';
 import type { ClubMember } from '@/hooks/useClubMembers';
 import { apiFetch } from '@/lib/api';
+import { contentLang, localizedLabel } from '@/lib/customFields';
 import {
   credentialSummary,
-  isUnverifiedSelfEntry,
+  unverifiedEntryKey,
   DEFAULT_OVERVIEW_QUERY,
   OVERVIEW_PAGE_SIZE,
   OVERVIEW_STATUSES,
@@ -56,6 +57,7 @@ const mutedClass = 'text-muted-foreground dark:text-muted-foreground-dark text-x
  */
 export default function CredentialOverview({ clubId }: { clubId: string }) {
   const { t, language } = useLanguage();
+  const lang = contentLang(language);
   const colors = useThemeColors();
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState<OverviewQuery>(DEFAULT_OVERVIEW_QUERY);
@@ -142,7 +144,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
                   onPress={() => set({ fieldKey: null, status: query.status === 'missing' ? null : query.status })}
                 />
                 {fields.map((f) => (
-                  <Chip key={f.id} label={f.label} locked={f.sensitive} selected={query.fieldKey === f.key} onPress={() => set({ fieldKey: query.fieldKey === f.key ? null : f.key, status: query.fieldKey === f.key && query.status === 'missing' ? null : query.status })} />
+                  <Chip key={f.id} label={localizedLabel(f, lang)} locked={f.sensitive} selected={query.fieldKey === f.key} onPress={() => set({ fieldKey: query.fieldKey === f.key ? null : f.key, status: query.fieldKey === f.key && query.status === 'missing' ? null : query.status })} />
                 ))}
               </ScrollView>
             </>
@@ -222,6 +224,8 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
                   // `yes` is not part of the line here (the badge and the field name already say it): drop the leading separator.
                   const detail = summary ? summary.replace(/^, /, '') : null;
                   const name = row.displayName ?? '—';
+                  const fieldLabel = localizedLabel(rowField ?? { label: row.fieldLabel, translations: row.translations }, lang);
+                  const entryKey = row.expiry.status !== 'missing' ? unverifiedEntryKey({ type: 'credential', sensitive: row.sensitive, enteredBy: row.enteredBy }) : null;
                   return (
                     <TouchableOpacity
                       key={`${row.clubMemberId}|${row.fieldKey}`}
@@ -230,14 +234,14 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
                       className="border border-border dark:border-border-dark rounded-xl p-3 mb-2"
                       style={{ minHeight: 44 }}
                       accessibilityRole="button"
-                      accessibilityLabel={`${t('forms.cred.overview.open', { name, field: row.fieldLabel })}${row.sensitive ? `, ${t('forms.cf.sensitive')}` : ''}`}
+                      accessibilityLabel={`${t('forms.cred.overview.open', { name, field: fieldLabel })}${row.sensitive ? `, ${t('forms.cf.sensitive')}` : ''}`}
                     >
                       <View className="flex-row items-center justify-between" style={{ gap: 8 }}>
                         <Text className="flex-1 text-foreground dark:text-foreground-dark font-bold text-sm">{name}</Text>
                         {opening === row.clubMemberId ? <ActivityIndicator color={colors.primary} accessibilityLabel={t('forms.cred.overview.opening')} /> : null}
                       </View>
                       <View className="flex-row items-center flex-wrap mt-0.5" style={{ gap: 6 }}>
-                        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{row.fieldLabel}</Text>
+                        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{fieldLabel}</Text>
                         {row.sensitive ? (
                           <View className="flex-row items-center" style={{ gap: 3 }}>
                             <Lock size={12} color={colors.mutedForeground} />
@@ -247,9 +251,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
                       </View>
                       {/* Plain text: values are member input. */}
                       <Text className={`${mutedClass} mt-1`}>{row.expiry.status === 'missing' ? t('forms.cred.overview.missingRow') : (detail ?? '')}</Text>
-                      {isUnverifiedSelfEntry({ type: 'credential', sensitive: row.sensitive, enteredBy: row.enteredBy }) && row.expiry.status !== 'missing' ? (
-                        <Text className={`${mutedClass} mt-0.5`}>{t('forms.cred.selfEntered')}</Text>
-                      ) : null}
+                      {entryKey ? <Text className={`${mutedClass} mt-0.5`}>{t(entryKey)}</Text> : null}
                       <View className="mt-1.5">
                         <ExpiryBadge expiry={row.expiry} />
                       </View>

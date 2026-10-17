@@ -6,8 +6,8 @@ import ExpiryBadge, { formatCredentialDate } from '@/components/forms/ExpiryBadg
 import FormRenderer, { type FormRendererHandle } from '@/components/forms/FormRenderer';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useMemberCustomFields } from '@/hooks/useMemberCustomFields';
-import { isUnverifiedSelfEntry } from '@/lib/credentials';
-import { customFieldErrorKey, displayValue, partitionFields, toFormField, valuesPatch, valuesToAnswers } from '@/lib/customFields';
+import { unverifiedEntryKey } from '@/lib/credentials';
+import { contentLang, customFieldErrorKey, displayValue, localizedHelpText, localizedLabel, partitionFields, toFormField, valuesPatch, valuesToAnswers } from '@/lib/customFields';
 import { type Answers, type FieldErrorCode, fieldErrorsFromError, validateAnswers } from '@/lib/formSchema';
 import { useThemeColors } from '@/theme/colors';
 
@@ -31,6 +31,7 @@ interface Props {
  */
 export default function MemberCustomFields({ clubId, target, readOnlyView = false, onDirtyChange, card = false }: Props) {
   const { t, language } = useLanguage();
+  const lang = contentLang(language);
   const themeColors = useThemeColors();
   const { fields, status, reload, save } = useMemberCustomFields(clubId, target);
   const rendererRef = useRef<FormRendererHandle>(null);
@@ -66,7 +67,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
   }, [fields]);
 
   const { editable, readOnly } = useMemo(() => partitionFields(fields ?? [], readOnlyView || target !== 'me', target === 'me'), [fields, readOnlyView, target]);
-  const renderFields = useMemo(() => editable.map(toFormField), [editable]);
+  const renderFields = useMemo(() => editable.map((f) => toFormField(f, lang)), [editable, lang]);
   const patch = fields && editable.length > 0 ? valuesPatch(fields, saved, answers, true) : null;
   const dirty = patch !== null;
 
@@ -166,16 +167,19 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
         <View style={{ gap: 8 }}>
           {readOnly.map((f) => {
             const text = displayValue(f, texts);
+            const label = localizedLabel(f, lang);
+            const helpText = localizedHelpText(f, lang);
+            const entryKey = boardView && text !== null ? unverifiedEntryKey(f) : null;
             const hint = readOnlyView || !own ? null : f.editableBy === 'vorstand' ? t('forms.cf.values.readonlyBoard') : null;
             return (
               <View
                 key={f.id}
                 className="rounded-lg border border-border dark:border-border-dark px-3 py-2"
                 accessible
-                accessibilityLabel={`${f.label}${f.sensitive ? `, ${t('forms.cf.sensitive')}` : ''}: ${text ?? t('forms.cf.values.empty')}`}
+                accessibilityLabel={`${label}${f.sensitive ? `, ${t('forms.cf.sensitive')}` : ''}: ${text ?? t('forms.cf.values.empty')}`}
               >
                 <View className="flex-row items-center flex-wrap" style={{ gap: 6 }}>
-                  <Text className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground-dark">{f.label}</Text>
+                  <Text className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground-dark">{label}</Text>
                   {f.sensitive ? (
                     <View className="flex-row items-center" style={{ gap: 3 }}>
                       <Lock size={12} color={themeColors.mutedForeground} />
@@ -195,9 +199,9 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
                     <ExpiryBadge expiry={f.expiry} />
                   </View>
                 ) : null}
-                {f.helpText ? <Text className={`${mutedClass} mt-1`}>{f.helpText}</Text> : null}
+                {helpText ? <Text className={`${mutedClass} mt-1`}>{helpText}</Text> : null}
                 {hint ? <Text className={`${mutedClass} mt-0.5`}>{hint}</Text> : null}
-                {boardView && isUnverifiedSelfEntry(f) && text !== null ? <Text className={`${mutedClass} mt-0.5`}>{t('forms.cred.selfEntered')}</Text> : null}
+                {entryKey ? <Text className={`${mutedClass} mt-0.5`}>{t(entryKey)}</Text> : null}
                 {boardView && f.enteredBy === 'board' && f.type === 'credential' && text !== null ? <Text className={`${mutedClass} mt-0.5`}>{t('forms.cred.boardEntered')}</Text> : null}
               </View>
             );
@@ -210,7 +214,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
           {sensitiveEditable.length > 0 ? (
             <View className="flex-row items-start" style={{ gap: 6 }}>
               <Lock size={14} color={themeColors.mutedForeground} style={{ marginTop: 2 }} />
-              <Text className={`${mutedClass} flex-1`}>{t('forms.cf.values.sensitiveEdit', { fields: sensitiveEditable.map((f) => f.label).join(', ') })}</Text>
+              <Text className={`${mutedClass} flex-1`}>{t('forms.cf.values.sensitiveEdit', { fields: sensitiveEditable.map((f) => localizedLabel(f, lang)).join(', ') })}</Text>
             </View>
           ) : null}
           <FormRenderer handleRef={rendererRef} fields={renderFields} answers={answers} errors={errors} onChange={onChange} disabled={busy} />

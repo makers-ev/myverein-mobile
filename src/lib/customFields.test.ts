@@ -2,10 +2,13 @@ jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://tes
 
 import { ApiError } from './api';
 import {
+  contentLang,
   customFieldErrorKey,
   displayValue,
   editableFields,
   isNoFieldsError,
+  localizedHelpText,
+  localizedLabel,
   type MemberCustomField,
   partitionFields,
   readOnlyFields,
@@ -161,5 +164,36 @@ describe('values of a member', () => {
     const saved = valuesToAnswers(own);
     expect(valuesPatch(own, saved, { board_f: 'x', self_f: 'y' }, true)).toEqual({ self_f: 'y' });
     expect(valuesPatch(own, saved, { board_f: 'x' }, true)).toBeNull();
+  });
+});
+
+describe('english texts', () => {
+  const translated = field({
+    label: 'Führerschein',
+    helpText: 'Hilfe',
+    translations: { de: { label: 'Führerschein', helpText: 'Hilfe' }, en: { label: 'Driving licence', helpText: 'Help' } },
+  });
+
+  it('maps app languages to the two content languages', () => {
+    expect(contentLang('de')).toBe('de');
+    expect(contentLang('en')).toBe('en');
+    expect(contentLang('fr')).toBe('en');
+  });
+
+  it('shows translations[lang] and falls back to the stored text', () => {
+    expect(localizedLabel(translated, 'en')).toBe('Driving licence');
+    expect(localizedLabel(translated, 'de')).toBe('Führerschein');
+    expect(localizedHelpText(translated, 'en')).toBe('Help');
+    const edited = field({ label: 'Trikot', helpText: null, translations: null });
+    expect(localizedLabel(edited, 'en')).toBe('Trikot');
+    expect(localizedHelpText(edited, 'en')).toBeNull();
+    expect(localizedHelpText(field({ helpText: 'x', translations: { en: { helpText: null } } }), 'en')).toBe('x');
+  });
+
+  it('hands the localized texts to the form renderer', () => {
+    const f = toFormField(translated, 'en');
+    expect(f.label).toBe('Driving licence');
+    expect(f.helpText).toBe('Help');
+    expect(toFormField(translated).label).toBe('Führerschein');
   });
 });
