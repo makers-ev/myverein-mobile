@@ -34,7 +34,7 @@ jest.mock('./MemberCustomFields', () => {
 });
 
 describe('ChildrenCustomFields', () => {
-  it('reports each child's dirty state once and stays stable across parent re-renders', async () => {
+  it('reports the dirty state of each child once and stays stable across parent re-renders', async () => {
     const onDirty = jest.fn();
     const { rerender } = await render(<ChildrenCustomFields clubId="c1" onDirtyChange={onDirty} />);
     await rerender(<ChildrenCustomFields clubId="c1" onDirtyChange={(d) => onDirty(d)} />);
