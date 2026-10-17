@@ -12,6 +12,7 @@ import ApplicationForm from '@/components/verein/ApplicationForm';
 import MyApplicationsStatus from '@/components/verein/MyApplicationsStatus';
 import { getStoredApplyClubSlug, setStoredApplyClubSlug } from '@/clubs/lastApplyClubStorage';
 import { useClubForm } from '@/hooks/useClubForm';
+import { useMyClubs } from '@/hooks/useMyClubs';
 import { useMyApplications } from '@/hooks/useMyApplications';
 import { normalizeClubSlug } from '@/lib/applicationStatus';
 import type { SubmittedResult } from '@/hooks/useFormSubmission';
@@ -47,6 +48,12 @@ export default function JoinClubScreen({ navigation }: Props) {
   const applications = useMyApplications(isAuthenticated);
   const reloadApplications = applications.reload;
   const slugTouched = useRef(false);
+  const { refetch: refetchClubs } = useMyClubs();
+  // An accepted application means the membership exists now: refresh the shared club list so the Verein tab shows it.
+  const hasAccepted = applications.decided.some((d) => d.status === 'accepted');
+  useEffect(() => {
+    if (hasAccepted) void refetchClubs();
+  }, [hasAccepted, refetchClubs]);
   const [conflict, setConflict] = useState<Conflict | null>(null);
   // A child application needs a verified e-mail address: known from the session, or reported by the server (403).
   const [serverBlocked, setServerBlocked] = useState(false);
