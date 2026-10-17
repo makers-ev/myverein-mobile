@@ -61,6 +61,14 @@ describe('useCredentialOverview', () => {
     expect(c.result.current.hidden).toBe(false);
   });
 
+  it('shows a generic error for 429 and does not retry on its own', async () => {
+    apiFetchMock.mockRejectedValue(new ApiError(429, 'RATE_LIMITED', 'slow down'));
+    const { result } = await renderHook(() => useCredentialOverview('c1', DEFAULT_OVERVIEW_QUERY));
+    await waitFor(() => expect(result.current.failure).toBe('generic'));
+    expect(result.current.hidden).toBe(false);
+    expect(apiFetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('drops a late answer for a previous filter and a previous club', async () => {
     const slow = deferred<CredentialOverviewResponse>();
     apiFetchMock.mockReturnValueOnce(slow.promise).mockResolvedValue(response('Neu'));

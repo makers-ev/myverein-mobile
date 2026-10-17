@@ -24,6 +24,16 @@ export interface CredentialExpiry {
   validUntil: string | null;
 }
 
+/** Who entered a value (backend `enteredBy`): the person themself, the board, or unknown (`null`, older rows / backend). */
+export type EnteredBy = 'self' | 'board';
+
+/**
+ * Self-declared credential/protected values are not verified by the club: the board's views show a hint for them. `board` and
+ * unknown show nothing special.
+ */
+export const isUnverifiedSelfEntry = (field: { type?: string; sensitive?: boolean; enteredBy?: EnteredBy | null }): boolean =>
+  field.enteredBy === 'self' && (field.type === 'credential' || field.sensitive === true);
+
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** How the level of a credential is entered: a pick from the definition's `options`, free text (`validation.maxLength`) or not at all. */
@@ -119,6 +129,9 @@ export type OverviewStatus = (typeof OVERVIEW_STATUSES)[number];
 export const WITHIN_DAYS_OPTIONS = [30, 90, 180] as const;
 export const DEFAULT_WITHIN_DAYS = 90;
 export const OVERVIEW_PAGE_SIZE = 25;
+/** Backend limits of the overview query (`page` <= 1000, `pageSize` <= 100): larger values would be answered with 422. */
+export const OVERVIEW_MAX_PAGE = 1000;
+export const OVERVIEW_MAX_PAGE_SIZE = 100;
 
 export interface OverviewQuery {
   fieldKey: string | null;
@@ -132,7 +145,7 @@ export const DEFAULT_OVERVIEW_QUERY: OverviewQuery = { fieldKey: null, status: n
 /** `status = missing` only makes sense for one field (the server answers `422 field_key_required` otherwise): it is dropped without one. */
 export function normalizeOverviewQuery(q: OverviewQuery): OverviewQuery {
   const status = q.status === 'missing' && !q.fieldKey ? null : q.status;
-  return { fieldKey: q.fieldKey || null, status, withinDays: q.withinDays, page: Math.max(1, Math.floor(q.page) || 1) };
+  return { fieldKey: q.fieldKey || null, status, withinDays: q.withinDays, page: Math.min(OVERVIEW_MAX_PAGE, Math.max(1, Math.floor(q.page) || 1)) };
 }
 
 /** Request path of one overview page; everything is URL-encoded. */
@@ -141,7 +154,7 @@ export function overviewPath(clubId: string, query: OverviewQuery, pageSize: num
   const parts = [`clubId=${encodeURIComponent(clubId)}`];
   if (q.fieldKey) parts.push(`fieldKey=${encodeURIComponent(q.fieldKey)}`);
   if (q.status) parts.push(`status=${q.status}`);
-  parts.push(`withinDays=${q.withinDays}`, `page=${q.page}`, `pageSize=${pageSize}`);
+  parts.push(`withinDays=${q.withinDays}`, `page=${q.page}`, `pageSize=${Math.min(OVERVIEW_MAX_PAGE_SIZE, Math.max(1, Math.floor(pageSize) || OVERVIEW_PAGE_SIZE))}`);
   return `/club-members/credentials?${parts.join('&')}`;
 }
 
@@ -151,6 +164,8 @@ export interface CredentialOverviewField {
   label: string;
   sensitive: boolean;
   options: { value: string; label: string }[] | null;
+  /** Number of stored values; `null` for sensitive definitions (never shown as 0), absent on an older backend. */
+  valueCount?: number | null;
 }
 
 export interface CredentialOverviewRow {
@@ -162,6 +177,7 @@ export interface CredentialOverviewRow {
   value: unknown;
   updatedAt: string | null;
   expiry: CredentialExpiry;
+  enteredBy?: EnteredBy | null;
 }
 
 export interface CredentialOverviewResponse {
@@ -173,5 +189,8 @@ export interface CredentialOverviewResponse {
   withinDays: number;
   fields: CredentialOverviewField[];
 }
+
+/** Count text helper: `null`/`undefined` (hidden for sensitive definitions) is not a number and renders as an em dash, never as 0. */
+export const formatValueCount = (count: number | null | undefined): string => (typeof count === 'number' && Number.isFinite(count) ? String(count) : '—');
 
 export const overviewPageCount = (total: number, pageSize: number = OVERVIEW_PAGE_SIZE): number => Math.max(1, Math.ceil(total / pageSize));

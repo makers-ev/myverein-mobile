@@ -6,6 +6,7 @@ import ExpiryBadge, { formatCredentialDate } from '@/components/forms/ExpiryBadg
 import FormRenderer, { type FormRendererHandle } from '@/components/forms/FormRenderer';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useMemberCustomFields } from '@/hooks/useMemberCustomFields';
+import { isUnverifiedSelfEntry } from '@/lib/credentials';
 import { customFieldErrorKey, displayValue, partitionFields, toFormField, valuesPatch, valuesToAnswers } from '@/lib/customFields';
 import { type Answers, type FieldErrorCode, fieldErrorsFromError, validateAnswers } from '@/lib/formSchema';
 import { useThemeColors } from '@/theme/colors';
@@ -113,6 +114,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
   if (status === 'hidden') return null;
 
   const own = target === 'me';
+  const boardView = readOnlyView || !own;
   const wrapper = card ? 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4' : 'mt-2';
   const title = own ? t('forms.cf.values.titleOwn') : t('forms.cf.values.title');
   const mutedClass = 'text-muted-foreground dark:text-muted-foreground-dark text-xs';
@@ -195,6 +197,8 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
                 ) : null}
                 {f.helpText ? <Text className={`${mutedClass} mt-1`}>{f.helpText}</Text> : null}
                 {hint ? <Text className={`${mutedClass} mt-0.5`}>{hint}</Text> : null}
+                {boardView && isUnverifiedSelfEntry(f) && text !== null ? <Text className={`${mutedClass} mt-0.5`}>{t('forms.cred.selfEntered')}</Text> : null}
+                {boardView && f.enteredBy === 'board' && f.type === 'credential' && text !== null ? <Text className={`${mutedClass} mt-0.5`}>{t('forms.cred.boardEntered')}</Text> : null}
               </View>
             );
           })}

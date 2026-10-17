@@ -1,5 +1,5 @@
 import { ApiError } from './api';
-import { type CredentialExpiry, credentialSummary } from './credentials';
+import { type CredentialExpiry, credentialSummary, type EnteredBy } from './credentials';
 import { type Answers, diffAnswers, type FormField, formErrorKey, isEmptyAnswer } from './formSchema';
 
 /**
@@ -39,6 +39,8 @@ export interface MemberCustomField {
   updatedAt: string | null;
   /** `credential` fields only (`null` otherwise / older backend): status of the saved value, see `lib/credentials.ts`. */
   expiry?: CredentialExpiry | null;
+  /** Who entered the saved value (`null` = unknown / no value / older backend). */
+  enteredBy?: EnteredBy | null;
 }
 
 /** The form-engine view of a custom field so the shared `FormRenderer` can render and edit it. */

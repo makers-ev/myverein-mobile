@@ -7,6 +7,8 @@ import {
   DEFAULT_OVERVIEW_QUERY,
   expiryApplies,
   expiryLabel,
+  formatValueCount,
+  isUnverifiedSelfEntry,
   normalizeOverviewQuery,
   overviewPageCount,
   overviewPath,
@@ -115,5 +117,27 @@ describe('overview query', () => {
   it('counts pages', () => {
     expect(overviewPageCount(0)).toBe(1);
     expect(overviewPageCount(26)).toBe(2);
+  });
+});
+
+describe('enteredBy / limits / valueCount', () => {
+  it('flags only self-entered credential or protected values as unverified', () => {
+    expect(isUnverifiedSelfEntry({ type: 'credential', enteredBy: 'self' })).toBe(true);
+    expect(isUnverifiedSelfEntry({ type: 'text', sensitive: true, enteredBy: 'self' })).toBe(true);
+    expect(isUnverifiedSelfEntry({ type: 'credential', enteredBy: 'board' })).toBe(false);
+    expect(isUnverifiedSelfEntry({ type: 'credential', enteredBy: null })).toBe(false);
+    expect(isUnverifiedSelfEntry({ type: 'text', enteredBy: 'self' })).toBe(false);
+  });
+
+  it('clamps page to 1000 and pageSize to 100', () => {
+    expect(normalizeOverviewQuery({ fieldKey: null, status: null, withinDays: 90, page: 5000 }).page).toBe(1000);
+    expect(overviewPath('c1', DEFAULT_OVERVIEW_QUERY, 500)).toContain('pageSize=100');
+  });
+
+  it('never renders a null valueCount as 0', () => {
+    expect(formatValueCount(null)).toBe('—');
+    expect(formatValueCount(undefined)).toBe('—');
+    expect(formatValueCount(0)).toBe('0');
+    expect(formatValueCount(7)).toBe('7');
   });
 });

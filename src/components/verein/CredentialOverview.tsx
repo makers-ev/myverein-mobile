@@ -9,6 +9,7 @@ import type { ClubMember } from '@/hooks/useClubMembers';
 import { apiFetch } from '@/lib/api';
 import {
   credentialSummary,
+  isUnverifiedSelfEntry,
   DEFAULT_OVERVIEW_QUERY,
   OVERVIEW_PAGE_SIZE,
   OVERVIEW_STATUSES,
@@ -236,6 +237,9 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
                       </View>
                       {/* Plain text: values are member input. */}
                       <Text className={`${mutedClass} mt-1`}>{row.expiry.status === 'missing' ? t('forms.cred.overview.missingRow') : (detail ?? '')}</Text>
+                      {isUnverifiedSelfEntry({ type: 'credential', sensitive: row.sensitive, enteredBy: row.enteredBy }) && row.expiry.status !== 'missing' ? (
+                        <Text className={`${mutedClass} mt-0.5`}>{t('forms.cred.selfEntered')}</Text>
+                      ) : null}
                       <View className="mt-1.5">
                         <ExpiryBadge expiry={row.expiry} />
                       </View>
