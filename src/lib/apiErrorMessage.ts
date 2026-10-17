@@ -10,6 +10,9 @@ type Translate = (key: string, params?: Record<string, string | number>) => stri
  */
 export function apiErrorKey(err: unknown, fallbackKey = 'alert.general-error-description'): string {
   if (!(err instanceof ApiError)) return fallbackKey;
+  // Machine-readable conflicts carry `details.code`; it wins over the generic status text.
+  const detailsCode = (err.details as { code?: unknown } | undefined)?.code;
+  if (detailsCode === 'default_calendar_required') return 'kalender.error.default-required';
   switch (err.code) {
     case 'ALREADY_MEMBER':
       return 'api.error.already-member';
