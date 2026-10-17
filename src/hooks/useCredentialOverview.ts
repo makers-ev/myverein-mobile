@@ -4,12 +4,13 @@ import { ApiError, apiFetch } from '@/lib/api';
 import {
   type CredentialOverviewField,
   type CredentialOverviewResponse,
+  DEFAULT_OVERVIEW_QUERY,
   normalizeOverviewQuery,
   type OverviewQuery,
   overviewPath,
 } from '@/lib/credentials';
 
-export type OverviewFailure = 'notFound' | 'generic';
+export type OverviewFailure = 'notFound' | 'rateLimit' | 'generic';
 
 /**
  * Board / Funktionstraeger overview of profile-module credentials (`GET /club-members/credentials`): one page for the
@@ -19,27 +20,34 @@ export type OverviewFailure = 'notFound' | 'generic';
  * filter): the UI renders nothing. A 404 *with* a field filter means that field is gone or not visible (`failure =
  * 'notFound'`). Nothing is cached or persisted -- credential values only live in this hook's state.
  */
-export function useCredentialOverview(clubId: string | null, query: OverviewQuery) {
+export function useCredentialOverview(clubId: string | null, query: OverviewQuery, enabled = true) {
   const q = normalizeOverviewQuery(query);
-  const path = clubId ? overviewPath(clubId, q) : null;
+  // Collapsed: only a one-row probe (page size 1, default query) decides whether the card exists at all; the full page is
+  // loaded once `enabled` (first expand) and again on every filter/page change.
+  const path = clubId ? (enabled ? overviewPath(clubId, q) : overviewPath(clubId, DEFAULT_OVERVIEW_QUERY, 1)) : null;
   const key = clubId && path ? `${clubId}|${path}` : null;
-  const filtered = q.fieldKey !== null;
+  const filtered = enabled && q.fieldKey !== null;
 
   const [stored, setStored] = useState<{ key: string; response: CredentialOverviewResponse } | null>(null);
   const [failure, setFailure] = useState<{ key: string; kind: OverviewFailure } | null>(null);
   const [known, setKnown] = useState<{ clubId: string; fields: CredentialOverviewField[] } | null>(null);
   const [hiddenClub, setHiddenClub] = useState<string | null>(null);
+  const [nonce, setNonce] = useState(0);
+  const knownRef = useRef<{ clubId: string; fields: CredentialOverviewField[] } | null>(null);
   const seq = useRef(0);
 
   const reload = useCallback(async () => {
     const id = ++seq.current;
     if (!path || !key || !clubId) return;
+    // The probe ran already (fields known for this club): collapsing/re-mounting does not probe again.
+    if (!enabled && knownRef.current?.clubId === clubId) return;
     setFailure((cur) => (cur && cur.key !== key ? null : cur));
     try {
       const response = await apiFetch<CredentialOverviewResponse>(path);
       if (id !== seq.current) return;
       setStored({ key, response });
-      setKnown({ clubId, fields: response.fields });
+      knownRef.current = { clubId, fields: response.fields };
+      setKnown(knownRef.current);
       setFailure(null);
     } catch (err) {
       if (id !== seq.current) return;
@@ -48,9 +56,18 @@ export function useCredentialOverview(clubId: string | null, query: OverviewQuer
         setStored(null);
         return;
       }
-      setFailure({ key, kind: err instanceof ApiError && err.status === 404 ? 'notFound' : 'generic' });
+      const kind: OverviewFailure = err instanceof ApiError && err.status === 404 ? 'notFound' : err instanceof ApiError && err.status === 429 ? 'rateLimit' : 'generic';
+      setFailure({ key, kind });
     }
-  }, [path, key, clubId, filtered]);
+  }, [path, key, clubId, filtered, enabled, nonce]);
+
+  /** Forget a "hidden" verdict and probe again (a role change can make the card visible without a club switch). */
+  const recheck = useCallback(() => {
+    setHiddenClub(null);
+    knownRef.current = null;
+    setKnown(null);
+    setNonce((n) => n + 1);
+  }, []);
 
   useEffect(() => {
     void reload();
@@ -70,5 +87,6 @@ export function useCredentialOverview(clubId: string | null, query: OverviewQuer
     failure: response ? null : failed,
     loading: !!key && !response && !failed,
     reload,
+    recheck,
   };
 }

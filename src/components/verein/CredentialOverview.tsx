@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { ChevronDown, ChevronUp, Lock } from 'lucide-react-native';
 
 import ExpiryBadge, { formatCredentialDate } from '@/components/forms/ExpiryBadge';
@@ -58,7 +59,15 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
   const colors = useThemeColors();
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState<OverviewQuery>(DEFAULT_OVERVIEW_QUERY);
-  const { response, fields, hidden, failure, loading, reload } = useCredentialOverview(clubId, query);
+  const { response, fields, hidden, failure, loading, reload, recheck } = useCredentialOverview(clubId, query, expanded);
+  // A role change can make the card appear: when the screen regains focus after a "hidden" verdict, ask again.
+  const hiddenRef = useRef(hidden);
+  hiddenRef.current = hidden;
+  useFocusEffect(
+    useCallback(() => {
+      if (hiddenRef.current) recheck();
+    }, [recheck]),
+  );
 
   const [opening, setOpening] = useState<string | null>(null);
   const [openError, setOpenError] = useState(false);
@@ -91,8 +100,9 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
   );
 
   if (hidden) return null;
-  // Unknown until the first answer: render nothing so plain members never see a flash.
-  if (!fields && (loading || !failure)) return null;
+  // Nothing until the first successful answer: a failed first request (5xx/network/429) must not show an error card to
+  // people who may not have access at all. Errors show only after a success (the field list is known).
+  if (!fields) return null;
   if (fields && fields.length === 0) return null;
 
   const set = (patch: Partial<OverviewQuery>) => setQuery((q) => ({ ...q, page: 1, ...patch }));
@@ -168,7 +178,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
             ) : failure ? (
               <View>
                 <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
-                  {failure === 'notFound' ? t('forms.cred.overview.errorNotFound') : t('forms.cred.overview.error')}
+                  {failure === 'notFound' ? t('forms.cred.overview.errorNotFound') : failure === 'rateLimit' ? t('api.error.rate-limit') : t('forms.cred.overview.error')}
                 </Text>
                 <TouchableOpacity
                   onPress={() => (failure === 'notFound' ? set({ fieldKey: null, status: query.status === 'missing' ? null : query.status }) : void reload())}

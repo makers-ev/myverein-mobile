@@ -61,12 +61,36 @@ describe('useCredentialOverview', () => {
     expect(c.result.current.hidden).toBe(false);
   });
 
-  it('shows a generic error for 429 and does not retry on its own', async () => {
+  it('reports 429 as rateLimit and does not retry on its own', async () => {
     apiFetchMock.mockRejectedValue(new ApiError(429, 'RATE_LIMITED', 'slow down'));
     const { result } = await renderHook(() => useCredentialOverview('c1', DEFAULT_OVERVIEW_QUERY));
-    await waitFor(() => expect(result.current.failure).toBe('generic'));
+    await waitFor(() => expect(result.current.failure).toBe('rateLimit'));
     expect(result.current.hidden).toBe(false);
     expect(apiFetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('probes with pageSize=1 while collapsed and loads the full page once enabled', async () => {
+    apiFetchMock.mockResolvedValue(response('Anna'));
+    const { result, rerender } = await renderHook(({ on }: { on: boolean }) => useCredentialOverview('c1', DEFAULT_OVERVIEW_QUERY, on), { initialProps: { on: false } });
+    await waitFor(() => expect(result.current.fields).toHaveLength(1));
+    expect(apiFetchMock).toHaveBeenCalledTimes(1);
+    expect(apiFetchMock.mock.calls[0]![0]).toContain('pageSize=1');
+    expect(apiFetchMock.mock.calls[0]![0]).not.toContain('pageSize=25');
+    await rerender({ on: true });
+    await waitFor(() => expect(result.current.response).not.toBeNull());
+    expect(apiFetchMock).toHaveBeenCalledTimes(2);
+    expect(apiFetchMock.mock.calls[1]![0]).toContain('pageSize=25');
+    await rerender({ on: false });
+    expect(apiFetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('recheck forgets a hidden verdict and probes again', async () => {
+    apiFetchMock.mockRejectedValueOnce(new ApiError(403, 'FORBIDDEN', 'no')).mockResolvedValue(response('Anna'));
+    const { result } = await renderHook(() => useCredentialOverview('c1', DEFAULT_OVERVIEW_QUERY, false));
+    await waitFor(() => expect(result.current.hidden).toBe(true));
+    await act(async () => result.current.recheck());
+    await waitFor(() => expect(result.current.fields).toHaveLength(1));
+    expect(result.current.hidden).toBe(false);
   });
 
   it('drops a late answer for a previous filter and a previous club', async () => {
