@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import type { KeyboardAwareScrollViewRef } from 'react-native-keyboard-controller';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -9,7 +9,11 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 import ApplicationForm from '@/components/verein/ApplicationForm';
+import MyApplicationsStatus from '@/components/verein/MyApplicationsStatus';
+import { getStoredApplyClubSlug, setStoredApplyClubSlug } from '@/clubs/lastApplyClubStorage';
 import { useClubForm } from '@/hooks/useClubForm';
+import { useMyApplications } from '@/hooks/useMyApplications';
+import { normalizeClubSlug } from '@/lib/applicationStatus';
 import type { SubmittedResult } from '@/hooks/useFormSubmission';
 import { ApiError } from '@/lib/api';
 import { type ApplyConflict, childWarningKey, formErrorKey, type OnBehalfOf } from '@/lib/formSchema';
@@ -39,7 +43,10 @@ export default function JoinClubScreen({ navigation }: Props) {
   const themeColors = useThemeColors();
   const { club, phase, loadErrorKey, refreshing, refreshFailed, load, reset, markSubmitted, withdraw } = useClubForm();
   const [slug, setSlug] = useState('');
-  const { user, resendVerificationEmail, refetchSession } = useAuth();
+  const { user, resendVerificationEmail, refetchSession, isAuthenticated } = useAuth();
+  const applications = useMyApplications(isAuthenticated);
+  const reloadApplications = applications.reload;
+  const slugTouched = useRef(false);
   const [conflict, setConflict] = useState<Conflict | null>(null);
   // A child application needs a verified e-mail address: known from the session, or reported by the server (403).
   const [serverBlocked, setServerBlocked] = useState(false);
@@ -55,12 +62,35 @@ export default function JoinClubScreen({ navigation }: Props) {
     flushRef.current = flush;
   }, []);
 
-  const handleLoad = () => {
-    const value = slug.trim().toLowerCase();
-    if (!value) return;
+  // The club code last applied to is offered again (a public code, not a secret); typing before it arrives wins.
+  useEffect(() => {
+    let cancelled = false;
+    void getStoredApplyClubSlug().then((stored) => {
+      if (!cancelled && stored && !slugTouched.current) setSlug(stored);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Back on the code entry (also after `reset`): the list of own applications may have changed meanwhile.
+  useEffect(() => {
+    if (phase === 'slug' && isAuthenticated) void reloadApplications();
+  }, [phase, isAuthenticated, reloadApplications]);
+
+  const openClub = async (value: string, mode?: OnBehalfOf) => {
     setBanner(null);
     setActionErrorKey(null);
-    void load(value);
+    setSlug(value);
+    // Loading the club resumes the newest open draft of that club and mode, so no second draft is started next to it.
+    const ok = await load(value, mode);
+    if (ok) void setStoredApplyClubSlug(value);
+  };
+
+  const handleLoad = () => {
+    const value = normalizeClubSlug(slug) ?? slug.trim().toLowerCase();
+    if (!value) return;
+    void openClub(value);
   };
 
   const changeMode = async (next: OnBehalfOf) => {
@@ -197,7 +227,10 @@ export default function JoinClubScreen({ navigation }: Props) {
               autoCorrect={false}
               value={slug}
               editable={phase !== 'loading'}
-              onChangeText={setSlug}
+              onChangeText={(v) => {
+                slugTouched.current = true;
+                setSlug(v);
+              }}
               onSubmitEditing={handleLoad}
               returnKeyType="go"
             />
@@ -220,6 +253,15 @@ export default function JoinClubScreen({ navigation }: Props) {
                 <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">{t('forms.apply.load')}</Text>
               )}
             </TouchableOpacity>
+            <MyApplicationsStatus
+              open={applications.open}
+              decided={applications.decided}
+              phase={applications.phase}
+              errorKey={applications.errorKey}
+              disabled={phase === 'loading'}
+              onOpen={(clubSlug, mode) => void openClub(clubSlug, mode)}
+              onRetry={() => void reloadApplications()}
+            />
           </>
         ) : (
           <>
