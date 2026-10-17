@@ -21,7 +21,9 @@ export default function ChildrenCustomFields({ clubId, onDirtyChange }: { clubId
   const { children } = useMyChildren(clubId);
   const dirtyIds = useRef(new Set<string>());
   const report = useRef(onDirtyChange);
-  report.current = onDirtyChange;
+  useEffect(() => {
+    report.current = onDirtyChange;
+  });
 
   useEffect(() => {
     const ids = dirtyIds.current;

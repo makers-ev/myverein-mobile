@@ -64,7 +64,9 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
   const { response, fields, hidden, failure, loading, reload, recheck } = useCredentialOverview(clubId, query, expanded);
   // A role change can make the card appear: when the screen regains focus after a "hidden" verdict, ask again.
   const hiddenRef = useRef(hidden);
-  hiddenRef.current = hidden;
+  useEffect(() => {
+    hiddenRef.current = hidden;
+  }, [hidden]);
   useFocusEffect(
     useCallback(() => {
       if (hiddenRef.current) recheck();
@@ -98,7 +100,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
         if (id === openSeq.current) setOpening(null);
       }
     },
-    [clubId],
+    [clubId, setMember],
   );
 
   if (hidden) return null;

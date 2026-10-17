@@ -18,19 +18,17 @@ jest.mock('@/hooks/useMyChildren', () => ({
 
 const mockRenders: Record<string, number> = {};
 jest.mock('./MemberCustomFields', () => {
-  const R = jest.requireActual('react');
-  return {
-    __esModule: true,
-    // Mimics a card with unsaved edits whose effect depends on the callback identity (the shape that looped).
-    default: ({ target, onDirtyChange }: { target: string; onDirtyChange?: (d: boolean) => void }) => {
-      mockRenders[target] = (mockRenders[target] ?? 0) + 1;
-      R.useEffect(() => {
-        onDirtyChange?.(true);
-        return () => onDirtyChange?.(false);
-      }, [onDirtyChange]);
-      return null;
-    },
-  };
+  const { useEffect } = jest.requireActual('react');
+  // Mimics a card with unsaved edits whose effect depends on the callback identity (the shape that looped).
+  function MockCard({ target, onDirtyChange }: { target: string; onDirtyChange?: (d: boolean) => void }) {
+    mockRenders[target] = (mockRenders[target] ?? 0) + 1;
+    useEffect(() => {
+      onDirtyChange?.(true);
+      return () => onDirtyChange?.(false);
+    }, [onDirtyChange]);
+    return null;
+  }
+  return { __esModule: true, default: MockCard };
 });
 
 describe('ChildrenCustomFields', () => {

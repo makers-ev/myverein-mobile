@@ -284,6 +284,7 @@ export default function MembersTab({ clubId }: { clubId: string }) {
             className="self-start px-5 justify-center rounded-lg bg-primary dark:bg-primary-dark"
             style={{ minHeight: 44 }}
             accessibilityRole="button"
+            accessibilityLabel={t('verein.retry')}
           >
             <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('verein.retry')}</Text>
           </TouchableOpacity>
@@ -299,6 +300,7 @@ export default function MembersTab({ clubId }: { clubId: string }) {
               className="self-start px-5 justify-center rounded-lg border border-border dark:border-border-dark"
               style={{ minHeight: 44 }}
               accessibilityRole="button"
+              accessibilityLabel={t('verein.members.filter.reset')}
             >
               <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.members.filter.reset')}</Text>
             </TouchableOpacity>
@@ -330,6 +332,7 @@ export default function MembersTab({ clubId }: { clubId: string }) {
               className="items-center justify-center rounded-xl border border-border dark:border-border-dark bg-card dark:bg-card-dark"
               style={{ minHeight: 48 }}
               accessibilityRole="button"
+              accessibilityLabel={t('verein.members.load-more')}
               accessibilityState={{ disabled: loadingMore, busy: loadingMore }}
             >
               {loadingMore ? (

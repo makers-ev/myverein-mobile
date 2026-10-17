@@ -196,6 +196,7 @@ export default function JoinClubScreen({ navigation }: Props) {
             style={{ minHeight: 44 }}
             onPress={() => navigation.goBack()}
             accessibilityRole="button"
+            accessibilityLabel={t('join-club.pending.back')}
           >
             <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">{t('join-club.pending.back')}</Text>
           </TouchableOpacity>
@@ -252,6 +253,7 @@ export default function JoinClubScreen({ navigation }: Props) {
               onPress={handleLoad}
               disabled={phase === 'loading' || !slug.trim()}
               accessibilityRole="button"
+              accessibilityLabel={t('forms.apply.load')}
               accessibilityState={{ busy: phase === 'loading' }}
             >
               {phase === 'loading' ? (
@@ -279,6 +281,7 @@ export default function JoinClubScreen({ navigation }: Props) {
               <TouchableOpacity
                 onPress={() => void backToSlug()}
                 accessibilityRole="button"
+                accessibilityLabel={t('forms.apply.otherClub')}
                 style={{ minHeight: 44, justifyContent: 'center' }}
               >
                 <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('forms.apply.otherClub')}</Text>
@@ -297,6 +300,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                 <TouchableOpacity
                   onPress={() => void load(club.slug, club.mode ?? undefined, true)}
                   accessibilityRole="button"
+                  accessibilityLabel={t('forms.apply.retry')}
                   className="self-start"
                   style={{ minHeight: 44, justifyContent: 'center' }}
                 >
@@ -346,6 +350,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                       onPress={() => confirmWithdraw(s.id)}
                       disabled={withdrawBusy}
                       accessibilityRole="button"
+                      accessibilityLabel={t('forms.apply.withdraw')}
                       className={`self-start mt-1 ${withdrawBusy ? 'opacity-60' : ''}`}
                       style={{ minHeight: 44, justifyContent: 'center' }}
                     >
@@ -425,6 +430,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                         onPress={() => void resend()}
                         disabled={resendState === 'sending' || !user?.email}
                         accessibilityRole="button"
+                        accessibilityLabel={t('forms.apply.unverified.resend')}
                         className="bg-primary dark:bg-primary-dark rounded-lg px-4 items-center justify-center"
                         style={{ minHeight: 44 }}
                       >
@@ -434,6 +440,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                         onPress={() => void recheckVerification()}
                         disabled={checking}
                         accessibilityRole="button"
+                        accessibilityLabel={t('forms.apply.unverified.check')}
                         className="border border-border dark:border-border-dark rounded-lg px-4 items-center justify-center"
                         style={{ minHeight: 44 }}
                       >
@@ -443,6 +450,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                         <TouchableOpacity
                           onPress={() => void changeMode('self')}
                           accessibilityRole="button"
+                          accessibilityLabel={t('forms.apply.mode.self')}
                           className="rounded-lg px-4 items-center justify-center"
                           style={{ minHeight: 44 }}
                         >
@@ -474,6 +482,7 @@ export default function JoinClubScreen({ navigation }: Props) {
       <TouchableOpacity
         onPress={() => navigation.goBack()}
         accessibilityRole="button"
+        accessibilityLabel={t('join-club.pending.back')}
         className="items-center mt-4"
         style={{ minHeight: 44, justifyContent: 'center' }}
       >

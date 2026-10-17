@@ -82,7 +82,9 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
 
   // The callback lives in a ref: a parent passing a new function every render must not re-run these effects.
   const dirtyCb = useRef(onDirtyChange);
-  dirtyCb.current = onDirtyChange;
+  useEffect(() => {
+    dirtyCb.current = onDirtyChange;
+  });
   useEffect(() => {
     dirtyCb.current?.(dirty);
   }, [dirty]);

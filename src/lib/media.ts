@@ -169,9 +169,8 @@ export async function uploadRegistrationDocument<TDocument>(
     return { error: err instanceof Error ? err.message : 'Failed to prepare file for upload' };
   }
 
-  // Only the content:// copy in the cache is ours to delete -- never the
-  // user's original file:// asset.
-  const isTempCopy = !asset.uri.startsWith('file://');
+  // Delete the file afterwards if it is a copy made here or the picker's output in the app cache -- never a user original.
+  const isTempCopy = !asset.uri.startsWith('file://') || isInAppCache(asset.uri);
   try {
     const cookie = await getSessionCookie();
     const result = await file.upload(`${backendUrl}/club-registrations/${registrationId}/documents`, {

@@ -192,7 +192,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
         <Text className="text-destructive text-sm mb-1" accessibilityRole="alert">
           {t('admin.exits.refresh-error')}
         </Text>
-        <TouchableOpacity onPress={() => void refetch()} style={{ minHeight: 44, justifyContent: 'center' }} accessibilityRole="button">
+        <TouchableOpacity onPress={() => void refetch()} style={{ minHeight: 44, justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('verein.retry')}>
           <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
         </TouchableOpacity>
       </View>
@@ -212,6 +212,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
           className="self-start px-4 justify-center rounded-lg border border-border dark:border-border-dark"
           style={{ minHeight: 44 }}
           accessibilityRole="button"
+          accessibilityLabel={t('verein.retry')}
         >
           <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
         </TouchableOpacity>
