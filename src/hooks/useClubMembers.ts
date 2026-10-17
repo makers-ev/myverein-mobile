@@ -42,6 +42,10 @@ export interface ClubMember {
   userId: string | null;
   hasAccount: boolean;
   name: string | null;
+  /** Optional, only on a backend that knows the name fields (older: absent = unknown/empty). `name` is the display name. */
+  firstName?: string | null;
+  lastName?: string | null;
+  displayName?: string | null;
   /** Stored status -- show/filter `effectiveStatus` instead. */
   status: MemberStatus;
   effectiveStatus: MemberStatus;

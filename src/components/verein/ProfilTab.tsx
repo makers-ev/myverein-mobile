@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { navigate } from '@/navigation/navigationRef';
+
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiFetch } from '@/lib/api';
@@ -9,6 +11,7 @@ import { useOwnMembership } from '@/hooks/useOwnMembership';
 import DateTimeField, { fromDateString, toDateString } from '@/components/ui/DateTimeField';
 import { Field, inputClassName } from '@/components/ui/FormSheet';
 import { isMinorBirthDate } from '@/lib/memberPhoto';
+import { type NameErrors, nameDraftFromMember, nameFieldErrorsFromApi, namePatch, validateName } from '@/lib/memberName';
 import ExitRequestSection from './ExitRequestSection';
 import MemberCustomFields from './MemberCustomFields';
 import MemberPhotoEditor from './MemberPhotoEditor';
@@ -20,6 +23,9 @@ interface Props {
 }
 
 interface Draft {
+  firstName: string;
+  lastName: string;
+  displayName: string;
   birthDate: Date | null;
   street: string;
   postalCode: string;
@@ -31,9 +37,13 @@ interface Draft {
 }
 
 type TextKey = Exclude<keyof Draft, 'birthDate'>;
-const TEXT_KEYS: readonly TextKey[] = ['street', 'postalCode', 'city', 'phone', 'contactEmail', 'emergencyContactName', 'emergencyContactPhone'];
+const NAME_FIELD_KEYS = ['firstName', 'lastName', 'displayName'] as const;
+const TEXT_KEYS: readonly TextKey[] = ['firstName', 'lastName', 'displayName', 'street', 'postalCode', 'city', 'phone', 'contactEmail', 'emergencyContactName', 'emergencyContactPhone'];
 
 const EMPTY_DRAFT: Draft = {
+  firstName: '',
+  lastName: '',
+  displayName: '',
   birthDate: null,
   street: '',
   postalCode: '',
@@ -59,7 +69,7 @@ function validate(draft: Draft, t: (key: string) => string): FieldErrors {
 
 /**
  * Self-service edit of the fields a member is allowed to change themselves
- * (birth date, address, phone, contact e-mail, emergency contact) via
+ * (first/last/display name -- only changed ones, cleared first/last as null, 422 `details.fields` per field; birth date, address, phone, contact e-mail, emergency contact) via
  * `PATCH /club-members/me` -- category, memberNumber, status stay board-only
  * (`members:write`). Only changed fields are sent; a cleared text field is
  * sent as "" (the backend turns it into NULL), a cleared contact e-mail and a
@@ -73,6 +83,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
   const server = useMemo<Draft>(() => {
     if (!membership) return EMPTY_DRAFT;
     return {
+      ...nameDraftFromMember(membership),
       birthDate: fromDateString(membership.birthDate),
       street: membership.street ?? '',
       postalCode: membership.postalCode ?? '',
@@ -90,6 +101,13 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [customDirty, setCustomDirty] = useState(false);
+  const [serverNameErrors, setServerNameErrors] = useState<NameErrors>({});
+  const inputs = useRef<Partial<Record<TextKey, TextInput | null>>>({});
+  // "Next" on the keyboard moves through the name fields.
+  const focusNext = useCallback((key: TextKey) => {
+    const next = key === 'firstName' ? 'lastName' : key === 'lastName' ? 'displayName' : null;
+    if (next) inputs.current[next]?.focus();
+  }, []);
 
   // Fresh server values flow into fields the user has not touched since the last
   // sync; anything typed meanwhile (e.g. during the post-save refetch) is kept.
@@ -109,9 +127,11 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
   }, [server]);
 
   const toDateKey = (d: Date | null) => (d ? toDateString(d) : null);
-  const changedTextKeys = TEXT_KEYS.filter((k) => draft[k].trim() !== server[k].trim());
+  const changedTextKeys = TEXT_KEYS.filter((k) => !(NAME_FIELD_KEYS as readonly string[]).includes(k)).filter((k) => draft[k].trim() !== server[k].trim());
   const birthDateChanged = toDateKey(draft.birthDate) !== toDateKey(server.birthDate);
-  const dirty = !!membership && (changedTextKeys.length > 0 || birthDateChanged);
+  const nameBody = namePatch(draft, server);
+  const nameChanged = Object.keys(nameBody).length > 0;
+  const dirty = !!membership && (changedTextKeys.length > 0 || birthDateChanged || nameChanged);
 
   const anyDirty = dirty || customDirty;
   useEffect(() => {
@@ -121,9 +141,15 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
 
   const errors = validate(draft, t);
   const visibleErrors: FieldErrors = showErrors ? errors : {};
+  const nameValidation = validateName(draft);
+  const nameErrorText = (key: (typeof NAME_FIELD_KEYS)[number]): string | undefined => {
+    const code = (showErrors ? nameValidation[key] : undefined) ?? serverNameErrors[key];
+    return code ? t(`profil.error.name-${code}`) : undefined;
+  };
 
   const update = useCallback(<K extends keyof Draft>(key: K, value: Draft[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }));
+    setServerNameErrors((prev) => (key in prev ? { ...prev, [key]: undefined } : prev));
     setSaved(false);
     setError(null);
   }, []);
@@ -136,6 +162,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
         style: 'destructive',
         onPress: () => {
           setDraft(server);
+          setServerNameErrors({});
           setShowErrors(false);
           setError(null);
         },
@@ -145,12 +172,13 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
 
   const handleSave = async () => {
     setShowErrors(true);
-    if (Object.keys(errors).length > 0) return;
+    if (isSaving || Object.keys(errors).length > 0 || Object.keys(nameValidation).length > 0) return;
     setIsSaving(true);
+    setServerNameErrors({});
     setError(null);
     setSaved(false);
     try {
-      const body: Record<string, string | null> = {};
+      const body: Record<string, string | null> = { ...nameBody };
       for (const k of changedTextKeys) {
         const value = draft[k].trim();
         body[k] = k === 'contactEmail' && value === '' ? null : value;
@@ -161,7 +189,9 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
       setShowErrors(false);
       await refetch();
     } catch (err) {
-      setError(apiErrorMessage(err, t));
+      const nameFieldErrors = nameFieldErrorsFromApi(err);
+      setServerNameErrors(nameFieldErrors);
+      if (Object.keys(nameFieldErrors).length === 0) setError(apiErrorMessage(err, t));
     } finally {
       setIsSaving(false);
     }
@@ -179,6 +209,11 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
   const textInput = (key: TextKey, label: string, extra: React.ComponentProps<typeof TextInput> = {}, fieldError?: string) => (
     <Field label={label}>
       <TextInput
+        ref={(el) => {
+          inputs.current[key] = el;
+        }}
+        blurOnSubmit={key !== 'displayName'}
+        onSubmitEditing={() => focusNext(key)}
         className={`${inputClassName} ${fieldError ? 'border-destructive' : ''}`}
         placeholderTextColor={themeColors.mutedForeground}
         value={draft[key]}
@@ -206,6 +241,38 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
           onChanged={() => void refetch()}
           onPhotoExpired={() => void refetch()}
         />
+      </View>
+
+      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t('profil.section.name')}</Text>
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('profil.name.hint')}</Text>
+        {textInput(
+          'firstName',
+          t('profil.first-name'),
+          { maxLength: 100, autoComplete: 'name-given', textContentType: 'givenName', autoCapitalize: 'words', returnKeyType: 'next' },
+          nameErrorText('firstName'),
+        )}
+        {textInput(
+          'lastName',
+          t('profil.last-name'),
+          { maxLength: 100, autoComplete: 'name-family', textContentType: 'familyName', autoCapitalize: 'words', returnKeyType: 'next' },
+          nameErrorText('lastName'),
+        )}
+        {textInput(
+          'displayName',
+          t('profil.display-name'),
+          { maxLength: 200, textContentType: 'nickname', autoCapitalize: 'words', returnKeyType: 'done' },
+          nameErrorText('displayName'),
+        )}
+        <TouchableOpacity
+          className="rounded-xl items-center justify-center border border-border dark:border-border-dark mt-1"
+          style={{ minHeight: 44 }}
+          onPress={() => navigate('Settings')}
+          accessibilityRole="button"
+          accessibilityLabel={t('profil.name.settings')}
+        >
+          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('profil.name.settings')}</Text>
+        </TouchableOpacity>
       </View>
 
       <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">

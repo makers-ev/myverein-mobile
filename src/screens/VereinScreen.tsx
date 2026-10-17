@@ -272,7 +272,7 @@ export default function VereinScreen() {
             </View>
           </View>
 
-          <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
+          <ScrollView key={activeClub.clubId} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
             {activeTab === 'info' && <VereinsinfoTab clubId={activeClub.clubId} />}
             {activeTab === 'mitglieder' && <MembersTab clubId={activeClub.clubId} />}
             {activeTab === 'verwaltung' && <VerwaltungTab clubId={activeClub.clubId} onOpenMembers={() => selectTab('mitglieder')} />}
