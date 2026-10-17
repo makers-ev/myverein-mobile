@@ -13,6 +13,7 @@ import {
   type ClubMember,
   type MemberStatus,
 } from '@/hooks/useClubMembers';
+import CredentialOverview from './CredentialOverview';
 import MemberStatsCard from './MemberStatsCard';
 import MemberAvatar from './MemberAvatar';
 import MemberDetailSheet, { categoryLabel, formatDay } from './MemberDetailSheet';
@@ -234,6 +235,8 @@ export default function MembersTab({ clubId }: { clubId: string }) {
     <>
       {applicationsEntry}
       {canSeeStats ? <MemberStatsCard clubId={clubId} /> : null}
+      {/* Hidden unless the server delivers readable credential fields for this caller (board, trainers, Abteilungsleitung). */}
+      <CredentialOverview key={clubId} clubId={clubId} />
 
       {isManager ? (
         <View className="mb-3">
