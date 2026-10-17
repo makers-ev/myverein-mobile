@@ -80,10 +80,18 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
   const patch = fields && editable.length > 0 ? valuesPatch(fields, saved, answers, true) : null;
   const dirty = patch !== null;
 
+  // The callback lives in a ref: a parent passing a new function every render must not re-run these effects.
+  const dirtyCb = useRef(onDirtyChange);
+  dirtyCb.current = onDirtyChange;
   useEffect(() => {
-    onDirtyChange?.(dirty);
-  }, [dirty, onDirtyChange]);
-  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
+    dirtyCb.current?.(dirty);
+  }, [dirty]);
+  useEffect(
+    () => () => {
+      dirtyCb.current?.(false);
+    },
+    [],
+  );
 
   const onChange = useCallback((key: string, value: unknown) => {
     setAnswers((a) => ({ ...a, [key]: value }));
@@ -124,7 +132,8 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
   if (status === 'hidden') return null;
 
   const own = target === 'me';
-  const boardView = readOnlyView || !own;
+  const boardView = readOnlyView || (!own && guardianOfName === undefined);
+  const showEntryHints = readOnlyView || !own;
   const wrapper = card ? 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4' : 'mt-2';
   const title = guardianOfName !== undefined ? t('forms.cf.values.titleChild', { name: guardianOfName }) : own ? t('forms.cf.values.titleOwn') : t('forms.cf.values.title');
   const mutedClass = 'text-muted-foreground dark:text-muted-foreground-dark text-xs';
@@ -197,7 +206,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
             const text = displayValue(f, texts);
             const label = localizedLabel(f, lang);
             const helpText = localizedHelpText(f, lang);
-            const entryKey = boardView && text !== null ? unverifiedEntryKey(f) : null;
+            const entryKey = showEntryHints && text !== null ? unverifiedEntryKey(f) : null;
             const hint = readOnlyView || !writable ? null : f.editableBy === 'vorstand' ? t('forms.cf.values.readonlyBoard') : null;
             return (
               <View

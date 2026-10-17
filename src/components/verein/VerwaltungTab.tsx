@@ -10,7 +10,7 @@ import MemberStatsCard from './MemberStatsCard';
 import ExitRequestsQueue from './ExitRequestsQueue';
 
 /** True when the role-dependent "Verwaltung" entry has anything to show (board roles only, deny by default). */
-export function canSeeVerwaltung(can: (p: 'members:write' | 'club_stats:read' | 'forms:write') => boolean): boolean {
+export function canSeeVerwaltung(can: (p: 'members:write' | 'members:read_sensitive' | 'club_stats:read' | 'forms:write') => boolean): boolean {
   return can('members:write') || can('club_stats:read') || can('forms:write');
 }
 
@@ -71,7 +71,7 @@ export default function VerwaltungTab({ clubId, onOpenMembers }: { clubId: strin
   return (
     <>
       {can('members:write') ? <ApplicationsEntry clubId={clubId} /> : null}
-      <EntryRow title={t('admin.members.open')} hint={t('admin.members.hint')} onPress={onOpenMembers} />
+      {can('members:write') || can('members:read_sensitive') ? <EntryRow title={t('admin.members.open')} hint={t('admin.members.hint')} onPress={onOpenMembers} /> : null}
       {can('forms:write') ? <EntryRow title={t('forms.pm.title')} hint={t('forms.pm.entry.hint')} onPress={() => navigate('ProfileModules')} /> : null}
       {can('members:write') ? <ExitRequestsQueue clubId={clubId} ownMemberId={membership?.memberId ?? null} /> : null}
       {can('club_stats:read') ? <MemberStatsCard clubId={clubId} /> : null}

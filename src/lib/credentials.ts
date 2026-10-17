@@ -29,14 +29,15 @@ export interface CredentialExpiry {
 export type EnteredBy = 'self' | 'board' | 'guardian';
 
 /**
- * Self-declared credential/protected values are not verified by the club: the board's views show a hint for them. `board` and
- * unknown show nothing special.
+ * Credential/protected values are unverified unless the board entered them: callers show a hint when a value exists and
+ * `enteredBy` is anything but `board` (`self`, `guardian`, an unknown future value, or `null` for a stored value of an older
+ * backend). Only credential and protected fields qualify; the caller checks that a value exists.
  */
-export const isUnverifiedSelfEntry = (field: { type?: string; sensitive?: boolean; enteredBy?: EnteredBy | null }): boolean =>
-  (field.enteredBy === 'self' || field.enteredBy === 'guardian') && (field.type === 'credential' || field.sensitive === true);
+export const isUnverifiedSelfEntry = (field: { type?: string; sensitive?: boolean; enteredBy?: EnteredBy | string | null }): boolean =>
+  field.enteredBy !== 'board' && (field.type === 'credential' || field.sensitive === true);
 
-/** Translation key of the unverified-entry hint (self-declared vs. entered by a guardian), `null` when no hint applies. */
-export const unverifiedEntryKey = (field: { type?: string; sensitive?: boolean; enteredBy?: EnteredBy | null }): string | null =>
+/** Translation key of the unverified-entry hint (guardian vs. generic self-declaration), `null` when no hint applies. */
+export const unverifiedEntryKey = (field: { type?: string; sensitive?: boolean; enteredBy?: EnteredBy | string | null }): string | null =>
   !isUnverifiedSelfEntry(field) ? null : field.enteredBy === 'guardian' ? 'forms.cred.guardianEntered' : 'forms.cred.selfEntered';
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
