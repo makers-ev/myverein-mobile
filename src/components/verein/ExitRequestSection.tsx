@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
+import FormRenderer, { type FormRendererHandle } from '@/components/forms/FormRenderer';
+import { useExitForm } from '@/hooks/useExitForm';
+import { exitDialogTouched, exitFormFields, exitRequestBody, plainExitBody, repinExit } from '@/lib/exitForm';
+import { type Answers, type FieldErrorCode, fieldErrorsFromError, formErrorKey, outdatedFrom, validateAnswers } from '@/lib/formSchema';
 import { activeCancellation, exitErrorCode, formatDay, todayBerlin, useMyExitRequests, type ExitPreview } from '@/hooks/useExitRequests';
 import DateTimeField, { toDateString } from '@/components/ui/DateTimeField';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
@@ -21,6 +25,12 @@ function noticeHint(preview: ExitPreview | null, t: (key: string, params?: Recor
 /**
  * "Mitgliedschaft" card in the Profil tab: notice-period hint, file a
  * cancellation (`POST /club-exit-requests`), see its status and withdraw it.
+ * The sheet renders the club's published `austritt` form with the shared
+ * FormRenderer (`GET /club-exit-requests/form`), validates it client-side and
+ * sends the answers with the form version; a changed form (409
+ * `FORM_VERSION_OUTDATED`) is re-rendered with the answers kept by key. The
+ * answers are the record of the reason -- no separate reason is sent. Answers
+ * live in component state only (never logged, cached or persisted).
  * The owner of the club cannot cancel (backend: 409 `owner_protected`), so the
  * action is replaced by a message for them.
  */
@@ -33,7 +43,23 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
   const [ownerBlocked, setOwnerBlocked] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [desired, setDesired] = useState<Date | null>(null);
+  const [answers, setAnswers] = useState<Answers>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, FieldErrorCode>>({});
+  const [formNotice, setFormNotice] = useState<string | null>(null);
+  // The form could not be loaded even after a retry: the person may cancel without it (date and plain reason only).
+  const [withoutForm, setWithoutForm] = useState(false);
   const [reason, setReason] = useState('');
+  const [formRetries, setFormRetries] = useState(0);
+  const rendererRef = useRef<FormRendererHandle>(null);
+  const exitForm = useExitForm(clubId, sheetOpen);
+
+  // Answers do not outlive the sheet (they are personal data and only held in memory while it is open).
+  useEffect(() => {
+    if (!sheetOpen) {
+      setAnswers({});
+      setReason('');
+    }
+  }, [sheetOpen]);
   const [saving, setSaving] = useState(false);
   const [sheetError, setSheetError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -55,18 +81,58 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
 
   const openSheet = () => {
     setDesired(null);
+    setAnswers({});
     setReason('');
+    setWithoutForm(false);
+    setFormRetries(0);
+    setFieldErrors({});
+    setFormNotice(null);
     setSheetError(null);
     setNotice(null);
     setSheetOpen(true);
   };
 
-  const handleSubmit = async () => {
+  const desiredKey = desired ? toDateString(desired) : null;
+
+  const closeSheet = () => {
     if (saving) return;
+    if (!exitDialogTouched(desiredKey, answers) && reason.trim() === '') {
+      setSheetOpen(false);
+      return;
+    }
+    Alert.alert(t('forms.exit.discard.title'), t('forms.exit.discard.message'), [
+      { text: t('forms.exit.discard.keep'), style: 'cancel' },
+      { text: t('forms.exit.discard.confirm'), style: 'destructive', onPress: () => setSheetOpen(false) },
+    ]);
+  };
+
+  const handleAnswer = (key: string, value: unknown) => {
+    setAnswers((a) => ({ ...a, [key]: value }));
+    setFieldErrors((e) => {
+      if (!(key in e)) return e;
+      const copy = { ...e };
+      delete copy[key];
+      return copy;
+    });
+  };
+
+  const handleSubmit = async () => {
+    const definition = withoutForm ? null : exitForm.definition;
+    if (saving || (!definition && !withoutForm)) return;
+    // Upload fields are neither shown nor required here: the sheet has no upload and must never block a cancellation.
+    const local = definition ? validateAnswers(exitFormFields(definition.fields), answers, { mode: 'submit' }) : {};
+    const firstKey = Object.keys(local)[0];
+    if (firstKey) {
+      setFieldErrors(local);
+      setSheetError(t('forms.err.fieldsInvalid'));
+      rendererRef.current?.focusField(firstKey);
+      return;
+    }
     setSaving(true);
     setSheetError(null);
+    setFieldErrors({});
     try {
-      const created = await submit({ desiredEffectiveOn: desired ? toDateString(desired) : null, reason });
+      const created = await submit(definition ? exitRequestBody(desiredKey, definition, answers) : plainExitBody(desiredKey, reason));
       setSheetOpen(false);
       setNotice(
         created.adjustedToEarliest
@@ -74,18 +140,28 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
           : t('exit.submitted'),
       );
     } catch (err) {
-      if (exitErrorCode(err) === 'owner_protected') {
+      const repin = definition ? repinExit(err, definition, answers) : null;
+      if (definition && !repin && outdatedFrom(err)) {
+        // The form changed and the club has no current one to show: reload instead of staying stuck on the old version.
+        setFormNotice(t('forms.exit.outdated'));
+        void exitForm.reload();
+      } else if (repin) {
+        // The club changed the form meanwhile: show the new one with the answers that still fit, nothing was filed.
+        exitForm.replace(repin.definition);
+        setAnswers(repin.answers);
+        setFormNotice(repin.dropped.length > 0 ? t('forms.exit.outdated.lost', { fields: repin.dropped.join(', ') }) : t('forms.exit.outdated'));
+      } else if (exitErrorCode(err) === 'owner_protected') {
         setOwnerBlocked(true);
         setSheetOpen(false);
+      } else if (exitErrorCode(err)) {
+        // State changed under us (open request / scheduled exit): show it on the card and resync.
+        setSheetOpen(false);
+        setActionError(mapError(err));
+        void refetch();
       } else {
-        if (exitErrorCode(err)) {
-          // State changed under us (open request / scheduled exit): show it on the card and resync.
-          setSheetOpen(false);
-          setActionError(mapError(err));
-          void refetch();
-        } else {
-          setSheetError(mapError(err));
-        }
+        const found = fieldErrorsFromError(err);
+        if (found) setFieldErrors(found);
+        setSheetError(t(formErrorKey(err)));
       }
     } finally {
       setSaving(false);
@@ -219,9 +295,10 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
       <FormSheet
         visible={sheetOpen}
         title={t('exit.sheet.title')}
-        onClose={() => setSheetOpen(false)}
+        onClose={closeSheet}
         onSubmit={() => void handleSubmit()}
         submitLabel={t('exit.submit')}
+        submitDisabled={!exitForm.definition && !withoutForm}
         saving={saving}
         error={sheetError}
       >
@@ -235,18 +312,76 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
             </Text>
           ) : null}
         </Field>
-        <Field label={t('exit.reason.label')}>
-          <TextInput
-            className={inputClassName}
-            style={{ minHeight: 80, textAlignVertical: 'top' }}
-            multiline
-            maxLength={2000}
-            value={reason}
-            onChangeText={setReason}
-            placeholderTextColor={themeColors.mutedForeground}
-            accessibilityLabel={t('exit.reason.label')}
+        {formNotice ? (
+          <View
+            className="mb-3 rounded-lg border border-primary/40 dark:border-primary-dark/40 bg-primary/5 dark:bg-primary-dark/5 p-3"
+            accessibilityRole="alert"
+            accessibilityLiveRegion="polite"
+          >
+            <Text className="text-sm text-foreground dark:text-foreground-dark">{formNotice}</Text>
+            <TouchableOpacity onPress={() => setFormNotice(null)} accessibilityRole="button" className="mt-1 self-start" style={{ minHeight: 44, justifyContent: 'center' }}>
+              <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('forms.apply.updated.dismiss')}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+        {withoutForm ? (
+          <View>
+            <Text className="text-sm text-foreground dark:text-foreground-dark mb-3" accessibilityRole="alert">
+              {t('forms.exit.withoutForm')}
+            </Text>
+            <Field label={t('exit.reason.label')}>
+              <TextInput
+                className={inputClassName}
+                style={{ minHeight: 80, textAlignVertical: 'top' }}
+                multiline
+                maxLength={2000}
+                value={reason}
+                onChangeText={setReason}
+                placeholderTextColor={themeColors.mutedForeground}
+                accessibilityLabel={t('exit.reason.label')}
+              />
+            </Field>
+          </View>
+        ) : exitForm.definition ? (
+          <FormRenderer
+            handleRef={rendererRef}
+            fields={exitFormFields(exitForm.definition.fields)}
+            privacyNotice={exitForm.definition.privacyNotice}
+            answers={answers}
+            onChange={handleAnswer}
+            errors={fieldErrors}
+            disabled={saving}
           />
-        </Field>
+        ) : exitForm.error ? (
+          <View>
+            <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
+              {t('forms.exit.loadError')}
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                setFormRetries((n) => n + 1);
+                void exitForm.reload();
+              }}
+              className="self-start px-4 justify-center rounded-lg border border-border dark:border-border-dark"
+              style={{ minHeight: 44 }}
+              accessibilityRole="button"
+            >
+              <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
+            </TouchableOpacity>
+            {formRetries >= 1 ? (
+              <TouchableOpacity
+                onPress={() => setWithoutForm(true)}
+                className="self-start mt-2 px-4 justify-center rounded-lg border border-border dark:border-border-dark"
+                style={{ minHeight: 44 }}
+                accessibilityRole="button"
+              >
+                <Text className="text-destructive text-sm font-bold">{t('forms.exit.skipForm')}</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        ) : (
+          <ActivityIndicator color={themeColors.primary} accessibilityLabel={t('forms.exit.loading')} />
+        )}
       </FormSheet>
     </View>
   );

@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
+import { isLockedDefaultCalendar } from './calendars';
 import { useCalendarAdmin, type Calendar, type CalendarVisibility } from '@/hooks/useCalendars';
 import type { Department } from '@/hooks/useClubInfo';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
@@ -68,6 +69,7 @@ export default function CalendarManageSheet({ visible, onClose, clubId, calendar
           calendar={cal}
           color={colorFor(cal.id)}
           departments={departments}
+          locked={isLockedDefaultCalendar(cal, calendars)}
           expanded={expandedId === cal.id}
           onToggle={() => setExpandedId((prev) => (prev === cal.id ? null : cal.id))}
           onChanged={onChanged}
@@ -134,6 +136,7 @@ function CalendarCard({
   calendar,
   color,
   departments,
+  locked,
   expanded,
   onToggle,
   onChanged,
@@ -143,6 +146,7 @@ function CalendarCard({
   calendar: Calendar;
   color: string;
   departments: Department[];
+  locked: boolean;
   expanded: boolean;
   onToggle: () => void;
   onChanged: () => void;
@@ -236,7 +240,7 @@ function CalendarCard({
             </View>
           </Field>
 
-          {departments.length > 0 ? (
+          {departments.length > 0 && !locked ? (
             <Field label={t('kalender.manage.department')}>
               <DepartmentPicker
                 departments={departments}
@@ -325,9 +329,13 @@ function CalendarCard({
             )}
           </Field>
 
-          <TouchableOpacity onPress={confirmDelete} disabled={busy} className="self-start py-1">
-            <Text className="text-destructive text-sm font-semibold">{t('kalender.manage.delete')}</Text>
-          </TouchableOpacity>
+          {locked ? (
+            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('kalender.manage.default.locked')}</Text>
+          ) : (
+            <TouchableOpacity onPress={confirmDelete} disabled={busy} className="self-start py-1">
+              <Text className="text-destructive text-sm font-semibold">{t('kalender.manage.delete')}</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : null}
     </View>

@@ -8,6 +8,10 @@ describe('apiErrorKey', () => {
     expect(apiErrorKey(new ApiError(409, 'ALREADY_MEMBER', 'You are already a member'))).toBe('api.error.already-member');
     expect(apiErrorKey(new ApiError(413, 'QUOTA_EXCEEDED', 'x'))).toBe('api.error.quota');
   });
+  it('maps default_calendar_required from details.code', () => {
+    expect(apiErrorKey(new ApiError(409, 'CONFLICT', 'x', { code: 'default_calendar_required' }))).toBe('kalender.error.default-required');
+    expect(apiErrorKey(new ApiError(409, 'CONFLICT', 'x', { code: 'other' }))).toBe('api.error.conflict');
+  });
   it('falls back to the HTTP status', () => {
     expect(apiErrorKey(new ApiError(403, 'FORBIDDEN', 'x'))).toBe('api.error.forbidden');
     expect(apiErrorKey(new ApiError(422, 'UNPROCESSABLE_ENTITY', 'x'))).toBe('api.error.invalid');

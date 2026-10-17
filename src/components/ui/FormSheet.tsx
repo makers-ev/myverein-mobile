@@ -49,7 +49,13 @@ export default function FormSheet({
           <View className="flex-row items-center justify-between px-5 pt-3 pb-2">
             <Text className="text-foreground dark:text-foreground-dark text-lg font-bold flex-1">{title}</Text>
             {onDelete ? (
-              <TouchableOpacity onPress={onDelete} disabled={saving}>
+              <TouchableOpacity
+                onPress={onDelete}
+                disabled={saving}
+                accessibilityRole="button"
+                accessibilityLabel={t('ui.delete')}
+                style={{ minHeight: 44, justifyContent: 'center' }}
+              >
                 <Text className="text-destructive text-sm font-semibold">{t('ui.delete')}</Text>
               </TouchableOpacity>
             ) : null}
@@ -61,14 +67,24 @@ export default function FormSheet({
           </KeyboardAwareScrollView>
 
           <View className="flex-row px-5 pb-4 pt-2" style={{ gap: 10 }}>
-            <TouchableOpacity onPress={onClose} className="flex-1 border border-border dark:border-border-dark rounded-xl py-3 items-center">
+            <TouchableOpacity
+              onPress={onClose}
+              className="flex-1 border border-border dark:border-border-dark rounded-xl py-3 items-center justify-center"
+              style={{ minHeight: 44 }}
+              accessibilityRole="button"
+              accessibilityLabel={cancelLabel ?? t('ui.cancel')}
+            >
               <Text className="text-foreground dark:text-foreground-dark font-semibold">{cancelLabel ?? t('ui.cancel')}</Text>
             </TouchableOpacity>
             {onSubmit ? (
               <TouchableOpacity
                 onPress={onSubmit}
                 disabled={submitDisabled || saving}
-                className={`flex-1 bg-primary dark:bg-primary-dark rounded-xl py-3 items-center ${submitDisabled || saving ? 'opacity-50' : ''}`}
+                className={`flex-1 bg-primary dark:bg-primary-dark rounded-xl py-3 items-center justify-center ${submitDisabled || saving ? 'opacity-50' : ''}`}
+                style={{ minHeight: 44 }}
+                accessibilityRole="button"
+                accessibilityLabel={submitLabel ?? t('ui.save')}
+                accessibilityState={{ disabled: !!(submitDisabled || saving), busy: !!saving }}
               >
                 {saving ? (
                   <ActivityIndicator color={themeColors.primaryForeground} size="small" />

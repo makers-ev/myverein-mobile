@@ -6,6 +6,7 @@ import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import type { Calendar } from '@/hooks/useCalendars';
+import { defaultCalendarId } from './calendars';
 import type { CalendarEvent, EventInput } from '@/hooks/useEvents';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 import DateTimeField from '@/components/ui/DateTimeField';
@@ -153,7 +154,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
     setSaving(false);
     if ('day' in target) {
       setEditing(true);
-      setCalendarId((calendars.find((c) => c.isDefault) ?? calendars[0])?.id ?? null);
+      setCalendarId(defaultCalendarId(calendars));
       setTitle('');
       setDescription('');
       setCategory('');

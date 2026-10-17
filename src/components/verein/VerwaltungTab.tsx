@@ -10,8 +10,8 @@ import MemberStatsCard from './MemberStatsCard';
 import ExitRequestsQueue from './ExitRequestsQueue';
 
 /** True when the role-dependent "Verwaltung" entry has anything to show (board roles only, deny by default). */
-export function canSeeVerwaltung(can: (p: 'members:write' | 'club_stats:read') => boolean): boolean {
-  return can('members:write') || can('club_stats:read');
+export function canSeeVerwaltung(can: (p: 'members:write' | 'members:read_sensitive' | 'club_stats:read' | 'forms:write') => boolean): boolean {
+  return can('members:write') || can('club_stats:read') || can('forms:write');
 }
 
 function EntryRow({ title, hint, onPress }: { title: string; hint?: string; onPress: () => void }) {
@@ -35,14 +35,14 @@ function EntryRow({ title, hint, onPress }: { title: string; hint?: string; onPr
 /** Row to the join applications with the number of open ones. */
 function ApplicationsEntry({ clubId }: { clubId: string }) {
   const { t } = useLanguage();
-  const { applications, loading, error } = useClubApplications(clubId);
+  const { applications, total, loading, error } = useClubApplications(clubId);
   const hint = error
     ? t('admin.applications.hint-error')
     : loading && applications.length === 0
       ? undefined
-      : applications.length === 0
+      : total === 0
         ? t('admin.applications.hint-zero')
-        : t('admin.applications.hint', { count: applications.length });
+        : t('admin.applications.hint', { count: total });
   return <EntryRow title={t('verein.applications.open')} hint={hint} onPress={() => navigate('ClubApplications')} />;
 }
 
@@ -71,7 +71,8 @@ export default function VerwaltungTab({ clubId, onOpenMembers }: { clubId: strin
   return (
     <>
       {can('members:write') ? <ApplicationsEntry clubId={clubId} /> : null}
-      <EntryRow title={t('admin.members.open')} hint={t('admin.members.hint')} onPress={onOpenMembers} />
+      {can('members:write') || can('members:read_sensitive') ? <EntryRow title={t('admin.members.open')} hint={t('admin.members.hint')} onPress={onOpenMembers} /> : null}
+      {can('forms:write') ? <EntryRow title={t('forms.pm.title')} hint={t('forms.pm.entry.hint')} onPress={() => navigate('ProfileModules')} /> : null}
       {can('members:write') ? <ExitRequestsQueue clubId={clubId} ownMemberId={membership?.memberId ?? null} /> : null}
       {can('club_stats:read') ? <MemberStatsCard clubId={clubId} /> : null}
     </>

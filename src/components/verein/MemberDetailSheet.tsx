@@ -7,6 +7,7 @@ import type { ClubMember } from '@/hooks/useClubMembers';
 import { isMinorBirthDate } from '@/lib/memberPhoto';
 import MemberPhotoEditor from './MemberPhotoEditor';
 import MemberAvatar from './MemberAvatar';
+import MemberCustomFields from './MemberCustomFields';
 
 /** Display name of a member's category: backend name first, the key as fallback. */
 export function categoryLabel(member: ClubMember): string | null {
@@ -55,7 +56,8 @@ interface Props {
  * Member detail. Profile data is read-only here (create/edit/import stay on
  * the website); the one write action is the photo, for `members:write`. Shows
  * only what the list delivered -- sensitive fields that are `undefined` (no
- * members:read_sensitive) or empty are not rendered.
+ * members:read_sensitive) or empty are not rendered. The custom fields (Wave 8 M4)
+ * are loaded separately and shown read-only, filtered by the server.
  */
 export default function MemberDetailSheet({ member, onClose, clubId, canEditPhoto, onPhotoChanged, onPhotoExpired }: Props) {
   const { t, language } = useLanguage();
@@ -129,6 +131,10 @@ export default function MemberDetailSheet({ member, onClose, clubId, canEditPhot
           <Row label={t('profil.section.emergency')} value={emergency} />
         </>
       ) : null}
+
+      {/* Not gated by a permission here: the server decides which fields this caller sees (403/404 or none = nothing is rendered).
+          Fresh hook state per member: values of one person must never show on another's sheet. */}
+      <MemberCustomFields key={member.id} clubId={clubId} target={member.id} readOnlyView />
     </FormSheet>
   );
 }

@@ -13,6 +13,7 @@ import {
   type ClubMember,
   type MemberStatus,
 } from '@/hooks/useClubMembers';
+import CredentialOverview from './CredentialOverview';
 import MemberStatsCard from './MemberStatsCard';
 import MemberAvatar from './MemberAvatar';
 import MemberDetailSheet, { categoryLabel, formatDay } from './MemberDetailSheet';
@@ -234,6 +235,8 @@ export default function MembersTab({ clubId }: { clubId: string }) {
     <>
       {applicationsEntry}
       {canSeeStats ? <MemberStatsCard clubId={clubId} /> : null}
+      {/* Hidden unless the server delivers readable credential fields for this caller (board, trainers, Abteilungsleitung). */}
+      <CredentialOverview key={clubId} clubId={clubId} />
 
       {isManager ? (
         <View className="mb-3">
@@ -281,6 +284,7 @@ export default function MembersTab({ clubId }: { clubId: string }) {
             className="self-start px-5 justify-center rounded-lg bg-primary dark:bg-primary-dark"
             style={{ minHeight: 44 }}
             accessibilityRole="button"
+            accessibilityLabel={t('verein.retry')}
           >
             <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('verein.retry')}</Text>
           </TouchableOpacity>
@@ -296,6 +300,7 @@ export default function MembersTab({ clubId }: { clubId: string }) {
               className="self-start px-5 justify-center rounded-lg border border-border dark:border-border-dark"
               style={{ minHeight: 44 }}
               accessibilityRole="button"
+              accessibilityLabel={t('verein.members.filter.reset')}
             >
               <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.members.filter.reset')}</Text>
             </TouchableOpacity>
@@ -327,6 +332,7 @@ export default function MembersTab({ clubId }: { clubId: string }) {
               className="items-center justify-center rounded-xl border border-border dark:border-border-dark bg-card dark:bg-card-dark"
               style={{ minHeight: 48 }}
               accessibilityRole="button"
+              accessibilityLabel={t('verein.members.load-more')}
               accessibilityState={{ disabled: loadingMore, busy: loadingMore }}
             >
               {loadingMore ? (

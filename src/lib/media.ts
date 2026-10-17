@@ -1,7 +1,9 @@
-import { File, Paths, UploadType } from 'expo-file-system';
+import { Directory, File, Paths, UploadType } from 'expo-file-system';
 
 import { authClient, backendUrl } from '@/auth/auth-client';
 import { ApiError, apiErrorFromResponse } from '@/lib/api';
+import { isReviewFilePath } from '@/lib/applicationReview';
+import { progressPercent } from '@/lib/formSchema';
 import { sanitizeMediaFilename } from '@/lib/mediaKey';
 
 /**
@@ -37,10 +39,26 @@ export function isInAppCache(uri: string): boolean {
   }
 }
 
+/**
+ * Deletes a picker output copy in the app cache when no upload will consume it (client-side rejection, aborted before the
+ * request, unmounted, draft could not be created). `uploadSubmissionFile` and the other upload helpers delete their own
+ * input afterwards. Never touches a file outside the app cache -- the user's originals are safe.
+ */
+export function discardPickerFile(uri: string): void {
+  try {
+    if (isInAppCache(uri)) new File(uri).delete();
+  } catch {
+    // best-effort cache cleanup
+  }
+}
+
 // Without a bound, a stalled/dropped connection (or the app backgrounded
 // mid-transfer) leaves the upload/download promise pending forever -- the
 // caller's loading state never resolves and there's no way to retry.
 const TRANSFER_TIMEOUT_MS = 30_000;
+// Form photos go through the media layer (EXIF stripping, magic bytes, quota) on possibly slow mobile networks: the upload
+// is only cancelled after this long WITHOUT progress, so a big photo on a slow line still completes.
+const FORM_UPLOAD_IDLE_TIMEOUT_MS = 60_000;
 
 // `File.upload()` is a native request, not `authClient.$fetch` -- the
 // session cookie isn't attached automatically, so it's read from the same
@@ -151,9 +169,8 @@ export async function uploadRegistrationDocument<TDocument>(
     return { error: err instanceof Error ? err.message : 'Failed to prepare file for upload' };
   }
 
-  // Only the content:// copy in the cache is ours to delete -- never the
-  // user's original file:// asset.
-  const isTempCopy = !asset.uri.startsWith('file://');
+  // Delete the file afterwards if it is a copy made here or the picker's output in the app cache -- never a user original.
+  const isTempCopy = !asset.uri.startsWith('file://') || isInAppCache(asset.uri);
   try {
     const cookie = await getSessionCookie();
     const result = await file.upload(`${backendUrl}/club-registrations/${registrationId}/documents`, {
@@ -187,6 +204,151 @@ export async function uploadRegistrationDocument<TDocument>(
         // best-effort cache cleanup
       }
     }
+  }
+}
+
+/**
+ * Uploads one photo of a form draft to `POST /form-submissions/:id/files` (multipart `file` + `fieldKey`; the backend
+ * checks magic bytes, the type allowed for the field, size, quota and rate limit and registers the file in the media
+ * layer -- no URL or key is kept here). Not club-scoped (the applicant has no club yet). Success returns the file DTO
+ * (`{ data: { file } }`, a signed preview `url` for non-sensitive images -- memory only, never stored); failures come
+ * back as an `ApiError` or a plain `Error` for local problems / aborts. `signal` cancels the transfer (as does 60 s
+ * without progress), `onProgress` reports 0..100 (null = unknown). The picker's cache copy is deleted afterwards.
+ */
+export async function uploadSubmissionFile<TFile>(
+  submissionId: string,
+  fieldKey: string,
+  asset: { uri: string; name: string; type: string; fileSize?: number | null },
+  options: { signal?: AbortSignal; onProgress?: (percent: number | null) => void } = {},
+): Promise<{ file: TFile } | { error: unknown }> {
+  let file: File;
+  try {
+    file = toUploadableFile(asset.uri, asset.name);
+  } catch (err) {
+    return { error: err };
+  }
+  // Delete the file afterwards if it is a copy made here or the picker's output in the app cache -- never a user original.
+  const isTempCopy = !asset.uri.startsWith('file://') || isInAppCache(asset.uri);
+  // A caller abort and the transfer timeout both end the request through one controller.
+  const controller = new AbortController();
+  let timer = setTimeout(() => controller.abort(), FORM_UPLOAD_IDLE_TIMEOUT_MS);
+  const rearm = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => controller.abort(), FORM_UPLOAD_IDLE_TIMEOUT_MS);
+  };
+  const forwardAbort = () => controller.abort();
+  if (options.signal?.aborted) controller.abort();
+  else options.signal?.addEventListener('abort', forwardAbort, { once: true });
+  try {
+    const cookie = await getSessionCookie();
+    const result = await file.upload(`${backendUrl}/form-submissions/${encodeURIComponent(submissionId)}/files`, {
+      uploadType: UploadType.MULTIPART,
+      fieldName: 'file',
+      mimeType: normalizeImageMime(asset.type, asset.name),
+      parameters: { fieldKey },
+      headers: { Cookie: cookie },
+      signal: controller.signal,
+      onProgress: (p) => {
+        rearm();
+        options.onProgress?.(progressPercent(p.bytesSent, p.totalBytes));
+      },
+    });
+    if (result.status < 200 || result.status >= 300) return { error: apiErrorFromResponse(result.status, result.body) };
+    let uploaded: TFile | undefined;
+    try {
+      uploaded = (result.body ? JSON.parse(result.body) : null)?.data?.file;
+    } catch {
+      uploaded = undefined;
+    }
+    if (!uploaded) return { error: apiErrorFromResponse(500, null) };
+    return { file: uploaded };
+  } catch (err) {
+    return { error: err };
+  } finally {
+    clearTimeout(timer);
+    options.signal?.removeEventListener('abort', forwardAbort);
+    if (isTempCopy) {
+      try {
+        file.delete();
+      } catch {
+        // best-effort cache cleanup
+      }
+    }
+  }
+}
+
+const REVIEW_CACHE_DIR = 'review-files';
+let reviewFileCounter = 0;
+
+/**
+ * Deletes every file `downloadReviewImage` left in the app cache (called when the review screen opens and closes, so a
+ * crashed or killed session cannot leave applicant photos behind).
+ */
+export function clearReviewFileCache(): void {
+  try {
+    const dir = new Directory(Paths.cache, REVIEW_CACHE_DIR);
+    if (dir.exists) dir.delete();
+  } catch {
+    // best-effort cache cleanup
+  }
+}
+
+/**
+ * Authenticated download of an application's image file for the board (`GET /form-submissions/:id/files/:fileId` with the
+ * session cookie; the backend checks `members:write`, redacts protected files and audits every retrieval). `path` must be
+ * the review file path from `GET /club-applications/:id` -- anything else is refused before a request is made, so the
+ * cookie never leaves the backend's file route. The bytes go to a private file in the app cache (`review-files/`); the
+ * caller shows it and calls `remove()` as soon as it is hidden or the detail closes. No URL or key is stored. Failures come
+ * back as an `ApiError` (status parsed from the native error) or a plain `Error` (abort, local problem).
+ */
+export async function downloadReviewImage(
+  path: string,
+  signal?: AbortSignal,
+): Promise<{ uri: string; remove: () => void } | { error: unknown }> {
+  if (!isReviewFilePath(path)) return { error: new ApiError(404, 'NOT_FOUND', 'Not a review file path') };
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TRANSFER_TIMEOUT_MS);
+  const forwardAbort = () => controller.abort();
+  if (signal?.aborted) controller.abort();
+  else signal?.addEventListener('abort', forwardAbort, { once: true });
+  let dest: File | null = null;
+  try {
+    const dir = new Directory(Paths.cache, REVIEW_CACHE_DIR);
+    dir.create({ idempotent: true, intermediates: true });
+    dest = new File(dir, `${Date.now()}-${++reviewFileCounter}.img`);
+    const cookie = await getSessionCookie();
+    const downloaded = await File.downloadFileAsync(`${backendUrl}${path}`, dest, {
+      headers: { Cookie: cookie },
+      idempotent: true,
+      signal: controller.signal,
+    });
+    const target = downloaded;
+    return {
+      uri: target.uri,
+      remove: () => {
+        try {
+          target.delete();
+        } catch {
+          // best-effort cache cleanup
+        }
+      },
+    };
+  } catch (err) {
+    try {
+      // A failed Android download can leave a partial file behind.
+      if (dest?.exists) dest.delete();
+    } catch {
+      // best-effort cache cleanup
+    }
+    if (!controller.signal.aborted && err instanceof Error) {
+      // expo-file-system reports a non-2xx answer as `UnableToDownload` with the status code in the message.
+      const status = /\b([45]\d{2})\b/.exec(err.message)?.[1];
+      if (status) return { error: new ApiError(Number(status), 'UNKNOWN', 'Download failed') };
+    }
+    return { error: err };
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', forwardAbort);
   }
 }
 

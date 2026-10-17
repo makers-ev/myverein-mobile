@@ -1,4 +1,4 @@
 {
-  "NSPhotoLibraryUsageDescription": "MyVerein needs access to your photos so you can choose a profile photo. It is also used for photos in damage reports and proof documents when founding a club.",
-  "NSCameraUsageDescription": "MyVerein needs access to the camera so you can take a profile photo."
+  "NSPhotoLibraryUsageDescription": "MyVerein needs access to your photos so you can choose a profile photo. It is also used for photos in damage reports, for membership applications (profile photo, attached photos) and proof documents when founding a club.",
+  "NSCameraUsageDescription": "MyVerein needs access to the camera so you can take a photo for your profile or a membership application."
 }
