@@ -4,6 +4,7 @@ import { Lock } from 'lucide-react-native';
 
 import ExpiryBadge, { formatCredentialDate } from '@/components/forms/ExpiryBadge';
 import FormRenderer, { type FormRendererHandle } from '@/components/forms/FormRenderer';
+import { navigate } from '@/navigation/navigationRef';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useMemberCustomFields } from '@/hooks/useMemberCustomFields';
 import { unverifiedEntryKey } from '@/lib/credentials';
@@ -21,6 +22,11 @@ interface Props {
   onDirtyChange?: (dirty: boolean) => void;
   /** Card styling for the Profil tab; the detail sheet renders it flat. */
   card?: boolean;
+  /**
+   * Caller may manage profile modules (`forms:write`) and this is the own record: when the club has no active custom fields a
+   * hint with a link to "Bausteine" shows instead of nothing. Everybody else still sees nothing.
+   */
+  manageHint?: boolean;
 }
 
 /**
@@ -29,7 +35,7 @@ interface Props {
  * labels; protected fields carry a lock marker. Only changed editable values are sent (`PATCH`, cleared = null). Guests (403)
  * and members without any visible field render nothing. Values are never logged or persisted.
  */
-export default function MemberCustomFields({ clubId, target, readOnlyView = false, onDirtyChange, card = false }: Props) {
+export default function MemberCustomFields({ clubId, target, readOnlyView = false, onDirtyChange, card = false, manageHint = false }: Props) {
   const { t, language } = useLanguage();
   const lang = contentLang(language);
   const themeColors = useThemeColors();
@@ -145,7 +151,26 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
     );
   }
   // Nothing to show (and nothing hidden from this caller): keep the screen free of an empty box.
-  if (fields.length === 0) return null;
+  if (fields.length === 0) {
+    if (!manageHint || target !== 'me') return null;
+    return (
+      <View className={wrapper}>
+        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1" accessibilityRole="header">
+          {t('forms.pm.hint.title')}
+        </Text>
+        <Text className={`${mutedClass} mb-3`}>{t('forms.pm.hint.text')}</Text>
+        <TouchableOpacity
+          onPress={() => navigate('ProfileModules')}
+          className="self-start px-4 justify-center rounded-lg border border-border dark:border-border-dark"
+          style={{ minHeight: 44 }}
+          accessibilityRole="link"
+          accessibilityLabel={t('forms.pm.hint.link')}
+        >
+          <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('forms.pm.hint.link')}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const texts = { yes: t('forms.review.yes'), no: t('forms.review.no'), formatDate: (v: string) => formatCredentialDate(v, language),
     credential: {

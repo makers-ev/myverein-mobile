@@ -78,7 +78,7 @@ function validate(draft: Draft, t: (key: string) => string): FieldErrors {
 export default function ProfilTab({ clubId, onDirtyChange }: Props) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { membership, refetch } = useOwnMembership(clubId);
+  const { membership, refetch, can } = useOwnMembership(clubId);
 
   const server = useMemo<Draft>(() => {
     if (!membership) return EMPTY_DRAFT;
@@ -348,7 +348,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
       ) : null}
 
       <View className="mt-6">
-        <MemberCustomFields clubId={clubId} target="me" card onDirtyChange={setCustomDirty} />
+        <MemberCustomFields clubId={clubId} target="me" card onDirtyChange={setCustomDirty} manageHint={can('forms:write')} />
         <ExitRequestSection clubId={clubId} />
       </View>
     </View>
