@@ -48,13 +48,14 @@ Then press `a` for Android, `i` for iOS, or `w` for web in the Expo CLI, or scan
 
 ```mermaid
 flowchart TD
-    App["App.tsx\nErrorBoundary > SafeAreaProvider > LanguageProvider > AuthProvider"]
+    App["App.tsx\nErrorBoundary > SafeAreaProvider > KeyboardProvider > PaletteProvider > LanguageProvider > AuthProvider > ActiveClubProvider"]
     Lock["AppLockGate\nwraps everything"]
     Nav["AppNavigator\none stack, always mounted"]
     Bar["Navbar\nfloating bottom pill, Navigator sibling"]
     Home["HomeScreen (public)\ninitial route for guests"]
     Dash["DashboardScreen (public)\ninitial route for signed-in users"]
     Notif["NotificationsScreen\ngated: RequireAuth"]
+    Club["Verein / Kalender / Standorte / JoinClub /\nCreateClub / ClubApplications\ngated: RequireAuth (+ permissions inside)"]
     Login["Login / Signup / TwoFactor (public)"]
     Settings["SettingsScreen (public)\naccount section only if signed in"]
     Legal["Privacy / Imprint / TermsOfService (public)"]
@@ -65,6 +66,7 @@ flowchart TD
     Nav --> Home
     Nav --> Dash
     Nav --> Notif
+    Nav --> Club
     Nav --> Login
     Nav --> Settings
     Nav --> Legal
@@ -80,22 +82,29 @@ Layout:
 ```
 src/
 ├── auth/            # AuthProvider, RequireAuth, Better Auth client, app-lock storage
-├── components/       # Logo, Navbar, AppLock, Settings sub-components, modals, KeyboardAwareScreen (react-native-keyboard-controller)
-├── contexts/         # i18n (LanguageContext + per-area translation tables)
+├── clubs/           # ActiveClubProvider (GET /my-clubs + selected club), activeClubStorage, lastApplyClubStorage
+├── components/       # Logo, Navbar, SignedInCard, ConnectionErrorScreen, KeyboardAwareScreen (react-native-keyboard-controller);
+│                     #   AppLock/, Modals/, Settings/ (sub-components), ui/ (MonthCalendar, DateTimeField, FormSheet, SignedImage, BentoTile, FadeIn),
+│                     #   forms/ (FormRenderer, AnswerList), verein/, kalender/, standorte/ (feature components)
+├── contexts/         # i18n (translation/: LanguageContext + per-area translation tables, supportedLanguages, language storage)
 ├── error/            # ErrorBoundary
-├── hooks/            # useRequireAuth, useAttemptLockout, useNotifications
+├── hooks/            # data hooks per feature (useMyClubs, useOwnMembership, useClubMembers, useClubApplications, useFormSubmission, useClubForm,
+│                     #   useMyApplications, useExitRequests, useExitForm, useMemberCustomFields, useLocations, useEvents, ...), useRequireAuth, useAttemptLockout, useThrottledCallback
 ├── legal/            # Privacy/Imprint/TermsOfService screens, first-launch ToS modal
-├── lib/              # api.ts (apiFetch<T> wrapper, see "Adding a new API request")
+├── lib/              # api.ts (apiFetch<T> wrapper, see "Adding a new API request"), media.ts, formSchema.ts, serialQueue.ts, applicationReview.ts, customFields.ts, exitForm.ts, ...
 ├── navigation/       # AppNavigator (the one stack), navigationRef (imperative nav helper)
-├── screens/          # Home, Dashboard, Notifications, Login, Signup, TwoFactor, Settings, AppLock
-└── theme/            # colors.ts — the one place a JS-prop color is looked up
+├── onboarding/       # IntroModal, introSeenStorage
+├── screens/          # Home, Dashboard, Verein, Kalender, Standorte, JoinClub, CreateClub, ClubApplications, Notifications, Login, ForgotPassword, Signup,
+│                     #   EmailVerification, TwoFactor, Settings, AppLock (rendered by AppLockGate, not a stack route)
+├── settings/         # appSettingsStorage (Topbar/Navbar title toggles)
+└── theme/            # colors.ts — the one place a JS-prop color is looked up; palettes, PaletteProvider, theme storage
 ```
 
 ## Guest mode
 
-There is no split between a fully-public and a fully-authenticated navigator. The one auth-based branch is the initial route itself: guests land on `Home`, already-authenticated users skip straight to `Dashboard` (a placeholder landing screen — swap it for your real one) so a relaunch doesn't show a signed-in user the guest marketing screen first. Beyond that initial route — unlike earlier versions of this template — **no screen in the stack is gated by default either**, including `Settings`. `Settings` turned out to hold mostly guest-relevant content (language, theme, App Lock PIN, legal pages) alongside the handful of account-specific sections (profile, password, 2FA, sessions), so the screen itself is public; only those account sections inside it check `useAuth().isAuthenticated` and swap themselves for a sign-in/sign-up prompt when it's false. `AppLockGate` wraps the whole navigator unconditionally and stays inert until a PIN actually exists — guest or signed in, whoever sets one up locks the app the same way.
+There is no split between a fully-public and a fully-authenticated navigator. The one auth-based branch is the initial route itself: guests land on `Home`, already-authenticated users skip straight to `Dashboard` (a placeholder landing screen — swap it for your real one) so a relaunch doesn't show a signed-in user the guest marketing screen first. Beyond that initial route — unlike earlier versions of this template — **no screen is gated by default** in the bare template, including `Settings`. The MyVerein club screens opt *in*: `AppNavigator` wraps `Verein`, `Kalender`, `Standorte`, `JoinClub`, `CreateClub`, `ClubApplications` and `Notifications` in `RequireAuth` (7 routes), while `Home`, `Dashboard`, `Login`, `ForgotPassword`, `Signup`, `EmailVerification`, `TwoFactor`, `Settings` and the legal screens stay public (permission-based gating inside the club screens goes through `useOwnMembership(clubId).can(...)`). `Settings` turned out to hold mostly guest-relevant content (language, theme, App Lock PIN, legal pages) alongside the handful of account-specific sections (profile, password, 2FA, sessions), so the screen itself is public; only those account sections inside it check `useAuth().isAuthenticated` and swap themselves for a sign-in/sign-up prompt when it's false. `AppLockGate` wraps the whole navigator unconditionally and stays inert until a PIN actually exists — guest or signed in, whoever sets one up locks the app the same way.
 
-That said, `RequireAuth`/`useRequireAuth` are still here as the two conventions a real product reaches for once it *does* have something that needs a real session — nothing in the shipped template currently calls either (there's nothing left in this bare template that requires an account), but they're maintained, tested, and meant to be copied.
+That said, `RequireAuth`/`useRequireAuth` are still here as the two conventions a real product reaches for once it *does* have something that needs a real session — `AppNavigator` uses `RequireAuth` for the seven club/notification routes above and `HomeScreen.tsx` uses `requireAuth(action)` for its Kalender/Standorte/Verein tiles; both are maintained, tested, and meant to be copied.
 
 **Gate a whole screen** — wrap it in `src/auth/RequireAuth.tsx`:
 
@@ -438,7 +447,7 @@ What's still separate, and why:
 
 ## Testing and CI
 
-`npm test` runs Jest (`jest-expo` preset) against `useAttemptLockout` (fake timers, no rendering needed) and `AuthProvider` (mocked `authClient`, verifying `signIn`/`signOut`/2FA state transitions) — no device or simulator required. `.github/workflows/ci.yml` runs lint, `tsc --noEmit`, and the test suite on every push and pull request; it does not build or bundle the app (that needs EAS and a device/simulator, out of scope for this template's CI).
+`npm test` runs Jest (`jest-expo` preset): 31 test files under `src/` as of this audit (not run for it, so no pass count is claimed): `useAttemptLockout` (fake timers), `AuthProvider` (mocked `authClient`, `signIn`/`signOut`/2FA transitions), the translation registry/`FormsTranslation`/`LanguageContext`/`systemLanguage`, the Wave 8 form logic (`formSchema`, `serialQueue`, `applicationReview`, `applicationStatus`, `customFields`, `exitForm`, `FormRenderer`, `ApplicationReviewSheet`, `useFormSubmission`, `useClubForm`, `useClubApplications`, `useMyApplications`, `useExitRequests`, `useExitForm`, `useMemberCustomFields`) and the Wave 7 helpers (`media`, `mediaKey`, `memberPhoto`, `wifiQr`, `meetingAttendance`, `resolutionCorrection`, `useLocations`, `standorte/keys` + `parse`, `apiErrorMessage`, `withScheme`) — no device or simulator required. `.github/workflows/ci.yml` runs lint, `tsc --noEmit`, and the test suite on every push and pull request; it does not build or bundle the app (that needs EAS and a device/simulator, out of scope for this template's CI).
 
 ## How this fits into the template suite
 
