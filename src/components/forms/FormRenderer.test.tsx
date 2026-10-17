@@ -26,7 +26,7 @@ jest.mock('@/theme/colors', () => ({
 }));
 jest.mock('lucide-react-native', () => {
   const Icon = () => null;
-  return { Camera: Icon, Check: Icon, ChevronDown: Icon, ChevronLeft: Icon, ChevronRight: Icon, FileText: Icon, Info: Icon, ShieldCheck: Icon, Trash2: Icon, CalendarDays: Icon };
+  return { Camera: Icon, Check: Icon, ChevronDown: Icon, ChevronLeft: Icon, ChevronRight: Icon, FileText: Icon, Info: Icon, ShieldCheck: Icon, Trash2: Icon, CalendarDays: Icon, AlertTriangle: Icon, CheckCircle2: Icon, Clock: Icon, MinusCircle: Icon };
 });
 jest.mock('expo-image-picker', () => ({}));
 jest.mock('@/lib/media', () => ({ normalizeImageMime: (t: string | null | undefined) => t ?? 'image/jpeg' }));
@@ -65,5 +65,51 @@ describe('FormRenderer', () => {
     await fireEvent.press(screen.getByRole('checkbox', { name: /Ich stimme zu/ }));
     expect(onChange).toHaveBeenCalledWith('agree', true);
     expect(screen.getByText('forms.err.field.required')).toBeTruthy();
+  });
+
+  describe('credential field', () => {
+    const cred: FormField = {
+      key: 'mod_q_juleica',
+      type: 'credential',
+      label: 'JuLeiCa',
+      helpText: 'Nur Nachweis, kein Inhalt.',
+      options: [{ value: 'a', label: 'A' }],
+      expiry: { status: 'expiring', daysLeft: 12, validUntil: '2026-11-01' },
+    };
+
+    it('shows help text and only the switch while not held; switching on sends a minimal value', async () => {
+      const onChange = jest.fn();
+      await render(<FormRenderer fields={[cred]} answers={{}} onChange={onChange} />);
+      expect(screen.getByText('Nur Nachweis, kein Inhalt.')).toBeTruthy();
+      expect(screen.queryByText('forms.cred.validUntil')).toBeNull();
+      await fireEvent(screen.getByRole('switch'), 'valueChange', true);
+      expect(onChange).toHaveBeenCalledWith('mod_q_juleica', { valid: true });
+    });
+
+    it('switching off clears the value', async () => {
+      const onChange = jest.fn();
+      await render(<FormRenderer fields={[cred]} answers={{ mod_q_juleica: { valid: true, validUntil: '2026-11-01' } }} onChange={onChange} />);
+      await fireEvent(screen.getByRole('switch'), 'valueChange', false);
+      expect(onChange).toHaveBeenCalledWith('mod_q_juleica', undefined);
+    });
+
+    it('shows the dates, the expiry badge text and a local error for a reversed range', async () => {
+      await render(
+        <FormRenderer
+          fields={[cred]}
+          answers={{ mod_q_juleica: { valid: true, obtainedOn: '2026-11-01', validUntil: '2026-10-01' } }}
+          onChange={() => undefined}
+        />,
+      );
+      expect(screen.getByText('forms.cred.obtainedOn')).toBeTruthy();
+      expect(screen.getByText('forms.err.field.date_order')).toBeTruthy();
+      // the badge is hidden: its date no longer matches the edited value
+      expect(screen.queryByText('forms.cred.expiry.inDays')).toBeNull();
+    });
+
+    it('shows the badge for the saved value', async () => {
+      await render(<FormRenderer fields={[cred]} answers={{ mod_q_juleica: { valid: true, validUntil: '2026-11-01' } }} onChange={() => undefined} />);
+      expect(screen.getByText('forms.cred.expiry.inDays')).toBeTruthy();
+    });
   });
 });

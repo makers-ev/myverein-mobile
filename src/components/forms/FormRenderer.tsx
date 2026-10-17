@@ -1,9 +1,10 @@
 import React, { Fragment, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, Check, ChevronDown, FileText, Info, ShieldCheck, Trash2 } from 'lucide-react-native';
 
 import DateTimeField, { fromDateString, toDateString } from '@/components/ui/DateTimeField';
+import ExpiryBadge from '@/components/forms/ExpiryBadge';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import {
   type Answers,
@@ -15,9 +16,11 @@ import {
   FILE_FIELD_MAX_BYTES,
   formatBytes,
   formErrorKey,
+  credentialProblem,
   privacyNoticeIndex,
   visibleFields,
 } from '@/lib/formSchema';
+import { buildCredentialValue, credentialLevelMode, expiryApplies, parseCredential } from '@/lib/credentials';
 import { discardPickerFile, normalizeImageMime } from '@/lib/media';
 import { useThemeColors } from '@/theme/colors';
 
@@ -326,6 +329,109 @@ function SelectField({
         </View>
       </Modal>
     </>
+  );
+}
+
+/**
+ * Profile-module credential (member custom fields): a switch "I have this", then level (pick / free text / none), "obtained on"
+ * and "valid until". Switching off clears the value (sent as `null`). All parts are optional; a `valid until` before
+ * `obtained on` is flagged right away. The expiry badge shows the server's status of the saved value only (stale once the
+ * date was edited).
+ */
+function CredentialField({
+  field,
+  value,
+  error,
+  disabled,
+  onChange,
+  inputRef,
+}: {
+  field: FormField;
+  value: unknown;
+  error?: FieldErrorCode;
+  disabled?: boolean;
+  onChange: (v: unknown) => void;
+  inputRef: (el: TextInput | null) => void;
+}) {
+  const { t } = useLanguage();
+  const themeColors = useThemeColors();
+  const cred = parseCredential(value);
+  const have = cred !== null;
+  const mode = credentialLevelMode(field);
+  const liveError = error ?? (cred && credentialProblem(field, cred) === 'date_order' ? 'date_order' : undefined);
+  const levelField: FormField = { key: `${field.key}.level`, type: 'select', label: t('forms.cred.level'), options: field.options };
+  const subLabel = 'text-xs font-semibold text-muted-foreground dark:text-muted-foreground-dark mb-1';
+  return (
+    <FieldShell field={field} error={liveError}>
+      <View
+        className="flex-row items-center justify-between"
+        style={{ minHeight: 44, gap: 10 }}
+      >
+        <Text className="flex-1 text-base text-foreground dark:text-foreground-dark">{t('forms.cred.have')}</Text>
+        <Switch
+          value={have}
+          disabled={disabled}
+          onValueChange={(next) => onChange(next ? buildCredentialValue(value, { have: true }) : undefined)}
+          trackColor={{ true: themeColors.primary, false: themeColors.border }}
+          accessibilityLabel={`${field.label}: ${t('forms.cred.have')}`}
+          accessibilityHint={field.helpText || undefined}
+        />
+      </View>
+      {cred ? (
+        <View style={{ gap: 12 }} className="mt-2">
+          {mode === 'select' ? (
+            <View>
+              <Text className={subLabel}>{t('forms.cred.level')}</Text>
+              <SelectField
+                field={levelField}
+                value={cred.level}
+                error={liveError === 'not_an_option'}
+                disabled={disabled}
+                onChange={(next) => onChange(buildCredentialValue(value, { level: next ?? null }))}
+              />
+            </View>
+          ) : null}
+          {mode === 'text' ? (
+            <View>
+              <Text className={subLabel}>{t('forms.cred.level')}</Text>
+              <TextInput
+                ref={inputRef}
+                className={inputClass(liveError === 'too_long' || liveError === 'invalid_value')}
+                accessibilityLabel={`${field.label}: ${t('forms.cred.level')}`}
+                maxLength={field.validation?.maxLength}
+                placeholderTextColor={themeColors.mutedForeground}
+                value={cred.level ?? ''}
+                editable={!disabled}
+                autoCapitalize="words"
+                onChangeText={(text) => onChange(buildCredentialValue(value, { level: text }))}
+              />
+            </View>
+          ) : null}
+          <View>
+            <Text className={subLabel}>{t('forms.cred.obtainedOn')}</Text>
+            <DateTimeField
+              mode="date"
+              clearable
+              placeholder={t('forms.date.placeholder')}
+              value={fromDateString(cred.obtainedOn)}
+              onChange={(d) => !disabled && onChange(buildCredentialValue(value, { obtainedOn: d ? toDateString(d) : null }))}
+            />
+          </View>
+          <View>
+            <Text className={subLabel}>{t('forms.cred.validUntil')}</Text>
+            <DateTimeField
+              mode="date"
+              clearable
+              placeholder={t('forms.date.placeholder')}
+              value={fromDateString(cred.validUntil)}
+              onChange={(d) => !disabled && onChange(buildCredentialValue(value, { validUntil: d ? toDateString(d) : null }))}
+            />
+            <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mt-1">{t('forms.cred.validUntilHint')}</Text>
+          </View>
+          {expiryApplies(field.expiry, value) ? <ExpiryBadge expiry={field.expiry!} /> : null}
+        </View>
+      ) : null}
+    </FieldShell>
   );
 }
 
@@ -765,6 +871,9 @@ export default function FormRenderer({
           </View>
         );
       }
+
+      case 'credential':
+        return <CredentialField field={field} value={value} error={error} disabled={disabled} inputRef={setInput(field.key)} onChange={(next) => onChange(field.key, next)} />;
 
       case 'image':
       case 'file':

@@ -1,5 +1,6 @@
 import { ApiError } from './api';
 import { apiErrorKey } from './apiErrorMessage';
+import type { CredentialExpiry } from './credentials';
 
 /**
  * Pure helpers of the form builder's applicant side (Wave 8 M1/M2, ported 1:1 from the website's formSchema.ts): field types as the backend sends them
@@ -9,7 +10,11 @@ import { apiErrorKey } from './apiErrorMessage';
  */
 
 export const FIELD_TYPES = ['text', 'textarea', 'number', 'date', 'select', 'multiselect', 'checkbox', 'consent', 'file', 'image', 'info'] as const;
-export type FieldType = (typeof FIELD_TYPES)[number];
+/**
+ * `credential` exists for member custom fields only (profile modules); form definitions never contain it (the server refuses
+ * it), so it is not part of `FIELD_TYPES`.
+ */
+export type FieldType = (typeof FIELD_TYPES)[number] | 'credential';
 
 export type PatternPreset = 'email' | 'postal_code' | 'phone';
 
@@ -42,6 +47,8 @@ export interface FormField {
     maxDate?: string;
     pattern?: PatternPreset;
   };
+  /** `credential` only: the server's expiry view of the saved value (display; see `lib/credentials.ts`). */
+  expiry?: CredentialExpiry | null;
   visibleIf?: VisibleIf;
   infoKind?: 'privacy_notice';
   text?: string;
@@ -87,7 +94,8 @@ export type FieldErrorCode =
   // client only
   | 'file_type'
   | 'file_size'
-  | 'file_failed';
+  | 'file_failed'
+  | 'date_order';
 
 export const FIELD_ERROR_CODES: readonly FieldErrorCode[] = [
   'unknown_field',
@@ -103,6 +111,7 @@ export const FIELD_ERROR_CODES: readonly FieldErrorCode[] = [
   'file_type',
   'file_size',
   'file_failed',
+  'date_order',
 ];
 
 export function isFieldErrorCode(value: unknown): value is FieldErrorCode {
@@ -220,6 +229,38 @@ function isIsoDate(value: string): boolean {
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value;
 }
 
+const CREDENTIAL_KEYS: ReadonlySet<string> = new Set(['valid', 'level', 'obtainedOn', 'validUntil']);
+
+/**
+ * Client mirror of the server's `cleanCredential`: `{ valid: true, level?, obtainedOn?, validUntil? }`; the level only if the
+ * definition has levels (`options`, one of them) or a free-text level (`validation.maxLength`); dates real `YYYY-MM-DD`
+ * between 1900 and 2100; `validUntil >= obtainedOn` (client-only code `date_order`). Convenience only; the server decides.
+ */
+export function credentialProblem(field: Pick<FormField, 'options' | 'validation'>, value: unknown): FieldErrorCode | null {
+  if (!isPlainObject(value)) return 'invalid_type';
+  if (Object.keys(value).some((k) => !CREDENTIAL_KEYS.has(k))) return 'invalid_type';
+  if (value.valid !== true) return 'invalid_value';
+  const { level, obtainedOn, validUntil } = value;
+  if (level !== undefined && level !== null) {
+    if (typeof level !== 'string') return 'invalid_type';
+    const text = level.trim();
+    const maxLength = field.validation?.maxLength;
+    if (field.options && field.options.length > 0) {
+      if (text !== '' && !field.options.some((o) => o.value === level)) return 'not_an_option';
+    } else if (maxLength !== undefined) {
+      if (text.length > maxLength) return 'too_long';
+      if (!isCleanText(text)) return 'invalid_value';
+    } else if (text !== '') return 'invalid_value';
+  }
+  for (const date of [obtainedOn, validUntil]) {
+    if (date === undefined || date === null || date === '') continue;
+    if (typeof date !== 'string') return 'invalid_type';
+    if (!isIsoDate(date) || date < '1900-01-01' || date > '2100-12-31') return 'invalid_value';
+  }
+  if (typeof obtainedOn === 'string' && typeof validUntil === 'string' && obtainedOn && validUntil && validUntil < obtainedOn) return 'date_order';
+  return null;
+}
+
 function cleanValue(field: FormField, value: unknown): FieldErrorCode | null {
   const v = field.validation;
   switch (field.type) {
@@ -259,6 +300,8 @@ function cleanValue(field: FormField, value: unknown): FieldErrorCode | null {
     case 'checkbox':
     case 'consent':
       return typeof value === 'boolean' ? null : 'invalid_type';
+    case 'credential':
+      return credentialProblem(field, value);
     default:
       return 'invalid_value';
   }
@@ -315,7 +358,18 @@ export function visibleAnswers(fields: readonly FormField[], answers: Answers): 
 }
 
 /** Strings are compared trimmed: the server stores them trimmed, so an untouched answer is not sent again. */
-const normalize = (v: unknown): unknown => (typeof v === 'string' ? v.trim() : v);
+const normalize = (v: unknown): unknown => {
+  if (typeof v === 'string') return v.trim();
+  if (isPlainObject(v)) {
+    // Object values (credentials): key order is not significant (the server's JSONB reorders keys), strings compare trimmed.
+    return Object.fromEntries(
+      Object.keys(v)
+        .sort()
+        .map((k) => [k, normalize(v[k])]),
+    );
+  }
+  return v;
+};
 const sameValue = (a: unknown, b: unknown) => JSON.stringify(normalize(a)) === JSON.stringify(normalize(b));
 
 /**

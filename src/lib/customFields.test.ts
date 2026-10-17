@@ -96,6 +96,38 @@ describe('values of a member', () => {
     expect(toFormField(fields[1]!)).toEqual({ key: 'notiz_text', type: 'text', label: 'Notiz' });
   });
 
+  it('carries help text, validation and (for credentials) levels and expiry into the form field', () => {
+    const expiry = { status: 'valid' as const, daysLeft: null, validUntil: null };
+    expect(toFormField(field({ type: 'text', options: null, helpText: 'Hilfe', validation: { maxLength: 20 } }))).toEqual({
+      key: 'trikot',
+      type: 'text',
+      label: 'Trikotgröße',
+      helpText: 'Hilfe',
+      validation: { maxLength: 20 },
+    });
+    expect(toFormField(field({ type: 'credential', value: { valid: true }, expiry }))).toMatchObject({ type: 'credential', expiry, options: expect.any(Array) });
+  });
+
+  it('displays a credential value read-only', () => {
+    const texts = { yes: 'Ja', no: 'Nein', formatDate: (v: string) => `<${v}>` };
+    const f = field({ type: 'credential', options: [{ value: 'b', label: 'B' }], value: { valid: true, level: 'b', validUntil: '2027-01-31' } });
+    expect(displayValue(f, texts)).toBe('Ja, level: B, until: <2027-01-31>');
+    expect(displayValue(field({ type: 'credential', value: null }), texts)).toBeNull();
+  });
+
+  it('keeps own-profile editing to editable_by = self for credentials too', () => {
+    const board = field({ key: 'fz', type: 'credential', editableBy: 'vorstand', editable: true });
+    expect(editableFields([board], true)).toEqual([]);
+    expect(partitionFields([board], false, true).readOnly).toEqual([board]);
+  });
+
+  it('does not report a credential as changed when only the key order differs (JSONB)', () => {
+    const f = field({ key: 'fz', type: 'credential', options: null, value: { valid: true, validUntil: '2027-01-01', obtainedOn: '2024-01-01' } });
+    const saved = valuesToAnswers([f]);
+    expect(valuesPatch([f], saved, { fz: { valid: true, obtainedOn: '2024-01-01', validUntil: '2027-01-01' } }, true)).toBeNull();
+    expect(valuesPatch([f], saved, { fz: undefined }, true)).toEqual({ fz: null });
+  });
+
   it('sends only changed editable values; cleared values are null; read-only values never', () => {
     const saved = valuesToAnswers(fields);
     expect(valuesPatch(fields, saved, saved)).toBeNull();

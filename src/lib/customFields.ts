@@ -1,4 +1,5 @@
 import { ApiError } from './api';
+import { type CredentialExpiry, credentialSummary } from './credentials';
 import { type Answers, diffAnswers, type FormField, formErrorKey, isEmptyAnswer } from './formSchema';
 
 /**
@@ -8,7 +9,7 @@ import { type Answers, diffAnswers, type FormField, formErrorKey, isEmptyAnswer 
  * only renders what it is told and disables what it is told is not allowed. Definitions are board business (website).
  */
 
-export const CUSTOM_FIELD_TYPES = ['text', 'textarea', 'number', 'date', 'select', 'multiselect', 'checkbox'] as const;
+export const CUSTOM_FIELD_TYPES = ['text', 'textarea', 'number', 'date', 'select', 'multiselect', 'checkbox', 'credential'] as const;
 export type CustomFieldType = (typeof CUSTOM_FIELD_TYPES)[number];
 export type VisibleTo = 'vorstand' | 'funktionstraeger' | 'mitglied';
 export type EditableBy = 'vorstand' | 'self';
@@ -21,7 +22,11 @@ export interface MemberCustomField {
   key: string;
   label: string;
   type: CustomFieldType;
+  /** Choices of a select/multiselect, or the levels of a `credential`. */
   options: { value: string; label: string }[] | null;
+  /** Form-engine limits (text length, number range, free-text credential level); absent on an older backend. */
+  validation?: FormField['validation'] | null;
+  helpText?: string | null;
   visibleTo: VisibleTo;
   editableBy: EditableBy;
   sensitive: boolean;
@@ -32,6 +37,8 @@ export interface MemberCustomField {
   editable: boolean;
   value: unknown;
   updatedAt: string | null;
+  /** `credential` fields only (`null` otherwise / older backend): status of the saved value, see `lib/credentials.ts`. */
+  expiry?: CredentialExpiry | null;
 }
 
 /** The form-engine view of a custom field so the shared `FormRenderer` can render and edit it. */
@@ -40,7 +47,10 @@ export function toFormField(field: MemberCustomField): FormField {
     key: field.key,
     type: field.type,
     label: field.label,
-    ...(isChoice(field.type) && field.options ? { options: field.options } : {}),
+    ...((isChoice(field.type) || field.type === 'credential') && field.options ? { options: field.options } : {}),
+    ...(field.helpText ? { helpText: field.helpText } : {}),
+    ...(field.validation ? { validation: field.validation } : {}),
+    ...(field.type === 'credential' ? { expiry: field.expiry ?? null } : {}),
   };
 }
 
@@ -90,9 +100,25 @@ export function valuesPatch(fields: readonly MemberCustomField[], saved: Answers
 /** Text of a stored value for the read-only view (option labels instead of values); `null` = no value. */
 export function displayValue(
   field: Pick<MemberCustomField, 'type' | 'options' | 'value'>,
-  texts: { yes: string; no: string; formatDate: (v: string) => string },
+  texts: {
+    yes: string;
+    no: string;
+    formatDate: (v: string) => string;
+    /** Wording of a credential's parts; plain English fallbacks without it. */
+    credential?: { level: (level: string) => string; obtained: (date: string) => string; until: (date: string) => string };
+  },
 ): string | null {
   const { value } = field;
+  if (field.type === 'credential') {
+    const c = texts.credential;
+    return credentialSummary(value, field.options, {
+      yes: texts.yes,
+      level: c?.level ?? ((l) => `level: ${l}`),
+      obtained: c?.obtained ?? ((d) => `obtained: ${d}`),
+      until: c?.until ?? ((d) => `until: ${d}`),
+      formatDate: texts.formatDate,
+    });
+  }
   if (isEmptyAnswer(value) && value !== false) return null;
   const label = (v: unknown) => (field.options ?? []).find((o) => o.value === v)?.label ?? String(v);
   switch (field.type) {

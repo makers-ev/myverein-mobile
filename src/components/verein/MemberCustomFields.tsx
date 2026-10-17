@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { Lock } from 'lucide-react-native';
 
+import ExpiryBadge, { formatCredentialDate } from '@/components/forms/ExpiryBadge';
 import FormRenderer, { type FormRendererHandle } from '@/components/forms/FormRenderer';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useMemberCustomFields } from '@/hooks/useMemberCustomFields';
@@ -19,13 +20,6 @@ interface Props {
   onDirtyChange?: (dirty: boolean) => void;
   /** Card styling for the Profil tab; the detail sheet renders it flat. */
   card?: boolean;
-}
-
-/** `YYYY-MM-DD` -> local date text without the UTC shift. */
-function formatDate(value: string, locale: string): string {
-  const [y, m, d] = value.slice(0, 10).split('-').map(Number);
-  if (!y || !m || !d) return value;
-  return new Date(y, m - 1, d).toLocaleDateString(locale);
 }
 
 /**
@@ -150,7 +144,13 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
   // Nothing to show (and nothing hidden from this caller): keep the screen free of an empty box.
   if (fields.length === 0) return null;
 
-  const texts = { yes: t('forms.review.yes'), no: t('forms.review.no'), formatDate: (v: string) => formatDate(v, language) };
+  const texts = { yes: t('forms.review.yes'), no: t('forms.review.no'), formatDate: (v: string) => formatCredentialDate(v, language),
+    credential: {
+      level: (level: string) => t('forms.cred.summary.level', { level }),
+      obtained: (date: string) => t('forms.cred.summary.obtained', { date }),
+      until: (date: string) => t('forms.cred.summary.until', { date }),
+    },
+  };
   const sensitiveEditable = editable.filter((f) => f.sensitive);
 
   return (
@@ -188,6 +188,12 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
                 >
                   {text ?? '—'}
                 </Text>
+                {f.type === 'credential' && f.expiry ? (
+                  <View className="mt-1.5">
+                    <ExpiryBadge expiry={f.expiry} />
+                  </View>
+                ) : null}
+                {f.helpText ? <Text className={`${mutedClass} mt-1`}>{f.helpText}</Text> : null}
                 {hint ? <Text className={`${mutedClass} mt-0.5`}>{hint}</Text> : null}
               </View>
             );
