@@ -98,6 +98,8 @@ export default function NotificationsScreen() {
           {t('notifications.title')}
         </Text>
 
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('notifications.platform-hint')}</Text>
+
         <View className="flex-row mb-4" style={{ gap: 8 }}>
           {(['unread', 'read'] as const).map((value) => (
             <TouchableOpacity

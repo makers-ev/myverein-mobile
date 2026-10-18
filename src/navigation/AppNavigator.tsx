@@ -13,6 +13,7 @@ import ForgotPasswordScreen from '@/screens/ForgotPasswordScreen';
 import HomeScreen from '@/screens/HomeScreen';
 import LoginScreen from '@/screens/LoginScreen';
 import NotificationsScreen from '@/screens/NotificationsScreen';
+import MitteilungenScreen from '@/screens/MitteilungenScreen';
 import SignupScreen from '@/screens/SignupScreen';
 import TwoFactorScreen from '@/screens/TwoFactorScreen';
 import SettingsScreen from '@/screens/SettingsScreen';
@@ -52,6 +53,7 @@ export type RootStackParamList = {
   ClubApplications: undefined;
   ProfileModules: undefined;
   Notifications: undefined;
+  Mitteilungen: undefined;
   Login: { returnTo?: keyof RootStackParamList } | undefined;
   Signup: undefined;
   ForgotPassword: undefined;
@@ -155,6 +157,14 @@ function MainNavigator() {
         {() => (
           <RequireAuth>
             <NotificationsScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Mitteilungen">
+        {() => (
+          <RequireAuth>
+            <MitteilungenScreen />
           </RequireAuth>
         )}
       </RootStack.Screen>
