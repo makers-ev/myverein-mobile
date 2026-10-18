@@ -357,6 +357,8 @@ None of the above needs `expo-secure-store` — language, theme, and the two tit
 
 ## Screens
 
+> **Unsubscribe links (Wave 9):** club e-mails carry a signed "Abmelden" link that points to the backend's `/unsubscribe/:token` page (website `/abmelden`), not to a screen of this app. In-app, the same choice lives in Settings -> notification settings (per account, all clubs; mandatory notices cannot be switched off). Members without an account have no in-app way back, see the vault's Feature List ("Weiterhin offen").
+
 | Screen | Access | Purpose |
 |---|---|---|
 | `Home` | public | Initial route for guests. Compact header plus a Bento grid of Kalender/Standorte/Verein tiles (gated via `requireAuth`) and a sign-up/login CTA tile; signed-in users see the shared signed-in-as card |
