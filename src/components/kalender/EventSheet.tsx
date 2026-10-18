@@ -272,7 +272,13 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
           ) : null}
         </View>
       ) : null}
-      {rsvp ? <RsvpControl {...rsvp} /> : null}
+      {event?.cancelled ? (
+        <Text className="text-destructive text-sm font-bold">
+          {event.cancelReason ? `${t('termine.cancelled')} - ${t('termine.cancelled-reason', { reason: event.cancelReason })}` : t('termine.cancelled')}
+        </Text>
+      ) : rsvp ? (
+        <RsvpControl {...rsvp} />
+      ) : null}
     </View>
   ) : null;
 

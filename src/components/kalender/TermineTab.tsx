@@ -29,8 +29,22 @@ function EventRow({ event, color, rsvp, onPress }: { event: CalendarEvent; color
     >
       <View style={{ width: 4, backgroundColor: color }} />
       <View className="flex-1 p-3">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-sm">{event.title}</Text>
+        <Text
+          className="text-foreground dark:text-foreground-dark font-bold text-sm"
+          style={event.cancelled ? { textDecorationLine: 'line-through', opacity: 0.6 } : undefined}
+        >
+          {event.title}
+        </Text>
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">{formatTimeRange(event, language)}</Text>
+
+        {event.cancelled ? (
+          <View className="mt-2 self-start bg-destructive px-2 py-0.5 rounded-full">
+            <Text className="text-xs font-bold text-white">{t('termine.cancelled')}</Text>
+          </View>
+        ) : null}
+        {event.cancelled && event.cancelReason ? (
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">{t('termine.cancelled-reason', { reason: event.cancelReason })}</Text>
+        ) : null}
 
         {event.category || event.capacity != null ? (
           <View className="flex-row items-center flex-wrap mt-2" style={{ gap: 6 }}>
@@ -45,9 +59,11 @@ function EventRow({ event, color, rsvp, onPress }: { event: CalendarEvent; color
           </View>
         ) : null}
 
-        <View className="mt-3">
-          <RsvpControl {...rsvp} />
-        </View>
+        {event.cancelled ? null : (
+          <View className="mt-3">
+            <RsvpControl {...rsvp} />
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
