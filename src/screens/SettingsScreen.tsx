@@ -12,6 +12,7 @@ import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 
 // Component imports
 import { SettingsSwitchOption } from '@/components/Settings/SettingsSwitchOption';
+import NotificationPreferencesSection from '@/components/Settings/NotificationPreferencesSection';
 import { SettingsDropdownOption } from '@/components/Settings/SettingsDropdownOption';
 
 // Modal imports
@@ -283,6 +284,8 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                             twoFactorEnabled={Boolean((user as { twoFactorEnabled?: boolean } | null)?.twoFactorEnabled)}
                             onSaved={(message) => setSavedMessage(message)}
                         />
+
+                        <NotificationPreferencesSection />
 
                         <SessionsSection listSessions={listSessions} revokeSession={revokeSession} currentSessionToken={undefined} onSaved={(message) => setSavedMessage(message)} />
 

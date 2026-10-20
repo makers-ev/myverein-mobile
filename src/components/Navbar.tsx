@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, Calendar, Home as HomeIcon, MapPin, Settings as SettingsIcon, Users, type LucideIcon } from 'lucide-react-native';
+import { Bell, Calendar, Megaphone, Home as HomeIcon, MapPin, Settings as SettingsIcon, Users, type LucideIcon } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { navigate, navigationRef } from '@/navigation/navigationRef';
 import { getShowNavbarTitles } from '@/settings/appSettingsStorage';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
+import { useUnreadCount } from '@/hooks/useClubInbox';
+import { useActiveClub } from '@/clubs/ActiveClubProvider';
 
 interface NavItem {
-    route: 'Home' | 'Verein' | 'Kalender' | 'Standorte' | 'Notifications' | 'Settings';
+    route: 'Home' | 'Verein' | 'Kalender' | 'Standorte' | 'Mitteilungen' | 'Notifications' | 'Settings';
     labelKey: string;
     Icon: LucideIcon;
 }
@@ -25,6 +27,7 @@ const NAV_ITEMS: NavItem[] = [
     { route: 'Verein', labelKey: 'nav.verein', Icon: Users },
     { route: 'Kalender', labelKey: 'nav.kalender', Icon: Calendar },
     { route: 'Standorte', labelKey: 'nav.standorte', Icon: MapPin },
+    { route: 'Mitteilungen', labelKey: 'nav.mitteilungen', Icon: Megaphone },
     { route: 'Notifications', labelKey: 'nav.notifications', Icon: Bell },
     { route: 'Settings', labelKey: 'nav.settings', Icon: SettingsIcon },
 ];
@@ -56,6 +59,8 @@ export default function Navbar() {
     const [activeRoute, setActiveRoute] = useState<string | undefined>();
     const [showTitles, setShowTitles] = useState(true);
     const unreadCount = useUnreadNotificationCount();
+    const { activeClub } = useActiveClub();
+    const inboxUnreadCount = useUnreadCount(activeClub?.clubId ?? null);
 
     useEffect(() => {
         // SettingsScreen tells the user a restart is required after
@@ -97,6 +102,8 @@ export default function Navbar() {
             >
                 {NAV_ITEMS.map(({ route, labelKey, Icon }) => {
                     const isActive = activeRoute === route;
+                    // Two separate badges: club inbox (Mitteilungen) vs. platform notices (bell).
+                    const badge = route === 'Notifications' ? unreadCount : route === 'Mitteilungen' ? inboxUnreadCount : 0;
                     return (
                         <TouchableOpacity
                             key={route}
@@ -106,12 +113,12 @@ export default function Navbar() {
                         >
                             <View>
                                 <Icon size={22} color={themeColors.primaryForeground} strokeWidth={isActive ? 2.5 : 2} />
-                                {route === 'Notifications' && unreadCount > 0 && (
+                                {badge > 0 && (
                                     <View
                                         className="absolute -right-1.5 -top-1 min-w-[14px] h-[14px] rounded-full items-center justify-center bg-destructive px-0.5"
                                     >
                                         <Text className="text-[9px] font-bold text-white">
-                                            {unreadCount > 9 ? '9+' : unreadCount}
+                                            {badge > 9 ? '9+' : badge}
                                         </Text>
                                     </View>
                                 )}

@@ -14,6 +14,10 @@ export interface CalendarEvent {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  /** Wave 9 B10: cancelled instead of deleted -- optional so older responses still type-check. */
+  cancelled?: boolean;
+  cancelledAt?: string | null;
+  cancelReason?: string | null;
 }
 
 interface EventRange {
