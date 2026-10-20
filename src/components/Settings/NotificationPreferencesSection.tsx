@@ -3,6 +3,7 @@ import { ActivityIndicator, Switch, Text, TouchableOpacity, View } from 'react-n
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
+import NotificationCatalogInfo from '@/components/Settings/NotificationCatalogInfo';
 import PushDeviceSection from '@/components/push/PushDeviceSection';
 import { useNotificationPreferences, type PreferenceCategory } from '@/hooks/useNotificationPreferences';
 
@@ -13,10 +14,10 @@ import { useNotificationPreferences, type PreferenceCategory } from '@/hooks/use
  * but not switchable. The `push` toggles are per account; the device block below them
  * (`PushDeviceSection`, M2) asks for the system permission on tap and explains a denied one.
  */
-export default function NotificationPreferencesSection() {
+export default function NotificationPreferencesSection({ clubId }: { clubId?: string | null } = {}) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { preferences, loading, error, refetch, setEnabled } = useNotificationPreferences();
+  const { preferences, loading, error, refetch, setEnabled } = useNotificationPreferences(clubId);
   const [saveError, setSaveError] = useState(false);
 
   const toggle = async (category: PreferenceCategory, channel: 'email' | 'push', value: boolean) => {
@@ -29,6 +30,9 @@ export default function NotificationPreferencesSection() {
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
       <Text className="text-base font-bold text-foreground dark:text-foreground-dark">{t('settings.section-notifications')}</Text>
       <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mt-0.5 mb-1">{t('settings.notifications.description')}</Text>
+      <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1" testID="notification-scope-note">
+        {preferences?.scope === 'club' ? t('settings.notifications.scope.club') : t('settings.notifications.scope.account')}
+      </Text>
 
       <View className="mt-2">
         {loading && !preferences ? (
@@ -70,6 +74,8 @@ export default function NotificationPreferencesSection() {
             ))}
 
             <PushDeviceSection />
+
+            <NotificationCatalogInfo />
 
             <View className="bg-muted dark:bg-muted-dark rounded-xl p-3">
               <Text className="text-foreground dark:text-foreground-dark text-sm font-bold mb-0.5">{t('settings.notifications.mandatory.title')}</Text>
