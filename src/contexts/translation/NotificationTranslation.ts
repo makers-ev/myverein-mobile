@@ -5,7 +5,7 @@ type Translation = Record<Language, Record<string, string>>;
 // 'notification.welcome.*' render the system welcome notification's
 // `translationKey` (see _template_better-auth-backend's databaseHooks.user.create
 // hook) -- `{{appName}}` is filled in by `t()` itself (LanguageContext.tsx),
-// merging its own app.json default with the notification's `paramsJson`.
+// merging its own app.config.ts default with the notification's `paramsJson`.
 // fr/es/pt/it/nl/pl/ru/ja/zh-Hans are first-pass AI translation (ADR-009),
 // pending native-speaker review.
 const NotificationTranslation: Translation = {

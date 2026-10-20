@@ -5,8 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 
 // Base URL of the auth-backend-template Hono server. Set via
 // EXPO_PUBLIC_BACKEND_URL (see .env.example) -- Expo/Metro inlines
-// EXPO_PUBLIC_* vars into the bundle at build time, no extra app.json/
-// app.config wiring is required.
+// EXPO_PUBLIC_* vars into the bundle at build time, no app config wiring needed.
 export const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL ?? 'http://localhost:3000';
 
 // Public URL of the website template, used as the verification email's
