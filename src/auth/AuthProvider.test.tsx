@@ -42,7 +42,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
 describe('AuthProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    authClient.useSession.mockReturnValue({ data: null, isPending: false });
+    authClient.useSession.mockReturnValue({ data: null, isPending: false, refetch: jest.fn() });
   });
 
   it('signIn sets twoFactorPending when the response includes twoFactorRedirect', async () => {
@@ -62,6 +62,7 @@ describe('AuthProvider', () => {
     authClient.useSession.mockReturnValue({
       data: { session: { id: 's1' }, user: { id: 'u1', email: 'user@example.com' } },
       isPending: false,
+      refetch: jest.fn(),
     });
     authClient.signIn.email.mockResolvedValue({ data: { twoFactorRedirect: true }, error: null });
 
