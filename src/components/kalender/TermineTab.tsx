@@ -98,7 +98,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled }: Props) {
   const range = useMemo(() => monthRange(month), [month]);
   const { events, loading, refetch } = useEvents(clubId, range);
   const { rsvp, cancelRsvp } = useEventRsvp(clubId, refetch);
-  const { createEvent, updateEvent, deleteEvent } = useEventMutations(clubId, refetch);
+  const { createEvent, updateEvent, deleteEvent, cancelEvent } = useEventMutations(clubId, refetch);
 
   const [rsvpStates, setRsvpStates] = useState<Record<string, RsvpState>>({});
   const [pendingIds, setPendingIds] = useState<Record<string, boolean>>({});
@@ -182,8 +182,8 @@ export default function TermineTab({ clubId, focus, onFocusHandled }: Props) {
     if (date.getMonth() !== month.getMonth()) setMonth(date);
   };
 
-  const handleSave = async (input: EventInput, id?: string) => {
-    if (id) await updateEvent(id, input);
+  const handleSave = async (input: EventInput, id?: string, notify = true) => {
+    if (id) await updateEvent(id, input, notify);
     else await createEvent(input);
   };
 
@@ -249,9 +249,11 @@ export default function TermineTab({ clubId, focus, onFocusHandled }: Props) {
         calendars={calendars}
         colorFor={colorFor}
         canWrite={canWrite}
+        clubId={clubId}
         rsvp={sheetEvent ? rsvpPropsFor(sheetEvent.id) : null}
         onSave={handleSave}
         onDelete={deleteEvent}
+        onCancelEvent={cancelEvent}
       />
 
       {canWrite ? (
