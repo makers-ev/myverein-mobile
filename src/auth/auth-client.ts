@@ -31,6 +31,7 @@ export const authClient = createAuthClient({
   baseURL: backendUrl,
   plugins: [
     expoClient({
+      // Kept on purpose: changing it would sign every existing user out. Our own keys use `myverein.` (see src/lib/storageMigration.ts).
       storagePrefix: '_template_better-auth-mobile',
       storage: SecureStore,
     }),
