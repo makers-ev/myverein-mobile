@@ -1,6 +1,11 @@
 import {
   decidePushNavigation,
   environmentLimit,
+  isRegistrationCurrent,
+  isRetryableUnregisterFailure,
+  lookupAnnouncement,
+  nextRegisteringStatus,
+  parsePendingUnregister,
   isPushTargetStale,
   needsRegistration,
   parsePushPayload,
@@ -28,7 +33,7 @@ describe('parsePushPayload', () => {
   it('opens the inbox for messages and reminders, the calendar for meetings', () => {
     expect(parsePushPayload({ type: 'message' })).toEqual({ kind: 'inbox', clubId: null });
     expect(parsePushPayload({ type: 'reminder', clubId: 'c' })).toEqual({ kind: 'inbox', clubId: 'c' });
-    expect(parsePushPayload({ type: 'meeting', meetingId: 'm' })).toEqual({ kind: 'calendar', clubId: null });
+    expect(parsePushPayload({ type: 'meeting', meetingId: 'm' })).toEqual({ kind: 'calendar', clubId: null, tab: 'treffen' });
   });
 
   it('ignores unknown or malformed payloads', () => {
@@ -108,5 +113,50 @@ describe('registration state', () => {
     expect(parseStoredRegistration('nope')).toBeNull();
     expect(parseStoredRegistration('{"token":1}')).toBeNull();
     expect(parseStoredRegistration('{"token":"t","userId":"u","at":5}')).toEqual({ token: 't', userId: 'u', at: 5 });
+  });
+});
+
+describe('pending unregister', () => {
+  it('parses only a stored token', () => {
+    expect(parsePendingUnregister(JSON.stringify({ token: 'ExponentPushToken[x]' }))).toEqual({ token: 'ExponentPushToken[x]' });
+    expect(parsePendingUnregister(JSON.stringify({ token: '' }))).toBeNull();
+    expect(parsePendingUnregister('nope')).toBeNull();
+    expect(parsePendingUnregister(null)).toBeNull();
+  });
+
+  it('retries network, 5xx, timeout and rate-limit failures but not definitive 4xx answers', () => {
+    expect(isRetryableUnregisterFailure(undefined)).toBe(true);
+    expect(isRetryableUnregisterFailure(503)).toBe(true);
+    expect(isRetryableUnregisterFailure(429)).toBe(true);
+    expect(isRetryableUnregisterFailure(404)).toBe(false);
+    expect(isRetryableUnregisterFailure(401)).toBe(false);
+  });
+});
+
+describe('isRegistrationCurrent', () => {
+  const started = { epoch: 1, userId: 'u1' };
+  it('is current only for the same epoch and account while not unregistering', () => {
+    expect(isRegistrationCurrent(started, { epoch: 1, userId: 'u1', unregistering: false })).toBe(true);
+    expect(isRegistrationCurrent(started, { epoch: 2, userId: 'u1', unregistering: false })).toBe(false);
+    expect(isRegistrationCurrent(started, { epoch: 1, userId: null, unregistering: false })).toBe(false);
+    expect(isRegistrationCurrent(started, { epoch: 1, userId: 'u2', unregistering: false })).toBe(false);
+    expect(isRegistrationCurrent(started, { epoch: 1, userId: 'u1', unregistering: true })).toBe(false);
+  });
+});
+
+describe('nextRegisteringStatus', () => {
+  it('keeps registered during a routine re-sync', () => {
+    expect(nextRegisteringStatus('registered')).toBe('registered');
+    expect(nextRegisteringStatus('error')).toBe('registering');
+    expect(nextRegisteringStatus('undetermined')).toBe('registering');
+  });
+});
+
+describe('lookupAnnouncement', () => {
+  const list = [{ announcementId: 'a1' }, { announcementId: null }];
+  it('finds, reports gone for a short list and unknown for a full page', () => {
+    expect(lookupAnnouncement(list, 'a1', 100)).toBe('found');
+    expect(lookupAnnouncement(list, 'zz', 100)).toBe('gone');
+    expect(lookupAnnouncement(list, 'zz', 2)).toBe('unknown');
   });
 });

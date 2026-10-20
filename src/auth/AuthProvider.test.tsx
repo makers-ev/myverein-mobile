@@ -4,7 +4,10 @@ import { act, renderHook } from '@testing-library/react-native';
 import { unregisterPushToken } from '@/notifications/pushRegistration';
 import { AuthProvider, useAuth } from './AuthProvider';
 
-jest.mock('@/notifications/pushRegistration', () => ({ unregisterPushToken: jest.fn().mockResolvedValue(undefined) }));
+jest.mock('@/notifications/pushRegistration', () => ({
+  unregisterPushToken: jest.fn().mockResolvedValue(undefined),
+  resumePushRegistration: jest.fn(),
+}));
 
 jest.mock('./auth-client', () => ({
   authClient: {
@@ -106,5 +109,21 @@ describe('AuthProvider', () => {
     });
 
     expect(order).toEqual(['unregister', 'signOut']);
+  });
+
+  it('deleteAccount unregisters the push token before deleting the user', async () => {
+    const order: string[] = [];
+    (unregisterPushToken as jest.Mock).mockImplementationOnce(async () => void order.push('unregister'));
+    authClient.deleteUser.mockImplementationOnce(async () => {
+      order.push('deleteUser');
+      return { error: null };
+    });
+
+    const { result } = await renderHook(() => useAuth(), { wrapper });
+    await act(async () => {
+      await result.current.deleteAccount('pw');
+    });
+
+    expect(order).toEqual(['unregister', 'deleteUser']);
   });
 });

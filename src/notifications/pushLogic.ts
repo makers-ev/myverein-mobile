@@ -10,7 +10,10 @@ export type PushTarget =
   | { kind: 'announcement'; announcementId: string; clubId: string | null }
   | { kind: 'event'; eventId: string; clubId: string | null }
   | { kind: 'inbox'; clubId: string | null }
-  | { kind: 'calendar'; clubId: string | null };
+  | { kind: 'calendar'; clubId: string | null; tab?: CalendarTabHint };
+
+/** Which Kalender tab a calendar target opens (default: Termine). */
+export type CalendarTabHint = 'treffen';
 
 const ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 
@@ -37,7 +40,7 @@ export function parsePushPayload(data: unknown): PushTarget | null {
       return eventId ? { kind: 'event', eventId, clubId } : { kind: 'calendar', clubId };
     }
     case 'meeting':
-      return { kind: 'calendar', clubId };
+      return { kind: 'calendar', clubId, tab: 'treffen' };
     case 'reminder':
     case 'message':
       return { kind: 'inbox', clubId };
@@ -72,6 +75,21 @@ export function decidePushNavigation(
   if (!state.navigationReady || state.authLoading || state.twoFactorPending) return { action: 'wait' };
   const route = routeForTarget(target);
   return state.isAuthenticated ? { action: 'navigate', route } : { action: 'login', returnTo: route };
+}
+
+export type AnnouncementLookup = 'found' | 'gone' | 'unknown';
+
+/**
+ * Whether a tapped announcement is in the loaded inbox page. A full page means older messages were
+ * not loaded, so a miss is 'unknown' (softer notice) rather than 'gone'.
+ */
+export function lookupAnnouncement(
+  list: { announcementId: string | null }[],
+  announcementId: string,
+  pageSize: number,
+): AnnouncementLookup {
+  if (list.some((m) => m.announcementId === announcementId)) return 'found';
+  return list.length >= pageSize ? 'unknown' : 'gone';
 }
 
 /** Which targets a screen consumes (Mitteilungen: announcements + inbox, Kalender: events + calendar). */
@@ -119,6 +137,45 @@ export function statusFromPermission(permission: PushPermission, registered: boo
   if (permission === 'undetermined') return 'undetermined';
   if (registered) return 'registered';
   return failed ? 'error' : 'registering';
+}
+
+/** A token whose backend removal failed (logout offline, session lost); only the token, retried while signed in. */
+export interface PendingUnregister {
+  token: string;
+}
+
+export function parsePendingUnregister(raw: string | null): PendingUnregister | null {
+  if (!raw) return null;
+  try {
+    const v = JSON.parse(raw) as Partial<PendingUnregister>;
+    if (typeof v.token === 'string' && v.token) return { token: v.token };
+  } catch {
+    // fall through
+  }
+  return null;
+}
+
+/** A failed `DELETE /push-tokens/:token` is retried unless the backend answered definitively (4xx except timeout/rate limit). */
+export function isRetryableUnregisterFailure(status: number | undefined): boolean {
+  if (status === undefined) return true;
+  if (status === 408 || status === 429) return true;
+  return status >= 500;
+}
+
+/**
+ * A registration request may only touch the backend / storage while the account and the
+ * logout generation it started with are still current (logout or session loss bumps the epoch).
+ */
+export function isRegistrationCurrent(
+  started: { epoch: number; userId: string },
+  now: { epoch: number; userId: string | null; unregistering: boolean },
+): boolean {
+  return !now.unregistering && started.epoch === now.epoch && started.userId === now.userId;
+}
+
+/** Shows 'registering' only while no token is registered yet; a routine re-sync keeps 'registered'. */
+export function nextRegisteringStatus(previous: PushStatus): PushStatus {
+  return previous === 'registered' ? previous : 'registering';
 }
 
 /** What this install last registered with the backend (kept in the secure store so logout can unregister). */

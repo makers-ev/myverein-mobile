@@ -4,7 +4,7 @@ import type { NotificationResponse } from 'expo-notifications';
 
 import { useAuth } from '@/auth/AuthProvider';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
-import { parsePushPayload, statusFromPermission, type PushStatus } from './pushLogic';
+import { nextRegisteringStatus, parsePushPayload, statusFromPermission, type PushStatus } from './pushLogic';
 import {
   ensureAndroidChannels,
   getNotifications,
@@ -13,7 +13,7 @@ import {
   readPermission,
   requestPermission,
 } from './pushNative';
-import { registerPushToken } from './pushRegistration';
+import { flushPendingUnregister, markPendingUnregister, registerPushToken, resumePushRegistration } from './pushRegistration';
 import { isPushPromptDismissed, setPushPromptDismissed } from './pushStorage';
 import { setIncomingPushTarget } from './pushTargetStore';
 
@@ -23,6 +23,8 @@ interface PushContextValue {
   busy: boolean;
   /** Asks for the system permission (call only after the user chose to) and registers the token. */
   enable: () => Promise<void>;
+  /** Retries the registration after an `error` status. */
+  retry: () => Promise<void>;
   /** Opens the system settings of the app (for a denied permission). */
   openSystemSettings: () => void;
   /** The one-time hint on Mitteilungen: shown only until dismissed or push is set up. */
@@ -48,27 +50,44 @@ export function PushProvider({ children }: { children: React.ReactNode }) {
   const limit = useMemo(() => pushEnvironmentLimit(), []);
   const [status, setStatus] = useState<PushStatus>(limit ?? 'undetermined');
   const [busy, setBusy] = useState(false);
-  const [dismissed, setDismissed] = useState(true); // hidden until the stored flag is read
+  // The stored "hint dismissed" flag per account; the hint stays hidden until it was read for the current account.
+  const [dismissedFlag, setDismissedFlag] = useState<{ userId: string; value: boolean } | null>(null);
+  const dismissed = !userId || dismissedFlag?.userId !== userId || dismissedFlag.value;
   const userIdRef = useRef(userId);
+  const syncSeq = useRef(0);
+  const previousUserId = useRef<string | null>(userId);
   useEffect(() => {
     userIdRef.current = userId;
+    // Signed in again (or as someone else): registrations are allowed again after a logout.
+    if (userId) resumePushRegistration();
+    // The session ended without our own logout (expired / revoked elsewhere): queue the token for removal.
+    if (!userId && previousUserId.current) void markPendingUnregister();
+    previousUserId.current = userId;
   }, [userId]);
 
   // Reads the current permission; registers when granted. Never prompts.
   const sync = useCallback(async () => {
     if (limit) return;
+    // Only the newest sync may write the status; the account must also still be the one it started for.
+    const seq = ++syncSeq.current;
+    const id = userIdRef.current;
+    const stale = () => seq !== syncSeq.current || userIdRef.current !== id;
     try {
       const permission = await readPermission();
-      const id = userIdRef.current;
+      if (stale()) return;
       if (permission !== 'granted' || !id) {
         setStatus(statusFromPermission(permission, false, false));
         return;
       }
-      setStatus('registering');
-      const ok = await registerPushToken(id);
+      // Routine re-syncs of an already registered device keep showing 'registered' instead of flashing a spinner.
+      setStatus(nextRegisteringStatus);
+      await flushPendingUnregister();
+      if (stale()) return;
+      const ok = await registerPushToken(id, () => userIdRef.current);
+      if (stale()) return;
       setStatus(statusFromPermission('granted', ok, !ok));
     } catch {
-      setStatus('error');
+      if (!stale()) setStatus('error');
     }
   }, [limit]);
 
@@ -81,10 +100,15 @@ export function PushProvider({ children }: { children: React.ReactNode }) {
   }, [limit]);
 
   useEffect(() => {
-    isPushPromptDismissed()
-      .then((value) => setDismissed(value))
-      .catch(() => setDismissed(false));
-  }, []);
+    if (!userId) return;
+    let cancelled = false;
+    isPushPromptDismissed(userId)
+      .then((value) => !cancelled && setDismissedFlag({ userId, value }))
+      .catch(() => !cancelled && setDismissedFlag({ userId, value: false }));
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   useEffect(() => {
     void sync();
@@ -135,25 +159,37 @@ export function PushProvider({ children }: { children: React.ReactNode }) {
     }
   }, [limit, sync]);
 
+  const retry = useCallback(async () => {
+    if (limit) return;
+    setBusy(true);
+    try {
+      await sync();
+    } finally {
+      setBusy(false);
+    }
+  }, [limit, sync]);
+
   const openSystemSettings = useCallback(() => {
     void Linking.openSettings().catch(() => undefined);
   }, []);
 
   const dismissPrompt = useCallback(() => {
-    setDismissed(true);
-    void setPushPromptDismissed().catch(() => undefined);
-  }, []);
+    if (!userId) return;
+    setDismissedFlag({ userId, value: true });
+    void setPushPromptDismissed(userId).catch(() => undefined);
+  }, [userId]);
 
   const value = useMemo<PushContextValue>(
     () => ({
       status,
       busy,
       enable,
+      retry,
       openSystemSettings,
       promptVisible: !dismissed && status === 'undetermined' && !!userId,
       dismissPrompt,
     }),
-    [status, busy, enable, openSystemSettings, dismissed, userId, dismissPrompt],
+    [status, busy, enable, retry, openSystemSettings, dismissed, userId, dismissPrompt],
   );
 
   return <PushContext.Provider value={value}>{children}</PushContext.Provider>;

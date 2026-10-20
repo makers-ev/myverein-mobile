@@ -13,7 +13,7 @@ import { usePush } from '@/notifications/PushProvider';
 export default function PushDeviceSection() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { status, busy, enable, openSystemSettings } = usePush();
+  const { status, busy, enable, retry, openSystemSettings } = usePush();
 
   return (
     <View className="bg-muted dark:bg-muted-dark rounded-xl p-3 mb-3">
@@ -28,6 +28,11 @@ export default function PushDeviceSection() {
           className="bg-primary dark:bg-primary-dark rounded-xl min-h-[44px] items-center justify-center mt-2 px-4"
         >
           <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold">{t('push.enable')}</Text>
+        </TouchableOpacity>
+      ) : null}
+      {status === 'error' ? (
+        <TouchableOpacity accessibilityRole="button" disabled={busy} onPress={() => void retry()} className="min-h-[44px] justify-center self-start mt-1">
+          <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
         </TouchableOpacity>
       ) : null}
       {status === 'denied' ? (

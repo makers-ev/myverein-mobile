@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 
-import { unregisterPushToken } from '@/notifications/pushRegistration';
+import { resumePushRegistration, unregisterPushToken } from '@/notifications/pushRegistration';
 import { authClient, websiteUrl } from './auth-client';
 
 interface SignUpInput {
@@ -166,15 +166,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     // Needs the still-valid session; best effort and time-boxed, never blocks the logout.
-    await unregisterPushToken();
-    await authClient.signOut();
-    setTwoFactorPending(false);
+    try {
+      await unregisterPushToken();
+      await authClient.signOut();
+      setTwoFactorPending(false);
+    } finally {
+      // If the sign-out itself failed the account stays signed in and may register push again.
+      resumePushRegistration();
+    }
   }, []);
 
   const deleteAccount = useCallback(async (password: string): Promise<AuthResult> => {
+    // The token is removed while the session still exists; a wrong password re-registers it on the next sync.
+    await unregisterPushToken();
     const { error } = await authClient.deleteUser({ password });
 
     if (error) {
+      resumePushRegistration();
       return { success: false, error: error.message ?? 'Unable to delete account.' };
     }
 
