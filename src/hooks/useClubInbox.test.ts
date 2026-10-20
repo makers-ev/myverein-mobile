@@ -48,6 +48,25 @@ describe('useClubInbox', () => {
     expect(result.current.messages.map((m) => m.id)).toEqual(['new']);
   });
 
+  it('resolves a superseded refetch with the newer result instead of null', async () => {
+    let releaseFirst: (v: unknown) => void = () => undefined;
+    apiFetchMock
+      .mockResolvedValueOnce({ data: [] }) // initial load
+      .mockImplementationOnce(() => new Promise((resolve) => (releaseFirst = resolve)))
+      .mockResolvedValueOnce({ data: [message('new')] });
+    const { result } = await renderHook(() => useClubInbox('c1'));
+    await act(async () => {});
+    let first: unknown;
+    let second: unknown;
+    await act(async () => {
+      first = result.current.refetch();
+      second = await result.current.refetch();
+      releaseFirst({ data: [message('old')] });
+    });
+    expect(second).toEqual([message('new')]);
+    expect(await first).toEqual([message('new')]);
+  });
+
   it('does not show one club\'s messages after switching clubs', async () => {
     apiFetchMock.mockResolvedValue({ data: [message('x')] });
     const { result, rerender } = await renderHook(({ id }: { id: string }) => useClubInbox(id), { initialProps: { id: 'c1' } });

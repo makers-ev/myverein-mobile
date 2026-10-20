@@ -431,8 +431,8 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
           key={`${meeting.id}|${meeting.scheduledAt ?? ''}`}
           meeting={meeting}
           onUpdate={updateMeeting}
-          onDelete={async () => {
-            await deleteMeeting();
+          onDelete={async (notify) => {
+            await deleteMeeting(notify);
             onBack();
           }}
         />

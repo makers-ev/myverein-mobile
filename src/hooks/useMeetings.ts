@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
+import { withNotifyQuery } from '@/lib/notifyOptions';
 
 export type MeetingStatus = 'terminfindung' | 'geplant' | 'abgehalten' | 'protokolliert';
 
@@ -39,6 +40,8 @@ export interface MeetingPatch {
   agenda?: string | null;
   minutes?: string | null;
   status?: MeetingStatus;
+  /** `false` suppresses the invitee notification of a date change / cancellation (omitted = notify). */
+  notify?: boolean;
 }
 
 /**
@@ -96,8 +99,8 @@ export function useMeetings(clubId: string | null) {
   );
 
   const deleteMeeting = useCallback(
-    async (meetingId: string) => {
-      await apiFetch(`/meetings/${meetingId}?clubId=${clubId}`, { method: 'DELETE' });
+    async (meetingId: string, notify = true) => {
+      await apiFetch(withNotifyQuery(`/meetings/${meetingId}?clubId=${clubId}`, notify), { method: 'DELETE' });
       await refetch();
     },
     [clubId, refetch],

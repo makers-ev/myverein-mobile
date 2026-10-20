@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AlertTriangle, Pin } from 'lucide-react-native';
@@ -7,10 +7,14 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useMyClubs } from '@/hooks/useMyClubs';
-import { useClubInbox, type InboxMessage } from '@/hooks/useClubInbox';
+import { INBOX_PAGE_SIZE, useClubInbox, type InboxMessage } from '@/hooks/useClubInbox';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import FormSheet from '@/components/ui/FormSheet';
+import PushPrompt from '@/components/push/PushPrompt';
+import PushNotice from '@/components/push/PushNotice';
+import { usePushScreenTarget } from '@/notifications/usePushScreenTarget';
+import { lookupAnnouncement } from '@/notifications/pushLogic';
 
 function MessageCard({ message, onPress }: { message: InboxMessage; onPress: () => void }) {
   const { t, language } = useLanguage();
@@ -64,8 +68,9 @@ function MessageCard({ message, onPress }: { message: InboxMessage; onPress: () 
  * club, pinned first, urgent marked, unread highlighted. Deliberately separate from
  * `NotificationsScreen`, which shows platform notices from the operator (the bell in the Navbar).
  * Read-only for everyone -- authoring stays on the website (`announcements:write`).
- * Opening a message marks it read. Push registration and deep links (M2/M3) are not part of
- * this screen yet; they would open the detail sheet by `announcementId`.
+ * Opening a message marks it read. A tapped push (M3) opens the detail sheet by `announcementId`
+ * (after a fresh load); a withdrawn or invisible message gives a friendly notice instead of an
+ * error. The one-time `PushPrompt` (M2) explains push before the system dialog.
  */
 export default function MitteilungenScreen() {
   const { t } = useLanguage();
@@ -76,6 +81,40 @@ export default function MitteilungenScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const open = messages.find((m) => m.id === openId) ?? null;
+  const [noticeKey, setNoticeKey] = useState<string | null>(null);
+  const { target, ready, unreachable, consume } = usePushScreenTarget('Mitteilungen');
+
+  // Tapped push (M3): handled once; the target is consumed first so re-renders cannot repeat it.
+  useEffect(() => {
+    if (!target || (!ready && !unreachable)) return;
+    consume();
+    if (unreachable) {
+      setNoticeKey('push.notice.club-gone');
+      return;
+    }
+    if (target.kind !== 'announcement') {
+      setNoticeKey(null);
+      return;
+    }
+    void (async () => {
+      const fresh = await refetch();
+      if (fresh === null) {
+        setNoticeKey('push.notice.load-failed');
+        return;
+      }
+      const found = fresh.find((m) => m.announcementId === target.announcementId);
+      if (!found) {
+        // A full page means older messages were not loaded: do not claim it is gone.
+        const lookup = lookupAnnouncement(fresh, target.announcementId, INBOX_PAGE_SIZE);
+        setNoticeKey(lookup === 'unknown' ? 'push.notice.announcement-unknown' : 'push.notice.announcement-gone');
+        return;
+      }
+      setNoticeKey(null);
+      setOpenId(found.id);
+      if (!found.readAt) void markRead(found.id);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, ready, unreachable]);
 
   const handleOpen = (message: InboxMessage) => {
     setOpenId(message.id);
@@ -101,6 +140,7 @@ export default function MitteilungenScreen() {
           </Text>
         ) : null}
         <ClubSwitcher />
+        <PushNotice messageKey={noticeKey} onDismiss={() => setNoticeKey(null)} />
       </View>
 
       {clubsLoading ? (
@@ -120,6 +160,7 @@ export default function MitteilungenScreen() {
           contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 12, paddingBottom: 140, flexGrow: 1 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void handleRefresh()} tintColor={themeColors.primary} />}
         >
+          <PushPrompt />
           {loading && messages.length === 0 && !error ? (
             <View className="items-center py-10">
               <ActivityIndicator size="large" color={themeColors.primary} />

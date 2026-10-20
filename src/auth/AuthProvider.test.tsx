@@ -1,7 +1,13 @@
 import React from 'react';
 import { act, renderHook } from '@testing-library/react-native';
 
+import { unregisterPushToken } from '@/notifications/pushRegistration';
 import { AuthProvider, useAuth } from './AuthProvider';
+
+jest.mock('@/notifications/pushRegistration', () => ({
+  unregisterPushToken: jest.fn().mockResolvedValue(undefined),
+  resumePushRegistration: jest.fn(),
+}));
 
 jest.mock('./auth-client', () => ({
   authClient: {
@@ -36,7 +42,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
 describe('AuthProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    authClient.useSession.mockReturnValue({ data: null, isPending: false });
+    authClient.useSession.mockReturnValue({ data: null, isPending: false, refetch: jest.fn() });
   });
 
   it('signIn sets twoFactorPending when the response includes twoFactorRedirect', async () => {
@@ -56,6 +62,7 @@ describe('AuthProvider', () => {
     authClient.useSession.mockReturnValue({
       data: { session: { id: 's1' }, user: { id: 'u1', email: 'user@example.com' } },
       isPending: false,
+      refetch: jest.fn(),
     });
     authClient.signIn.email.mockResolvedValue({ data: { twoFactorRedirect: true }, error: null });
 
@@ -90,5 +97,34 @@ describe('AuthProvider', () => {
 
     expect(result.current.twoFactorPending).toBe(false);
     expect(authClient.signOut).toHaveBeenCalled();
+  });
+
+  it('signOut unregisters the push token before ending the session', async () => {
+    const order: string[] = [];
+    (unregisterPushToken as jest.Mock).mockImplementationOnce(async () => void order.push('unregister'));
+    authClient.signOut.mockImplementationOnce(async () => void order.push('signOut'));
+
+    const { result } = await renderHook(() => useAuth(), { wrapper });
+    await act(async () => {
+      await result.current.signOut();
+    });
+
+    expect(order).toEqual(['unregister', 'signOut']);
+  });
+
+  it('deleteAccount unregisters the push token before deleting the user', async () => {
+    const order: string[] = [];
+    (unregisterPushToken as jest.Mock).mockImplementationOnce(async () => void order.push('unregister'));
+    authClient.deleteUser.mockImplementationOnce(async () => {
+      order.push('deleteUser');
+      return { error: null };
+    });
+
+    const { result } = await renderHook(() => useAuth(), { wrapper });
+    await act(async () => {
+      await result.current.deleteAccount('pw');
+    });
+
+    expect(order).toEqual(['unregister', 'deleteUser']);
   });
 });

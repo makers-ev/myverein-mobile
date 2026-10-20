@@ -5,7 +5,7 @@ type Translation = {
 
 // Real, substantive legal copy -- not Lorem Ipsum -- genericized for any app
 // built from this template: `{{appName}}` is filled in at render time from
-// app.json's `expo.name` (see LanguageContext.tsx's `t()`). "LPJ
+// app.config.ts's `expo.name` (see LanguageContext.tsx's `t()`). "LPJ
 // IT-Solutions" is the placeholder operator/company (matching the name
 // already used in Settings' footer and Logo.tsx) -- still a literal string
 // here, not interpolated. The Imprint's address/email fields stay

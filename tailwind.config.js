@@ -3,7 +3,7 @@ module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}', './App.tsx'],
   // "media" (the default) follows the OS light/dark setting via RN's
   // Appearance API with no manual toggle -- matches userInterfaceStyle:
-  // "automatic" in app.json.
+  // "automatic" in app.config.ts.
   darkMode: 'media',
   presets: [require('nativewind/preset')],
   theme: {

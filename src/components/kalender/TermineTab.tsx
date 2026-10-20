@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { Plus, Settings2 } from 'lucide-react-native';
 
@@ -11,12 +11,18 @@ import { useCalendars } from '@/hooks/useCalendars';
 import { useEvents, useEventMutations, useEventRsvp, type CalendarEvent, type EventInput } from '@/hooks/useEvents';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { getDepartmentColor } from '@/theme/departmentColors';
+import { isSheetEventMissing, resolveSheetEvent } from '@/lib/eventFocus';
 import MonthCalendar, { toDayKey } from '@/components/ui/MonthCalendar';
 import EventSheet, { formatTimeRange, RsvpControl, type EventSheetTarget, type RsvpProps, type RsvpState } from './EventSheet';
 import CalendarManageSheet from './CalendarManageSheet';
 
 interface Props {
   clubId: string;
+  /** Set by a tapped push: select the event's day and open its sheet, then `onFocusHandled`. */
+  focus?: EventFocus | null;
+  onFocusHandled?: () => void;
+  /** The sheet pointed at an event that does not exist (any more); the sheet was closed. */
+  onEventGone?: () => void;
 }
 
 function EventRow({ event, color, rsvp, onPress }: { event: CalendarEvent; color: string; rsvp: RsvpProps; onPress: () => void }) {
@@ -76,7 +82,12 @@ function monthRange(month: Date) {
   return { from: from.toISOString(), to: to.toISOString() };
 }
 
-export default function TermineTab({ clubId }: Props) {
+/** A tapped push (M3): jump to the event's day and open it. */
+export interface EventFocus {
+  event: CalendarEvent;
+}
+
+export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone }: Props) {
   const { t, language } = useLanguage();
   const themeColors = useThemeColors();
   const { info } = useClubInfo(clubId);
@@ -89,13 +100,27 @@ export default function TermineTab({ clubId }: Props) {
   const range = useMemo(() => monthRange(month), [month]);
   const { events, loading, refetch } = useEvents(clubId, range);
   const { rsvp, cancelRsvp } = useEventRsvp(clubId, refetch);
-  const { createEvent, updateEvent, deleteEvent } = useEventMutations(clubId, refetch);
+  const { createEvent, updateEvent, deleteEvent, cancelEvent } = useEventMutations(clubId, refetch);
 
   const [rsvpStates, setRsvpStates] = useState<Record<string, RsvpState>>({});
   const [pendingIds, setPendingIds] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [sheetTarget, setSheetTarget] = useState<EventSheetTarget | null>(null);
   const [manageOpen, setManageOpen] = useState(false);
+  // The event fetched for a tapped push: shown even when it is not in the loaded month list.
+  const [fetchedEvent, setFetchedEvent] = useState<CalendarEvent | null>(null);
+
+  useEffect(() => {
+    if (!focus) return;
+    const start = new Date(focus.event.startsAt);
+    if (!Number.isNaN(start.getTime())) {
+      setMonth(start);
+      setSelectedDay(toDayKey(start));
+      setFetchedEvent(focus.event);
+      setSheetTarget({ eventId: focus.event.id });
+    }
+    onFocusHandled?.();
+  }, [focus, onFocusHandled]);
 
   const runRsvp = async (eventId: string, action: () => Promise<RsvpState>) => {
     setPendingIds((prev) => ({ ...prev, [eventId]: true }));
@@ -162,8 +187,8 @@ export default function TermineTab({ clubId }: Props) {
     if (date.getMonth() !== month.getMonth()) setMonth(date);
   };
 
-  const handleSave = async (input: EventInput, id?: string) => {
-    if (id) await updateEvent(id, input);
+  const handleSave = async (input: EventInput, id?: string, notify = true) => {
+    if (id) await updateEvent(id, input, notify);
     else await createEvent(input);
   };
 
@@ -172,7 +197,16 @@ export default function TermineTab({ clubId }: Props) {
     void refetch();
   }, [refetchCalendars, refetch]);
 
-  const sheetEvent = sheetTarget && 'eventId' in sheetTarget ? (events.find((e) => e.id === sheetTarget.eventId) ?? null) : null;
+  const sheetEventId = sheetTarget && 'eventId' in sheetTarget ? sheetTarget.eventId : null;
+  const sheetEvent = sheetEventId ? resolveSheetEvent(events, sheetEventId, fetchedEvent) : null;
+
+  // An open detail sheet whose event vanished (deleted meanwhile, not visible) is closed with a notice
+  // instead of hanging on an empty sheet.
+  useEffect(() => {
+    if (!isSheetEventMissing({ eventId: sheetEventId, loading, resolved: sheetEvent })) return;
+    setSheetTarget(null);
+    onEventGone?.();
+  }, [sheetEventId, loading, sheetEvent, onEventGone]);
 
   return (
     <>
@@ -229,9 +263,11 @@ export default function TermineTab({ clubId }: Props) {
         calendars={calendars}
         colorFor={colorFor}
         canWrite={canWrite}
+        clubId={clubId}
         rsvp={sheetEvent ? rsvpPropsFor(sheetEvent.id) : null}
         onSave={handleSave}
         onDelete={deleteEvent}
+        onCancelEvent={cancelEvent}
       />
 
       {canWrite ? (

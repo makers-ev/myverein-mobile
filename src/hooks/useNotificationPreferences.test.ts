@@ -54,4 +54,14 @@ describe('useNotificationPreferences', () => {
     expect(ok).toBe(false);
     expect(result.current.preferences?.categories[0]?.channels[1]?.enabled).toBe(true);
   });
+
+  it('stays account-level without a clubId and forwards an optional one', async () => {
+    apiFetchMock.mockResolvedValue({ data: prefs(true) });
+    await renderHook(() => useNotificationPreferences());
+    await act(async () => {});
+    expect(apiFetchMock).toHaveBeenLastCalledWith('/notification-preferences');
+    await renderHook(() => useNotificationPreferences('c 1'));
+    await act(async () => {});
+    expect(apiFetchMock).toHaveBeenLastCalledWith('/notification-preferences?clubId=c%201');
+  });
 });

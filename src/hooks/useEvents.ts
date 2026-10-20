@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
+import { cancelBody, withNotify, withNotifyQuery, type CancelPreview } from '@/lib/notifyOptions';
 
 export interface CalendarEvent {
   id: string;
@@ -105,20 +106,65 @@ export function useEventMutations(clubId: string | null, onChanged?: () => void)
   );
 
   const updateEvent = useCallback(
-    async (id: string, input: EventInput) => {
-      await apiFetch(`/events/${id}?clubId=${clubId}`, { method: 'PATCH', body: input });
+    async (id: string, input: EventInput, notify = true) => {
+      await apiFetch(`/events/${id}?clubId=${clubId}`, { method: 'PATCH', body: withNotify(input, notify) });
       onChanged?.();
     },
     [clubId, onChanged],
   );
 
   const deleteEvent = useCallback(
-    async (id: string) => {
-      await apiFetch(`/events/${id}?clubId=${clubId}`, { method: 'DELETE' });
+    async (id: string, notify = true) => {
+      await apiFetch(withNotifyQuery(`/events/${id}?clubId=${clubId}`, notify), { method: 'DELETE' });
       onChanged?.();
     },
     [clubId, onChanged],
   );
 
-  return { createEvent, updateEvent, deleteEvent };
+  /** `POST /events/:id/cancel` (`calendars:write`): cancels instead of deleting, optional reason, `notify:false` suppresses. */
+  const cancelEvent = useCallback(
+    async (id: string, reason: string, notify = true) => {
+      await apiFetch(`/events/${id}/cancel?clubId=${clubId}`, { method: 'POST', body: cancelBody(reason, notify) });
+      onChanged?.();
+    },
+    [clubId, onChanged],
+  );
+
+  return { createEvent, updateEvent, deleteEvent, cancelEvent };
+}
+
+/**
+ * `GET /events/:id/cancel-preview` (`calendars:write`): audience counts shown before confirming a cancellation.
+ * Only loads while `eventId` is set; only the newest request may write state.
+ */
+export function useCancelPreview(clubId: string | null, eventId: string | null) {
+  const [preview, setPreview] = useState<CancelPreview | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const requestId = useRef(0);
+
+  const refetch = useCallback(async () => {
+    const id = ++requestId.current;
+    setPreview(null);
+    setError(null);
+    if (!clubId || !eventId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data } = await apiFetch<{ data: CancelPreview }>(`/events/${eventId}/cancel-preview?clubId=${encodeURIComponent(clubId)}`);
+      if (id === requestId.current) setPreview(data);
+    } catch (err) {
+      if (id === requestId.current) setError(err);
+    } finally {
+      if (id === requestId.current) setLoading(false);
+    }
+  }, [clubId, eventId]);
+
+  useEffect(() => {
+    void refetch();
+  }, [refetch]);
+
+  return { preview, loading, error, refetch };
 }
