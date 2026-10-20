@@ -1,5 +1,6 @@
 import React, { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 
+import { unregisterPushToken } from '@/notifications/pushRegistration';
 import { authClient, websiteUrl } from './auth-client';
 
 interface SignUpInput {
@@ -164,6 +165,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    // Needs the still-valid session; best effort and time-boxed, never blocks the logout.
+    await unregisterPushToken();
     await authClient.signOut();
     setTwoFactorPending(false);
   }, []);

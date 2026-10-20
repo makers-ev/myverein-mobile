@@ -1,7 +1,10 @@
 import React from 'react';
 import { act, renderHook } from '@testing-library/react-native';
 
+import { unregisterPushToken } from '@/notifications/pushRegistration';
 import { AuthProvider, useAuth } from './AuthProvider';
+
+jest.mock('@/notifications/pushRegistration', () => ({ unregisterPushToken: jest.fn().mockResolvedValue(undefined) }));
 
 jest.mock('./auth-client', () => ({
   authClient: {
@@ -90,5 +93,18 @@ describe('AuthProvider', () => {
 
     expect(result.current.twoFactorPending).toBe(false);
     expect(authClient.signOut).toHaveBeenCalled();
+  });
+
+  it('signOut unregisters the push token before ending the session', async () => {
+    const order: string[] = [];
+    (unregisterPushToken as jest.Mock).mockImplementationOnce(async () => void order.push('unregister'));
+    authClient.signOut.mockImplementationOnce(async () => void order.push('signOut'));
+
+    const { result } = await renderHook(() => useAuth(), { wrapper });
+    await act(async () => {
+      await result.current.signOut();
+    });
+
+    expect(order).toEqual(['unregister', 'signOut']);
   });
 });

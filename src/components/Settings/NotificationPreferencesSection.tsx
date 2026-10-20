@@ -3,16 +3,15 @@ import { ActivityIndicator, Switch, Text, TouchableOpacity, View } from 'react-n
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
+import PushDeviceSection from '@/components/push/PushDeviceSection';
 import { useNotificationPreferences, type PreferenceCategory } from '@/hooks/useNotificationPreferences';
 
 /**
  * Notification settings (Wave 9 M4): category x channel matrix from
  * `GET /notification-preferences`, one `PUT` per toggle. `in_app` is shown as "always on", the
  * mandatory notices (account security, own decisions, invitation deadlines) are explained
- * but not switchable. The `push` toggle is stored on the backend already; the device
- * permission explanation ("enable in system settings") is added together with push
- * registration (M2), which needs `expo-notifications` and a consultation first -- until
- * then the section states that push is not available in this version.
+ * but not switchable. The `push` toggles are per account; the device block below them
+ * (`PushDeviceSection`, M2) asks for the system permission on tap and explains a denied one.
  */
 export default function NotificationPreferencesSection() {
   const { t } = useLanguage();
@@ -70,7 +69,7 @@ export default function NotificationPreferencesSection() {
               </View>
             ))}
 
-            <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-3">{t('settings.notifications.push-hint')}</Text>
+            <PushDeviceSection />
 
             <View className="bg-muted dark:bg-muted-dark rounded-xl p-3">
               <Text className="text-foreground dark:text-foreground-dark text-sm font-bold mb-0.5">{t('settings.notifications.mandatory.title')}</Text>
