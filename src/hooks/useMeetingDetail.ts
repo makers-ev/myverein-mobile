@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
+import { withNotify, withNotifyQuery } from '@/lib/notifyOptions';
 import type { ResolutionCorrectionBody } from '@/lib/resolutionCorrection';
 import type { Meeting, MeetingPatch } from './useMeetings';
 
@@ -121,14 +122,14 @@ export function useMeetingDetail(clubId: string | null, meetingId: string | null
     [clubId, meetingId, key],
   );
 
-  const deleteMeeting = useCallback(async () => {
-    await apiFetch(`/meetings/${meetingId}?clubId=${clubId}`, { method: 'DELETE' });
+  const deleteMeeting = useCallback(async (notify = true) => {
+    await apiFetch(withNotifyQuery(`/meetings/${meetingId}?clubId=${clubId}`, notify), { method: 'DELETE' });
   }, [clubId, meetingId]);
 
   /** Invite a member (`meetings:write`); `memberId` is the Better Auth member id (accounts only). */
   const addInvitee = useCallback(
-    async (memberId: string) => {
-      await apiFetch(`/meetings/${meetingId}/invitees?clubId=${clubId}`, { method: 'POST', body: { memberId } });
+    async (memberId: string, notify = true) => {
+      await apiFetch(`/meetings/${meetingId}/invitees?clubId=${clubId}`, { method: 'POST', body: withNotify({ memberId }, notify) });
       await refetch();
     },
     [clubId, meetingId, refetch],

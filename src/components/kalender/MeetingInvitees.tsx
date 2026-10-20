@@ -3,6 +3,7 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
+import NotifySwitch from '@/components/ui/NotifySwitch';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { LIVE_MEMBER_STATUSES, type ClubMember } from '@/hooks/useClubMembers';
 import type { MeetingInvitee } from '@/hooks/useMeetingDetail';
@@ -12,7 +13,8 @@ interface Props {
   /** Whole club directory; only members with an account (`memberId`) can be invited. */
   directory: ClubMember[];
   nameFor: (memberId: string) => string;
-  onAdd: (memberId: string) => Promise<void>;
+  /** `notify` false = the added person gets no invitation message. */
+  onAdd: (memberId: string, notify: boolean) => Promise<void>;
   onRemove: (memberId: string) => Promise<void>;
 }
 
@@ -26,6 +28,7 @@ export default function MeetingInvitees({ invitees, directory, nameFor, onAdd, o
   const [adding, setAdding] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notify, setNotify] = useState(true);
 
   const candidates = useMemo(() => {
     const invited = new Set(invitees.map((i) => i.memberId));
@@ -96,13 +99,14 @@ export default function MeetingInvitees({ invitees, directory, nameFor, onAdd, o
         </TouchableOpacity>
       ) : (
         <View className="mt-3 pt-3 border-t border-border dark:border-border-dark">
+          <NotifySwitch label={t('treffen.notify')} hint={t('treffen.notify.hint-invite')} value={notify} onChange={setNotify} disabled={busyId !== null} />
           {candidates.length === 0 ? (
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('treffen.invitees.none-left')}</Text>
           ) : (
             visible.map((m) => (
               <TouchableOpacity
                 key={m.id}
-                onPress={() => void run(m.memberId!, () => onAdd(m.memberId!))}
+                onPress={() => void run(m.memberId!, () => onAdd(m.memberId!, notify))}
                 disabled={busyId !== null}
                 className="flex-row items-center justify-between"
                 style={{ minHeight: 44 }}
