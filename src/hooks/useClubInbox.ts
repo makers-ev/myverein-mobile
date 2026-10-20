@@ -51,24 +51,27 @@ export function useClubInbox(clubId: string | null) {
   const [error, setError] = useState<unknown>(null);
   const requestId = useRef(0);
 
-  const refetch = useCallback(async () => {
+  /** Resolves with the fresh list, or `null` when the load failed or was superseded by a newer one. */
+  const refetch = useCallback(async (): Promise<InboxMessage[] | null> => {
     const id = ++requestId.current;
     if (!enabled || !clubId) {
       setStored(null);
       setError(null);
       setLoading(false);
-      return;
+      return null;
     }
     setLoading(true);
     try {
       const params = new URLSearchParams({ clubId, pageSize: String(INBOX_PAGE_SIZE) });
       const { data } = await apiFetch<{ data: InboxMessage[] }>(`/club-inbox?${params.toString()}`);
-      if (id !== requestId.current) return;
+      if (id !== requestId.current) return null;
       setStored({ clubId, messages: data });
       setError(null);
+      return data;
     } catch (err) {
       // Keep the previous list on a failed reload; the screen shows the error only when it has nothing to show.
       if (id === requestId.current) setError(err);
+      return null;
     } finally {
       if (id === requestId.current) setLoading(false);
     }

@@ -30,6 +30,8 @@ import PrivacyPolicyScreen from '@/legal/PrivacyPolicyScreen';
 import ImprintScreen from '@/legal/ImprintScreen';
 import TermsOfServiceScreen from '@/legal/TermsOfServiceScreen';
 import { useThemeColors, useNavigationTheme } from '@/theme/colors';
+import PushDeepLinkRouter from '@/notifications/PushDeepLinkRouter';
+import { setNavigationReady } from '@/notifications/pushTargetStore';
 import { navigationRef } from './navigationRef';
 
 /**
@@ -329,8 +331,10 @@ export default function AppNavigator() {
     // AppLockGate only activates once a PIN has been set in Settings --
     // stays inert until then, for guests and signed-in users alike.
     <AppLockGate>
-      <NavigationContainer ref={navigationRef} theme={navigationTheme}>
+      <NavigationContainer ref={navigationRef} theme={navigationTheme} onReady={() => setNavigationReady(true)}>
         {twoFactorPending ? <TwoFactorNavigator /> : <MainNavigator />}
+        {/* Routes a tapped push (Wave 9 M3); renders nothing. */}
+        <PushDeepLinkRouter />
       </NavigationContainer>
     </AppLockGate>
   );

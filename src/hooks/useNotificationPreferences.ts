@@ -14,8 +14,7 @@ export interface NotificationPreferences {
 /**
  * `GET`/`PUT /notification-preferences` (user level, not per club). Writes are optimistic
  * per toggle and rolled back to the server state on failure; only the newest request may
- * write state. The `push` channel is listed by the backend but delivered only once push
- * registration exists (M2) -- the Settings section says so.
+ * write state. The `push` channel only reaches devices that registered a token (`PushProvider`, M2).
  */
 export function useNotificationPreferences() {
   const { isAuthenticated } = useAuth();

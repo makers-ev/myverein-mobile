@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { useMyClubs } from '@/hooks/useMyClubs';
+import { apiFetch } from '@/lib/api';
+import PushNotice from '@/components/push/PushNotice';
+import { usePushScreenTarget } from '@/notifications/usePushScreenTarget';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
-import TermineTab from '@/components/kalender/TermineTab';
+import TermineTab, { type EventFocus } from '@/components/kalender/TermineTab';
 import VerfuegbarkeitTab from '@/components/kalender/VerfuegbarkeitTab';
 import TreffenTab from '@/components/kalender/TreffenTab';
 
@@ -24,6 +27,37 @@ export default function KalenderScreen() {
   const themeColors = useThemeColors();
   const [tab, setTab] = useState<Tab>('termine');
   const { activeClub, error: clubsError, loading: clubsLoading } = useMyClubs();
+  const [noticeKey, setNoticeKey] = useState<string | null>(null);
+  const [focus, setFocus] = useState<EventFocus | null>(null);
+  const { target, ready, unreachable, consume } = usePushScreenTarget('Kalender');
+  const clearFocus = useCallback(() => setFocus(null), []);
+
+  // Tapped push (M3): load the single event (visibility is checked server-side) and let the Termine
+  // tab jump to its day and open it; not found / not visible -> friendly notice, never an error.
+  useEffect(() => {
+    if (!target || (!ready && !unreachable)) return;
+    consume();
+    if (unreachable) {
+      setNoticeKey('push.notice.club-gone');
+      return;
+    }
+    setNoticeKey(null);
+    setTab('termine');
+    if (target.kind !== 'event' || !activeClub) return;
+    const clubId = activeClub.clubId;
+    void (async () => {
+      try {
+        const { data } = await apiFetch<{ data: { id: string; startsAt: string } }>(
+          `/events/${encodeURIComponent(target.eventId)}?clubId=${encodeURIComponent(clubId)}`,
+        );
+        setFocus({ eventId: data.id, startsAt: data.startsAt });
+      } catch (err) {
+        const status = (err as { status?: number }).status;
+        setNoticeKey(status === 403 || status === 404 ? 'push.notice.event-gone' : 'push.notice.load-failed');
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, ready, unreachable]);
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
@@ -35,6 +69,7 @@ export default function KalenderScreen() {
           </Text>
         ) : null}
         <ClubSwitcher />
+        <PushNotice messageKey={noticeKey} onDismiss={() => setNoticeKey(null)} />
       </View>
 
       {clubsLoading ? (
@@ -73,7 +108,7 @@ export default function KalenderScreen() {
           </View>
 
           <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
-            {tab === 'termine' && <TermineTab clubId={activeClub.clubId} />}
+            {tab === 'termine' && <TermineTab clubId={activeClub.clubId} focus={focus} onFocusHandled={clearFocus} />}
             {tab === 'verfuegbarkeit' && <VerfuegbarkeitTab clubId={activeClub.clubId} />}
             {tab === 'treffen' && <TreffenTab clubId={activeClub.clubId} />}
           </ScrollView>

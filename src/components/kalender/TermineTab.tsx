@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { Plus, Settings2 } from 'lucide-react-native';
 
@@ -17,6 +17,9 @@ import CalendarManageSheet from './CalendarManageSheet';
 
 interface Props {
   clubId: string;
+  /** Set by a tapped push: select the event's day and open its sheet, then `onFocusHandled`. */
+  focus?: EventFocus | null;
+  onFocusHandled?: () => void;
 }
 
 function EventRow({ event, color, rsvp, onPress }: { event: CalendarEvent; color: string; rsvp: RsvpProps; onPress: () => void }) {
@@ -76,7 +79,13 @@ function monthRange(month: Date) {
   return { from: from.toISOString(), to: to.toISOString() };
 }
 
-export default function TermineTab({ clubId }: Props) {
+/** A tapped push (M3): jump to the event's day and open it. */
+export interface EventFocus {
+  eventId: string;
+  startsAt: string;
+}
+
+export default function TermineTab({ clubId, focus, onFocusHandled }: Props) {
   const { t, language } = useLanguage();
   const themeColors = useThemeColors();
   const { info } = useClubInfo(clubId);
@@ -96,6 +105,17 @@ export default function TermineTab({ clubId }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [sheetTarget, setSheetTarget] = useState<EventSheetTarget | null>(null);
   const [manageOpen, setManageOpen] = useState(false);
+
+  useEffect(() => {
+    if (!focus) return;
+    const start = new Date(focus.startsAt);
+    if (!Number.isNaN(start.getTime())) {
+      setMonth(start);
+      setSelectedDay(toDayKey(start));
+      setSheetTarget({ eventId: focus.eventId });
+    }
+    onFocusHandled?.();
+  }, [focus, onFocusHandled]);
 
   const runRsvp = async (eventId: string, action: () => Promise<RsvpState>) => {
     setPendingIds((prev) => ({ ...prev, [eventId]: true }));
