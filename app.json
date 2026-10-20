@@ -27,6 +27,7 @@
       "expo-secure-store",
       "expo-web-browser",
       "expo-localization",
+      "expo-notifications",
       [
         "expo-image-picker",
         {
