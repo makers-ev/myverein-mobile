@@ -26,7 +26,7 @@ export interface InboxMessage {
   readAt: string | null;
 }
 
-const INBOX_PAGE_SIZE = 100;
+export const INBOX_PAGE_SIZE = 100;
 
 // Tiny in-process pub/sub so that reading a message refreshes the Navbar badge at once
 // instead of waiting for the next poll. Carries no payload -- never message content.
@@ -50,10 +50,9 @@ export function useClubInbox(clubId: string | null) {
   const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<unknown>(null);
   const requestId = useRef(0);
+  const latest = useRef<Promise<InboxMessage[] | null> | null>(null);
 
-  /** Resolves with the fresh list, or `null` when the load failed or was superseded by a newer one. */
-  const refetch = useCallback(async (): Promise<InboxMessage[] | null> => {
-    const id = ++requestId.current;
+  const load = useCallback(async (id: number): Promise<InboxMessage[] | null> => {
     if (!enabled || !clubId) {
       setStored(null);
       setError(null);
@@ -64,18 +63,27 @@ export function useClubInbox(clubId: string | null) {
     try {
       const params = new URLSearchParams({ clubId, pageSize: String(INBOX_PAGE_SIZE) });
       const { data } = await apiFetch<{ data: InboxMessage[] }>(`/club-inbox?${params.toString()}`);
-      if (id !== requestId.current) return null;
+      // Superseded: hand back the newer load's result instead of a misleading null.
+      if (id !== requestId.current) return latest.current ?? null;
       setStored({ clubId, messages: data });
       setError(null);
       return data;
     } catch (err) {
       // Keep the previous list on a failed reload; the screen shows the error only when it has nothing to show.
       if (id === requestId.current) setError(err);
-      return null;
+      return id === requestId.current ? null : (latest.current ?? null);
     } finally {
       if (id === requestId.current) setLoading(false);
     }
   }, [enabled, clubId]);
+
+  /** Resolves with the fresh list, or `null` only when this (or the newest) load failed. */
+  const refetch = useCallback((): Promise<InboxMessage[] | null> => {
+    const id = ++requestId.current;
+    const promise = load(id);
+    latest.current = promise;
+    return promise;
+  }, [load]);
 
   useEffect(() => {
     void refetch();

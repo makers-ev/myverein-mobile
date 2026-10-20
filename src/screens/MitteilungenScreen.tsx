@@ -7,13 +7,14 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useMyClubs } from '@/hooks/useMyClubs';
-import { useClubInbox, type InboxMessage } from '@/hooks/useClubInbox';
+import { INBOX_PAGE_SIZE, useClubInbox, type InboxMessage } from '@/hooks/useClubInbox';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import FormSheet from '@/components/ui/FormSheet';
 import PushPrompt from '@/components/push/PushPrompt';
 import PushNotice from '@/components/push/PushNotice';
 import { usePushScreenTarget } from '@/notifications/usePushScreenTarget';
+import { lookupAnnouncement } from '@/notifications/pushLogic';
 
 function MessageCard({ message, onPress }: { message: InboxMessage; onPress: () => void }) {
   const { t, language } = useLanguage();
@@ -103,7 +104,9 @@ export default function MitteilungenScreen() {
       }
       const found = fresh.find((m) => m.announcementId === target.announcementId);
       if (!found) {
-        setNoticeKey('push.notice.announcement-gone');
+        // A full page means older messages were not loaded: do not claim it is gone.
+        const lookup = lookupAnnouncement(fresh, target.announcementId, INBOX_PAGE_SIZE);
+        setNoticeKey(lookup === 'unknown' ? 'push.notice.announcement-unknown' : 'push.notice.announcement-gone');
         return;
       }
       setNoticeKey(null);

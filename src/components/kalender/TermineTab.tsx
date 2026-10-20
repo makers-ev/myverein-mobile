@@ -11,6 +11,7 @@ import { useCalendars } from '@/hooks/useCalendars';
 import { useEvents, useEventMutations, useEventRsvp, type CalendarEvent, type EventInput } from '@/hooks/useEvents';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { getDepartmentColor } from '@/theme/departmentColors';
+import { isSheetEventMissing, resolveSheetEvent } from '@/lib/eventFocus';
 import MonthCalendar, { toDayKey } from '@/components/ui/MonthCalendar';
 import EventSheet, { formatTimeRange, RsvpControl, type EventSheetTarget, type RsvpProps, type RsvpState } from './EventSheet';
 import CalendarManageSheet from './CalendarManageSheet';
@@ -20,6 +21,8 @@ interface Props {
   /** Set by a tapped push: select the event's day and open its sheet, then `onFocusHandled`. */
   focus?: EventFocus | null;
   onFocusHandled?: () => void;
+  /** The sheet pointed at an event that does not exist (any more); the sheet was closed. */
+  onEventGone?: () => void;
 }
 
 function EventRow({ event, color, rsvp, onPress }: { event: CalendarEvent; color: string; rsvp: RsvpProps; onPress: () => void }) {
@@ -81,11 +84,10 @@ function monthRange(month: Date) {
 
 /** A tapped push (M3): jump to the event's day and open it. */
 export interface EventFocus {
-  eventId: string;
-  startsAt: string;
+  event: CalendarEvent;
 }
 
-export default function TermineTab({ clubId, focus, onFocusHandled }: Props) {
+export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone }: Props) {
   const { t, language } = useLanguage();
   const themeColors = useThemeColors();
   const { info } = useClubInfo(clubId);
@@ -105,14 +107,17 @@ export default function TermineTab({ clubId, focus, onFocusHandled }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [sheetTarget, setSheetTarget] = useState<EventSheetTarget | null>(null);
   const [manageOpen, setManageOpen] = useState(false);
+  // The event fetched for a tapped push: shown even when it is not in the loaded month list.
+  const [fetchedEvent, setFetchedEvent] = useState<CalendarEvent | null>(null);
 
   useEffect(() => {
     if (!focus) return;
-    const start = new Date(focus.startsAt);
+    const start = new Date(focus.event.startsAt);
     if (!Number.isNaN(start.getTime())) {
       setMonth(start);
       setSelectedDay(toDayKey(start));
-      setSheetTarget({ eventId: focus.eventId });
+      setFetchedEvent(focus.event);
+      setSheetTarget({ eventId: focus.event.id });
     }
     onFocusHandled?.();
   }, [focus, onFocusHandled]);
@@ -192,7 +197,16 @@ export default function TermineTab({ clubId, focus, onFocusHandled }: Props) {
     void refetch();
   }, [refetchCalendars, refetch]);
 
-  const sheetEvent = sheetTarget && 'eventId' in sheetTarget ? (events.find((e) => e.id === sheetTarget.eventId) ?? null) : null;
+  const sheetEventId = sheetTarget && 'eventId' in sheetTarget ? sheetTarget.eventId : null;
+  const sheetEvent = sheetEventId ? resolveSheetEvent(events, sheetEventId, fetchedEvent) : null;
+
+  // An open detail sheet whose event vanished (deleted meanwhile, not visible) is closed with a notice
+  // instead of hanging on an empty sheet.
+  useEffect(() => {
+    if (!isSheetEventMissing({ eventId: sheetEventId, loading, resolved: sheetEvent })) return;
+    setSheetTarget(null);
+    onEventGone?.();
+  }, [sheetEventId, loading, sheetEvent, onEventGone]);
 
   return (
     <>

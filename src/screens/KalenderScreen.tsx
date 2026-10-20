@@ -10,6 +10,7 @@ import PushNotice from '@/components/push/PushNotice';
 import { usePushScreenTarget } from '@/notifications/usePushScreenTarget';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
+import type { CalendarEvent } from '@/hooks/useEvents';
 import TermineTab, { type EventFocus } from '@/components/kalender/TermineTab';
 import VerfuegbarkeitTab from '@/components/kalender/VerfuegbarkeitTab';
 import TreffenTab from '@/components/kalender/TreffenTab';
@@ -31,6 +32,7 @@ export default function KalenderScreen() {
   const [focus, setFocus] = useState<EventFocus | null>(null);
   const { target, ready, unreachable, consume } = usePushScreenTarget('Kalender');
   const clearFocus = useCallback(() => setFocus(null), []);
+  const eventGone = useCallback(() => setNoticeKey('push.notice.event-gone'), []);
 
   // Tapped push (M3): load the single event (visibility is checked server-side) and let the Termine
   // tab jump to its day and open it; not found / not visible -> friendly notice, never an error.
@@ -42,15 +44,16 @@ export default function KalenderScreen() {
       return;
     }
     setNoticeKey(null);
-    setTab('termine');
+    // Meeting pushes open the Treffen tab; everything else starts on Termine.
+    setTab(target.kind === 'calendar' && target.tab ? target.tab : 'termine');
     if (target.kind !== 'event' || !activeClub) return;
     const clubId = activeClub.clubId;
     void (async () => {
       try {
-        const { data } = await apiFetch<{ data: { id: string; startsAt: string } }>(
+        const { data } = await apiFetch<{ data: CalendarEvent }>(
           `/events/${encodeURIComponent(target.eventId)}?clubId=${encodeURIComponent(clubId)}`,
         );
-        setFocus({ eventId: data.id, startsAt: data.startsAt });
+        setFocus({ event: data });
       } catch (err) {
         const status = (err as { status?: number }).status;
         setNoticeKey(status === 403 || status === 404 ? 'push.notice.event-gone' : 'push.notice.load-failed');
@@ -108,7 +111,7 @@ export default function KalenderScreen() {
           </View>
 
           <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
-            {tab === 'termine' && <TermineTab clubId={activeClub.clubId} focus={focus} onFocusHandled={clearFocus} />}
+            {tab === 'termine' && <TermineTab clubId={activeClub.clubId} focus={focus} onFocusHandled={clearFocus} onEventGone={eventGone} />}
             {tab === 'verfuegbarkeit' && <VerfuegbarkeitTab clubId={activeClub.clubId} />}
             {tab === 'treffen' && <TreffenTab clubId={activeClub.clubId} />}
           </ScrollView>

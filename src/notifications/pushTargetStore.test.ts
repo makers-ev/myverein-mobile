@@ -4,6 +4,9 @@ import {
   getIncomingPushTarget,
   getRoutedPushTarget,
   markPushTargetRouted,
+  setNavigationReady,
+  subscribePushTarget,
+  getNavigationReady,
   setIncomingPushTarget,
 } from './pushTargetStore';
 
@@ -40,5 +43,20 @@ describe('pushTargetStore', () => {
     setIncomingPushTarget(event);
     setIncomingPushTarget({ kind: 'inbox', clubId: null });
     expect(getIncomingPushTarget()).toEqual({ kind: 'inbox', clubId: null });
+  });
+});
+
+describe('navigation readiness', () => {
+  it('notifies subscribers on every false -> true edge so a container remount re-triggers routing', () => {
+    const listener = jest.fn();
+    const unsubscribe = subscribePushTarget(listener);
+    setNavigationReady(true);
+    setNavigationReady(true); // no edge, no notification
+    expect(listener).toHaveBeenCalledTimes(1);
+    setNavigationReady(false); // container unmounted (App Lock)
+    setNavigationReady(true); // container mounted again
+    expect(listener).toHaveBeenCalledTimes(3);
+    expect(getNavigationReady()).toBe(true);
+    unsubscribe();
   });
 });

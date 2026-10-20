@@ -42,7 +42,7 @@ export function RsvpControl({ state, pending, onRsvp, onCancel }: RsvpProps) {
         <Text className="text-success dark:text-success-dark text-xs font-semibold">
           {state === 'angemeldet' ? t('termine.rsvp.confirmed') : t('termine.rsvp.waitlist')}
         </Text>
-        <TouchableOpacity onPress={onCancel} disabled={pending}>
+        <TouchableOpacity onPress={onCancel} disabled={pending} accessibilityRole="button" className="min-h-[44px] justify-center">
           <Text className="text-destructive text-xs font-semibold">{t('termine.cancel')}</Text>
         </TouchableOpacity>
       </View>
@@ -80,6 +80,10 @@ export function ColorChip({
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active, disabled: !!disabled }}
+      // Visually compact chip, 44pt touch area.
+      hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
       className={`flex-row items-center px-3 py-1.5 rounded-full border ${
         active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'border-border dark:border-border-dark'
       } ${disabled ? 'opacity-50' : ''}`}

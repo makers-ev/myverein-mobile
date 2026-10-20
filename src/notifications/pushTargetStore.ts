@@ -45,6 +45,11 @@ export function clearPushTarget(): void {
   }
 }
 
+/**
+ * Whether the NavigationContainer is mounted and ready. The container unmounts while the App Lock
+ * screen is shown, so the router resets this to false on unmount and the next `onReady` flips it
+ * back to true -- that edge is what re-runs the routing of a tap that arrived in between.
+ */
 export function setNavigationReady(ready: boolean): void {
   if (navigationReady !== ready) {
     navigationReady = ready;
