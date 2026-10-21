@@ -10,6 +10,7 @@ import { useWardContacts, useWardEvents } from '@/hooks/useWardToday';
 import { isNotFound } from '@/lib/ward';
 import WardSwitcher from '@/components/guardian/WardSwitcher';
 import AbsenceSection from '@/components/privacy/AbsenceSection';
+import ConsentsSection from '@/components/privacy/ConsentsSection';
 import WardEventsSection from '@/components/guardian/WardEventsSection';
 import WardContactsSection from '@/components/guardian/WardContactsSection';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -93,6 +94,11 @@ export default function HeuteScreen({ navigation }: Props) {
           {goneNotice ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">{t('heute.gone')}</Text> : null}
           <AbsenceSection subject={{ kind: 'ward', clubId: selected.clubId, wardId: selected.wardId }} wardName={selected.firstName ?? selected.name} canReport={selected.canReportAbsence} />
           <WardEventsSection ward={selected} events={events} />
+          <ConsentsSection
+            subject={{ kind: 'ward', clubId: selected.clubId, wardId: selected.wardId, canConsent: selected.canConsent }}
+            wardName={selected.firstName ?? selected.name}
+            onChanged={() => void reload()}
+          />
           <WardContactsSection contacts={contacts} />
         </ScrollView>
       )}

@@ -13,6 +13,7 @@ import { Field, inputClassName } from '@/components/ui/FormSheet';
 import { isMinorBirthDate } from '@/lib/memberPhoto';
 import { type NameErrors, nameDraftFromMember, nameFieldErrorsFromApi, namePatch, validateName } from '@/lib/memberName';
 import AbsenceSection from '@/components/privacy/AbsenceSection';
+import ConsentsSection from '@/components/privacy/ConsentsSection';
 import ChildrenCustomFields from './ChildrenCustomFields';
 import ExitRequestSection from './ExitRequestSection';
 import MemberCustomFields from './MemberCustomFields';
@@ -352,6 +353,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
 
       <View className="mt-6">
         <AbsenceSection subject={{ kind: 'self', clubId }} />
+        {membership ? <ConsentsSection subject={{ kind: 'self', clubId, clubMemberId: membership.id }} /> : null}
         <MemberCustomFields clubId={clubId} target="me" card onDirtyChange={setCustomDirty} manageHint={can('forms:write')} />
         <ChildrenCustomFields clubId={clubId} onDirtyChange={setChildDirty} />
         <ExitRequestSection clubId={clubId} />
