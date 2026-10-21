@@ -3,7 +3,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { useAuth } from '@/auth/AuthProvider';
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
 import { apiFetch } from '@/lib/api';
-import { flattenWards, wardKey, type Ward } from '@/lib/ward';
+import { flattenWards, isOwnClub, wardKey, type Ward } from '@/lib/ward';
 
 interface WardsContextValue {
   /** Live wards of the account across all clubs (`GET /my-wards`); empty for everybody else. */
@@ -78,12 +78,12 @@ export function WardsProvider({ children }: { children: React.ReactNode }) {
       selected,
       select: setSelectedKey,
       hasWards,
-      guardianOnly: isAuthenticated && hasWards && !clubsLoading && !clubsError && clubs.length === 0,
+      guardianOnly: isAuthenticated && hasWards && !clubsLoading && !clubsError && !clubs.some(isOwnClub),
       loading: isAuthenticated && (loading || !fetched),
       error,
       reload,
     };
-  }, [wards, selectedKey, isAuthenticated, clubs.length, clubsLoading, clubsError, loading, fetched, error, reload]);
+  }, [wards, selectedKey, isAuthenticated, clubs, clubsLoading, clubsError, loading, fetched, error, reload]);
 
   return <WardsContext.Provider value={value}>{children}</WardsContext.Provider>;
 }

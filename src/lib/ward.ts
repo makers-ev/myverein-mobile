@@ -55,6 +55,15 @@ export function parseDayKey(key: string): Date {
   return new Date(y!, m! - 1, d);
 }
 
+/**
+ * A club the account belongs to itself. `/my-clubs` also lists the guest membership a guardian gets in their child's
+ * club (`orgRole` 'guest', possibly comma-separated); that is no club of their own.
+ */
+export function isOwnClub(club: { orgRole?: string | null }): boolean {
+  const roles = (club.orgRole ?? '').split(',').map((r) => r.trim()).filter(Boolean);
+  return roles.length === 0 || roles.some((r) => r !== 'guest');
+}
+
 export const isNotFound = (err: unknown): boolean => err instanceof ApiError && err.status === 404;
 
 /**

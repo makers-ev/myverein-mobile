@@ -1,5 +1,5 @@
 import { ApiError } from './api';
-import { addDaysKey, dayKey, flattenWards, groupByDay, telUrl, isConsentTextOutdated, privacyErrorKey, visibleNavRoutes, wardKey, type NavRoute } from './ward';
+import { addDaysKey, dayKey, flattenWards, isOwnClub, groupByDay, telUrl, isConsentTextOutdated, privacyErrorKey, visibleNavRoutes, wardKey, type NavRoute } from './ward';
 
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
 
@@ -64,5 +64,14 @@ describe('groupByDay', () => {
 describe('telUrl', () => {
   it('keeps digits and a leading plus only', () => {
     expect(telUrl('+49 (170) 123-45 67')).toBe('tel:+491701234567');
+  });
+});
+
+describe('isOwnClub', () => {
+  it('does not count a guest-only membership', () => {
+    expect(isOwnClub({ orgRole: 'guest' })).toBe(false);
+    expect(isOwnClub({ orgRole: 'member' })).toBe(true);
+    expect(isOwnClub({ orgRole: 'guest, owner' })).toBe(true);
+    expect(isOwnClub({})).toBe(true);
   });
 });

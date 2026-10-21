@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 
 import { useAuth } from '@/auth/AuthProvider';
 import { apiFetch } from '@/lib/api';
+import { isOwnClub } from '@/lib/ward';
 import { clearStoredActiveClubId, getStoredActiveClubId, setStoredActiveClubId } from './activeClubStorage';
 
 export interface MyClub {
@@ -13,7 +14,7 @@ export interface MyClub {
 
 interface ActiveClubContextValue {
   clubs: MyClub[];
-  /** The selected club, falling back to the first membership; null without any membership. */
+  /** The selected club, falling back to the first own (non-guest) membership; null without any membership. */
   activeClub: MyClub | null;
   loading: boolean;
   /** `/my-clubs` failed: distinct from "no membership" so screens can offer a retry. */
@@ -103,7 +104,7 @@ export function ActiveClubProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   const value = useMemo<ActiveClubContextValue>(() => {
-    const activeClub = clubs.find((c) => c.clubId === selectedId) ?? clubs[0] ?? null;
+    const activeClub = clubs.find((c) => c.clubId === selectedId) ?? clubs.find(isOwnClub) ?? clubs[0] ?? null;
     return {
       clubs,
       activeClub,

@@ -46,6 +46,19 @@ describe('WardsProvider', () => {
     expect(failed.result.current.guardianOnly).toBe(false);
   });
 
+  it('is guardian-only when the only club is the guest membership in the child\'s club', async () => {
+    apiFetchMock.mockResolvedValue(groups('w1'));
+    clubState.clubs = [{ clubId: 'c1', orgRole: 'guest' }];
+    const guest = await renderHook(() => useWardsContext(), { wrapper });
+    await act(async () => {});
+    expect(guest.result.current.guardianOnly).toBe(true);
+
+    clubState.clubs = [{ clubId: 'c1', orgRole: 'guest' }, { clubId: 'c2', orgRole: 'member' }];
+    const both = await renderHook(() => useWardsContext(), { wrapper });
+    await act(async () => {});
+    expect(both.result.current.guardianOnly).toBe(false);
+  });
+
   it('falls back to the first ward when the selected link is gone after a reload', async () => {
     apiFetchMock.mockResolvedValueOnce(groups('w1', 'w2'));
     const { result } = await renderHook(() => useWardsContext(), { wrapper });
