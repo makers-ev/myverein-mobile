@@ -12,6 +12,7 @@ import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import { useOwnMembership, type ClubPermission } from '@/hooks/useOwnMembership';
 import type { CalendarEvent } from '@/hooks/useEvents';
 import Logo from '@/components/Logo';
+import WhoIsAbsentCard from '@/components/privacy/WhoIsAbsentCard';
 import SignedInCard from '@/components/SignedInCard';
 import BentoTile from '@/components/ui/BentoTile';
 import FadeIn from '@/components/ui/FadeIn';
@@ -171,6 +172,12 @@ export default function DashboardScreen({ navigation }: Props) {
               {eventBody}
             </BentoTile>
           </FadeIn>
+
+          {activeClub && can('absences:read') ? (
+            <FadeIn delay={50}>
+              <WhoIsAbsentCard key={activeClub.clubId} clubId={activeClub.clubId} />
+            </FadeIn>
+          ) : null}
 
           {shortcuts.length > 0 ? (
             <FadeIn delay={100}>

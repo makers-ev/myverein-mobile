@@ -16,6 +16,10 @@ export type ClubPermission =
   | 'inventory:write'
   | 'meetings:read_board'
   | 'locations:read_access'
+  // Wave 10: absences of the caller's scope (trainers: own departments), privacy admin (audit log, consents overview).
+  | 'absences:read'
+  | 'privacy:read'
+  | 'privacy:manage'
   // Not a ClubPermission in the backend, but appended to /club-members/me for UI gating (board roles).
   | 'club_stats:read';
 
