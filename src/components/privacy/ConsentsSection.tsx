@@ -4,7 +4,7 @@ import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } fr
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
-import { privacyErrorKey } from '@/lib/ward';
+import { privacyErrorKeyOr } from '@/lib/ward';
 import { consentActions, consentBadgeKey } from '@/lib/consentUi';
 import { useConsents, type ConsentSubject, type ConsentView } from '@/hooks/useConsents';
 import FormSheet from '@/components/ui/FormSheet';
@@ -66,7 +66,7 @@ export default function ConsentsSection({ subject, wardName = null, onChanged }:
       // The list was refreshed in the hook: the sheet now shows the new text version.
       setSheetNotice(t('consent.outdated'));
     } else {
-      setSheetError(t(privacyErrorKey(res.error) ?? 'consent.error.generic'));
+      setSheetError(t(privacyErrorKeyOr(res.error, 'consent.error.generic')));
     }
   };
 

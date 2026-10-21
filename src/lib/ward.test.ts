@@ -1,5 +1,5 @@
 import { ApiError } from './api';
-import { addDaysKey, dayKey, flattenWards, isOwnClub, groupByDay, telUrl, isConsentTextOutdated, privacyErrorKey, visibleNavRoutes, wardKey, type NavRoute } from './ward';
+import { privacyErrorKeyOr, addDaysKey, dayKey, flattenWards, isOwnClub, groupByDay, telUrl, isConsentTextOutdated, privacyErrorKey, visibleNavRoutes, wardKey, type NavRoute } from './ward';
 
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
 
@@ -73,5 +73,15 @@ describe('isOwnClub', () => {
     expect(isOwnClub({ orgRole: 'member' })).toBe(true);
     expect(isOwnClub({ orgRole: 'guest, owner' })).toBe(true);
     expect(isOwnClub({})).toBe(true);
+  });
+});
+
+describe('privacyErrorKeyOr', () => {
+  it('prefers the specific code, then the status text, then the fallback', () => {
+    expect(privacyErrorKeyOr(new ApiError(400, 'X', 'x', { code: 'invalid_period' }), 'g')).toBe('absence.error.invalid-period');
+    expect(privacyErrorKeyOr(new ApiError(403, 'DPA_REQUIRED', 'x', { code: 'dpa_required' }), 'g')).toBe('api.error.dpa-required');
+    expect(privacyErrorKeyOr(new ApiError(429, 'TOO_MANY_REQUESTS', 'x'), 'g')).toBe('api.error.rate-limit');
+    expect(privacyErrorKeyOr(new ApiError(503, 'X', 'x'), 'g')).toBe('api.error.server');
+    expect(privacyErrorKeyOr(new Error('offline'), 'g')).toBe('g');
   });
 });

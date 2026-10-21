@@ -4,7 +4,7 @@ import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-na
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
-import { parseDayKey, privacyErrorKey } from '@/lib/ward';
+import { parseDayKey, privacyErrorKeyOr } from '@/lib/ward';
 import { useAbsences, type Absence, type AbsenceInput, type AbsenceSubject } from '@/hooks/useAbsences';
 import AbsenceSheet from './AbsenceSheet';
 
@@ -45,7 +45,7 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
       setSheetOpen(false);
       setNotice(wardName ? t('absence.sent-ward', { name: wardName }) : t('absence.sent'));
     } else {
-      setSheetError(t(privacyErrorKey(res.error) ?? 'absence.error.generic'));
+      setSheetError(t(privacyErrorKeyOr(res.error, 'absence.error.generic')));
     }
   };
 
@@ -56,7 +56,7 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
         text: t('absence.withdraw'),
         style: 'destructive',
         onPress: () =>
-          void withdraw(a.id).then((res) => setNotice(res.ok ? t('absence.withdrawn') : t(privacyErrorKey(res.error) ?? 'absence.withdraw-failed'))),
+          void withdraw(a.id).then((res) => setNotice(res.ok ? t('absence.withdrawn') : t(privacyErrorKeyOr(res.error, 'absence.withdraw-failed')))),
       },
     ]);
   };

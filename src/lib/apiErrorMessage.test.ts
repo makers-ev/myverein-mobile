@@ -38,6 +38,7 @@ describe('DPA_REQUIRED and account deletion blockers', () => {
     expect(erasureBlockerKey('ERASURE_LEGAL_HOLD')).toBe('erasure.blocker.legal-hold');
     expect(erasureBlockerKey('ERASURE_EXIT_PENDING')).toBe('erasure.blocker.exit-pending');
     expect(erasureBlockerKey('ERASURE_BOARD_ROLE')).toBe('erasure.blocker.board-role');
+    expect(erasureBlockerKey('ERASURE_APPLICATION_PENDING')).toBe('erasure.blocker.application-pending');
     expect(erasureBlockerKey('ERASURE_SOMETHING_NEW')).toBe('erasure.blocker.other');
     expect(erasureBlockerKey('INVALID_PASSWORD')).toBeNull();
     expect(erasureBlockerKey(undefined)).toBeNull();

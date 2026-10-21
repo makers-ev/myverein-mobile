@@ -23,6 +23,8 @@ export function erasureBlockerKey(code: unknown): string | null {
       return 'erasure.blocker.open-loans';
     case 'ERASURE_BOARD_ROLE':
       return 'erasure.blocker.board-role';
+    case 'ERASURE_APPLICATION_PENDING':
+      return 'erasure.blocker.application-pending';
     case 'ERASURE_SOLE_OWNER':
       return 'erasure.blocker.sole-owner';
     default:

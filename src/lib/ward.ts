@@ -1,4 +1,5 @@
 import { ApiError } from './api';
+import { apiErrorKey } from './apiErrorMessage';
 
 /** One child the account is guardian of, flattened from `GET /my-wards` (grouped by club there). */
 export interface Ward {
@@ -94,6 +95,14 @@ export function privacyErrorKey(err: unknown): string | null {
     default:
       return null;
   }
+}
+
+/**
+ * Key for a failed Wave 10 call: the specific `details.code` text, else the status-based text (DPA_REQUIRED, 403, 429,
+ * 5xx, ...) of `apiErrorKey`, else `fallbackKey`.
+ */
+export function privacyErrorKeyOr(err: unknown, fallbackKey: string): string {
+  return privacyErrorKey(err) ?? apiErrorKey(err, fallbackKey);
 }
 
 /** `consent_text_outdated` (409): the text was replaced while the sheet was open. */

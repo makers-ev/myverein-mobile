@@ -8,6 +8,8 @@ import { daysUntil, isOpenRequest } from '@/lib/privacyCenter';
 import { useDataExportSummary, useDataRequests } from '@/hooks/usePrivacyCenter';
 import PrivacyCard from './PrivacyCard';
 
+const SECTION_KEYS = ['member_core', 'consents', 'absences', 'guardianship', 'forms_and_applications', 'exit_requests', 'communication', 'account_data'];
+
 /**
  * Own data rights in one club: "Meine Daten ansehen" (Art. 15; a summary per area, the content stays out of the app and
  * the full file is downloaded on the website) and the erasure request with a clear warning and the list of own requests
@@ -22,6 +24,7 @@ export default function DataRightsSection({ clubId }: { clubId: string }) {
   const [failure, setFailure] = useState<string | null>(null);
 
   const openErasure = requests.find((r) => r.kind === 'erasure' && isOpenRequest(r));
+  const sectionLabel = (key: string) => (SECTION_KEYS.includes(key) ? t(`datenschutz.export.section.${key}`) : t('datenschutz.export.section.other'));
   const day = (iso: string) => new Date(iso).toLocaleDateString(language);
 
   const confirmErasure = () => {
@@ -65,7 +68,7 @@ export default function DataRightsSection({ clubId }: { clubId: string }) {
             {exportData.summary.sections.length === 0 ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('datenschutz.export.empty')}</Text> : null}
             {exportData.summary.sections.map((s) => (
               <Text key={s.key} className="text-foreground dark:text-foreground-dark text-sm py-0.5">
-                {`${s.key.replace(/[_-]+/g, ' ')}: ${s.count}`}
+                {`${sectionLabel(s.key)}: ${s.count}`}
               </Text>
             ))}
             <Text className="text-foreground dark:text-foreground-dark text-sm py-0.5">{t('datenschutz.export.files', { count: exportData.summary.files })}</Text>

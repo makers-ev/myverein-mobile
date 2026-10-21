@@ -4,7 +4,7 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
-import { addDaysKey, dayKey, groupByDay, privacyErrorKey } from '@/lib/ward';
+import { addDaysKey, dayKey, groupByDay, privacyErrorKeyOr } from '@/lib/ward';
 import { useWardEvents, type WardAnswer, type WardEvent } from '@/hooks/useWardToday';
 import type { Ward } from '@/lib/ward';
 
@@ -36,7 +36,7 @@ export default function WardEventsSection({ ward, events }: { ward: Ward; events
   const answer = async (event: WardEvent, next: WardAnswer) => {
     setFailure(null);
     const res = await respond(event.id, event.response === next ? null : next);
-    if (!res.ok) setFailure(t(privacyErrorKey(res.error) ?? 'heute.events.respond-failed', { name }));
+    if (!res.ok) setFailure(t(privacyErrorKeyOr(res.error, 'heute.events.respond-failed'), { name }));
   };
 
   const todayKey = dayKey(new Date());
