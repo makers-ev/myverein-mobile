@@ -24,6 +24,7 @@ import VerifyPinModal from '@/components/Modals/VerifyPinModal';
 import IntroModal from '@/onboarding/IntroModal';
 
 import { getAppLockPin, setAppLockPin, clearAppLockPin } from '@/auth/appLockStorage';
+import { erasureBlockerKey } from '@/lib/apiErrorMessage';
 import { useAttemptLockout } from '@/hooks/useAttemptLockout';
 import {
     getShowTopbarTitles,
@@ -38,7 +39,7 @@ import PaletteCustomEditor from '@/components/Settings/PaletteCustomEditor';
 
 interface SettingsScreenProps {
   onLogout?: () => void;
-  onDeleteAccount?: (password: string) => Promise<{ success: boolean; error?: string }>;
+  onDeleteAccount?: (password: string) => Promise<{ success: boolean; error?: string; code?: string }>;
 }
 
 const openURL = (url: string) => {
@@ -248,7 +249,9 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                     if (!onDeleteAccount) return;
                     const result = await onDeleteAccount(password);
                     if (!result.success) {
-                        Alert.alert(t('alert.general-error-title'), result.error ?? t('alert.general-error-description'));
+                        // Raw backend text never reaches the UI: known ERASURE_<BLOCKER> codes get a readable explanation.
+                        const blocker = erasureBlockerKey(result.code);
+                        Alert.alert(t('alert.general-error-title'), blocker ? t(blocker) : t('alert.general-error-description'));
                     }
                 }}
             />

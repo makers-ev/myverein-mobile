@@ -1,5 +1,5 @@
 import { ApiError, apiErrorFromResponse } from './api';
-import { apiErrorKey, apiErrorMessage } from './apiErrorMessage';
+import { apiErrorKey, apiErrorMessage, erasureBlockerKey } from './apiErrorMessage';
 
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
 
@@ -24,6 +24,26 @@ describe('apiErrorKey', () => {
   it('never returns the raw backend message', () => {
     const t = (key: string) => `[${key}]`;
     expect(apiErrorMessage(new ApiError(404, 'NOT_FOUND', 'Exit request not found'), t)).toBe('[api.error.not-found]');
+  });
+});
+
+describe('DPA_REQUIRED and account deletion blockers', () => {
+  it('shows a readable message for the club-wide DPA lock, not the generic forbidden text', () => {
+    expect(apiErrorKey(new ApiError(403, 'DPA_REQUIRED', 'Processor agreement missing', { code: 'dpa_required' }))).toBe('api.error.dpa-required');
+    expect(apiErrorKey(new ApiError(403, 'FORBIDDEN', 'x'))).toBe('api.error.forbidden');
+  });
+  it('maps every ERASURE_<BLOCKER> code and falls back for unknown ones', () => {
+    expect(erasureBlockerKey('ERASURE_SOLE_OWNER')).toBe('erasure.blocker.sole-owner');
+    expect(erasureBlockerKey('ERASURE_OPEN_LOANS')).toBe('erasure.blocker.open-loans');
+    expect(erasureBlockerKey('ERASURE_LEGAL_HOLD')).toBe('erasure.blocker.legal-hold');
+    expect(erasureBlockerKey('ERASURE_EXIT_PENDING')).toBe('erasure.blocker.exit-pending');
+    expect(erasureBlockerKey('ERASURE_BOARD_ROLE')).toBe('erasure.blocker.board-role');
+    expect(erasureBlockerKey('ERASURE_SOMETHING_NEW')).toBe('erasure.blocker.other');
+    expect(erasureBlockerKey('INVALID_PASSWORD')).toBeNull();
+    expect(erasureBlockerKey(undefined)).toBeNull();
+  });
+  it('maps an ERASURE code through apiErrorKey too', () => {
+    expect(apiErrorKey(new ApiError(400, 'ERASURE_SOLE_OWNER', 'x'))).toBe('erasure.blocker.sole-owner');
   });
 });
 
