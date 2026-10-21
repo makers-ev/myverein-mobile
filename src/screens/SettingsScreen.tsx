@@ -400,6 +400,19 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                     </TouchableOpacity>
                 </SectionCard>
 
+                {isAuthenticated && (
+                    <SectionCard title={t('datenschutz.title')} subtitle={t('datenschutz.settings-hint')}>
+                        <TouchableOpacity
+                            className="bg-primary dark:bg-primary-dark py-2.5 px-4 rounded-lg"
+                            accessibilityRole="button"
+                            onPress={() => navigation.navigate('PrivacyCenter')}>
+                            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold text-center">
+                                {t('datenschutz.open')}
+                            </Text>
+                        </TouchableOpacity>
+                    </SectionCard>
+                )}
+
                 <SectionCard title={t('settings.section-app-lock')}>
                     <TouchableOpacity
                         className={`${appLockActive ? 'bg-destructive' : 'bg-primary dark:bg-primary-dark'} py-2.5 px-4 rounded-lg`}

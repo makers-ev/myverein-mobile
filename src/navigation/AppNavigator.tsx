@@ -23,6 +23,7 @@ import StandorteScreen from '@/screens/StandorteScreen';
 import ClubApplicationsScreen from '@/screens/ClubApplicationsScreen';
 import ProfileModulesScreen from '@/screens/ProfileModulesScreen';
 import HeuteScreen from '@/screens/HeuteScreen';
+import PrivacyCenterScreen from '@/screens/PrivacyCenterScreen';
 import GuardianStartRedirect from '@/guardian/GuardianStartRedirect';
 import JoinClubScreen from '@/screens/JoinClubScreen';
 import CreateClubScreen from '@/screens/CreateClubScreen';
@@ -59,6 +60,7 @@ export type RootStackParamList = {
   Notifications: undefined;
   Mitteilungen: undefined;
   Heute: undefined;
+  PrivacyCenter: undefined;
   Login: { returnTo?: keyof RootStackParamList } | undefined;
   Signup: undefined;
   ForgotPassword: undefined;
@@ -260,6 +262,14 @@ function MainNavigator() {
               return result;
             }}
           />
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="PrivacyCenter">
+        {(props) => (
+          <RequireAuth>
+            <PrivacyCenterScreen {...props} />
+          </RequireAuth>
         )}
       </RootStack.Screen>
 
