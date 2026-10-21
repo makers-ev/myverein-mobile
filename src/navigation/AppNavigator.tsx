@@ -22,6 +22,8 @@ import KalenderScreen from '@/screens/KalenderScreen';
 import StandorteScreen from '@/screens/StandorteScreen';
 import ClubApplicationsScreen from '@/screens/ClubApplicationsScreen';
 import ProfileModulesScreen from '@/screens/ProfileModulesScreen';
+import HeuteScreen from '@/screens/HeuteScreen';
+import GuardianStartRedirect from '@/guardian/GuardianStartRedirect';
 import JoinClubScreen from '@/screens/JoinClubScreen';
 import CreateClubScreen from '@/screens/CreateClubScreen';
 import AppLockGate from '@/components/AppLock/AppLockGate';
@@ -56,6 +58,7 @@ export type RootStackParamList = {
   ProfileModules: undefined;
   Notifications: undefined;
   Mitteilungen: undefined;
+  Heute: undefined;
   Login: { returnTo?: keyof RootStackParamList } | undefined;
   Signup: undefined;
   ForgotPassword: undefined;
@@ -167,6 +170,14 @@ function MainNavigator() {
         {() => (
           <RequireAuth>
             <MitteilungenScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Heute">
+        {(props) => (
+          <RequireAuth>
+            <HeuteScreen {...props} />
           </RequireAuth>
         )}
       </RootStack.Screen>
@@ -335,6 +346,8 @@ export default function AppNavigator() {
         {twoFactorPending ? <TwoFactorNavigator /> : <MainNavigator />}
         {/* Routes a tapped push (Wave 9 M3); renders nothing. */}
         <PushDeepLinkRouter />
+        {/* Guardian-only accounts start on "Heute" (Wave 10 M5); renders nothing. */}
+        <GuardianStartRedirect />
       </NavigationContainer>
     </AppLockGate>
   );

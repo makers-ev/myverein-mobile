@@ -10,6 +10,7 @@ import { LanguageProvider } from './src/contexts/translation/LanguageContext';
 import { PaletteProvider } from './src/theme/PaletteProvider';
 import { AuthProvider } from './src/auth/AuthProvider';
 import { ActiveClubProvider } from './src/clubs/ActiveClubProvider';
+import { WardsProvider } from './src/guardian/WardsProvider';
 import { PushProvider } from './src/notifications/PushProvider';
 import { ErrorBoundary } from './src/error/ErrorBoundary';
 import AppNavigator from './src/navigation/AppNavigator';
@@ -48,9 +49,11 @@ export default function App() {
                   <StatusBar style="auto" />
                   <NavigationBar style="auto" />
                   <ActiveClubProvider>
-                    <PushProvider>
-                      <AppNavigator />
-                    </PushProvider>
+                    <WardsProvider>
+                      <PushProvider>
+                        <AppNavigator />
+                      </PushProvider>
+                    </WardsProvider>
                   </ActiveClubProvider>
                 </AuthProvider>
               </LanguageProvider>
