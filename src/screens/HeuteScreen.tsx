@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -32,11 +32,14 @@ export default function HeuteScreen({ navigation }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const [goneNotice, setGoneNotice] = useState(false);
 
+  // A 404 on any ward route (events, contacts, consents, absences) means the link ended: reload the wards, tell the person.
+  const handleGone = useCallback(() => {
+    void reload().then(() => setGoneNotice(true));
+  }, [reload]);
   const gone = isNotFound(events.error) || isNotFound(contacts.error);
   useEffect(() => {
-    if (!gone) return;
-    void reload().then(() => setGoneNotice(true));
-  }, [gone, reload]);
+    if (gone) handleGone();
+  }, [gone, handleGone]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -58,7 +61,10 @@ export default function HeuteScreen({ navigation }: Props) {
             {[selected.firstName ?? selected.name, selected.clubName].filter(Boolean).join(' - ')}
           </Text>
         ) : null}
-        <WardSwitcher wards={wards} selected={selected} onSelect={select} />
+        <WardSwitcher wards={wards} selected={selected} onSelect={(key) => {
+            setGoneNotice(false);
+            select(key);
+          }} />
       </View>
 
       {loading && wards.length === 0 ? (
@@ -92,12 +98,13 @@ export default function HeuteScreen({ navigation }: Props) {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void handleRefresh()} tintColor={themeColors.primary} />}
         >
           {goneNotice ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">{t('heute.gone')}</Text> : null}
-          <AbsenceSection subject={{ kind: 'ward', clubId: selected.clubId, wardId: selected.wardId }} wardName={selected.firstName ?? selected.name} canReport={selected.canReportAbsence} />
+          <AbsenceSection subject={{ kind: 'ward', clubId: selected.clubId, wardId: selected.wardId }} wardName={selected.firstName ?? selected.name} canReport={selected.canReportAbsence} onGone={handleGone} />
           <WardEventsSection ward={selected} events={events} />
           <ConsentsSection
             subject={{ kind: 'ward', clubId: selected.clubId, wardId: selected.wardId, canConsent: selected.canConsent }}
             wardName={selected.firstName ?? selected.name}
             onChanged={() => void reload()}
+            onGone={handleGone}
           />
           <WardContactsSection contacts={contacts} />
         </ScrollView>

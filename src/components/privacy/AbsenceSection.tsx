@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
-import { parseDayKey, privacyErrorKeyOr } from '@/lib/ward';
+import { isNotFound, parseDayKey, privacyErrorKeyOr } from '@/lib/ward';
 import { useAbsences, type Absence, type AbsenceInput, type AbsenceSubject } from '@/hooks/useAbsences';
 import AbsenceSheet from './AbsenceSheet';
 
@@ -14,6 +14,8 @@ interface Props {
   wardName?: string | null;
   /** Guardian link right `can_report_absence`; the own report is always allowed (the backend decides). */
   canReport?: boolean;
+  /** A child's link ended (404 on the ward route): the screen reloads the wards. */
+  onGone?: () => void;
 }
 
 /**
@@ -21,7 +23,7 @@ interface Props {
  * "Zurückziehen". Used for the own report (Profil tab) and per child ("Heute"). Hides itself for a 403/404 on the own
  * report (external guest without membership). The note text is shown to the person who wrote it, never logged.
  */
-export default function AbsenceSection({ subject, wardName = null, canReport = true }: Props) {
+export default function AbsenceSection({ subject, wardName = null, canReport = true, onGone }: Props) {
   const { t, language } = useLanguage();
   const themeColors = useThemeColors();
   const { absences, loading, error, reload, create, withdraw } = useAbsences(subject);
@@ -29,6 +31,11 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
   const [saving, setSaving] = useState(false);
   const [sheetError, setSheetError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  const gone = subject.kind === 'ward' && isNotFound(error);
+  useEffect(() => {
+    if (gone) onGone?.();
+  }, [gone, error, onGone]);
 
   const status = (error as { status?: number } | null)?.status;
   if (subject.kind === 'self' && (status === 403 || status === 404) && absences.length === 0) return null;
@@ -113,7 +120,7 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
               {a.note ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">{a.note}</Text> : null}
             </View>
             {canReport ? (
-              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('absence.withdraw')} onPress={() => confirmWithdraw(a)} className="justify-center" style={{ minHeight: 44 }}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={`${t('absence.withdraw')}: ${t(`absence.kind.${a.kind}`)} - ${period(a)}`} onPress={() => confirmWithdraw(a)} className="justify-center" style={{ minHeight: 44 }}>
                 <Text className="text-destructive text-sm font-semibold">{t('absence.withdraw')}</Text>
               </TouchableOpacity>
             ) : null}

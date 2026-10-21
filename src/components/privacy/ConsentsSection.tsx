@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
-import { privacyErrorKeyOr } from '@/lib/ward';
+import { isNotFound, privacyErrorKeyOr } from '@/lib/ward';
 import { consentActions, consentBadgeKey } from '@/lib/consentUi';
 import { useConsents, type ConsentSubject, type ConsentView } from '@/hooks/useConsents';
 import FormSheet from '@/components/ui/FormSheet';
@@ -15,6 +15,8 @@ interface Props {
   wardName?: string | null;
   /** Called after a decision was saved (the Heute screen refreshes its "offen" badge). */
   onChanged?: () => void;
+  /** A child's link ended (404 on the ward route): the screen reloads the wards. */
+  onGone?: () => void;
 }
 
 /**
@@ -24,7 +26,7 @@ interface Props {
  * the own consents (no membership). A grant sends the version that was shown; if the text changed meanwhile the sheet
  * refreshes and asks again instead of recording a consent to a text the person never saw.
  */
-export default function ConsentsSection({ subject, wardName = null, onChanged }: Props) {
+export default function ConsentsSection({ subject, wardName = null, onChanged, onGone }: Props) {
   const { t, language } = useLanguage();
   const themeColors = useThemeColors();
   const { consents, canDecide, loading, error, reload, grant, revoke } = useConsents(subject);
@@ -33,6 +35,11 @@ export default function ConsentsSection({ subject, wardName = null, onChanged }:
   const [sheetNotice, setSheetNotice] = useState<string | null>(null);
   const [sheetError, setSheetError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  const gone = subject.kind === 'ward' && isNotFound(error);
+  useEffect(() => {
+    if (gone) onGone?.();
+  }, [gone, error, onGone]);
 
   const status = (error as { status?: number } | null)?.status;
   if (subject.kind === 'self' && (status === 403 || status === 404) && consents.length === 0) return null;
