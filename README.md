@@ -417,6 +417,14 @@ Payload from the backend contains no text or personal data: `data = { type, urge
 
 **Development build / EAS required.** Remote push does not work in Expo Go (SDK 53+ removed it on Android) nor on simulators/emulators; the app then shows "Push needs a development build / a physical device" and does nothing else. To test: create an EAS project (`eas init`, which writes `extra.eas.projectId` into the app config), configure FCM (Android) and APNs (iOS) credentials in EAS, build a development build (`eas build --profile development` or `npx expo run:android|ios`) and run it on a physical device. Without `extra.eas.projectId` the status is "not set up in this build". Not verified on real devices in this repository's CI.
 
+**iOS push checklist (not verified on a device yet).**
+1. Paid Apple Developer account (the free tier has no push entitlement).
+2. App ID `com.myverein.app` (`ios.bundleIdentifier` in `app.config.ts`) with the "Push Notifications" capability; `eas build --platform ios` creates it when you sign in with the Apple ID.
+3. APNs key (.p8): `eas credentials` -> iOS -> Push Notifications -> let EAS create and store the key. This replaces `google-services.json`, which is Android (FCM) only; no `GoogleService-Info.plist` is needed because push goes through Expo.
+4. Real iPhone plus an EAS development or release build (Expo Go and the simulator do not receive remote push). Register test devices with `eas device:create` so the ad-hoc provisioning profile contains their UDID.
+5. `EXPO_ACCESS_TOKEN` on the backend is optional and identical for Android and iOS; set it only if "Enhanced Push Security" is enabled for the Expo project.
+Sign in with Apple uses its own capability and Service ID/key on the same Apple account and App ID, separate from the APNs key.
+
 ## Configuration
 
 | Variable | Required | Purpose |
