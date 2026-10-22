@@ -21,6 +21,7 @@ const config = {
     },
     predictiveBackGestureEnabled: false,
     package: 'com.myverein.app',
+    googleServicesFile: './google-services.json',
   },
   web: {
     favicon: './assets/favicon.png',
