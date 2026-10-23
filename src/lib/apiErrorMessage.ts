@@ -8,11 +8,37 @@ type Translate = (key: string, params?: Record<string, string | number>) => stri
  * backend error `code` (then the HTTP status); anything else falls back to
  * `fallbackKey` (default: the generic error text).
  */
+/**
+ * Account deletion is refused (400) with `ERASURE_<BLOCKER>` while something in a club still depends on the account.
+ * Returns the German-first message key for a known blocker, `null` for anything else.
+ */
+export function erasureBlockerKey(code: unknown): string | null {
+  if (typeof code !== 'string' || !code.startsWith('ERASURE_')) return null;
+  switch (code) {
+    case 'ERASURE_LEGAL_HOLD':
+      return 'erasure.blocker.legal-hold';
+    case 'ERASURE_EXIT_PENDING':
+      return 'erasure.blocker.exit-pending';
+    case 'ERASURE_OPEN_LOANS':
+      return 'erasure.blocker.open-loans';
+    case 'ERASURE_BOARD_ROLE':
+      return 'erasure.blocker.board-role';
+    case 'ERASURE_APPLICATION_PENDING':
+      return 'erasure.blocker.application-pending';
+    case 'ERASURE_SOLE_OWNER':
+      return 'erasure.blocker.sole-owner';
+    default:
+      return 'erasure.blocker.other';
+  }
+}
+
 export function apiErrorKey(err: unknown, fallbackKey = 'alert.general-error-description'): string {
   if (!(err instanceof ApiError)) return fallbackKey;
   // Machine-readable conflicts carry `details.code`; it wins over the generic status text.
   const detailsCode = (err.details as { code?: unknown } | undefined)?.code;
   if (detailsCode === 'default_calendar_required') return 'kalender.error.default-required';
+  const erasure = erasureBlockerKey(err.code);
+  if (erasure) return erasure;
   switch (err.code) {
     case 'ALREADY_MEMBER':
       return 'api.error.already-member';
@@ -20,6 +46,8 @@ export function apiErrorKey(err: unknown, fallbackKey = 'alert.general-error-des
       return 'api.error.application-pending';
     case 'QUOTA_EXCEEDED':
       return 'api.error.quota';
+    case 'DPA_REQUIRED':
+      return 'api.error.dpa-required';
     case 'TOO_MANY_REQUESTS':
       return 'api.error.rate-limit';
     default:

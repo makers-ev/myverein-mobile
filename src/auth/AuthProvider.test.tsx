@@ -127,4 +127,16 @@ describe('AuthProvider', () => {
 
     expect(order).toEqual(['unregister', 'deleteUser']);
   });
+
+  it('deleteAccount hands the backend blocker code to the caller', async () => {
+    authClient.deleteUser.mockImplementationOnce(async () => ({ error: { code: 'ERASURE_SOLE_OWNER', message: 'Sole owner', status: 400 } }));
+
+    const { result } = await renderHook(() => useAuth(), { wrapper });
+    let res: { success: boolean; code?: string } | undefined;
+    await act(async () => {
+      res = await result.current.deleteAccount('pw');
+    });
+
+    expect(res).toMatchObject({ success: false, code: 'ERASURE_SOLE_OWNER' });
+  });
 });

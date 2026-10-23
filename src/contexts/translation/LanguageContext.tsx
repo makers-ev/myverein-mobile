@@ -19,6 +19,7 @@ import TreffenTranslation from './TreffenTranslation';
 import StandorteTranslation from './StandorteTranslation';
 import FormsTranslation from './FormsTranslation';
 import MitteilungenTranslation from './MitteilungenTranslation';
+import PrivacyTranslation from './PrivacyTranslation';
 
 // app.config.ts's `expo.name`/`expo.extra` is this app's canonical identity file
 // (Expo's build tooling already reads `expo.name`/`icon` for the store
@@ -51,6 +52,7 @@ const translationModules = [
   StandorteTranslation,
   FormsTranslation,
   MitteilungenTranslation,
+  PrivacyTranslation,
 ];
 
 const translations = Object.fromEntries(

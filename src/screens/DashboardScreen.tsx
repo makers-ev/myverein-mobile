@@ -12,6 +12,8 @@ import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import { useOwnMembership, type ClubPermission } from '@/hooks/useOwnMembership';
 import type { CalendarEvent } from '@/hooks/useEvents';
 import Logo from '@/components/Logo';
+import SickNoteCard from '@/components/privacy/SickNoteCard';
+import WhoIsAbsentCard from '@/components/privacy/WhoIsAbsentCard';
 import SignedInCard from '@/components/SignedInCard';
 import BentoTile from '@/components/ui/BentoTile';
 import FadeIn from '@/components/ui/FadeIn';
@@ -79,7 +81,7 @@ export default function DashboardScreen({ navigation }: Props) {
   const { activeClub, error: clubsError, loading: clubsLoading, refetch: refetchClubs } = useMyClubs();
   const clubId = activeClub?.clubId ?? null;
   const { event, loading: eventLoading, error, refetch } = useNextEvent(clubId);
-  const { can } = useOwnMembership(clubId);
+  const { membership, can } = useOwnMembership(clubId);
   const shortcuts = SHORTCUTS.filter((s) => can(s.permission));
 
   const loading = clubsLoading || eventLoading;
@@ -171,6 +173,18 @@ export default function DashboardScreen({ navigation }: Props) {
               {eventBody}
             </BentoTile>
           </FadeIn>
+
+          {activeClub && membership ? (
+            <FadeIn delay={25}>
+              <SickNoteCard key={activeClub.clubId} clubId={activeClub.clubId} />
+            </FadeIn>
+          ) : null}
+
+          {activeClub && can('absences:read') ? (
+            <FadeIn delay={50}>
+              <WhoIsAbsentCard key={activeClub.clubId} clubId={activeClub.clubId} />
+            </FadeIn>
+          ) : null}
 
           {shortcuts.length > 0 ? (
             <FadeIn delay={100}>

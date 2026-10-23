@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, Calendar, Megaphone, Home as HomeIcon, MapPin, Settings as SettingsIcon, Users, type LucideIcon } from 'lucide-react-native';
+import { Bell, Calendar, CalendarCheck, Megaphone, Home as HomeIcon, MapPin, Settings as SettingsIcon, Users, type LucideIcon } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -10,9 +10,11 @@ import { getShowNavbarTitles } from '@/settings/appSettingsStorage';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { useUnreadCount } from '@/hooks/useClubInbox';
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
+import { useWards } from '@/hooks/useWards';
+import { visibleNavRoutes, type NavRoute } from '@/lib/ward';
 
 interface NavItem {
-    route: 'Home' | 'Verein' | 'Kalender' | 'Standorte' | 'Mitteilungen' | 'Notifications' | 'Settings';
+    route: NavRoute;
     labelKey: string;
     Icon: LucideIcon;
 }
@@ -24,6 +26,7 @@ interface NavItem {
 // an ungated nav entry.
 const NAV_ITEMS: NavItem[] = [
     { route: 'Home', labelKey: 'nav.home', Icon: HomeIcon },
+    { route: 'Heute', labelKey: 'nav.heute', Icon: CalendarCheck },
     { route: 'Verein', labelKey: 'nav.verein', Icon: Users },
     { route: 'Kalender', labelKey: 'nav.kalender', Icon: Calendar },
     { route: 'Standorte', labelKey: 'nav.standorte', Icon: MapPin },
@@ -61,6 +64,9 @@ export default function Navbar() {
     const unreadCount = useUnreadNotificationCount();
     const { activeClub } = useActiveClub();
     const inboxUnreadCount = useUnreadCount(activeClub?.clubId ?? null);
+    // `Heute` only for accounts with wards; guardian-only accounts get no club entries (Wave 10 M5).
+    const { hasWards, guardianOnly } = useWards();
+    const visible = visibleNavRoutes(NAV_ITEMS.map((i) => i.route), { hasWards, guardianOnly });
 
     useEffect(() => {
         // SettingsScreen tells the user a restart is required after
@@ -100,7 +106,7 @@ export default function Navbar() {
                 className="flex-row w-[90%] h-16 rounded-full items-center justify-around bg-primary dark:bg-primary-dark px-2 shadow-xl"
                 style={{ elevation: 10 }}
             >
-                {NAV_ITEMS.map(({ route, labelKey, Icon }) => {
+                {NAV_ITEMS.filter((i) => visible.includes(i.route)).map(({ route, labelKey, Icon }) => {
                     const isActive = activeRoute === route;
                     // Two separate badges: club inbox (Mitteilungen) vs. platform notices (bell).
                     const badge = route === 'Notifications' ? unreadCount : route === 'Mitteilungen' ? inboxUnreadCount : 0;

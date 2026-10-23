@@ -12,6 +12,8 @@ interface SignUpInput {
 interface AuthResult {
   success: boolean;
   error?: string;
+  /** Machine-readable backend/Better Auth code when there is one (e.g. `ERASURE_SOLE_OWNER`); never shown raw. */
+  code?: string;
 }
 
 /** Minimal shape of a Better Auth session as returned by `listSessions()`. */
@@ -183,7 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (error) {
       resumePushRegistration();
-      return { success: false, error: error.message ?? 'Unable to delete account.' };
+      return { success: false, error: error.message ?? 'Unable to delete account.', code: typeof error.code === 'string' ? error.code : undefined };
     }
 
     scheduleSessionRefetch();
