@@ -180,6 +180,28 @@ export default function DashboardScreen({ navigation }: Props) {
             </FadeIn>
           ) : null}
 
+          {activeClub && membership ? (
+            <FadeIn delay={40}>
+              <BentoTile minHeight={88}>
+                <Text className="text-primary dark:text-primary-dark text-xs font-bold uppercase tracking-wider mb-3">{t('assembly.dashboard.title')}</Text>
+                <View className="flex-row flex-wrap" style={{ gap: 8 }}>
+                  {(['Abstimmungen', 'Versammlung'] as const).map((route) => (
+                    <TouchableOpacity
+                      key={route}
+                      accessibilityRole="button"
+                      accessibilityLabel={t(`assembly.dashboard.${route}`)}
+                      activeOpacity={0.7}
+                      onPress={() => navigation.navigate(route)}
+                      className="min-h-[44px] justify-center bg-muted dark:bg-muted-dark rounded-xl px-4"
+                    >
+                      <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">{t(`assembly.dashboard.${route}`)}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </BentoTile>
+            </FadeIn>
+          ) : null}
+
           {activeClub && can('absences:read') ? (
             <FadeIn delay={50}>
               <WhoIsAbsentCard key={activeClub.clubId} clubId={activeClub.clubId} />
