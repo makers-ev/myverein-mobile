@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useAssembly } from '@/hooks/useAssembly';
@@ -7,7 +7,7 @@ import { useClubMemberDirectory } from '@/hooks/useClubMembers';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import CheckInSection from './CheckInSection';
-import { Badge, Body, Button, Card, ErrorRetry, Loading } from './ui';
+import { Badge, Body, Button, Card, ErrorRetry, Loading, labelOr } from './ui';
 
 interface Props {
   clubId: string;
@@ -26,6 +26,8 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
   const { membership, can } = useOwnMembership(clubId);
   const { members } = useClubMemberDirectory(clubId);
   const [picking, setPicking] = useState(false);
+  const [search, setSearch] = useState('');
+  const [chosen, setChosen] = useState<{ id: string; name: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const me = membership?.id ?? null;
   const manage = can('assembly:manage') || can('meetings:write');
@@ -48,13 +50,31 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
   const content = a.invitation?.content;
   const over = m.status === 'abgehalten' || m.status === 'protokolliert';
   const online = m.participationMode && m.participationMode !== 'praesenz';
-  const holders = members.filter((x) => x.id !== me).slice(0, 200);
+  const needle = search.trim().toLocaleLowerCase();
+  const holders = members
+    .filter((x) => x.id !== me)
+    .map((x) => ({ id: x.id, name: x.displayName ?? x.name ?? '' }))
+    .filter((x) => x.name && (!needle || x.name.toLocaleLowerCase().includes(needle)))
+    .slice(0, 30);
   const agenda = a.agenda.length > 0 ? a.agenda.map((i) => ({ key: i.id, position: i.position, title: i.title, description: i.description })) : (content?.agenda ?? []).map((i) => ({ key: String(i.position), position: i.position, title: i.title, description: i.description }));
   const approved = a.minutes?.current?.approved ? a.minutes.current : null;
 
   const joinOnline = async () => {
-    await run(a.joinOnline);
-    if (m.onlineUrl && /^https:\/\//i.test(m.onlineUrl)) void Linking.openURL(m.onlineUrl);
+    setError(null);
+    try {
+      await a.joinOnline();
+    } catch (err) {
+      setError(apiErrorMessage(err, t));
+      return;
+    }
+    // Only after the join was recorded; a link that cannot be opened is a message, not a crash.
+    if (m.onlineUrl && /^https:\/\//i.test(m.onlineUrl)) {
+      try {
+        await Linking.openURL(m.onlineUrl);
+      } catch {
+        setError(t('assembly.online.open-failed'));
+      }
+    }
   };
 
   return (
@@ -88,7 +108,7 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
 
       {!over && mine ? (
         <Card title={t('assembly.rsvp.title')}>
-          <Badge symbol={mine.response === 'zugesagt' ? '✓' : mine.response === 'abgesagt' ? '✕' : '?'} label={t(`assembly.rsvp.${mine.response}`)} />
+          <Badge symbol={mine.response === 'zugesagt' ? '✓' : mine.response === 'abgesagt' ? '✕' : '?'} label={labelOr(t, `assembly.rsvp.${mine.response}`, 'assembly.rsvp.other')} />
           <Button label={t('assembly.rsvp.yes')} secondary={mine.response !== 'zugesagt'} busy={a.acting} onPress={() => void run(() => a.respond('zugesagt'))} />
           <Button label={t('assembly.rsvp.no')} secondary={mine.response !== 'abgesagt'} busy={a.acting} onPress={() => void run(() => a.respond('abgesagt'))} />
         </Card>
@@ -102,20 +122,37 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
               <Body>{t('assembly.proxy.given', { name: grantedByMe.holderName ?? t('assembly.unknown-person') })}</Body>
               <Button secondary label={t('assembly.proxy.revoke')} busy={a.acting} onPress={() => void run(() => a.revokeProxy(me!))} />
             </>
+          ) : chosen ? (
+            <>
+              <Body>{t('assembly.proxy.confirm', { name: chosen.name })}</Body>
+              <Body muted>{t('assembly.proxy.confirm-hint')}</Body>
+              <Button
+                label={t('assembly.proxy.confirm-submit')}
+                busy={a.acting}
+                onPress={async () => {
+                  const h = chosen;
+                  await run(() => a.grantProxy(h.id));
+                  setChosen(null);
+                  setPicking(false);
+                  setSearch('');
+                }}
+              />
+              <Button secondary label={t('assembly.cancel')} disabled={a.acting} onPress={() => setChosen(null)} />
+            </>
           ) : picking ? (
             <>
               <Body muted>{t('assembly.proxy.pick')}</Body>
+              <TextInput
+                accessibilityLabel={t('assembly.checkin.search')}
+                placeholder={t('assembly.checkin.search')}
+                value={search}
+                onChangeText={setSearch}
+                autoCorrect={false}
+                className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-2 min-h-[48px]"
+              />
               {holders.length === 0 ? <Body muted>{t('assembly.proxy.no-members')}</Body> : null}
               {holders.map((h) => (
-                <Button
-                  key={h.id}
-                  secondary
-                  label={h.displayName ?? h.name ?? t('assembly.unknown-person')}
-                  onPress={async () => {
-                    setPicking(false);
-                    await run(() => a.grantProxy(h.id));
-                  }}
-                />
+                <Button key={h.id} secondary label={h.name} disabled={a.acting} onPress={() => setChosen({ id: h.id, name: h.name })} />
               ))}
               <Button secondary label={t('assembly.cancel')} onPress={() => setPicking(false)} />
             </>
@@ -146,7 +183,7 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
         {a.ballots
           .filter((b) => b.phase !== 'draft')
           .map((b) => (
-            <Button key={b.id} secondary label={`${b.title} (${t(`assembly.phase.${b.phase}`)})`} onPress={() => onOpenBallot(b.id)} />
+            <Button key={b.id} secondary label={`${b.title} (${labelOr(t, `assembly.phase.${b.phase}`, 'assembly.phase.other')})`} onPress={() => onOpenBallot(b.id)} />
           ))}
       </Card>
 

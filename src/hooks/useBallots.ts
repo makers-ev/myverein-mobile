@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 
 import { apiFetch } from '@/lib/api';
 import { voteFailure, voteNeedsReload, type BallotDetail, type BallotSummary, type VoteFailure } from '@/lib/assembly';
@@ -31,7 +33,22 @@ export function useBallot(clubId: string | null, ballotId: string | null) {
   const inFlight = useRef(false);
   const [voting, setVoting] = useState(false);
 
-  // Reload when the voting window starts or ends.
+  // Coming back to the app or to this screen: the window or the right may have changed meanwhile.
+  const focused = useIsFocused();
+  const wasFocused = useRef(focused);
+  useEffect(() => {
+    if (focused && !wasFocused.current) void reload();
+    wasFocused.current = focused;
+  }, [focused, reload]);
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'active') void reload();
+    });
+    return () => sub.remove();
+  }, [reload]);
+
+  // Reload when the voting window starts or ends. `rearm` re-runs the timer after each timer reload (e.g. the window was extended).
+  const [rearm, setRearm] = useState(0);
   const opensAt = data?.opensAt ?? null;
   const closesAt = data?.closesAt ?? null;
   const phase = data?.phase ?? null;
@@ -39,9 +56,11 @@ export function useBallot(clubId: string | null, ballotId: string | null) {
     const target = phase === 'scheduled' ? opensAt : phase === 'voting' ? closesAt : null;
     if (!target) return;
     const wait = new Date(target).getTime() - Date.now();
-    const timer = setTimeout(() => void reload(), Math.min(Math.max(wait, 0) + 500, MAX_TIMER_MS));
+    const timer = setTimeout(() => {
+      void reload().then(() => setRearm((n) => n + 1));
+    }, Math.min(Math.max(wait, 0) + 500, MAX_TIMER_MS));
     return () => clearTimeout(timer);
-  }, [phase, opensAt, closesAt, reload]);
+  }, [phase, opensAt, closesAt, reload, rearm]);
 
   const castVote = useCallback(
     async (optionIds: string[], forClubMemberId?: string): Promise<VoteOutcome> => {
@@ -57,9 +76,13 @@ export function useBallot(clubId: string | null, ballotId: string | null) {
         return { ok: true, alreadyCounted: false };
       } catch (err) {
         const failure = voteFailure(err);
-        if (voteNeedsReload(failure)) await reload();
-        // The earlier attempt did arrive: the vote exists exactly once.
+        const fresh = voteNeedsReload(failure) ? await reload() : null;
+        // The earlier attempt did arrive (or the server says so): the vote exists exactly once.
         if (failure === 'already_voted') return { ok: true, alreadyCounted: true };
+        if (fresh && failure === 'offline') {
+          const counted = forClubMemberId ? fresh.me.proxies.some((p) => p.grantorClubMemberId === forClubMemberId && p.hasVoted) : fresh.me.hasVoted;
+          if (counted) return { ok: true, alreadyCounted: true };
+        }
         return { ok: false, failure };
       } finally {
         inFlight.current = false;

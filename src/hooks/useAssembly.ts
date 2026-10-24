@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
 import type { AgendaItem, AttendanceMember, BallotSummary, InvitationContent, InviteeRow, MinutesView, ProxyRow, Quorum, VotingRollMe } from '@/lib/assembly';
@@ -101,20 +101,23 @@ export function useCheckIn(clubId: string | null, meetingId: string | null, enab
   const attendance = useScopedResource<AttendanceMember[]>(gate(base(clubId, meetingId, '/attendance')));
   const quorum = useScopedResource<Quorum>(gate(base(clubId, meetingId, '/quorum')));
   const [pending, setPending] = useState<string | null>(null);
+  const busy = useRef(false);
 
   const setPresent = useCallback(
     async (clubMemberId: string, present: boolean) => {
-      if (pending) return false;
+      if (busy.current) return false;
+      busy.current = true;
       setPending(clubMemberId);
       try {
         await apiFetch(`/meetings/${meetingId}/attendance?${q(clubId)}`, { method: 'PATCH', body: [{ clubMemberId, present }] });
         await Promise.all([attendance.reload(), quorum.reload()]);
         return true;
       } finally {
+        busy.current = false;
         setPending(null);
       }
     },
-    [pending, clubId, meetingId, attendance, quorum],
+    [clubId, meetingId, attendance, quorum],
   );
 
   return {

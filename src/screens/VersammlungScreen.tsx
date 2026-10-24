@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { BackHandler, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
@@ -28,16 +29,20 @@ export default function VersammlungScreen({ route, navigation }: Props) {
   // A tapped push may belong to another club: switch to it first, then drop the hand-over (the id arrives as a route param).
   const push = usePushScreenTarget('Versammlung');
   const { ready: pushReady, unreachable: pushGone, consume: consumePush } = push;
+  const [goneNotice, setGoneNotice] = useState(false);
   useEffect(() => {
+    if (pushGone) setGoneNotice(true);
+    else if (pushReady) setGoneNotice(false);
     if (pushReady || pushGone) consumePush();
   }, [pushReady, pushGone, consumePush]);
   const switching = !!push.target && !pushReady && !pushGone;
   const { meetings, loading, error, refetch } = useMeetings(clubId);
   const [meetingId, setMeetingId] = useState<string | null>(route.params?.meetingId ?? null);
   const [ballotId, setBallotId] = useState<string | null>(null);
-  const [lastParam, setLastParam] = useState(route.params?.meetingId);
-  if (route.params?.meetingId !== lastParam) {
-    setLastParam(route.params?.meetingId);
+  const [lastParams, setLastParams] = useState(route.params);
+  // Compared by object identity: tapping a push for the same id again navigates with a new params object and re-selects it.
+  if (route.params !== lastParams) {
+    setLastParams(route.params);
     if (route.params?.meetingId) {
       setMeetingId(route.params.meetingId);
       setBallotId(null);
@@ -46,9 +51,22 @@ export default function VersammlungScreen({ route, navigation }: Props) {
 
   const list = meetings.filter(isAssemblyMeeting).sort((a, b) => (b.scheduledAt ?? '').localeCompare(a.scheduledAt ?? ''));
 
+  useFocusEffect(
+    React.useCallback(() => {
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        if (ballotId) setBallotId(null);
+        else if (meetingId) setMeetingId(null);
+        else return false;
+        return true;
+      });
+      return () => sub.remove();
+    }, [ballotId, meetingId]),
+  );
+
   let body: React.ReactNode;
   if (clubLoading || switching || (loading && meetings.length === 0)) body = <Loading />;
   else if (!clubId) body = <Card><Body>{t('assembly.no-club')}</Body></Card>;
+  else if (goneNotice) body = <Card><Body>{t('push.notice.club-gone')}</Body></Card>;
   else if (ballotId) body = <BallotDetailView key={ballotId} clubId={clubId} ballotId={ballotId} onBack={() => setBallotId(null)} />;
   else if (meetingId) body = <AssemblyDetailView key={`${clubId}:${meetingId}`} clubId={clubId} meetingId={meetingId} onBack={() => setMeetingId(null)} onOpenBallot={setBallotId} />;
   else if (error && meetings.length === 0) body = <ErrorRetry message={t('assembly.meeting.error')} onRetry={() => void refetch()} />;

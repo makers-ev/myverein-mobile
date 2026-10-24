@@ -75,3 +75,9 @@ export function Badge({ label, symbol }: { label: string; symbol: string }) {
     </View>
   );
 }
+
+/** Text for a backend value the app has no key for yet (new role / outcome / phase): the fallback instead of the raw key. */
+export function labelOr(t: (key: string, params?: Record<string, string | number>) => string, key: string, fallbackKey: string, params?: Record<string, string | number>): string {
+  const text = t(key, params);
+  return text === key ? t(fallbackKey, params) : text;
+}

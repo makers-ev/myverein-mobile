@@ -6,7 +6,7 @@ import { useBallot } from '@/hooks/useBallots';
 import { useScopedResource } from '@/hooks/useScopedResource';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { canSubmitSelection, openProxies, toggleOption, votingOpenFor, type BallotDetail, type BallotOption, type VoteFailure } from '@/lib/assembly';
-import { Badge, Body, Button, Card, ErrorRetry, Loading } from './ui';
+import { Badge, Body, Button, Card, ErrorRetry, Loading, labelOr } from './ui';
 
 interface Props {
   clubId: string;
@@ -54,7 +54,7 @@ function Result({ ballot }: { ballot: BallotDetail }) {
   if (!r) return <Body muted>{t('assembly.result.pending')}</Body>;
   return (
     <View>
-      {r.outcome ? <Body>{t(`assembly.outcome.${r.outcome}`)}</Body> : null}
+      {r.outcome ? <Body>{labelOr(t, `assembly.outcome.${r.outcome}`, 'assembly.outcome.other')}</Body> : null}
       {(r.tallies ?? []).map((tl) => (
         <Text key={tl.optionId} className="text-sm text-foreground dark:text-foreground-dark mb-1">{`${tl.label}: ${tl.votes}`}</Text>
       ))}
@@ -78,7 +78,7 @@ function Election({ clubId, electionId }: { clubId: string; electionId: string }
   const { data } = useScopedResource<ElectionData>(`/elections/${encodeURIComponent(electionId)}?clubId=${encodeURIComponent(clubId)}`);
   if (!data) return null;
   return (
-    <Card title={t('assembly.election.title', { role: t(`assembly.role.${data.roleType}`) })}>
+    <Card title={t('assembly.election.title', { role: labelOr(t, `assembly.role.${data.roleType}`, 'assembly.role.other') })}>
       <Body muted>{t('assembly.election.seats', { seats: data.seats })}</Body>
       {data.candidates.length === 0 ? <Body muted>{t('assembly.election.no-candidates')}</Body> : data.candidates.map((c) => <Body key={c.id}>{c.displayName ?? t('assembly.unknown-person')}</Body>)}
     </Card>
@@ -124,7 +124,9 @@ export default function BallotDetailView({ clubId, ballotId, onBack }: Props) {
   if (!ballot) return <ErrorRetry message={apiErrorMessage(error, t, 'assembly.ballot.error')} onRetry={() => void reload()} />;
 
   const multi = ballot.maxChoices > 1;
-  const target = forMember ?? (canVote ? undefined : (proxies[0]?.grantorClubMemberId ?? undefined));
+  // A chosen proxy that is gone (voted elsewhere, withdrawn) falls back to the default instead of voting for the wrong person.
+  const validProxy = forMember && proxies.some((p) => p.grantorClubMemberId === forMember) ? forMember : null;
+  const target = validProxy ?? (canVote ? undefined : (proxies[0]?.grantorClubMemberId ?? undefined));
   const targetName = target ? proxies.find((p) => p.grantorClubMemberId === target)?.displayName : null;
   const labels = ballot.options.filter((o) => selected.includes(o.id)).map((o) => o.label);
 
@@ -150,7 +152,7 @@ export default function BallotDetailView({ clubId, ballotId, onBack }: Props) {
       <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-xl font-extrabold mb-2">
         {ballot.title}
       </Text>
-      <Badge symbol={PHASE_SYMBOL[ballot.phase] ?? '•'} label={t(`assembly.phase.${ballot.phase}`)} />
+      <Badge symbol={PHASE_SYMBOL[ballot.phase] ?? '•'} label={labelOr(t, `assembly.phase.${ballot.phase}`, 'assembly.phase.other')} />
       {ballot.description ? <Body>{ballot.description}</Body> : null}
       {ballot.meeting ? <Body muted>{ballot.meeting.title}</Body> : null}
       {ballot.mode === 'circular' ? <Body muted>{t('assembly.circular-hint')}</Body> : null}

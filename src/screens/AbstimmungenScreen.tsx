@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { BackHandler, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
@@ -25,17 +26,33 @@ export default function AbstimmungenScreen({ route }: Props) {
   // A tapped push may belong to another club: switch to it first, then drop the hand-over (the id arrives as a route param).
   const push = usePushScreenTarget('Abstimmungen');
   const { ready: pushReady, unreachable: pushGone, consume: consumePush } = push;
+  const [goneNotice, setGoneNotice] = useState(false);
   useEffect(() => {
+    if (pushGone) setGoneNotice(true);
+    else if (pushReady) setGoneNotice(false);
     if (pushReady || pushGone) consumePush();
   }, [pushReady, pushGone, consumePush]);
   const switching = !!push.target && !pushReady && !pushGone;
   const [selected, setSelected] = useState<string | null>(route.params?.ballotId ?? null);
-  const [lastParam, setLastParam] = useState(route.params?.ballotId);
+  const [lastParams, setLastParams] = useState(route.params);
   // A new deep link while the screen is open (second push tap) switches to that ballot.
-  if (route.params?.ballotId !== lastParam) {
-    setLastParam(route.params?.ballotId);
+  // Compared by object identity: tapping a push for the same id again navigates with a new params object and re-selects it.
+  if (route.params !== lastParams) {
+    setLastParams(route.params);
     if (route.params?.ballotId) setSelected(route.params.ballotId);
   }
+
+  // Android back from a detail goes to the list, not out of the screen.
+  useFocusEffect(
+    React.useCallback(() => {
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        if (!selected) return false;
+        setSelected(null);
+        return true;
+      });
+      return () => sub.remove();
+    }, [selected]),
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
@@ -49,6 +66,10 @@ export default function AbstimmungenScreen({ route }: Props) {
         ) : !clubId ? (
           <Card>
             <Body>{t('assembly.no-club')}</Body>
+          </Card>
+        ) : goneNotice ? (
+          <Card>
+            <Body>{t('push.notice.club-gone')}</Body>
           </Card>
         ) : selected ? (
           <BallotDetailView key={`${clubId}:${selected}`} clubId={clubId} ballotId={selected} onBack={() => setSelected(null)} />

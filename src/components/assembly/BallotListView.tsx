@@ -5,13 +5,13 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useBallots } from '@/hooks/useBallots';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import type { BallotSummary } from '@/lib/assembly';
-import { Body, Card, ErrorRetry, Loading } from './ui';
+import { Body, Card, ErrorRetry, Loading, labelOr } from './ui';
 
 const SYMBOL: Record<string, string> = { scheduled: '⏳', voting: '●', ended: '✓', cancelled: '✕', draft: '…' };
 
 function Row({ ballot, onPress }: { ballot: BallotSummary; onPress: () => void }) {
   const { t, language } = useLanguage();
-  const phase = t(`assembly.phase.${ballot.phase}`);
+  const phase = labelOr(t, `assembly.phase.${ballot.phase}`, 'assembly.phase.other');
   const until = ballot.phase === 'voting' && ballot.closesAt ? t('assembly.closes-at', { when: new Date(ballot.closesAt).toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' }) }) : null;
   return (
     <TouchableOpacity

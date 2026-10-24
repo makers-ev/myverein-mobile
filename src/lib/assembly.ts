@@ -124,7 +124,7 @@ export function voteFailure(err: unknown): VoteFailure {
       break;
   }
   if (err.status === 429) return 'rate_limit';
-  if (err.status === 0 || err.status >= 502) return 'offline';
+  if (err.status === 0 || err.status >= 500) return 'offline';
   return 'other';
 }
 
