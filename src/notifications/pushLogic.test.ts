@@ -17,6 +17,13 @@ import {
 } from './pushLogic';
 
 describe('parsePushPayload', () => {
+  it('parses ballot and assembly targets (ids only)', () => {
+    expect(parsePushPayload({ type: 'ballot', ballotId: 'b1', clubId: 'c' })).toEqual({ kind: 'ballot', clubId: 'c', ballotId: 'b1' });
+    expect(parsePushPayload({ type: 'ballot', ballotId: '../x' })).toEqual({ kind: 'ballot', clubId: null, ballotId: null });
+    expect(parsePushPayload({ type: 'assembly', meetingId: 'm1' })).toEqual({ kind: 'assembly', clubId: null, meetingId: 'm1' });
+    expect(parsePushPayload({ type: 'assembly' })).toEqual({ kind: 'inbox', clubId: null });
+  });
+
   it('maps an announcement push', () => {
     expect(parsePushPayload({ type: 'announcement', urgent: false, clubId: 'c-1', announcementId: 'a-1' })).toEqual({
       kind: 'announcement',

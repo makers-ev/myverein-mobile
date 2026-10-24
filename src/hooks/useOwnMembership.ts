@@ -20,6 +20,8 @@ export type ClubPermission =
   | 'absences:read'
   | 'privacy:read'
   | 'privacy:manage'
+  // Wave 11: assembly management (invitations, voting roll, ballots, minutes); members vote/RSVP without it.
+  | 'assembly:manage'
   // Not a ClubPermission in the backend, but appended to /club-members/me for UI gating (board roles).
   | 'club_stats:read';
 
