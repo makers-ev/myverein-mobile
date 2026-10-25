@@ -5,24 +5,34 @@ const NOW = new Date('2026-06-01T10:00:00Z');
 
 describe('inEventScope', () => {
   it('denies without membership or roles', () => {
-    expect(inEventScope(null, 'd1', NOW)).toBe(false);
-    expect(inEventScope({ roles: [] }, 'd1', NOW)).toBe(false);
-    expect(inEventScope({ roles: [role('mitglied')] }, null, NOW)).toBe(false);
+    expect(inEventScope(null, 'attendance:write', 'd1', NOW)).toBe(false);
+    expect(inEventScope({ roles: [] }, 'attendance:write', 'd1', NOW)).toBe(false);
+    expect(inEventScope({ roles: [role('mitglied')] }, 'attendance:write', null, NOW)).toBe(false);
   });
   it('lets the board act club-wide, also on club-wide calendars', () => {
-    expect(inEventScope({ roles: [role('vorsitz')] }, 'd1', NOW)).toBe(true);
-    expect(inEventScope({ roles: [role('stellv_vorsitz')] }, null, NOW)).toBe(true);
+    expect(inEventScope({ roles: [role('vorsitz')] }, 'attendance:write', 'd1', NOW)).toBe(true);
+    expect(inEventScope({ roles: [role('stellv_vorsitz')] }, 'attendance:write', null, NOW)).toBe(true);
   });
   it('limits trainers and Abteilungsleitung to their own department', () => {
     const trainer = { roles: [role('trainer', 'd1')] };
-    expect(inEventScope(trainer, 'd1', NOW)).toBe(true);
-    expect(inEventScope(trainer, 'd2', NOW)).toBe(false);
-    expect(inEventScope(trainer, null, NOW)).toBe(false);
-    expect(inEventScope({ roles: [role('abteilungsleitung', 'd2')] }, 'd2', NOW)).toBe(true);
+    expect(inEventScope(trainer, 'attendance:write', 'd1', NOW)).toBe(true);
+    expect(inEventScope(trainer, 'attendance:write', 'd2', NOW)).toBe(false);
+    expect(inEventScope(trainer, 'attendance:write', null, NOW)).toBe(false);
+    expect(inEventScope({ roles: [role('abteilungsleitung', 'd2')] }, 'attendance:write', 'd2', NOW)).toBe(true);
   });
   it('ignores a role whose term has ended', () => {
-    expect(inEventScope({ roles: [role('trainer', 'd1', '2026-05-01')] }, 'd1', NOW)).toBe(false);
-    expect(inEventScope({ roles: [role('trainer', 'd1', '2026-07-01')] }, 'd1', NOW)).toBe(true);
+    expect(inEventScope({ roles: [role('trainer', 'd1', '2026-05-01')] }, 'attendance:write', 'd1', NOW)).toBe(false);
+    expect(inEventScope({ roles: [role('trainer', 'd1', '2026-07-01')] }, 'attendance:write', 'd1', NOW)).toBe(true);
+  });
+});
+
+describe('per-permission club-wide table', () => {
+  it('does not let a role that lacks the permission make the caller club-wide', () => {
+    const mixed = { roles: [role('schriftfuehrer'), role('trainer', 'd1')] };
+    expect(inEventScope(mixed, 'helpers:write', 'd2', NOW)).toBe(true);
+    expect(inEventScope(mixed, 'attendance:write', 'd2', NOW)).toBe(false);
+    expect(inEventScope(mixed, 'attendance:write', 'd1', NOW)).toBe(true);
+    expect(inEventScope({ roles: [role('kassenwart')] }, 'helpers:write', null, NOW)).toBe(false);
   });
 });
 

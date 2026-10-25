@@ -7,7 +7,19 @@ import type { ClubMember } from '@/hooks/useClubMembers';
  * Board roles act club-wide; `trainer` / `abteilungsleitung` hold the event permissions only for events whose
  * calendar belongs to one of the departments of their (currently effective) department-bound role.
  */
-const CLUB_WIDE_ROLES: readonly string[] = ['vorsitz', 'stellv_vorsitz', 'schriftfuehrer', 'kassenwart'];
+/**
+ * Roles that hold a permission CLUB-WIDE (mirrors the backend's `hasClubWidePermission`: a non-department role that grants
+ * the permission). A role that does not grant this permission never makes the caller club-wide for it.
+ */
+const BOARD = ['vorsitz', 'stellv_vorsitz'];
+const CLUB_WIDE_BY_PERMISSION: Record<string, readonly string[]> = {
+  'attendance:write': BOARD,
+  'attendance:read': BOARD,
+  'registrations:read': BOARD,
+  'time:write': BOARD,
+  'helpers:write': [...BOARD, 'schriftfuehrer'],
+  'time:read_rates': [...BOARD, 'kassenwart'],
+};
 const DEPARTMENT_ROLES: readonly string[] = ['trainer', 'abteilungsleitung'];
 
 type RoleLike = { roleType: string; departmentId: string | null; termEndsAt: string | null };
@@ -17,9 +29,15 @@ function effectiveRoles(member: Pick<ClubMember, 'roles'> | null | undefined, no
 }
 
 /** Is the caller allowed to act on an event of a calendar of `calendarDepartmentId` (`null` = club-wide calendar)? */
-export function inEventScope(member: Pick<ClubMember, 'roles'> | null | undefined, calendarDepartmentId: string | null, now = new Date()): boolean {
+export function inEventScope(
+  member: Pick<ClubMember, 'roles'> | null | undefined,
+  permission: string,
+  calendarDepartmentId: string | null,
+  now = new Date(),
+): boolean {
   const roles = effectiveRoles(member, now);
-  if (roles.some((r) => CLUB_WIDE_ROLES.includes(r.roleType))) return true;
+  const wide = CLUB_WIDE_BY_PERMISSION[permission] ?? [];
+  if (roles.some((r) => wide.includes(r.roleType))) return true;
   if (!calendarDepartmentId) return false;
   return roles.some((r) => DEPARTMENT_ROLES.includes(r.roleType) && r.departmentId === calendarDepartmentId);
 }
@@ -31,7 +49,7 @@ export function canOnEvent(
   calendarDepartmentId: string | null,
   now = new Date(),
 ): boolean {
-  return !!member?.permissions?.includes(permission) && inEventScope(member, calendarDepartmentId, now);
+  return !!member?.permissions?.includes(permission) && inEventScope(member, permission, calendarDepartmentId, now);
 }
 
 /** Time tracking is offered to trainers, Abteilungsleitung and `time:write` holders only (others get 403). */
