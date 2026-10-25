@@ -20,6 +20,8 @@ import CalendarManageSheet from './CalendarManageSheet';
 import CalendarFeedsSheet from './CalendarFeedsSheet';
 import EventActions, { type EventSubSheetKind } from './EventActions';
 import AttendanceSheet from './AttendanceSheet';
+import EventParticipation from './EventParticipation';
+import { ApiError } from '@/lib/api';
 
 interface Props {
   clubId: string;
@@ -136,6 +138,8 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
     onFocusHandled?.();
   }, [focus, onFocusHandled]);
 
+  const fetchedEventOrListed = (eventId: string) => events.some((e) => e.id === eventId) || fetchedEvent?.id === eventId;
+
   const runRsvp = async (eventId: string, action: () => Promise<unknown>) => {
     setPendingIds((prev) => ({ ...prev, [eventId]: true }));
     setError(null);
@@ -147,7 +151,13 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         setFetchedEvent(data);
       }
     } catch (err) {
-      setError(apiErrorMessage(err, t));
+      // The event wants a form or a group size: the quick sign-up of the list cannot answer that, the sheet can.
+      if (err instanceof ApiError && err.status === 422 && fetchedEventOrListed(eventId)) {
+        setSheetTarget({ eventId });
+        setError(null);
+      } else {
+        setError(apiErrorMessage(err, t));
+      }
     } finally {
       setPendingIds((prev) => ({ ...prev, [eventId]: false }));
     }
@@ -314,6 +324,11 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         onCancelEvent={cancelEvent}
         seriesActions={seriesActions}
         clubState={clubSettings?.state ?? null}
+        participation={
+          sheetEvent ? (
+            <EventParticipation clubId={clubId} event={sheetEvent} fallback={rsvpPropsFor(sheetEvent.id)} onChanged={refetch} />
+          ) : null
+        }
         detailExtras={
           sheetEvent ? (
             <EventActions
