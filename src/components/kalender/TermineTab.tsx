@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import { CalendarPlus, Plus, Repeat, Settings2, Timer } from 'lucide-react-native';
+import { CalendarPlus, ClipboardCheck, Plus, Repeat, Settings2, Timer } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -23,7 +23,7 @@ import AttendanceSheet from './AttendanceSheet';
 import HelpersSheet from './HelpersSheet';
 import RidesSheet from './RidesSheet';
 import TimeSheet from './TimeSheet';
-import { canTrackTime } from '@/lib/eventRights';
+import { canOnEvent, canTrackTime } from '@/lib/eventRights';
 import EventParticipation from './EventParticipation';
 import { ApiError } from '@/lib/api';
 
@@ -36,7 +36,7 @@ interface Props {
   onEventGone?: () => void;
 }
 
-function EventRow({ event, color, rsvp, onPress }: { event: CalendarEvent; color: string; rsvp: RsvpProps; onPress: () => void }) {
+function EventRow({ event, color, rsvp, onPress, onAttendance }: { event: CalendarEvent; color: string; rsvp: RsvpProps; onPress: () => void; onAttendance?: () => void }) {
   const { t, language } = useLanguage();
   const themeColors = useThemeColors();
 
@@ -82,8 +82,19 @@ function EventRow({ event, color, rsvp, onPress }: { event: CalendarEvent; color
         ) : null}
 
         {event.cancelled ? null : (
-          <View className="mt-3">
+          <View className="mt-3 flex-row items-center flex-wrap" style={{ gap: 12 }}>
             <RsvpControl {...rsvp} />
+            {onAttendance ? (
+              <TouchableOpacity
+                onPress={onAttendance}
+                accessibilityRole="button"
+                className="flex-row items-center justify-center border border-border dark:border-border-dark rounded-lg px-3"
+                style={{ minHeight: 44, gap: 6 }}
+              >
+                <ClipboardCheck size={14} color={themeColors.foreground} />
+                <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold">{t('att.open')}</Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         )}
       </View>
@@ -237,6 +248,11 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
     void refetch();
   }, [refetchCalendars, refetch]);
 
+  const canAttendOn = (event: CalendarEvent) => {
+    const dept = calendars.find((c) => c.id === event.calendarId)?.departmentId ?? null;
+    return canOnEvent('attendance:read', membership, dept) || canOnEvent('attendance:write', membership, dept);
+  };
+
   const openSub = (kind: EventSubSheetKind, event: CalendarEvent) => {
     if (!events.some((e) => e.id === event.id)) setFetchedEvent(event);
     setSub({ kind, event });
@@ -324,6 +340,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
             color={colorFor(event.calendarId)}
             rsvp={rsvpPropsFor(event.id)}
             onPress={() => setSheetTarget({ eventId: event.id })}
+            onAttendance={canAttendOn(event) ? () => openSub('attendance', event) : undefined}
           />
         ))
       )}
