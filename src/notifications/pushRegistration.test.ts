@@ -73,7 +73,7 @@ describe('registerPushToken', () => {
   });
 
   it('aborts a registration that started before an unregister (epoch)', async () => {
-    getStored.mockImplementation(async () => {
+    getStored.mockImplementationOnce(async () => {
       await markPendingUnregister();
       return null;
     });
