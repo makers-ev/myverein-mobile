@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
+import { deleteSeriesQuery, type EventSeries, type SeriesPreview, type SeriesRequestOptions, type SeriesScope } from '@/lib/eventSeries';
 import { cancelBody, withNotify, withNotifyQuery, type CancelPreview } from '@/lib/notifyOptions';
 
 export interface CalendarEvent {
@@ -182,4 +183,95 @@ export function useCancelPreview(clubId: string | null, eventId: string | null) 
   }, [refetch]);
 
   return { preview, loading, error, refetch };
+}
+
+export interface SeriesChange {
+  affected: { updated: number; created: number; removed: number; cancelled: number };
+}
+
+export interface SeriesRemoval {
+  deleted: number;
+  cancelled: number;
+  seriesDeleted: boolean;
+}
+
+/** Series write actions (`calendars:write`, Wave 12 M2), `onChanged` refetches the event list. */
+export function useEventSeries(clubId: string | null, onChanged?: () => void) {
+  const club = encodeURIComponent(clubId ?? '');
+
+  /** `POST /event-series/preview`: nothing is stored; the first occurrences and skipped holidays. */
+  const previewSeries = useCallback(
+    async (body: Record<string, unknown>, limit = 10) => {
+      const { data } = await apiFetch<{ data: SeriesPreview }>(`/event-series/preview?clubId=${club}&limit=${limit}`, { method: 'POST', body });
+      return data;
+    },
+    [club],
+  );
+
+  const createSeries = useCallback(
+    async (body: Record<string, unknown>) => {
+      const { data } = await apiFetch<{ data: { occurrencesCreated: number; skippedHolidays: SeriesPreview['skippedHolidays'] } }>(
+        `/event-series?clubId=${club}`,
+        { method: 'POST', body },
+      );
+      onChanged?.();
+      return data;
+    },
+    [club, onChanged],
+  );
+
+  const updateSeries = useCallback(
+    async (seriesId: string, body: Record<string, unknown>) => {
+      const { data } = await apiFetch<{ data: SeriesChange }>(`/event-series/${encodeURIComponent(seriesId)}?clubId=${club}`, { method: 'PATCH', body });
+      onChanged?.();
+      return data;
+    },
+    [club, onChanged],
+  );
+
+  /** `DELETE /event-series/:id?scope=`: deletes occurrences, or cancels those that have sign-ups. */
+  const deleteSeries = useCallback(
+    async (seriesId: string, scope: SeriesScope, eventId: string, options: SeriesRequestOptions = {}) => {
+      const query = deleteSeriesQuery(clubId ?? '', scope, eventId, options);
+      const { data } = await apiFetch<{ data: SeriesRemoval }>(`/event-series/${encodeURIComponent(seriesId)}?${query}`, { method: 'DELETE' });
+      onChanged?.();
+      return data;
+    },
+    [clubId, onChanged],
+  );
+
+  return { previewSeries, createSeries, updateSeries, deleteSeries };
+}
+
+/** `GET /event-series/:id`, loads only while `seriesId` is set; only the newest request may write state. */
+export function useSeriesDetail(clubId: string | null, seriesId: string | null) {
+  const [series, setSeries] = useState<EventSeries | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const requestId = useRef(0);
+
+  const refetch = useCallback(async () => {
+    const id = ++requestId.current;
+    setSeries(null);
+    setError(null);
+    if (!clubId || !seriesId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data } = await apiFetch<{ data: EventSeries }>(`/event-series/${encodeURIComponent(seriesId)}?clubId=${encodeURIComponent(clubId)}`);
+      if (id === requestId.current) setSeries(data);
+    } catch (err) {
+      if (id === requestId.current) setError(err);
+    } finally {
+      if (id === requestId.current) setLoading(false);
+    }
+  }, [clubId, seriesId]);
+
+  useEffect(() => {
+    void refetch();
+  }, [refetch]);
+
+  return { series, loading, error, refetch };
 }

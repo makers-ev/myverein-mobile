@@ -8,6 +8,8 @@ export interface ClubSettings {
   memberNumberPrefix: string | null;
   /** Club switch for self-service borrowing; `inventory:write` holders are exempt (backend decides). */
   allowSelfLoans: boolean;
+  /** Federal state (`BY`, ...) for public holidays in event series; `null` = only nationwide holidays. */
+  state?: string | null;
 }
 
 /**

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Repeat } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -7,12 +8,26 @@ import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import type { Calendar } from '@/hooks/useCalendars';
 import { defaultCalendarId } from './calendars';
-import { useCancelPreview, type CalendarEvent, type EventInput } from '@/hooks/useEvents';
+import { useCancelPreview, useEventSeries, useSeriesDetail, type CalendarEvent, type EventInput } from '@/hooks/useEvents';
 import { CANCEL_REASON_MAX, cancelPreviewKind, type CancelPreview } from '@/lib/notifyOptions';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 import DateTimeField from '@/components/ui/DateTimeField';
 import NotifySwitch from '@/components/ui/NotifySwitch';
 import { allDayRange, formatEventRange } from '@/lib/eventDays';
+import {
+  affectedSignups,
+  createSeriesBody,
+  defaultRecurrence,
+  draftFromSeries,
+  patchSeriesBody,
+  recurrenceProblem,
+  type RecurrenceDraft,
+  type SeriesScope,
+  type SeriesTemplate,
+} from '@/lib/eventSeries';
+import { ColorChip } from './ColorChip';
+import RecurrenceEditor from './RecurrenceEditor';
+import SeriesScopePicker from './SeriesScopePicker';
 
 // The caller's own sign-up comes from the backend (`myRsvp` on every event), the sheet refetches after rsvp()/cancelRsvp().
 export type RsvpState = 'angemeldet' | 'warteliste' | null;
@@ -78,50 +93,7 @@ export function RsvpControl({ state, pending, onRsvp, onCancel }: RsvpProps) {
   );
 }
 
-export function ColorChip({
-  label,
-  color,
-  active,
-  onPress,
-  disabled,
-}: {
-  label: string;
-  color?: string;
-  active: boolean;
-  onPress: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled}
-      accessibilityRole="button"
-      accessibilityState={{ selected: active, disabled: !!disabled }}
-      // Visually compact chip, 44pt touch area.
-      hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
-      className={`flex-row items-center px-3 py-1.5 rounded-full border ${
-        active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'border-border dark:border-border-dark'
-      } ${disabled ? 'opacity-50' : ''}`}
-      style={{ gap: 6 }}
-    >
-      {color ? (
-        <View
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: 4,
-            backgroundColor: color,
-          }}
-        />
-      ) : null}
-      <Text
-        className={`text-sm ${active ? 'text-primary-foreground dark:text-primary-foreground-dark font-bold' : 'text-foreground dark:text-foreground-dark'}`}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
+export { ColorChip };
 
 /** Audience preview (numbers only) shown before an event is cancelled. */
 export function CancelPreviewCard({
@@ -205,6 +177,10 @@ interface Props {
   onSave: (input: EventInput, id?: string, notify?: boolean) => Promise<void>;
   onDelete: (id: string, notify: boolean) => Promise<void>;
   onCancelEvent: (id: string, reason: string, notify: boolean) => Promise<void>;
+  /** Series actions (`useEventSeries`) for recurring events; the list refetch is wired by the owner. */
+  seriesActions: ReturnType<typeof useEventSeries>;
+  /** Club federal state for the "skip holidays" hint (`null` = only nationwide holidays). */
+  clubState?: string | null;
 }
 
 function allDayStart(date: Date): number {
@@ -218,7 +194,7 @@ function atHour(day: Date, hour: number): Date {
 }
 
 /** Event detail (with RSVP, edit, delete) and create/edit form in one sheet, so no modal-to-modal swap. */
-export default function EventSheet({ target, event, onClose, calendars, colorFor, canWrite, clubId, rsvp, onSave, onDelete, onCancelEvent }: Props) {
+export default function EventSheet({ target, event, onClose, calendars, colorFor, canWrite, clubId, rsvp, onSave, onDelete, onCancelEvent, seriesActions, clubState }: Props) {
   const { t, language } = useLanguage();
   const themeColors = useThemeColors();
 
@@ -235,6 +211,8 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
   const [startsAt, setStartsAt] = useState<Date | null>(null);
   const [endsAt, setEndsAt] = useState<Date | null>(null);
   const [allDay, setAllDay] = useState(false);
+  const [scope, setScope] = useState<SeriesScope>('this');
+  const [recurrence, setRecurrence] = useState<RecurrenceDraft>(() => defaultRecurrence(null));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -257,6 +235,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
     setAction(null);
     setNotify(true);
     setReason('');
+    setScope('this');
     if ('day' in target) {
       setEditing(true);
       setCalendarId(defaultCalendarId(calendars));
@@ -267,6 +246,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
       setStartsAt(atHour(target.day, 18));
       setEndsAt(atHour(target.day, 20));
       setAllDay(false);
+      setRecurrence(defaultRecurrence(atHour(target.day, 18)));
     } else {
       setEditing(false);
     }
@@ -277,12 +257,40 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
   const trimmedCapacity = capacity.trim();
   const capacityNum = trimmedCapacity ? Number(trimmedCapacity) : null;
 
+  const seriesId = event?.seriesId ?? null;
+  // The stored rule is only needed to edit "this and following" / "all"; "this" edits just the occurrence.
+  const editingRule = editing && !isCreate && !!seriesId && scope !== 'this';
+  const { series: seriesDetail, loading: seriesLoading, error: seriesError, refetch: refetchSeries } = useSeriesDetail(
+    clubId,
+    editingRule ? seriesId : null,
+  );
+  useEffect(() => {
+    if (seriesDetail) setRecurrence(draftFromSeries(seriesDetail));
+  }, [seriesDetail]);
+
+  const template = (): SeriesTemplate => ({
+    calendarId: calendarId!,
+    title: title.trim(),
+    description: description.trim() || null,
+    category: category.trim() || null,
+    capacity: capacityNum,
+    allDay,
+    startsAt: startsAt!,
+    endsAt,
+  });
+  const creatingSeries = isCreate && recurrence.freq !== null;
+  const ruleProblem = creatingSeries || editingRule ? recurrenceProblem(recurrence, startsAt) : null;
+  const previewBody =
+    creatingSeries && !ruleProblem && calendarId && startsAt ? createSeriesBody({ ...template(), title: title.trim() || '-' }, recurrence) : null;
+
   const validate = (): string | null => {
     if (!calendarId || !title.trim() || !startsAt) return t('termine.form.required');
     if (allDay) {
       if (endsAt && endsAt.getTime() < allDayStart(startsAt)) return t('termine.form.end-before-start');
     } else if (endsAt && endsAt.getTime() <= startsAt.getTime()) return t('termine.form.end-before-start');
     if (capacityNum !== null && (!Number.isInteger(capacityNum) || capacityNum <= 0)) return t('termine.form.capacity-invalid');
+    if (ruleProblem) return t(ruleProblem);
+    if (editingRule && !seriesDetail) return t('series.error.rule-loading');
     return null;
   };
 
@@ -295,6 +303,16 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
     setSaving(true);
     setError(null);
     try {
+      if (creatingSeries) {
+        await seriesActions.createSeries(createSeriesBody(template(), recurrence));
+        onClose();
+        return;
+      }
+      if (event && seriesId) {
+        await seriesActions.updateSeries(seriesId, patchSeriesBody(scope, event.id, template(), scope === 'this' ? null : recurrence, { notify }));
+        setEditing(false);
+        return;
+      }
       await onSave(
         {
           calendarId: calendarId!,
@@ -319,14 +337,15 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
 
   const { preview, loading: previewLoading, error: previewError, refetch: refetchPreview } = useCancelPreview(
     clubId,
-    action === 'cancel' && event ? event.id : null,
+    action === 'cancel' && event && (!seriesId || scope === 'this') ? event.id : null,
   );
-  const previewBlocksCancel = action === 'cancel' && (!preview || preview.alreadyCancelled);
+  const previewBlocksCancel = action === 'cancel' && (!seriesId || scope === 'this') && (!preview || preview.alreadyCancelled);
 
   const openAction = (next: 'cancel' | 'delete') => {
     setError(null);
     setNotify(true);
     setReason('');
+    setScope('this');
     setAction(next);
   };
 
@@ -335,6 +354,12 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
     setSaving(true);
     setError(null);
     try {
+      if (seriesId && (action === 'delete' || scope !== 'this')) {
+        // Series route: occurrences with sign-ups are cancelled (with the reason), the others are deleted.
+        await seriesActions.deleteSeries(seriesId, scope, event.id, { notify, reason: action === 'cancel' ? reason : undefined });
+        onClose();
+        return;
+      }
       if (action === 'cancel') await onCancelEvent(event.id, reason, notify);
       else await onDelete(event.id, notify);
       // Cancelled events stay in the agenda, so keep the sheet on the (now cancelled) event.
@@ -375,6 +400,14 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{formatTimeRange(event, language, t('termine.all-day'))}</Text>
         <ParticipationLine event={event} />
       </View>
+      {seriesId ? (
+        <View className="flex-row items-center" style={{ gap: 6 }}>
+          <Repeat size={14} color={themeColors.mutedForeground} />
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
+            {event.isOverride ? t('series.badge.override') : t('series.badge')}
+          </Text>
+        </View>
+      ) : null}
       {event.description ? <Text className="text-foreground dark:text-foreground-dark text-sm">{event.description}</Text> : null}
       {event.category || event.capacity != null ? (
         <View className="flex-row items-center flex-wrap" style={{ gap: 8 }}>
@@ -428,6 +461,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
             canWrite && event
               ? () => {
                   fillFromEvent(event);
+                  setScope('this');
                   setError(null);
                   setNotify(true);
                   setEditing(true);
@@ -442,6 +476,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
   const confirmForm =
     action && event ? (
       <View>
+        {seriesId ? <SeriesScopePicker scope={scope} onChange={setScope} signups={affectedSignups(event)} disabled={saving} /> : null}
         {action === 'delete' ? (
           <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">{t('termine.delete.message', { title: event.title })}</Text>
         ) : (
@@ -459,7 +494,11 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
                 placeholderTextColor={themeColors.mutedForeground}
               />
             </Field>
-            <CancelPreviewCard preview={preview} loading={previewLoading} failed={!!previewError} onRetry={() => void refetchPreview()} />
+            {seriesId && scope !== 'this' ? (
+              <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('series.cancel.range-hint')}</Text>
+            ) : (
+              <CancelPreviewCard preview={preview} loading={previewLoading} failed={!!previewError} onRetry={() => void refetchPreview()} />
+            )}
           </>
         )}
         <NotifySwitch
@@ -492,6 +531,9 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
         </>
       ) : (
         <>
+          {!isCreate && seriesId && event ? (
+            <SeriesScopePicker scope={scope} onChange={setScope} signups={affectedSignups(event)} disabled={saving} />
+          ) : null}
           <Field label={t('termine.form.calendar')}>
             {calendars.length === 0 ? (
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('termine.form.no-calendars')}</Text>
@@ -503,6 +545,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
                     label={c.name}
                     color={colorFor(c.id)}
                     active={c.id === calendarId}
+                    disabled={!isCreate && !!seriesId}
                     onPress={() => setCalendarId(c.id)}
                   />
                 ))}
@@ -580,6 +623,34 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
               </Field>
             </View>
           </View>
+          {scope !== 'this' && !isCreate && seriesId ? (
+            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('series.time-only-hint')}</Text>
+          ) : null}
+          {isCreate && canWrite ? (
+            <RecurrenceEditor
+              draft={recurrence}
+              onChange={setRecurrence}
+              start={startsAt}
+              allowNone
+              clubState={clubState}
+              previewBody={previewBody}
+              previewSeries={seriesActions.previewSeries}
+            />
+          ) : null}
+          {editingRule ? (
+            seriesLoading ? (
+              <ActivityIndicator color={themeColors.primary} />
+            ) : seriesError || !seriesDetail ? (
+              <View className="mb-3">
+                <Text className="text-destructive text-sm mb-1">{t('series.error.rule-load')}</Text>
+                <TouchableOpacity accessibilityRole="button" onPress={() => void refetchSeries()} className="min-h-[44px] justify-center self-start">
+                  <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <RecurrenceEditor draft={recurrence} onChange={setRecurrence} start={startsAt} allowNone={false} clubState={clubState} previewBody={null} />
+            )
+          ) : null}
           {!isCreate ? (
             <NotifySwitch label={t('termine.notify')} hint={t('termine.notify.hint-edit')} value={notify} onChange={setNotify} disabled={saving} />
           ) : null}

@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import { Plus, Settings2 } from 'lucide-react-native';
+import { Plus, Repeat, Settings2 } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useClubInfo } from '@/hooks/useClubInfo';
 import { useCalendars } from '@/hooks/useCalendars';
-import { useEvents, useEventMutations, useEventRsvp, type CalendarEvent, type EventInput } from '@/hooks/useEvents';
+import { useEvents, useEventMutations, useEventRsvp, useEventSeries, type CalendarEvent, type EventInput } from '@/hooks/useEvents';
+import { useClubSettings } from '@/hooks/useClubSettings';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { getDepartmentColor } from '@/theme/departmentColors';
 import { isSheetEventMissing, resolveSheetEvent } from '@/lib/eventFocus';
@@ -28,6 +29,7 @@ interface Props {
 
 function EventRow({ event, color, rsvp, onPress }: { event: CalendarEvent; color: string; rsvp: RsvpProps; onPress: () => void }) {
   const { t, language } = useLanguage();
+  const themeColors = useThemeColors();
 
   return (
     <TouchableOpacity
@@ -36,12 +38,15 @@ function EventRow({ event, color, rsvp, onPress }: { event: CalendarEvent; color
     >
       <View style={{ width: 4, backgroundColor: color }} />
       <View className="flex-1 p-3">
-        <Text
-          className="text-foreground dark:text-foreground-dark font-bold text-sm"
-          style={event.cancelled ? { textDecorationLine: 'line-through', opacity: 0.6 } : undefined}
-        >
-          {event.title}
-        </Text>
+        <View className="flex-row items-center" style={{ gap: 6 }}>
+          <Text
+            className="text-foreground dark:text-foreground-dark font-bold text-sm flex-shrink"
+            style={event.cancelled ? { textDecorationLine: 'line-through', opacity: 0.6 } : undefined}
+          >
+            {event.title}
+          </Text>
+          {event.seriesId ? <Repeat size={12} color={themeColors.mutedForeground} accessibilityLabel={t('series.badge')} /> : null}
+        </View>
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">{formatTimeRange(event, language, t('termine.all-day'))}</Text>
         <ParticipationLine event={event} />
 
@@ -103,6 +108,8 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
   const { events, loading, refetch } = useEvents(clubId, range);
   const { rsvp, cancelRsvp } = useEventRsvp(clubId, refetch);
   const { createEvent, updateEvent, deleteEvent, cancelEvent } = useEventMutations(clubId, refetch);
+  const seriesActions = useEventSeries(clubId, refetch);
+  const { settings: clubSettings } = useClubSettings(clubId);
 
   const [pendingIds, setPendingIds] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
@@ -279,6 +286,8 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         onSave={handleSave}
         onDelete={deleteEvent}
         onCancelEvent={cancelEvent}
+        seriesActions={seriesActions}
+        clubState={clubSettings?.state ?? null}
       />
 
       {canWrite ? (
