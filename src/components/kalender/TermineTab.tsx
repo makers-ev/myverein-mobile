@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import { CalendarPlus, Plus, Repeat, Settings2 } from 'lucide-react-native';
+import { CalendarPlus, Plus, Repeat, Settings2, Timer } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -22,6 +22,8 @@ import EventActions, { type EventSubSheetKind } from './EventActions';
 import AttendanceSheet from './AttendanceSheet';
 import HelpersSheet from './HelpersSheet';
 import RidesSheet from './RidesSheet';
+import TimeSheet from './TimeSheet';
+import { canTrackTime } from '@/lib/eventRights';
 import EventParticipation from './EventParticipation';
 import { ApiError } from '@/lib/api';
 
@@ -123,6 +125,8 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
   const [sheetTarget, setSheetTarget] = useState<EventSheetTarget | null>(null);
   const [manageOpen, setManageOpen] = useState(false);
   const [feedsOpen, setFeedsOpen] = useState(false);
+  const [timeOpen, setTimeOpen] = useState(false);
+  const trackTime = canTrackTime(membership);
   // The event fetched for a tapped push: shown even when it is not in the loaded month list.
   const [fetchedEvent, setFetchedEvent] = useState<CalendarEvent | null>(null);
   // Attendance / helper sheets replace the event sheet (no modal-to-modal stacking) and bring it back when closed.
@@ -287,6 +291,18 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('feeds.open')}</Text>
       </TouchableOpacity>
 
+      {trackTime ? (
+        <TouchableOpacity
+          onPress={() => setTimeOpen(true)}
+          accessibilityRole="button"
+          className="flex-row items-center justify-center border border-border dark:border-border-dark rounded-xl mb-3"
+          style={{ gap: 6, minHeight: 44 }}
+        >
+          <Timer size={16} color={themeColors.foreground} />
+          <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('time.open')}</Text>
+        </TouchableOpacity>
+      ) : null}
+
       <MonthCalendar month={month} onMonthChange={handleMonthChange} selectedDay={selectedDay} onSelectDay={handleSelectDay} markers={markers} />
 
       <View className="flex-row items-center justify-between mt-4 mb-2">
@@ -344,6 +360,8 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         }
       />
 
+      {trackTime ? <TimeSheet visible={timeOpen} onClose={() => setTimeOpen(false)} clubId={clubId} /> : null}
+      {sub?.kind === 'time' ? <TimeSheet visible onClose={closeSub} clubId={clubId} eventId={sub.event.id} eventTitle={sub.event.title} /> : null}
       {sub?.kind === 'rides' ? <RidesSheet visible onClose={closeSub} clubId={clubId} event={sub.event} /> : null}
       {sub?.kind === 'helpers' ? <HelpersSheet visible onClose={closeSub} clubId={clubId} event={sub.event} /> : null}
       {sub?.kind === 'attendance' ? <AttendanceSheet visible onClose={closeSub} clubId={clubId} event={sub.event} /> : null}

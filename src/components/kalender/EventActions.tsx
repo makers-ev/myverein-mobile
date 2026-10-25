@@ -1,19 +1,19 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { Car, ClipboardCheck, HandHelping } from 'lucide-react-native';
+import { Car, ClipboardCheck, HandHelping, Timer } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import type { CalendarEvent } from '@/hooks/useEvents';
 import type { ClubMember } from '@/hooks/useClubMembers';
-import { canOnEvent } from '@/lib/eventRights';
+import { canOnEvent, canTrackTime } from '@/lib/eventRights';
 import { useEventHelpers } from '@/hooks/useEventHelpers';
 import { openShiftCount, totalShifts } from '@/lib/helpers';
 import { useEventRides } from '@/hooks/useEventRides';
 import { totalFreeSeats } from '@/lib/rides';
 
 /** The sub-sheets reachable from the event detail; the owner (TermineTab) swaps the event sheet for the chosen one. */
-export type EventSubSheetKind = 'attendance' | 'helpers' | 'rides';
+export type EventSubSheetKind = 'attendance' | 'helpers' | 'rides' | 'time';
 
 interface Props {
   clubId: string;
@@ -102,6 +102,9 @@ export default function EventActions({ clubId, event, calendarDepartmentId, memb
     items.push(
       <ActionButton key="attendance" icon={<ClipboardCheck size={18} color={themeColors.foreground} />} label={t('att.open')} onPress={() => onOpen('attendance')} />,
     );
+  }
+  if (canTrackTime(membership)) {
+    items.push(<ActionButton key="time" icon={<Timer size={18} color={themeColors.foreground} />} label={t('time.open-for-event')} onPress={() => onOpen('time')} />);
   }
   items.push(<HelpersAction key="helpers" clubId={clubId} event={event} onOpen={() => onOpen('helpers')} />);
   items.push(<RidesAction key="rides" clubId={clubId} event={event} onOpen={() => onOpen('rides')} />);
