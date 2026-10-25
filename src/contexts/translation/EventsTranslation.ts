@@ -204,6 +204,7 @@ const EventsTranslation: Translation = {
     "time.err.too-old": 'The entry is too old.',
     "time.err.invalid": 'The time is not valid.',
     "time.err.not-allowed": 'Time tracking is not available to you.',
+    "att.sync.blocked": 'There are still unsent changes. Please wait until they are sent, or send them again.',
     // @@en
   },
   de: {
@@ -405,6 +406,7 @@ const EventsTranslation: Translation = {
     "time.err.too-old": 'Der Eintrag ist zu alt.',
     "time.err.invalid": 'Die Zeitangabe ist nicht gültig.',
     "time.err.not-allowed": 'Die Zeiterfassung steht dir nicht zur Verfügung.',
+    "att.sync.blocked": 'Es gibt noch ungesendete Änderungen. Bitte warte, bis sie gesendet sind, oder sende sie erneut.',
     // @@de
   },
   fr: {},

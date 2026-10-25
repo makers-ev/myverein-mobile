@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 
 import { ApiError, apiFetch } from '@/lib/api';
 import {
@@ -36,6 +37,8 @@ export function useEventAttendance(clubId: string | null, eventId: string | null
   const [problem, setProblem] = useState<AttendanceSyncProblem | null>(null);
   const [actionError, setActionError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
+  /** An action (add guest, supervisors, close) was refused because taps are still unsent. */
+  const [blocked, setBlocked] = useState(false);
 
   const viewRef = useRef<AttendanceView | null>(null);
   const pending = useRef(new Map<string, AttendanceStatus | null>());
@@ -191,13 +194,31 @@ export function useEventAttendance(clubId: string | null, eventId: string | null
     void flush();
   }, [flush]);
 
+  // Leaving the app (or coming back) is the moment taps are most likely lost or a connection returned.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', () => {
+      if (pending.current.size > 0) {
+        attempt.current = 0;
+        clearTimer();
+        void flushRef.current();
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
   const run = useCallback(
     async (job: () => Promise<AttendanceView>) => {
       if (!base) return false;
       setBusy(true);
       setActionError(null);
+      setBlocked(false);
       try {
         await flush();
+        // Closing / adding on top of unsent taps would act on a stale list: stop and say so.
+        if (pending.current.size > 0) {
+          if (alive.current) setBlocked(true);
+          return false;
+        }
         const next = await job();
         if (alive.current) commit(applyPending(next, pending.current));
         return true;
@@ -272,6 +293,7 @@ export function useEventAttendance(clubId: string | null, eventId: string | null
     unsent,
     problem,
     actionError,
+    blocked,
     busy,
   };
 }

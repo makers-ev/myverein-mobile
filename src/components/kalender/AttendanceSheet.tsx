@@ -86,9 +86,11 @@ function Badge({ label, tone = 'muted' }: { label: string; tone?: 'muted' | 'war
 function EntryRow({ entry, disabled, onChange }: { entry: AttendanceEntry; disabled: boolean; onChange: (status: AttendanceStatus | null) => void }) {
   const { t } = useLanguage();
   return (
-    <View className="border border-border dark:border-border-dark rounded-xl p-3 mb-2" accessibilityLabel={entry.displayName}>
+    <View className="border border-border dark:border-border-dark rounded-xl p-3 mb-2">
       <View className="flex-row items-center flex-wrap mb-2" style={{ gap: 6 }}>
-        <Text className="text-foreground dark:text-foreground-dark text-base font-semibold flex-shrink">{entry.displayName}</Text>
+        <Text className="text-foreground dark:text-foreground-dark text-base font-semibold flex-shrink" accessibilityRole="header">
+          {entry.displayName}
+        </Text>
         {entry.guestName ? <Badge label={t('att.badge.guest')} /> : null}
         {entry.isMinor ? <Badge label={t('att.badge.minor')} /> : null}
         {entry.prefilled ? <Badge label={t('att.badge.absence')} tone="warning" /> : null}
@@ -166,7 +168,7 @@ export default function AttendanceSheet({ visible, onClose, clubId, event }: Pro
     if (ok) setConfirmClose(false);
   };
 
-  const errorText = att.actionError ? apiErrorMessage(att.actionError, t) : null;
+  const errorText = att.blocked ? t('att.sync.blocked') : att.actionError ? apiErrorMessage(att.actionError, t) : null;
 
   return (
     <FormSheet visible={visible} title={t('att.title', { title: event.title })} onClose={requestClose} cancelLabel={t('ui.done')} error={errorText}>

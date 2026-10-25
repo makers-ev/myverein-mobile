@@ -173,3 +173,20 @@ describe('useEventAttendance', () => {
     expect(put?.[1].body.entries).toEqual([{ clubMemberId: '1', status: 'anwesend' }]);
   });
 });
+
+describe('useEventAttendance actions with unsent taps', () => {
+  it('refuses to close while taps could not be sent and says so', async () => {
+    const { result } = await mountLoaded(make([entry('1')]));
+    apiFetchMock.mockRejectedValue(new ApiError(0, 'NETWORK', 'offline'));
+    await act(async () => {
+      result.current.setStatus('m:1', 'anwesend');
+    });
+    let ok = true;
+    await act(async () => {
+      ok = await result.current.closeList(false);
+    });
+    expect(ok).toBe(false);
+    expect(result.current.blocked).toBe(true);
+    expect(apiFetchMock.mock.calls.some((c) => String(c[0]).includes('/close'))).toBe(false);
+  });
+});
