@@ -457,8 +457,39 @@ export default function EventParticipation({ clubId, event, fallback, onChanged 
   }
   const info = reg.data;
   if (!info || !info.enabled) {
-    // No setup (or it could not be read): the old sign-up keeps working.
-    return fallback ? <RsvpControl {...fallback} /> : null;
+    // No setup (or it could not be read): the old sign-up keeps working; parents can still sign up their children.
+    const plain: RegistrationInfo = info ?? {
+      eventId: event.id,
+      calendarId: event.calendarId,
+      enabled: false,
+      open: true,
+      closedReason: null,
+      deadlineAt: null,
+      maxCompanions: 0,
+      allowGuests: false,
+      costNote: null,
+      costCents: null,
+      form: null,
+      canManage: false,
+    };
+    return (
+      <View style={{ gap: 10 }}>
+        {!info && reg.error ? (
+          <View accessibilityLiveRegion="polite">
+            <Text className="text-destructive text-sm">{t('reg.load-error')}</Text>
+            <TouchableOpacity onPress={() => void reg.reload()} accessibilityRole="button" className="self-start justify-center" style={{ minHeight: 44 }}>
+              <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+        <SubjectChips wards={clubWards} value={subject} onChange={setSubject} />
+        {subject === null ? (
+          fallback ? <RsvpControl {...fallback} /> : null
+        ) : (
+          <SubjectRegistration key={subject} clubId={clubId} event={event} info={plain} subjectId={subject} isWard onChanged={onChanged} />
+        )}
+      </View>
+    );
   }
 
   const cost = formatCost(info.costCents, language);

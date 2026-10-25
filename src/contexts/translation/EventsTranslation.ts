@@ -205,6 +205,7 @@ const EventsTranslation: Translation = {
     "time.err.invalid": 'The time is not valid.',
     "time.err.not-allowed": 'Time tracking is not available to you.',
     "att.sync.blocked": 'There are still unsent changes. Please wait until they are sent, or send them again.',
+    "reg.load-error": 'The registration settings could not be loaded. Plain sign-up still works.',
     // @@en
   },
   de: {
@@ -407,6 +408,7 @@ const EventsTranslation: Translation = {
     "time.err.invalid": 'Die Zeitangabe ist nicht gültig.',
     "time.err.not-allowed": 'Die Zeiterfassung steht dir nicht zur Verfügung.',
     "att.sync.blocked": 'Es gibt noch ungesendete Änderungen. Bitte warte, bis sie gesendet sind, oder sende sie erneut.',
+    "reg.load-error": 'Die Anmeldeeinstellungen konnten nicht geladen werden. Die einfache Anmeldung funktioniert trotzdem.',
     // @@de
   },
   fr: {},
