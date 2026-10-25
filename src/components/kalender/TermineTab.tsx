@@ -208,7 +208,8 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
   const { markers, byDay } = useMemo(() => {
     const dots: Record<string, string[]> = {};
     const days = new Map<string, CalendarEvent[]>();
-    for (const event of [...events].sort((a, b) => a.startsAt.localeCompare(b.startsAt))) {
+    const list = Array.isArray(events) ? events.filter((e) => e && typeof e.startsAt === 'string') : [];
+    for (const event of list.slice().sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt))) {
       const color = colorFor(event.calendarId);
       for (const key of eventDayKeys(event)) {
         dots[key] = dots[key]?.includes(color) ? dots[key] : [...(dots[key] ?? []), color];
