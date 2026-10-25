@@ -41,10 +41,21 @@ interface EventRange {
   to?: string;
 }
 
+/** The fetch client revives ISO strings into `Date`s; the app's event type carries ISO strings. */
+export function normalizeEvent(raw: CalendarEvent): CalendarEvent {
+  const iso = (v: unknown) => (v instanceof Date ? v.toISOString() : v);
+  const e = raw as unknown as Record<string, unknown>;
+  for (const key of ['startsAt', 'endsAt', 'createdAt', 'updatedAt', 'cancelledAt', 'originalStartsAt']) {
+    if (key in e) e[key] = iso(e[key]);
+  }
+  return raw;
+}
+
 /** Fetch-shaped hook for `GET /events?clubId=&from=&to=`, see README.md's "Adding a new API request". */
 export function useEvents(clubId: string | null, range?: EventRange) {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(!!clubId);
+  const [loadError, setLoadError] = useState<unknown>(null);
   // Only the latest request may write state, so a slow older month can't overwrite a newer one.
   const requestId = useRef(0);
 
@@ -56,12 +67,18 @@ export function useEvents(clubId: string | null, range?: EventRange) {
       return;
     }
     setLoading(true);
+    setLoadError(null);
     try {
       const params = new URLSearchParams({ clubId });
       if (range?.from) params.append('from', range.from);
       if (range?.to) params.append('to', range.to);
       const { data } = await apiFetch<{ data: CalendarEvent[] }>(`/events?${params.toString()}`);
-      if (id === requestId.current) setEvents(Array.isArray(data) ? data : []);
+      if (id === requestId.current) setEvents(Array.isArray(data) ? data.filter(Boolean).map(normalizeEvent) : []);
+    } catch (err) {
+      if (id === requestId.current) {
+        setEvents([]);
+        setLoadError(err);
+      }
     } finally {
       if (id === requestId.current) setLoading(false);
     }
@@ -71,7 +88,7 @@ export function useEvents(clubId: string | null, range?: EventRange) {
     void refetch();
   }, [refetch]);
 
-  return { events, loading, refetch };
+  return { events, loading, loadError, refetch };
 }
 
 /** RSVP actions for a club's events -- kept separate so callers that only need these don't pull in the list fetch. */

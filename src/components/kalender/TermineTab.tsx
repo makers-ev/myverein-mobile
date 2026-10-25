@@ -7,7 +7,7 @@ import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useClubInfo } from '@/hooks/useClubInfo';
 import { useCalendars } from '@/hooks/useCalendars';
-import { useEvents, useEventMutations, useEventRsvp, useEventSeries, type CalendarEvent, type EventInput } from '@/hooks/useEvents';
+import { normalizeEvent, useEvents, useEventMutations, useEventRsvp, useEventSeries, type CalendarEvent, type EventInput } from '@/hooks/useEvents';
 import { useClubSettings } from '@/hooks/useClubSettings';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { getDepartmentColor } from '@/theme/departmentColors';
@@ -125,7 +125,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
   const [month, setMonth] = useState(() => new Date());
   const [selectedDay, setSelectedDay] = useState(() => toDayKey(new Date()));
   const range = useMemo(() => monthRange(month), [month]);
-  const { events, loading, refetch } = useEvents(clubId, range);
+  const { events, loading, loadError, refetch } = useEvents(clubId, range);
   const { rsvp, cancelRsvp } = useEventRsvp(clubId, refetch);
   const { createEvent, updateEvent, deleteEvent, cancelEvent } = useEventMutations(clubId, refetch);
   const seriesActions = useEventSeries(clubId, refetch);
@@ -165,7 +165,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
       // `myRsvp` and the counts come from the backend: the list refetches (see useEventRsvp), a pushed event outside the month is re-read here.
       if (fetchedEvent?.id === eventId) {
         const { data } = await apiFetch<{ data: CalendarEvent }>(`/events/${encodeURIComponent(eventId)}?clubId=${encodeURIComponent(clubId)}`);
-        setFetchedEvent(data);
+        setFetchedEvent(data ? normalizeEvent(data) : data);
       }
     } catch (err) {
       // The event wants a form or a group size: the quick sign-up of the list cannot answer that, the sheet can.
@@ -329,7 +329,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         {loading ? <ActivityIndicator size="small" color={themeColors.primary} /> : null}
       </View>
 
-      {error ? <Text className="text-destructive text-sm mb-3">{error}</Text> : null}
+      {error || loadError ? <Text className="text-destructive text-sm mb-3">{error ?? apiErrorMessage(loadError, t)}</Text> : null}
 
       {!loading && dayEvents.length === 0 ? (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('termine.day-empty')}</Text>
