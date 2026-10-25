@@ -24,6 +24,8 @@ import ClubApplicationsScreen from '@/screens/ClubApplicationsScreen';
 import ProfileModulesScreen from '@/screens/ProfileModulesScreen';
 import HeuteScreen from '@/screens/HeuteScreen';
 import PrivacyCenterScreen from '@/screens/PrivacyCenterScreen';
+import AbstimmungenScreen from '@/screens/AbstimmungenScreen';
+import VersammlungScreen from '@/screens/VersammlungScreen';
 import GuardianStartRedirect from '@/guardian/GuardianStartRedirect';
 import JoinClubScreen from '@/screens/JoinClubScreen';
 import CreateClubScreen from '@/screens/CreateClubScreen';
@@ -61,6 +63,8 @@ export type RootStackParamList = {
   Mitteilungen: undefined;
   Heute: undefined;
   PrivacyCenter: undefined;
+  Abstimmungen: { ballotId?: string } | undefined;
+  Versammlung: { meetingId?: string } | undefined;
   Login: { returnTo?: keyof RootStackParamList } | undefined;
   Signup: undefined;
   ForgotPassword: undefined;
@@ -269,6 +273,22 @@ function MainNavigator() {
         {(props) => (
           <RequireAuth>
             <PrivacyCenterScreen {...props} />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Abstimmungen">
+        {(props) => (
+          <RequireAuth>
+            <AbstimmungenScreen {...props} />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Versammlung">
+        {(props) => (
+          <RequireAuth>
+            <VersammlungScreen {...props} />
           </RequireAuth>
         )}
       </RootStack.Screen>

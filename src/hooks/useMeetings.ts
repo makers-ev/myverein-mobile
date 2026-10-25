@@ -20,6 +20,11 @@ export interface Meeting {
   agenda: string | null;
   minutes: string | null;
   status: MeetingStatus;
+  /** Wave 11: `praesenz` (default) | `hybrid` | `virtuell`; absent on an older backend. */
+  participationMode?: 'praesenz' | 'hybrid' | 'virtuell';
+  onlineUrl?: string | null;
+  /** Wave 11: status of the visible minutes version (`entwurf` | `zur_genehmigung` | `genehmigt` | `archiviert`) or null. */
+  minutesStatus?: string | null;
   createdBy: string;
   createdAt: string;
   updatedAt: string;

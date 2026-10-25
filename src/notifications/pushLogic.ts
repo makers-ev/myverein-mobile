@@ -10,7 +10,9 @@ export type PushTarget =
   | { kind: 'announcement'; announcementId: string; clubId: string | null }
   | { kind: 'event'; eventId: string; clubId: string | null }
   | { kind: 'inbox'; clubId: string | null }
-  | { kind: 'calendar'; clubId: string | null; tab?: CalendarTabHint };
+  | { kind: 'calendar'; clubId: string | null; tab?: CalendarTabHint }
+  | { kind: 'ballot'; clubId: string | null; ballotId: string | null }
+  | { kind: 'assembly'; clubId: string | null; meetingId: string };
 
 /** Which Kalender tab a calendar target opens (default: Termine). */
 export type CalendarTabHint = 'treffen';
@@ -39,6 +41,13 @@ export function parsePushPayload(data: unknown): PushTarget | null {
       const eventId = safeId(d.eventId);
       return eventId ? { kind: 'event', eventId, clubId } : { kind: 'calendar', clubId };
     }
+    // Wave 11: a call to vote / an assembly; ids only, never a title or a choice.
+    case 'ballot':
+      return { kind: 'ballot', clubId, ballotId: safeId(d.ballotId) };
+    case 'assembly': {
+      const meetingId = safeId(d.meetingId);
+      return meetingId ? { kind: 'assembly', clubId, meetingId } : { kind: 'inbox', clubId };
+    }
     case 'meeting':
       return { kind: 'calendar', clubId, tab: 'treffen' };
     case 'reminder':
@@ -49,9 +58,11 @@ export function parsePushPayload(data: unknown): PushTarget | null {
   }
 }
 
-export type PushRoute = 'Mitteilungen' | 'Kalender';
+export type PushRoute = 'Mitteilungen' | 'Kalender' | 'Abstimmungen' | 'Versammlung';
 
 export function routeForTarget(target: PushTarget): PushRoute {
+  if (target.kind === 'ballot') return 'Abstimmungen';
+  if (target.kind === 'assembly') return 'Versammlung';
   return target.kind === 'event' || target.kind === 'calendar' ? 'Kalender' : 'Mitteilungen';
 }
 

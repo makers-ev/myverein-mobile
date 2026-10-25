@@ -32,7 +32,10 @@ export default function PushDeepLinkRouter() {
       if (navigationRef.getCurrentRoute()?.name !== 'Login') navigationRef.navigate('Login', { returnTo: decision.returnTo });
       return;
     }
-    navigationRef.navigate(decision.route);
+    // Ballot / assembly screens take the id as a route param and handle it themselves (no consume step).
+    if (incoming.kind === 'ballot') navigationRef.navigate('Abstimmungen', incoming.ballotId ? { ballotId: incoming.ballotId } : undefined);
+    else if (incoming.kind === 'assembly') navigationRef.navigate('Versammlung', { meetingId: incoming.meetingId });
+    else navigationRef.navigate(decision.route);
     markPushTargetRouted();
   }, [incoming, navigationReady, isLoading, twoFactorPending, isAuthenticated]);
 

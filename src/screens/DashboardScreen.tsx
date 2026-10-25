@@ -15,6 +15,8 @@ import Logo from '@/components/Logo';
 import SickNoteCard from '@/components/privacy/SickNoteCard';
 import WhoIsAbsentCard from '@/components/privacy/WhoIsAbsentCard';
 import SignedInCard from '@/components/SignedInCard';
+import { useBallots } from '@/hooks/useBallots';
+import { votingNow } from '@/lib/assembly';
 import BentoTile from '@/components/ui/BentoTile';
 import FadeIn from '@/components/ui/FadeIn';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -82,6 +84,9 @@ export default function DashboardScreen({ navigation }: Props) {
   const clubId = activeClub?.clubId ?? null;
   const { event, loading: eventLoading, error, refetch } = useNextEvent(clubId);
   const { membership, can } = useOwnMembership(clubId);
+  // Open votes of the club: only members can have any, guests never ask the backend.
+  const { ballots } = useBallots(membership ? clubId : null);
+  const openVotes = votingNow(ballots);
   const shortcuts = SHORTCUTS.filter((s) => can(s.permission));
 
   const loading = clubsLoading || eventLoading;
@@ -177,6 +182,39 @@ export default function DashboardScreen({ navigation }: Props) {
           {activeClub && membership ? (
             <FadeIn delay={25}>
               <SickNoteCard key={activeClub.clubId} clubId={activeClub.clubId} />
+            </FadeIn>
+          ) : null}
+
+          {activeClub && membership ? (
+            <FadeIn delay={40}>
+              <BentoTile minHeight={88}>
+                <Text className="text-primary dark:text-primary-dark text-xs font-bold uppercase tracking-wider mb-3">{t('assembly.dashboard.title')}</Text>
+                {openVotes.length > 0 ? (
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel={t('assembly.dashboard.open-votes', { count: openVotes.length })}
+                    activeOpacity={0.7}
+                    onPress={() => navigation.navigate('Abstimmungen', openVotes.length === 1 ? { ballotId: openVotes[0]!.id } : undefined)}
+                    className="min-h-[48px] justify-center bg-primary dark:bg-primary-dark rounded-xl px-4 mb-3"
+                  >
+                    <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold text-sm">{`● ${t('assembly.dashboard.open-votes', { count: openVotes.length })}`}</Text>
+                  </TouchableOpacity>
+                ) : null}
+                <View className="flex-row flex-wrap" style={{ gap: 8 }}>
+                  {(['Abstimmungen', 'Versammlung'] as const).map((route) => (
+                    <TouchableOpacity
+                      key={route}
+                      accessibilityRole="button"
+                      accessibilityLabel={t(`assembly.dashboard.${route}`)}
+                      activeOpacity={0.7}
+                      onPress={() => navigation.navigate(route)}
+                      className="min-h-[44px] justify-center bg-muted dark:bg-muted-dark rounded-xl px-4"
+                    >
+                      <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">{t(`assembly.dashboard.${route}`)}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </BentoTile>
             </FadeIn>
           ) : null}
 
