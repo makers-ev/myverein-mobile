@@ -20,6 +20,7 @@ import CalendarManageSheet from './CalendarManageSheet';
 import CalendarFeedsSheet from './CalendarFeedsSheet';
 import EventActions, { type EventSubSheetKind } from './EventActions';
 import AttendanceSheet from './AttendanceSheet';
+import HelpersSheet from './HelpersSheet';
 import EventParticipation from './EventParticipation';
 import { ApiError } from '@/lib/api';
 
@@ -332,6 +333,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         detailExtras={
           sheetEvent ? (
             <EventActions
+              clubId={clubId}
               event={sheetEvent}
               calendarDepartmentId={calendars.find((c) => c.id === sheetEvent.calendarId)?.departmentId ?? null}
               membership={membership}
@@ -341,6 +343,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         }
       />
 
+      {sub?.kind === 'helpers' ? <HelpersSheet visible onClose={closeSub} clubId={clubId} event={sub.event} /> : null}
       {sub?.kind === 'attendance' ? <AttendanceSheet visible onClose={closeSub} clubId={clubId} event={sub.event} /> : null}
 
       <CalendarFeedsSheet visible={feedsOpen} onClose={() => setFeedsOpen(false)} clubId={clubId} calendars={calendars} />
