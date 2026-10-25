@@ -22,6 +22,13 @@ export type ClubPermission =
   | 'privacy:manage'
   // Wave 11: assembly management (invitations, voting roll, ballots, minutes); members vote/RSVP without it.
   | 'assembly:manage'
+  // Wave 12: attendance lists, participant lists, helper plan management, time tracking (department scope for trainers / Abteilungsleitung).
+  | 'attendance:write'
+  | 'attendance:read'
+  | 'registrations:read'
+  | 'helpers:write'
+  | 'time:write'
+  | 'time:read_rates'
   // Not a ClubPermission in the backend, but appended to /club-members/me for UI gating (board roles).
   | 'club_stats:read';
 

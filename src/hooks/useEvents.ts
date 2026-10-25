@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
+import { deleteSeriesQuery, type EventSeries, type SeriesPreview, type SeriesRequestOptions, type SeriesScope } from '@/lib/eventSeries';
 import { cancelBody, withNotify, withNotifyQuery, type CancelPreview } from '@/lib/notifyOptions';
 
 export interface CalendarEvent {
@@ -19,6 +20,20 @@ export interface CalendarEvent {
   cancelled?: boolean;
   cancelledAt?: string | null;
   cancelReason?: string | null;
+  /** Wave 12 B3: all-day events show no time of day; `endsAt` is 23:59:59 local of the LAST day. Optional for older backends. */
+  allDay?: boolean;
+  /** Wave 12 B3: the caller's own sign-up, computed by the backend (no client-side state). */
+  myRsvp?: 'angemeldet' | 'warteliste' | null;
+  /** Confirmed seats / waitlist length. */
+  attendeeCount?: number;
+  waitlistCount?: number;
+  /** Wave 12 B5: set for occurrences of a recurring event. */
+  seriesId?: string | null;
+  originalStartsAt?: string | null;
+  /** The occurrence was edited on its own (a later "all occurrences" edit leaves it alone). */
+  isOverride?: boolean;
+  costNote?: string | null;
+  costCents?: number | null;
 }
 
 interface EventRange {
@@ -26,12 +41,25 @@ interface EventRange {
   to?: string;
 }
 
+/** The fetch client revives ISO strings into `Date`s; the app's event type carries ISO strings. */
+export function normalizeEvent(raw: CalendarEvent): CalendarEvent {
+  const iso = (v: unknown) => (v instanceof Date ? v.toISOString() : v);
+  const e = raw as unknown as Record<string, unknown>;
+  for (const key of ['startsAt', 'endsAt', 'createdAt', 'updatedAt', 'cancelledAt', 'originalStartsAt']) {
+    if (key in e) e[key] = iso(e[key]);
+  }
+  return raw;
+}
+
 /** Fetch-shaped hook for `GET /events?clubId=&from=&to=`, see README.md's "Adding a new API request". */
 export function useEvents(clubId: string | null, range?: EventRange) {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(!!clubId);
+  const [loadError, setLoadError] = useState<unknown>(null);
   // Only the latest request may write state, so a slow older month can't overwrite a newer one.
   const requestId = useRef(0);
+  const from = range?.from;
+  const to = range?.to;
 
   const refetch = useCallback(async () => {
     const id = ++requestId.current;
@@ -41,22 +69,28 @@ export function useEvents(clubId: string | null, range?: EventRange) {
       return;
     }
     setLoading(true);
+    setLoadError(null);
     try {
       const params = new URLSearchParams({ clubId });
-      if (range?.from) params.append('from', range.from);
-      if (range?.to) params.append('to', range.to);
+      if (from) params.append('from', from);
+      if (to) params.append('to', to);
       const { data } = await apiFetch<{ data: CalendarEvent[] }>(`/events?${params.toString()}`);
-      if (id === requestId.current) setEvents(data);
+      if (id === requestId.current) setEvents(Array.isArray(data) ? data.filter(Boolean).map(normalizeEvent) : []);
+    } catch (err) {
+      if (id === requestId.current) {
+        setEvents([]);
+        setLoadError(err);
+      }
     } finally {
       if (id === requestId.current) setLoading(false);
     }
-  }, [clubId, range?.from, range?.to]);
+  }, [clubId, from, to]);
 
   useEffect(() => {
     void refetch();
   }, [refetch]);
 
-  return { events, loading, refetch };
+  return { events, loading, loadError, refetch };
 }
 
 /** RSVP actions for a club's events -- kept separate so callers that only need these don't pull in the list fetch. */
@@ -91,6 +125,7 @@ export interface EventInput {
   endsAt: string | null;
   category: string | null;
   capacity: number | null;
+  allDay?: boolean;
 }
 
 /** Write actions for events (`calendars:write`), `onChanged` refetches the list. */
@@ -167,4 +202,95 @@ export function useCancelPreview(clubId: string | null, eventId: string | null) 
   }, [refetch]);
 
   return { preview, loading, error, refetch };
+}
+
+export interface SeriesChange {
+  affected: { updated: number; created: number; removed: number; cancelled: number };
+}
+
+export interface SeriesRemoval {
+  deleted: number;
+  cancelled: number;
+  seriesDeleted: boolean;
+}
+
+/** Series write actions (`calendars:write`, Wave 12 M2), `onChanged` refetches the event list. */
+export function useEventSeries(clubId: string | null, onChanged?: () => void) {
+  const club = encodeURIComponent(clubId ?? '');
+
+  /** `POST /event-series/preview`: nothing is stored; the first occurrences and skipped holidays. */
+  const previewSeries = useCallback(
+    async (body: Record<string, unknown>, limit = 10) => {
+      const { data } = await apiFetch<{ data: SeriesPreview }>(`/event-series/preview?clubId=${club}&limit=${limit}`, { method: 'POST', body });
+      return data;
+    },
+    [club],
+  );
+
+  const createSeries = useCallback(
+    async (body: Record<string, unknown>) => {
+      const { data } = await apiFetch<{ data: { occurrencesCreated: number; skippedHolidays: SeriesPreview['skippedHolidays'] } }>(
+        `/event-series?clubId=${club}`,
+        { method: 'POST', body },
+      );
+      onChanged?.();
+      return data;
+    },
+    [club, onChanged],
+  );
+
+  const updateSeries = useCallback(
+    async (seriesId: string, body: Record<string, unknown>) => {
+      const { data } = await apiFetch<{ data: SeriesChange }>(`/event-series/${encodeURIComponent(seriesId)}?clubId=${club}`, { method: 'PATCH', body });
+      onChanged?.();
+      return data;
+    },
+    [club, onChanged],
+  );
+
+  /** `DELETE /event-series/:id?scope=`: deletes occurrences, or cancels those that have sign-ups. */
+  const deleteSeries = useCallback(
+    async (seriesId: string, scope: SeriesScope, eventId: string, options: SeriesRequestOptions = {}) => {
+      const query = deleteSeriesQuery(clubId ?? '', scope, eventId, options);
+      const { data } = await apiFetch<{ data: SeriesRemoval }>(`/event-series/${encodeURIComponent(seriesId)}?${query}`, { method: 'DELETE' });
+      onChanged?.();
+      return data;
+    },
+    [clubId, onChanged],
+  );
+
+  return { previewSeries, createSeries, updateSeries, deleteSeries };
+}
+
+/** `GET /event-series/:id`, loads only while `seriesId` is set; only the newest request may write state. */
+export function useSeriesDetail(clubId: string | null, seriesId: string | null) {
+  const [series, setSeries] = useState<EventSeries | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const requestId = useRef(0);
+
+  const refetch = useCallback(async () => {
+    const id = ++requestId.current;
+    setSeries(null);
+    setError(null);
+    if (!clubId || !seriesId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data } = await apiFetch<{ data: EventSeries }>(`/event-series/${encodeURIComponent(seriesId)}?clubId=${encodeURIComponent(clubId)}`);
+      if (id === requestId.current) setSeries(data);
+    } catch (err) {
+      if (id === requestId.current) setError(err);
+    } finally {
+      if (id === requestId.current) setLoading(false);
+    }
+  }, [clubId, seriesId]);
+
+  useEffect(() => {
+    void refetch();
+  }, [refetch]);
+
+  return { series, loading, error, refetch };
 }
