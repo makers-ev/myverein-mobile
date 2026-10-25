@@ -32,17 +32,17 @@ describe('useEventHelpers', () => {
       await result.current.withdraw('s1', 'w1');
       await result.current.offerSwap('s1', null, 'c2');
       await result.current.acceptSwap('sw1', null);
-      await result.current.declineSwap('sw1');
+      await result.current.declineSwap('sw1', 'w1');
       await result.current.withdrawSwap('sw1');
     });
     const calls = apiFetchMock.mock.calls.map((c) => [c[0], c[1]]);
-    expect(calls).toContainEqual(['/shifts/s1/signup?clubId=club', { method: 'POST', body: { clubMemberId: 'w1' } }]);
-    expect(calls).toContainEqual(['/shifts/s1/signup?clubId=club', { method: 'POST', body: {} }]);
-    expect(calls).toContainEqual(['/shifts/s1/signup?clubId=club&clubMemberId=w1', { method: 'DELETE' }]);
-    expect(calls).toContainEqual(['/shifts/s1/swaps?clubId=club', { method: 'POST', body: { toClubMemberId: 'c2' } }]);
-    expect(calls).toContainEqual(['/swaps/sw1/accept?clubId=club', { method: 'POST', body: {} }]);
-    expect(calls).toContainEqual(['/swaps/sw1/decline?clubId=club', { method: 'POST', body: {} }]);
-    expect(calls).toContainEqual(['/swaps/sw1?clubId=club', { method: 'DELETE' }]);
+    expect(calls).toContainEqual(['/events/e1/helpers/shifts/s1/signup?clubId=club', { method: 'POST', body: { clubMemberId: 'w1' } }]);
+    expect(calls).toContainEqual(['/events/e1/helpers/shifts/s1/signup?clubId=club', { method: 'POST', body: {} }]);
+    expect(calls).toContainEqual(['/events/e1/helpers/shifts/s1/signup?clubId=club&clubMemberId=w1', { method: 'DELETE' }]);
+    expect(calls).toContainEqual(['/events/e1/helpers/shifts/s1/swaps?clubId=club', { method: 'POST', body: { toClubMemberId: 'c2' } }]);
+    expect(calls).toContainEqual(['/events/e1/helpers/swaps/sw1/accept?clubId=club', { method: 'POST', body: {} }]);
+    expect(calls).toContainEqual(['/events/e1/helpers/swaps/sw1/decline?clubId=club', { method: 'POST', body: { clubMemberId: 'w1' } }]);
+    expect(calls).toContainEqual(['/events/e1/helpers/swaps/sw1?clubId=club', { method: 'DELETE' }]);
     // every action re-reads the plan
     expect(apiFetchMock.mock.calls.filter((c) => c[0] === '/events/e1/helpers?clubId=club').length).toBeGreaterThanOrEqual(8);
   });

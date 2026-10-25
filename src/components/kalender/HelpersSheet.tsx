@@ -140,7 +140,7 @@ export default function HelpersSheet({ visible, onClose, clubId, event }: Props)
             </Text>
             <View className="flex-row flex-wrap">
               <LinkButton label={t('help.swap.accept')} disabled={busy} onPress={() => void act(shift.id, () => helpers.acceptSwap(w.id, subject))} />
-              {w.toClubMemberId ? <LinkButton label={t('help.swap.decline')} disabled={busy} danger onPress={() => void act(shift.id, () => helpers.declineSwap(w.id))} /> : null}
+              {w.toClubMemberId ? <LinkButton label={t('help.swap.decline')} disabled={busy} danger onPress={() => void act(shift.id, () => helpers.declineSwap(w.id, subject))} /> : null}
             </View>
           </View>
         ))}
