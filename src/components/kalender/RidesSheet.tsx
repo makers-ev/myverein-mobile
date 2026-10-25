@@ -11,6 +11,7 @@ import { useEventRides } from '@/hooks/useEventRides';
 import type { CalendarEvent } from '@/hooks/useEvents';
 import {
   createRideBody,
+  managesRequests,
   requestOf,
   rideDraftProblem,
   rideErrorKey,
@@ -133,7 +134,7 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
           </>
         )}
 
-        {ride.mine ? (
+        {managesRequests(ride) ? (
           <View className="mt-1">
             {(ride.requests ?? []).length === 0 ? (
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('ride.no-requests')}</Text>
@@ -155,7 +156,7 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
                 </View>
               ))
             )}
-            <LinkButton label={t('ride.delete')} danger disabled={!!busy} onPress={() => void run(key, () => rides.removeRide(ride.id))} />
+            {ride.mine ? <LinkButton label={t('ride.delete')} danger disabled={!!busy} onPress={() => void run(key, () => rides.removeRide(ride.id))} /> : null}
           </View>
         ) : own ? (
           <View className="flex-row items-center flex-wrap mt-1">
@@ -167,7 +168,7 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
         ) : (
           <LinkButton
             label={subject ? t('ride.request-ward') : t('ride.request')}
-            disabled={!!busy || ride.seatsFree <= 0}
+            disabled={!!busy || ride.seatsFree <= 0 || (!subject && !callerId)}
             onPress={() => void run(key, () => rides.requestSeat(ride.id, subject))}
           />
         )}

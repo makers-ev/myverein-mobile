@@ -49,10 +49,15 @@ export function totalFreeSeats(view: Pick<RidesView, 'rides'>): number {
   return view.rides.reduce((n, r) => n + Math.max(0, r.seatsFree), 0);
 }
 
+/** The driver or an organiser: the backend sends `requests` only to them, so their presence decides who may decide. */
+export function managesRequests(ride: Pick<Ride, 'mine' | 'requests'>): boolean {
+  return ride.mine || ride.requests !== undefined;
+}
+
 /** The request of `subject` (`null` = the caller; a ward by club member id) on this ride. */
 export function requestOf(ride: Ride, subject: string | null, callerClubMemberId: string | null): RideRequestOwn | null {
   const id = subject ?? callerClubMemberId;
-  if (!id) return ride.myRequests[0] ?? null;
+  if (!id) return null;
   return ride.myRequests.find((r) => r.clubMemberId === id) ?? null;
 }
 

@@ -1,7 +1,7 @@
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
 
 import { ApiError } from './api';
-import { createRideBody, requestOf, rideDraftProblem, rideErrorKey, totalFreeSeats, type Ride } from './rides';
+import { createRideBody, managesRequests, requestOf, rideDraftProblem, rideErrorKey, totalFreeSeats, type Ride } from './rides';
 
 const ride = (over: Partial<Ride> = {}): Ride => ({
   id: 'r',
@@ -35,6 +35,10 @@ describe('ride helpers', () => {
     expect(requestOf(r, 'kid', 'me')?.requestId).toBe('b');
     expect(requestOf(r, 'other', 'me')).toBeNull();
     expect(requestOf(ride(), null, 'me')).toBeNull();
+    expect(requestOf(r, null, null)).toBeNull();
+    expect(managesRequests(ride({ requests: [] }))).toBe(true);
+    expect(managesRequests(ride({ mine: true }))).toBe(true);
+    expect(managesRequests(ride())).toBe(false);
   });
 
   it('validates the draft and builds a trimmed body', () => {
