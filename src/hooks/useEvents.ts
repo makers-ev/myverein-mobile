@@ -19,6 +19,20 @@ export interface CalendarEvent {
   cancelled?: boolean;
   cancelledAt?: string | null;
   cancelReason?: string | null;
+  /** Wave 12 B3: all-day events show no time of day; `endsAt` is 23:59:59 local of the LAST day. Optional for older backends. */
+  allDay?: boolean;
+  /** Wave 12 B3: the caller's own sign-up, computed by the backend (no client-side state). */
+  myRsvp?: 'angemeldet' | 'warteliste' | null;
+  /** Confirmed seats / waitlist length. */
+  attendeeCount?: number;
+  waitlistCount?: number;
+  /** Wave 12 B5: set for occurrences of a recurring event. */
+  seriesId?: string | null;
+  originalStartsAt?: string | null;
+  /** The occurrence was edited on its own (a later "all occurrences" edit leaves it alone). */
+  isOverride?: boolean;
+  costNote?: string | null;
+  costCents?: number | null;
 }
 
 interface EventRange {
@@ -91,6 +105,7 @@ export interface EventInput {
   endsAt: string | null;
   category: string | null;
   capacity: number | null;
+  allDay?: boolean;
 }
 
 /** Write actions for events (`calendars:write`), `onChanged` refetches the list. */

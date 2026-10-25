@@ -4,7 +4,6 @@ import { Plus, Settings2 } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
-import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useClubInfo } from '@/hooks/useClubInfo';
 import { useCalendars } from '@/hooks/useCalendars';
@@ -12,8 +11,10 @@ import { useEvents, useEventMutations, useEventRsvp, type CalendarEvent, type Ev
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { getDepartmentColor } from '@/theme/departmentColors';
 import { isSheetEventMissing, resolveSheetEvent } from '@/lib/eventFocus';
+import { eventDayKeys } from '@/lib/eventDays';
+import { apiFetch } from '@/lib/api';
 import MonthCalendar, { toDayKey } from '@/components/ui/MonthCalendar';
-import EventSheet, { formatTimeRange, RsvpControl, type EventSheetTarget, type RsvpProps, type RsvpState } from './EventSheet';
+import EventSheet, { formatTimeRange, ParticipationLine, RsvpControl, type EventSheetTarget, type RsvpProps, type RsvpState } from './EventSheet';
 import CalendarManageSheet from './CalendarManageSheet';
 
 interface Props {
@@ -41,7 +42,8 @@ function EventRow({ event, color, rsvp, onPress }: { event: CalendarEvent; color
         >
           {event.title}
         </Text>
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">{formatTimeRange(event, language)}</Text>
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">{formatTimeRange(event, language, t('termine.all-day'))}</Text>
+        <ParticipationLine event={event} />
 
         {event.cancelled ? (
           <View className="mt-2 self-start bg-destructive px-2 py-0.5 rounded-full">
@@ -102,7 +104,6 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
   const { rsvp, cancelRsvp } = useEventRsvp(clubId, refetch);
   const { createEvent, updateEvent, deleteEvent, cancelEvent } = useEventMutations(clubId, refetch);
 
-  const [rsvpStates, setRsvpStates] = useState<Record<string, RsvpState>>({});
   const [pendingIds, setPendingIds] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [sheetTarget, setSheetTarget] = useState<EventSheetTarget | null>(null);
@@ -122,12 +123,16 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
     onFocusHandled?.();
   }, [focus, onFocusHandled]);
 
-  const runRsvp = async (eventId: string, action: () => Promise<RsvpState>) => {
+  const runRsvp = async (eventId: string, action: () => Promise<unknown>) => {
     setPendingIds((prev) => ({ ...prev, [eventId]: true }));
     setError(null);
     try {
-      const status = await action();
-      setRsvpStates((prev) => ({ ...prev, [eventId]: status }));
+      await action();
+      // `myRsvp` and the counts come from the backend: the list refetches (see useEventRsvp), a pushed event outside the month is re-read here.
+      if (fetchedEvent?.id === eventId) {
+        const { data } = await apiFetch<{ data: CalendarEvent }>(`/events/${encodeURIComponent(eventId)}?clubId=${encodeURIComponent(clubId)}`);
+        setFetchedEvent(data);
+      }
     } catch (err) {
       setError(apiErrorMessage(err, t));
     } finally {
@@ -135,8 +140,13 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
     }
   };
 
+  const myRsvpOf = (eventId: string): RsvpState => {
+    const event = events.find((e) => e.id === eventId) ?? (fetchedEvent?.id === eventId ? fetchedEvent : null);
+    return event?.myRsvp ?? null;
+  };
+
   const rsvpPropsFor = (eventId: string): RsvpProps => ({
-    state: rsvpStates[eventId] ?? null,
+    state: myRsvpOf(eventId),
     pending: !!pendingIds[eventId],
     onRsvp: () => void runRsvp(eventId, () => rsvp(eventId)),
     onCancel: () => void runRsvp(eventId, async () => (await cancelRsvp(eventId), null)),
@@ -154,15 +164,16 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
   }, [calendars, info]);
   const colorFor = useCallback((calendarId: string) => colorByCalendarId.get(calendarId) ?? getDepartmentColor(null), [colorByCalendarId]);
 
-  // ponytail: multi-day events only mark and list on their start day.
+  // Multi-day events are marked and listed on every day they cover.
   const { markers, byDay } = useMemo(() => {
     const dots: Record<string, string[]> = {};
     const days = new Map<string, CalendarEvent[]>();
     for (const event of [...events].sort((a, b) => a.startsAt.localeCompare(b.startsAt))) {
-      const key = toDayKey(new Date(event.startsAt));
       const color = colorFor(event.calendarId);
-      dots[key] = dots[key]?.includes(color) ? dots[key] : [...(dots[key] ?? []), color];
-      days.set(key, [...(days.get(key) ?? []), event]);
+      for (const key of eventDayKeys(event)) {
+        dots[key] = dots[key]?.includes(color) ? dots[key] : [...(dots[key] ?? []), color];
+        days.set(key, [...(days.get(key) ?? []), event]);
+      }
     }
     return { markers: dots, byDay: days };
   }, [events, colorFor]);

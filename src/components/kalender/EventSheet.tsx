@@ -12,8 +12,9 @@ import { CANCEL_REASON_MAX, cancelPreviewKind, type CancelPreview } from '@/lib/
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 import DateTimeField from '@/components/ui/DateTimeField';
 import NotifySwitch from '@/components/ui/NotifySwitch';
+import { allDayRange, formatEventRange } from '@/lib/eventDays';
 
-// Caller's own RSVP status isn't in the GET /events response -- tracked client-side after rsvp()/cancelRsvp().
+// The caller's own sign-up comes from the backend (`myRsvp` on every event), the sheet refetches after rsvp()/cancelRsvp().
 export type RsvpState = 'angemeldet' | 'warteliste' | null;
 
 export interface RsvpProps {
@@ -26,10 +27,24 @@ export interface RsvpProps {
 /** Opens the sheet on an existing event (detail view) or on a day (create form). */
 export type EventSheetTarget = { eventId: string } | { day: Date };
 
-export function formatTimeRange(event: CalendarEvent, language: string): string {
-  const opts = { hour: '2-digit', minute: '2-digit' } as const;
-  const start = new Date(event.startsAt).toLocaleTimeString(language, opts);
-  return event.endsAt ? `${start} – ${new Date(event.endsAt).toLocaleTimeString(language, opts)}` : start;
+export function formatTimeRange(event: CalendarEvent, language: string, allDayLabel: string): string {
+  return formatEventRange(event, language, allDayLabel);
+}
+
+/** "5 / 12 Plätze belegt, 2 auf der Warteliste" -- null while the backend sends no counts. */
+export function ParticipationLine({ event }: { event: CalendarEvent }) {
+  const { t } = useLanguage();
+  if (event.attendeeCount == null) return null;
+  const waitlist = event.waitlistCount ?? 0;
+  const seats =
+    event.capacity != null
+      ? t('termine.seats-taken', { count: event.attendeeCount, capacity: event.capacity })
+      : t('termine.attendees', { count: event.attendeeCount });
+  return (
+    <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
+      {waitlist > 0 ? `${seats} · ${t('termine.waitlist-count', { count: waitlist })}` : seats}
+    </Text>
+  );
 }
 
 export function RsvpControl({ state, pending, onRsvp, onCancel }: RsvpProps) {
@@ -192,6 +207,10 @@ interface Props {
   onCancelEvent: (id: string, reason: string, notify: boolean) => Promise<void>;
 }
 
+function allDayStart(date: Date): number {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+}
+
 function atHour(day: Date, hour: number): Date {
   const d = new Date(day);
   d.setHours(hour, 0, 0, 0);
@@ -215,6 +234,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
   const [capacity, setCapacity] = useState('');
   const [startsAt, setStartsAt] = useState<Date | null>(null);
   const [endsAt, setEndsAt] = useState<Date | null>(null);
+  const [allDay, setAllDay] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -226,6 +246,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
     setCapacity(e.capacity != null ? String(e.capacity) : '');
     setStartsAt(new Date(e.startsAt));
     setEndsAt(e.endsAt ? new Date(e.endsAt) : null);
+    setAllDay(!!e.allDay);
   };
 
   // Reset only when a new target opens, not on every list refetch.
@@ -245,6 +266,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
       setCapacity('');
       setStartsAt(atHour(target.day, 18));
       setEndsAt(atHour(target.day, 20));
+      setAllDay(false);
     } else {
       setEditing(false);
     }
@@ -257,7 +279,9 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
 
   const validate = (): string | null => {
     if (!calendarId || !title.trim() || !startsAt) return t('termine.form.required');
-    if (endsAt && endsAt.getTime() <= startsAt.getTime()) return t('termine.form.end-before-start');
+    if (allDay) {
+      if (endsAt && endsAt.getTime() < allDayStart(startsAt)) return t('termine.form.end-before-start');
+    } else if (endsAt && endsAt.getTime() <= startsAt.getTime()) return t('termine.form.end-before-start');
     if (capacityNum !== null && (!Number.isInteger(capacityNum) || capacityNum <= 0)) return t('termine.form.capacity-invalid');
     return null;
   };
@@ -276,10 +300,10 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
           calendarId: calendarId!,
           title: title.trim(),
           description: description.trim() || null,
-          startsAt: startsAt!.toISOString(),
-          endsAt: endsAt ? endsAt.toISOString() : null,
+          ...(allDay ? allDayRange(startsAt!, endsAt) : { startsAt: startsAt!.toISOString(), endsAt: endsAt ? endsAt.toISOString() : null }),
           category: category.trim() || null,
           capacity: capacityNum,
+          allDay,
         },
         isCreate ? undefined : event?.id,
         isCreate ? true : notify,
@@ -348,7 +372,8 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
             year: 'numeric',
           })}
         </Text>
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{formatTimeRange(event, language)}</Text>
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{formatTimeRange(event, language, t('termine.all-day'))}</Text>
+        <ParticipationLine event={event} />
       </View>
       {event.description ? <Text className="text-foreground dark:text-foreground-dark text-sm">{event.description}</Text> : null}
       {event.category || event.capacity != null ? (
@@ -493,8 +518,22 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
               placeholderTextColor={themeColors.mutedForeground}
             />
           </Field>
-          <Field label={t('termine.form.start')}>
+          <NotifySwitch
+            label={t('termine.form.all-day')}
+            value={allDay}
+            onChange={(value) => {
+              setAllDay(value);
+              // Back to a timed event: give both ends a time of day again.
+              if (!value && startsAt) {
+                setStartsAt(atHour(startsAt, 18));
+                setEndsAt(atHour(endsAt && endsAt.getTime() > startsAt.getTime() ? endsAt : startsAt, 20));
+              }
+            }}
+            disabled={saving}
+          />
+          <Field label={allDay ? t('termine.form.first-day') : t('termine.form.start')}>
             <DateTimeField
+              mode={allDay ? 'date' : 'datetime'}
               value={startsAt}
               onChange={(value) => {
                 // Keep the duration when the start moves.
@@ -503,8 +542,8 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
               }}
             />
           </Field>
-          <Field label={t('termine.form.end')}>
-            <DateTimeField value={endsAt} onChange={setEndsAt} clearable />
+          <Field label={allDay ? t('termine.form.last-day') : t('termine.form.end')}>
+            <DateTimeField mode={allDay ? 'date' : 'datetime'} value={endsAt} onChange={setEndsAt} clearable />
           </Field>
           <Field label={t('termine.form.description')}>
             <TextInput
