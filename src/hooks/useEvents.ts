@@ -58,6 +58,8 @@ export function useEvents(clubId: string | null, range?: EventRange) {
   const [loadError, setLoadError] = useState<unknown>(null);
   // Only the latest request may write state, so a slow older month can't overwrite a newer one.
   const requestId = useRef(0);
+  const from = range?.from;
+  const to = range?.to;
 
   const refetch = useCallback(async () => {
     const id = ++requestId.current;
@@ -70,8 +72,8 @@ export function useEvents(clubId: string | null, range?: EventRange) {
     setLoadError(null);
     try {
       const params = new URLSearchParams({ clubId });
-      if (range?.from) params.append('from', range.from);
-      if (range?.to) params.append('to', range.to);
+      if (from) params.append('from', from);
+      if (to) params.append('to', to);
       const { data } = await apiFetch<{ data: CalendarEvent[] }>(`/events?${params.toString()}`);
       if (id === requestId.current) setEvents(Array.isArray(data) ? data.filter(Boolean).map(normalizeEvent) : []);
     } catch (err) {
@@ -82,7 +84,7 @@ export function useEvents(clubId: string | null, range?: EventRange) {
     } finally {
       if (id === requestId.current) setLoading(false);
     }
-  }, [clubId, range?.from, range?.to]);
+  }, [clubId, from, to]);
 
   useEffect(() => {
     void refetch();
