@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import { Plus, Repeat, Settings2 } from 'lucide-react-native';
+import { CalendarPlus, Plus, Repeat, Settings2 } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -17,6 +17,7 @@ import { apiFetch } from '@/lib/api';
 import MonthCalendar, { toDayKey } from '@/components/ui/MonthCalendar';
 import EventSheet, { formatTimeRange, ParticipationLine, RsvpControl, type EventSheetTarget, type RsvpProps, type RsvpState } from './EventSheet';
 import CalendarManageSheet from './CalendarManageSheet';
+import CalendarFeedsSheet from './CalendarFeedsSheet';
 
 interface Props {
   clubId: string;
@@ -115,6 +116,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
   const [error, setError] = useState<string | null>(null);
   const [sheetTarget, setSheetTarget] = useState<EventSheetTarget | null>(null);
   const [manageOpen, setManageOpen] = useState(false);
+  const [feedsOpen, setFeedsOpen] = useState(false);
   // The event fetched for a tapped push: shown even when it is not in the loaded month list.
   const [fetchedEvent, setFetchedEvent] = useState<CalendarEvent | null>(null);
 
@@ -249,6 +251,16 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         </View>
       ) : null}
 
+      <TouchableOpacity
+        onPress={() => setFeedsOpen(true)}
+        accessibilityRole="button"
+        className="flex-row items-center justify-center border border-border dark:border-border-dark rounded-xl mb-3"
+        style={{ gap: 6, minHeight: 44 }}
+      >
+        <CalendarPlus size={16} color={themeColors.foreground} />
+        <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('feeds.open')}</Text>
+      </TouchableOpacity>
+
       <MonthCalendar month={month} onMonthChange={handleMonthChange} selectedDay={selectedDay} onSelectDay={handleSelectDay} markers={markers} />
 
       <View className="flex-row items-center justify-between mt-4 mb-2">
@@ -289,6 +301,8 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         seriesActions={seriesActions}
         clubState={clubSettings?.state ?? null}
       />
+
+      <CalendarFeedsSheet visible={feedsOpen} onClose={() => setFeedsOpen(false)} clubId={clubId} calendars={calendars} />
 
       {canWrite ? (
         <CalendarManageSheet
