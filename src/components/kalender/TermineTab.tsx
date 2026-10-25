@@ -21,6 +21,7 @@ import CalendarFeedsSheet from './CalendarFeedsSheet';
 import EventActions, { type EventSubSheetKind } from './EventActions';
 import AttendanceSheet from './AttendanceSheet';
 import HelpersSheet from './HelpersSheet';
+import RidesSheet from './RidesSheet';
 import EventParticipation from './EventParticipation';
 import { ApiError } from '@/lib/api';
 
@@ -343,6 +344,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         }
       />
 
+      {sub?.kind === 'rides' ? <RidesSheet visible onClose={closeSub} clubId={clubId} event={sub.event} /> : null}
       {sub?.kind === 'helpers' ? <HelpersSheet visible onClose={closeSub} clubId={clubId} event={sub.event} /> : null}
       {sub?.kind === 'attendance' ? <AttendanceSheet visible onClose={closeSub} clubId={clubId} event={sub.event} /> : null}
 

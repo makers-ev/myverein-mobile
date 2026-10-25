@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { ClipboardCheck, HandHelping } from 'lucide-react-native';
+import { Car, ClipboardCheck, HandHelping } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -9,9 +9,11 @@ import type { ClubMember } from '@/hooks/useClubMembers';
 import { canOnEvent } from '@/lib/eventRights';
 import { useEventHelpers } from '@/hooks/useEventHelpers';
 import { openShiftCount, totalShifts } from '@/lib/helpers';
+import { useEventRides } from '@/hooks/useEventRides';
+import { totalFreeSeats } from '@/lib/rides';
 
 /** The sub-sheets reachable from the event detail; the owner (TermineTab) swaps the event sheet for the chosen one. */
-export type EventSubSheetKind = 'attendance' | 'helpers';
+export type EventSubSheetKind = 'attendance' | 'helpers' | 'rides';
 
 interface Props {
   clubId: string;
@@ -61,6 +63,31 @@ function HelpersAction({ clubId, event, onOpen }: { clubId: string; event: Calen
   );
 }
 
+/** "Fahrgemeinschaften": offered whenever the rides can be read (members; external guests get nothing), with the free seats as hint. */
+function RidesAction({ clubId, event, onOpen }: { clubId: string; event: CalendarEvent; onOpen: () => void }) {
+  const { t } = useLanguage();
+  const themeColors = useThemeColors();
+  const { data } = useEventRides(clubId, event.id);
+  if (!data) return null;
+  const free = totalFreeSeats(data);
+  return (
+    <TouchableOpacity
+      onPress={onOpen}
+      accessibilityRole="button"
+      className="flex-row items-center border border-border dark:border-border-dark rounded-xl px-3"
+      style={{ minHeight: 48, gap: 8 }}
+    >
+      <Car size={18} color={themeColors.foreground} />
+      <View className="flex-1 py-2">
+        <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('ride.open')}</Text>
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
+          {data.rides.length === 0 ? t('ride.action.none') : t('ride.action.summary', { rides: data.rides.length, free })}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 /** Rights-gated shortcuts of the event detail (Wave 12 M7): each one only when the permission is held for this event's scope. */
 export default function EventActions({ clubId, event, calendarDepartmentId, membership, onOpen }: Props) {
   const { t } = useLanguage();
@@ -77,5 +104,6 @@ export default function EventActions({ clubId, event, calendarDepartmentId, memb
     );
   }
   items.push(<HelpersAction key="helpers" clubId={clubId} event={event} onOpen={() => onOpen('helpers')} />);
+  items.push(<RidesAction key="rides" clubId={clubId} event={event} onOpen={() => onOpen('rides')} />);
   return <View style={{ gap: 8 }}>{items}</View>;
 }
