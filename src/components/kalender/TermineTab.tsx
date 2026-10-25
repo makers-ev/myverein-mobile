@@ -18,6 +18,8 @@ import MonthCalendar, { toDayKey } from '@/components/ui/MonthCalendar';
 import EventSheet, { formatTimeRange, ParticipationLine, RsvpControl, type EventSheetTarget, type RsvpProps, type RsvpState } from './EventSheet';
 import CalendarManageSheet from './CalendarManageSheet';
 import CalendarFeedsSheet from './CalendarFeedsSheet';
+import EventActions, { type EventSubSheetKind } from './EventActions';
+import AttendanceSheet from './AttendanceSheet';
 
 interface Props {
   clubId: string;
@@ -100,7 +102,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
   const themeColors = useThemeColors();
   const { info } = useClubInfo(clubId);
   const { calendars, refetch: refetchCalendars } = useCalendars(clubId);
-  const { can } = useOwnMembership(clubId);
+  const { can, membership } = useOwnMembership(clubId);
   const canWrite = can('calendars:write');
 
   const [month, setMonth] = useState(() => new Date());
@@ -119,6 +121,8 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
   const [feedsOpen, setFeedsOpen] = useState(false);
   // The event fetched for a tapped push: shown even when it is not in the loaded month list.
   const [fetchedEvent, setFetchedEvent] = useState<CalendarEvent | null>(null);
+  // Attendance / helper sheets replace the event sheet (no modal-to-modal stacking) and bring it back when closed.
+  const [sub, setSub] = useState<{ kind: EventSubSheetKind; event: CalendarEvent } | null>(null);
 
   useEffect(() => {
     if (!focus) return;
@@ -217,6 +221,16 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
     void refetch();
   }, [refetchCalendars, refetch]);
 
+  const openSub = (kind: EventSubSheetKind, event: CalendarEvent) => {
+    if (!events.some((e) => e.id === event.id)) setFetchedEvent(event);
+    setSub({ kind, event });
+    setSheetTarget(null);
+  };
+  const closeSub = () => {
+    if (sub) setSheetTarget({ eventId: sub.event.id });
+    setSub(null);
+  };
+
   const sheetEventId = sheetTarget && 'eventId' in sheetTarget ? sheetTarget.eventId : null;
   const sheetEvent = sheetEventId ? resolveSheetEvent(events, sheetEventId, fetchedEvent) : null;
 
@@ -300,7 +314,19 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         onCancelEvent={cancelEvent}
         seriesActions={seriesActions}
         clubState={clubSettings?.state ?? null}
+        detailExtras={
+          sheetEvent ? (
+            <EventActions
+              event={sheetEvent}
+              calendarDepartmentId={calendars.find((c) => c.id === sheetEvent.calendarId)?.departmentId ?? null}
+              membership={membership}
+              onOpen={(kind) => openSub(kind, sheetEvent)}
+            />
+          ) : null
+        }
       />
+
+      {sub?.kind === 'attendance' ? <AttendanceSheet visible onClose={closeSub} clubId={clubId} event={sub.event} /> : null}
 
       <CalendarFeedsSheet visible={feedsOpen} onClose={() => setFeedsOpen(false)} clubId={clubId} calendars={calendars} />
 

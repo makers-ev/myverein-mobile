@@ -181,6 +181,8 @@ interface Props {
   seriesActions: ReturnType<typeof useEventSeries>;
   /** Club federal state for the "skip holidays" hint (`null` = only nationwide holidays). */
   clubState?: string | null;
+  /** Rights-gated shortcuts below the details (attendance, helpers, ...); rendered by the owner. */
+  detailExtras?: React.ReactNode;
 }
 
 function allDayStart(date: Date): number {
@@ -194,7 +196,7 @@ function atHour(day: Date, hour: number): Date {
 }
 
 /** Event detail (with RSVP, edit, delete) and create/edit form in one sheet, so no modal-to-modal swap. */
-export default function EventSheet({ target, event, onClose, calendars, colorFor, canWrite, clubId, rsvp, onSave, onDelete, onCancelEvent, seriesActions, clubState }: Props) {
+export default function EventSheet({ target, event, onClose, calendars, colorFor, canWrite, clubId, rsvp, onSave, onDelete, onCancelEvent, seriesActions, clubState, detailExtras }: Props) {
   const { t, language } = useLanguage();
   const themeColors = useThemeColors();
 
@@ -423,6 +425,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
           ) : null}
         </View>
       ) : null}
+      {detailExtras}
       {event?.cancelled ? (
         <Text className="text-destructive text-sm font-bold">
           {event.cancelReason ? `${t('termine.cancelled')} - ${t('termine.cancelled-reason', { reason: event.cancelReason })}` : t('termine.cancelled')}
