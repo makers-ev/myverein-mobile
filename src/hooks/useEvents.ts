@@ -61,7 +61,7 @@ export function useEvents(clubId: string | null, range?: EventRange) {
       if (range?.from) params.append('from', range.from);
       if (range?.to) params.append('to', range.to);
       const { data } = await apiFetch<{ data: CalendarEvent[] }>(`/events?${params.toString()}`);
-      if (id === requestId.current) setEvents(data);
+      if (id === requestId.current) setEvents(Array.isArray(data) ? data : []);
     } finally {
       if (id === requestId.current) setLoading(false);
     }

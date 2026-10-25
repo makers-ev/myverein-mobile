@@ -27,7 +27,7 @@ export function useCalendars(clubId: string | null) {
     setLoading(true);
     try {
       const { data } = await apiFetch<{ data: Calendar[] }>(`/calendars?clubId=${clubId}`);
-      setCalendars(data);
+      setCalendars(Array.isArray(data) ? data : []);
     } finally {
       setLoading(false);
     }
