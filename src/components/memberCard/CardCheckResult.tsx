@@ -55,7 +55,7 @@ export default function CardCheckResult({ phase, onNext, onRetry, canRetry }: Pr
 
   return (
     <View className="flex-1" style={{ backgroundColor: bg }}>
-      <View className="flex-1 items-center justify-center p-6" accessible accessibilityRole="alert" accessibilityLiveRegion="assertive" accessibilityLabel={member ? `${word}. ${member.displayName}` : word}>
+      <View className="flex-1 items-center justify-center p-6" accessible accessibilityRole="alert" accessibilityLiveRegion="assertive" accessibilityLabel={member ? [word, member.displayName, member.category].filter(Boolean).join('. ') : notACard ? `${word}. ${t('check.result.not-card')}` : word}>
         <Icon size={96} color="#FFFFFF" />
         <Text className="font-black text-center mt-4" style={{ color: '#FFFFFF', fontSize: 40, lineHeight: 46 }}>
           {word}

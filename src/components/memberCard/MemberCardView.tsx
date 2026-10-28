@@ -41,7 +41,10 @@ export default function MemberCardView({ view, onPhotoExpired }: Props) {
   const now = new Date();
   const state = effectiveCardState(card, localDay(now));
   const showQr = canShowQr(card, localDay(now), now.getTime());
-  const band = card.club.primaryColor && HEX.test(card.club.primaryColor) ? card.club.primaryColor : colors.primary;
+  // The backend keeps the club colour at >= 4.5:1 against white; without one the theme pair is used (readable in both modes).
+  const customBand = !!card.club.primaryColor && HEX.test(card.club.primaryColor);
+  const band = customBand ? (card.club.primaryColor as string) : colors.primary;
+  const bandText = customBand ? '#FFFFFF' : colors.primaryForeground;
   const stateColor = state === 'gueltig' ? colors.success : state === 'abgelaufen' ? colors.warning : colors.destructive;
   const StateIcon = state === 'gueltig' ? CheckCircle2 : state === 'abgelaufen' ? AlertTriangle : XCircle;
   const stand = formatCardStand(view.checkedAt);
@@ -50,10 +53,10 @@ export default function MemberCardView({ view, onPhotoExpired }: Props) {
   return (
     <View className="rounded-2xl overflow-hidden border border-border dark:border-border-dark bg-card dark:bg-card-dark mb-4">
       <View style={{ backgroundColor: band }} className="px-4 py-3">
-        <Text className="font-black text-base" style={{ color: '#FFFFFF' }} numberOfLines={2}>
+        <Text className="font-black text-base" style={{ color: bandText }} numberOfLines={2}>
           {card.club.name}
         </Text>
-        <Text className="text-xs" style={{ color: '#FFFFFF' }}>
+        <Text className="text-xs" style={{ color: bandText }}>
           {t('card.title')}
         </Text>
       </View>

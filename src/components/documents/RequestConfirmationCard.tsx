@@ -20,7 +20,7 @@ interface Props {
 export default function RequestConfirmationCard({ clubId, clubMemberId, onReady, disabled }: Props) {
   const { t } = useLanguage();
   const { request, working } = useDocumentGeneration(clubId);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
 
   const run = async () => {
     setMessage(null);
@@ -28,13 +28,13 @@ export default function RequestConfirmationCard({ clubId, clubMemberId, onReady,
     if (!outcome) return;
     if (!outcome.ok) {
       const key = generationErrorKey(outcome.error);
-      setMessage(key ? t(key) : apiErrorMessage(outcome.error, t, 'confirmation.error.generic'));
+      setMessage({ text: key ? t(key) : apiErrorMessage(outcome.error, t, 'confirmation.error.generic'), error: true });
       return;
     }
     const { job } = outcome;
     if (job.status === 'fertig' && job.documentId) onReady(job.documentId);
-    else if (isJobRunning(job)) setMessage(t('confirmation.still-running'));
-    else setMessage(t(jobErrorKey(job.errorCode)));
+    else if (isJobRunning(job)) setMessage({ text: t('confirmation.still-running'), error: false });
+    else setMessage({ text: t(jobErrorKey(job.errorCode)), error: true });
   };
 
   return (
@@ -42,8 +42,8 @@ export default function RequestConfirmationCard({ clubId, clubMemberId, onReady,
       <Body muted>{t('confirmation.hint')}</Body>
       <Button label={working ? t('confirmation.working') : t('confirmation.request')} onPress={() => void run()} busy={working} disabled={disabled} />
       {message ? (
-        <Text accessibilityRole="alert" accessibilityLiveRegion="polite" className="text-destructive text-sm">
-          {message}
+        <Text accessibilityRole={message.error ? 'alert' : undefined} accessibilityLiveRegion="polite" className={message.error ? 'text-destructive text-sm' : 'text-muted-foreground dark:text-muted-foreground-dark text-sm'}>
+          {message.text}
         </Text>
       ) : null}
     </Card>
