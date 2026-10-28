@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
+import { useScopedResource } from './useScopedResource';
 
 export interface BoardMember {
   memberId: string;
@@ -21,8 +22,20 @@ export interface ClubInfoPage {
   clubId: string;
   slug: string;
   title: string;
-  contentMarkdown: string | null;
   externalUrl: string | null;
+  /** Wave 13: the list carries metadata only; the text is fetched per slug (`useClubInfoPage`). */
+  hasContent: boolean;
+  hasAttachment: boolean;
+  /** `YYYY-MM-DD`, the date the current version applies from. */
+  validFrom: string | null;
+  currentVersion: number;
+  updatedAt: string;
+}
+
+export interface ClubInfoPageDetail extends ClubInfoPage {
+  /** Stored raw: always render through `components/ui/Markdown.tsx` (no HTML, http(s)/mailto links only). */
+  contentMarkdown: string | null;
+  attachment: { documentId: string; title: string; mimeType: string; sizeBytes: number } | null;
 }
 
 interface ClubInfo {
@@ -56,4 +69,15 @@ export function useClubInfo(clubId: string | null) {
   }, [refetch]);
 
   return { info, loading, refetch };
+}
+
+/**
+ * One club document (`GET /club-info/:slug`) with its Markdown text and PDF attachment info. Loaded only while a reader is
+ * open (`slug = null` disables it); the answer is kept together with its path, so another club's or document's text is
+ * never shown and only the newest request writes (see `useScopedResource`).
+ */
+export function useClubInfoPage(clubId: string | null, slug: string | null) {
+  const path = clubId && slug ? `/club-info/${encodeURIComponent(slug)}?clubId=${encodeURIComponent(clubId)}` : null;
+  const { data, loading, error, reload } = useScopedResource<ClubInfoPageDetail>(path);
+  return { page: data, loading, error, reload };
 }
