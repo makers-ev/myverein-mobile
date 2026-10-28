@@ -1,6 +1,7 @@
 import React from 'react';
 import { act, renderHook } from '@testing-library/react-native';
 
+import { clearAllCardCache } from '@/lib/memberCardCache';
 import { unregisterPushToken } from '@/notifications/pushRegistration';
 import { AuthProvider, useAuth } from './AuthProvider';
 
@@ -8,6 +9,8 @@ jest.mock('@/notifications/pushRegistration', () => ({
   unregisterPushToken: jest.fn().mockResolvedValue(undefined),
   resumePushRegistration: jest.fn(),
 }));
+
+jest.mock('@/lib/memberCardCache', () => ({ clearAllCardCache: jest.fn().mockResolvedValue(undefined) }));
 
 jest.mock('./auth-client', () => ({
   authClient: {
@@ -138,5 +141,26 @@ describe('AuthProvider', () => {
     });
 
     expect(res).toMatchObject({ success: false, code: 'ERASURE_SOLE_OWNER' });
+  });
+
+  it('wipes the offline card copy when the session ended, but not when the session fetch merely failed offline', async () => {
+    authClient.useSession.mockReturnValue({ data: null, isPending: false, error: new Error('Network request failed'), refetch: jest.fn() });
+    await renderHook(() => useAuth(), { wrapper });
+    expect(clearAllCardCache).not.toHaveBeenCalled();
+
+    authClient.useSession.mockReturnValue({ data: null, isPending: false, error: null, refetch: jest.fn() });
+    await renderHook(() => useAuth(), { wrapper });
+    expect(clearAllCardCache).toHaveBeenCalled();
+  });
+
+  it('signOut wipes the offline card copy', async () => {
+    authClient.useSession.mockReturnValue({ data: { session: { id: 's' }, user: { id: 'u' } }, isPending: false, error: null, refetch: jest.fn() });
+    authClient.signOut.mockResolvedValue(undefined);
+    const { result } = await renderHook(() => useAuth(), { wrapper });
+    expect(clearAllCardCache).not.toHaveBeenCalled();
+    await act(async () => {
+      await result.current.signOut();
+    });
+    expect(clearAllCardCache).toHaveBeenCalled();
   });
 });

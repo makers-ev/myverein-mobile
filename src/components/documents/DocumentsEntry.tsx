@@ -54,3 +54,9 @@ export function AcknowledgementsEntry({ clubId }: { clubId: string }) {
   const hint = openCount > 0 ? t('ack.entry.open', { count: openCount }) : t('ack.entry.hint');
   return <EntryRow title={t('ack.entry')} hint={hint} onPress={() => navigate('Bestaetigungen')} />;
 }
+
+/** Entry to the digital membership card (own card; a guardian reaches the children's cards on the same screen). */
+export function MyCardEntry({ forChild }: { forChild?: boolean }) {
+  const { t } = useLanguage();
+  return <EntryRow title={forChild ? t('card.entry.child') : t('card.entry')} hint={t('card.entry.hint')} onPress={() => navigate('Mitgliedsausweis')} />;
+}

@@ -29,6 +29,7 @@ import VersammlungScreen from '@/screens/VersammlungScreen';
 import MeineDokumenteScreen from '@/screens/MeineDokumenteScreen';
 import ArchivScreen from '@/screens/ArchivScreen';
 import BestaetigungenScreen from '@/screens/BestaetigungenScreen';
+import MitgliedsausweisScreen from '@/screens/MitgliedsausweisScreen';
 import GuardianStartRedirect from '@/guardian/GuardianStartRedirect';
 import JoinClubScreen from '@/screens/JoinClubScreen';
 import CreateClubScreen from '@/screens/CreateClubScreen';
@@ -71,6 +72,7 @@ export type RootStackParamList = {
   MeineDokumente: undefined;
   Archiv: undefined;
   Bestaetigungen: undefined;
+  Mitgliedsausweis: undefined;
   Login: { returnTo?: keyof RootStackParamList } | undefined;
   Signup: undefined;
   ForgotPassword: undefined;
@@ -319,6 +321,14 @@ function MainNavigator() {
         {() => (
           <RequireAuth>
             <BestaetigungenScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Mitgliedsausweis">
+        {() => (
+          <RequireAuth>
+            <MitgliedsausweisScreen />
           </RequireAuth>
         )}
       </RootStack.Screen>
