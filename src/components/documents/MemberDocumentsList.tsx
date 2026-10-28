@@ -4,12 +4,15 @@ import { Text, View } from 'react-native';
 import { Body, Card, ErrorRetry, Loading } from '@/components/assembly/ui';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useDocumentOpen } from '@/hooks/useDocumentOpen';
+import { useGenerationTemplates } from '@/hooks/useDocumentGeneration';
 import { useMemberDocuments, type MemberDocumentsSubject } from '@/hooks/useDocuments';
+import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { formatDocumentDate, formatFileSize, memberDocumentDownloadPath } from '@/lib/documents';
 import { isNotFound } from '@/lib/ward';
 import DocumentRow from './DocumentRow';
 import OpenFileNotice from './OpenFileNotice';
+import RequestConfirmationCard from './RequestConfirmationCard';
 
 interface Props {
   subject: MemberDocumentsSubject;
@@ -26,6 +29,24 @@ export default function MemberDocumentsList({ subject, wardName, onGone }: Props
   const file = useDocumentOpen();
   const memberId = subject.kind === 'self' ? 'me' : subject.wardId;
   const gone = isNotFound(error) && !documents;
+  // "Mitgliedsbestätigung anfordern" is offered for the own storage only, and only when the backend lists the template.
+  const ownClubId = subject.kind === 'self' ? subject.clubId : null;
+  const { membership } = useOwnMembership(ownClubId);
+  const templates = useGenerationTemplates(ownClubId);
+  const canRequest = !!ownClubId && !!membership?.clubMemberId && templates.can('mitgliedsbestaetigung');
+  const openGenerated = async (documentId: string) => {
+    void reload();
+    await file.open({
+      id: documentId,
+      path: memberDocumentDownloadPath(subject.clubId, 'me', documentId),
+      title: t('confirmation.file-title'),
+      mimeType: 'application/pdf',
+    });
+  };
+  const requestCard =
+    canRequest && ownClubId && membership?.clubMemberId ? (
+      <RequestConfirmationCard clubId={ownClubId} clubMemberId={membership.clubMemberId} disabled={!!file.busyId} onReady={(id) => void openGenerated(id)} />
+    ) : null;
 
   React.useEffect(() => {
     if (gone && subject.kind === 'ward') onGone();
@@ -42,14 +63,19 @@ export default function MemberDocumentsList({ subject, wardName, onGone }: Props
   if (!documents) return <ErrorRetry message={apiErrorMessage(error, t, 'mydocs.error')} onRetry={() => void reload()} />;
   if (documents.length === 0) {
     return (
-      <Card>
-        <Body muted>{wardName ? t('mydocs.empty-child', { name: wardName }) : t('mydocs.empty')}</Body>
-      </Card>
+      <>
+        {requestCard}
+        <OpenFileNotice error={file.error} unsupported={file.unsupported} />
+        <Card>
+          <Body muted>{wardName ? t('mydocs.empty-child', { name: wardName }) : t('mydocs.empty')}</Body>
+        </Card>
+      </>
     );
   }
 
   return (
     <>
+      {requestCard}
       <Card>
         <OpenFileNotice error={file.error} unsupported={file.unsupported} />
         {documents.map((d, i) => (

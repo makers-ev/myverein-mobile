@@ -16,7 +16,19 @@ export const archiveDownloadPath = (clubId: string, documentId: string): string 
 export const memberDocumentDownloadPath = (clubId: string, memberId: string, documentId: string): string =>
   `/member-documents/${encodeURIComponent(memberId)}/${encodeURIComponent(documentId)}/download?clubId=${encodeURIComponent(clubId)}`;
 
+/** Exactly the version a confirmation request asks for (`GET /acknowledgements/:id/document`). */
+export const acknowledgementDocumentPath = (clubId: string, requestId: string): string =>
+  `/acknowledgements/${encodeURIComponent(requestId)}/document?clubId=${encodeURIComponent(clubId)}`;
+
+export type CardPdfLayout = 'card' | 'a4';
+
+/** Membership card as PDF: `me` for the own card, the ward's `club_members.id` for a child. */
+export const cardPdfPath = (clubId: string, memberKey: string, layout: CardPdfLayout): string =>
+  `/club-members/${encodeURIComponent(memberKey)}/card.pdf?clubId=${encodeURIComponent(clubId)}&layout=${layout}`;
+
 const DOWNLOAD_PATHS = [
+  /^\/acknowledgements\/[^/?#]+\/document\?clubId=[^&#]+$/,
+  /^\/club-members\/[^/?#]+\/card\.pdf\?clubId=[^&#]+&layout=(card|a4)$/,
   /^\/club-info\/[^/?#]+\/attachment\?clubId=[^&#]+$/,
   /^\/documents\/[^/?#]+\/download\?clubId=[^&#]+$/,
   /^\/member-documents\/[^/?#]+\/[^/?#]+\/download\?clubId=[^&#]+$/,
@@ -96,4 +108,38 @@ export function folderTrail(folders: ArchiveFolder[], folderId: string | null): 
     current = current.parentId ? byId.get(current.parentId) : undefined;
   }
   return trail;
+}
+
+export interface GenerationJob {
+  id: string;
+  templateId: string;
+  status: 'wartet' | 'rendert' | 'fertig' | 'fehlgeschlagen';
+  errorCode: string | null;
+  documentId: string | null;
+}
+
+export interface GenerationTemplate {
+  id: string;
+  label: string;
+  destination: 'archive' | 'person' | 'ephemeral';
+}
+
+export const isJobRunning = (job: Pick<GenerationJob, 'status'>): boolean => job.status === 'wartet' || job.status === 'rendert';
+
+/** Translation key for a failed PDF request; the machine-readable `details.code` wins, `null` = generic text. */
+export function generationErrorKey(err: unknown): string | null {
+  const code = (err as { details?: { code?: unknown } } | null)?.details?.code;
+  switch (code) {
+    case 'not_a_member_on_date':
+      return 'confirmation.error.not-member';
+    case 'as_of_in_future':
+      return 'confirmation.error.future';
+    default:
+      return null;
+  }
+}
+
+/** Translation key for a failed job (`errorCode` of the job, never raw text). */
+export function jobErrorKey(errorCode: string | null | undefined): string {
+  return errorCode === 'quota_exceeded' ? 'confirmation.error.quota' : 'confirmation.error.render';
 }

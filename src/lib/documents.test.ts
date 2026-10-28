@@ -1,5 +1,9 @@
 import {
+  acknowledgementDocumentPath,
   archiveDownloadPath,
+  cardPdfPath,
+  generationErrorKey,
+  jobErrorKey,
   canOpenArchive,
   childFolders,
   clubInfoAttachmentPath,
@@ -69,5 +73,23 @@ describe('archive folders', () => {
     expect(folderTrail(folders, 'c').map((x) => x.id)).toEqual(['a', 'c']);
     expect(folderTrail([f('x', 'y'), f('y', 'x')], 'x').length).toBeLessThanOrEqual(2);
     expect(folderTrail(folders, null)).toEqual([]);
+  });
+});
+
+describe('Wave 13 Part B paths and errors', () => {
+  it('whitelists the confirmation document and the card pdf only', () => {
+    expect(isDocumentDownloadPath(acknowledgementDocumentPath('c1', 'a1'))).toBe(true);
+    expect(isDocumentDownloadPath(cardPdfPath('c1', 'me', 'a4'))).toBe(true);
+    expect(isDocumentDownloadPath(cardPdfPath('c1', 'w1', 'card'))).toBe(true);
+    for (const bad of ['/club-members/me/card?clubId=c1', '/club-members/me/card.pdf?clubId=c1&layout=x', '/acknowledgements/a1?clubId=c1', '/club-members/me/card.pdf?layout=a4&clubId=c1']) {
+      expect(isDocumentDownloadPath(bad)).toBe(false);
+    }
+  });
+
+  it('maps generation errors by machine-readable code', () => {
+    expect(generationErrorKey({ details: { code: 'not_a_member_on_date' } })).toBe('confirmation.error.not-member');
+    expect(generationErrorKey(new Error('x'))).toBeNull();
+    expect(jobErrorKey('quota_exceeded')).toBe('confirmation.error.quota');
+    expect(jobErrorKey('render_failed')).toBe('confirmation.error.render');
   });
 });

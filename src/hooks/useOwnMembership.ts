@@ -29,6 +29,15 @@ export type ClubPermission =
   | 'helpers:write'
   | 'time:write'
   | 'time:read_rates'
+  // Wave 13: documents/PDF/membership card. Archive access itself is decided per folder, not by a global permission.
+  | 'documents:manage'
+  | 'documents:write'
+  | 'documents:read_personal'
+  | 'documents:generate'
+  | 'member_cards:verify'
+  | 'member_cards:manage'
+  | 'branding:write'
+  | 'storage:read'
   // Not a ClubPermission in the backend, but appended to /club-members/me for UI gating (board roles).
   | 'club_stats:read';
 
