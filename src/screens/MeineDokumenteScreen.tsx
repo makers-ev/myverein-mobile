@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
 import { Body, Card, Loading } from '@/components/assembly/ui';
+import ChipSelector from '@/components/documents/ChipSelector';
 import MemberDocumentsList from '@/components/documents/MemberDocumentsList';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useWards } from '@/hooks/useWards';
@@ -54,31 +55,7 @@ export default function MeineDokumenteScreen() {
             {ward ? t('mydocs.child-title', { name: selected.label }) : selected.sub}
           </Text>
         ) : null}
-        {subjects.length > 1 ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} accessibilityRole="radiogroup" contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
-            {subjects.map((s) => {
-              const active = s.key === selected?.key;
-              return (
-                <TouchableOpacity
-                  key={s.key}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: active, checked: active }}
-                  accessibilityLabel={`${s.label}, ${s.sub}`}
-                  onPress={() => setChoice(s.key)}
-                  className={`rounded-2xl px-4 justify-center border ${active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'bg-card dark:bg-card-dark border-border dark:border-border-dark'}`}
-                  style={{ minHeight: 48 }}
-                >
-                  <Text className={`text-sm font-bold ${active ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-foreground dark:text-foreground-dark'}`} numberOfLines={1}>
-                    {s.label}
-                  </Text>
-                  <Text className={`text-xs ${active ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`} numberOfLines={1}>
-                    {s.sub}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        ) : null}
+        <ChipSelector chips={subjects} selectedKey={selected?.key ?? null} onSelect={setChoice} />
       </View>
 
       <ScrollView

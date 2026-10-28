@@ -28,6 +28,7 @@ import AbstimmungenScreen from '@/screens/AbstimmungenScreen';
 import VersammlungScreen from '@/screens/VersammlungScreen';
 import MeineDokumenteScreen from '@/screens/MeineDokumenteScreen';
 import ArchivScreen from '@/screens/ArchivScreen';
+import BestaetigungenScreen from '@/screens/BestaetigungenScreen';
 import GuardianStartRedirect from '@/guardian/GuardianStartRedirect';
 import JoinClubScreen from '@/screens/JoinClubScreen';
 import CreateClubScreen from '@/screens/CreateClubScreen';
@@ -69,6 +70,7 @@ export type RootStackParamList = {
   Versammlung: { meetingId?: string } | undefined;
   MeineDokumente: undefined;
   Archiv: undefined;
+  Bestaetigungen: undefined;
   Login: { returnTo?: keyof RootStackParamList } | undefined;
   Signup: undefined;
   ForgotPassword: undefined;
@@ -309,6 +311,14 @@ function MainNavigator() {
         {() => (
           <RequireAuth>
             <ArchivScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Bestaetigungen">
+        {() => (
+          <RequireAuth>
+            <BestaetigungenScreen />
           </RequireAuth>
         )}
       </RootStack.Screen>

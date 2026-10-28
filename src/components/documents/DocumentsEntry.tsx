@@ -3,6 +3,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { navigate } from '@/navigation/navigationRef';
+import { useAcknowledgements } from '@/hooks/useAcknowledgements';
 import { useArchiveFolders } from '@/hooks/useDocuments';
 import { canOpenArchive } from '@/lib/documents';
 
@@ -40,4 +41,16 @@ export function ArchiveEntry({ clubId }: { clubId: string }) {
   const { answer } = useArchiveFolders(clubId);
   if (!canOpenArchive(answer)) return null;
   return <EntryRow title={t('archive.entry')} hint={t('archive.entry.hint')} onPress={() => navigate('Archiv')} />;
+}
+
+/**
+ * Entry to "Bestätigungen". Visible when the club has any request for the caller (open ones count in the hint); an empty
+ * list or a failed load shows no entry, so members without requests are not distracted (deny by default).
+ */
+export function AcknowledgementsEntry({ clubId }: { clubId: string }) {
+  const { t } = useLanguage();
+  const { items, openCount } = useAcknowledgements(clubId);
+  if (!items || items.length === 0) return null;
+  const hint = openCount > 0 ? t('ack.entry.open', { count: openCount }) : t('ack.entry.hint');
+  return <EntryRow title={t('ack.entry')} hint={hint} onPress={() => navigate('Bestaetigungen')} />;
 }

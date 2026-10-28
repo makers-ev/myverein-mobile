@@ -17,7 +17,7 @@ import { useOwnMembership } from '@/hooks/useOwnMembership';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import ClubDocumentReader from '@/components/documents/ClubDocumentReader';
-import { ArchiveEntry, MyDocumentsEntry } from '@/components/documents/DocumentsEntry';
+import { AcknowledgementsEntry, ArchiveEntry, MyDocumentsEntry } from '@/components/documents/DocumentsEntry';
 import { FileText } from 'lucide-react-native';
 
 type Tab = 'info' | 'mitglieder' | 'profil' | 'verwaltung';
@@ -119,6 +119,7 @@ function VereinsinfoTab({ clubId }: { clubId: string }) {
         )}
       </SectionCard>
       <MyDocumentsEntry />
+      <AcknowledgementsEntry clubId={clubId} />
       <ArchiveEntry clubId={clubId} />
       <ClubDocumentReader clubId={clubId} slug={reading?.slug ?? null} title={reading?.title ?? ''} onClose={() => setReading(null)} />
     </>
