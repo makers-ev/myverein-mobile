@@ -4,6 +4,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { navigate } from '@/navigation/navigationRef';
 import { useAcknowledgements } from '@/hooks/useAcknowledgements';
+import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { useArchiveFolders } from '@/hooks/useDocuments';
 import { canOpenArchive } from '@/lib/documents';
 
@@ -59,4 +60,12 @@ export function AcknowledgementsEntry({ clubId }: { clubId: string }) {
 export function MyCardEntry({ forChild }: { forChild?: boolean }) {
   const { t } = useLanguage();
   return <EntryRow title={forChild ? t('card.entry.child') : t('card.entry')} hint={t('card.entry.hint')} onPress={() => navigate('Mitgliedsausweis')} />;
+}
+
+/** Entry to the card check; shown only with `member_cards:verify` (deny by default while loading or on error). */
+export function CardCheckEntry({ clubId }: { clubId: string }) {
+  const { t } = useLanguage();
+  const { can } = useOwnMembership(clubId);
+  if (!can('member_cards:verify')) return null;
+  return <EntryRow title={t('check.entry')} hint={t('check.entry.hint')} onPress={() => navigate('AusweisKontrolle')} />;
 }
