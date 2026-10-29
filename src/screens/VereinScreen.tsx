@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -14,10 +15,12 @@ import ProfilTab from '@/components/verein/ProfilTab';
 import MembersTab from '@/components/verein/MembersTab';
 import VerwaltungTab, { canSeeVerwaltung } from '@/components/verein/VerwaltungTab';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
+import NoClubChoices from '@/components/onboarding/NoClubChoices';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import ClubDocumentReader from '@/components/documents/ClubDocumentReader';
-import { AcknowledgementsEntry, ArchiveEntry, CardCheckEntry, MyCardEntry, MyDocumentsEntry } from '@/components/documents/DocumentsEntry';
+import ListRow from '@/components/ui/ListRow';
+import { AcknowledgementsEntry, ArchiveEntry } from '@/components/documents/DocumentsEntry';
 import { FileText } from 'lucide-react-native';
 
 type Tab = 'info' | 'mitglieder' | 'profil' | 'verwaltung';
@@ -118,11 +121,10 @@ function VereinsinfoTab({ clubId }: { clubId: string }) {
           })
         )}
       </SectionCard>
-      <MyCardEntry />
-      <MyDocumentsEntry />
       <AcknowledgementsEntry clubId={clubId} />
-      <CardCheckEntry clubId={clubId} />
       <ArchiveEntry clubId={clubId} />
+      <ListRow title={t('assembly.dashboard.Abstimmungen')} onPress={() => navigate('Abstimmungen')} />
+      <ListRow title={t('assembly.dashboard.Versammlung')} onPress={() => navigate('Versammlung')} />
       <ClubDocumentReader clubId={clubId} slug={reading?.slug ?? null} title={reading?.title ?? ''} onClose={() => setReading(null)} />
     </>
   );
@@ -146,26 +148,7 @@ function NoClubState() {
 
   return (
     <View className="px-6 pt-6">
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t('verein.no-club.title')}</Text>
-      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-4">{t('verein.no-club.body')}</Text>
-      <View className="flex-row flex-wrap" style={{ gap: 8 }}>
-        <TouchableOpacity
-          className="bg-primary dark:bg-primary-dark rounded-lg py-3 items-center self-start px-5"
-          onPress={() => navigate('JoinClub')}
-        >
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">
-            {t('verein.no-club.join')}
-          </Text>
-        </TouchableOpacity>
-        {!registration ? (
-          <TouchableOpacity
-            className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-lg py-3 items-center self-start px-5"
-            onPress={() => navigate('CreateClub')}
-          >
-            <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.no-club.create')}</Text>
-          </TouchableOpacity>
-        ) : null}
-      </View>
+      <NoClubChoices hideCreate={!!registration} />
 
       {registration ? (
         <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mt-6">
@@ -195,7 +178,8 @@ function NoClubState() {
 export default function VereinScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const [tab, setTab] = useState<Tab>('info');
+  const route = useRoute<RouteProp<RootStackParamList, 'Verein'>>();
+  const [tab, setTab] = useState<Tab>(route.params?.tab ?? 'info');
   // Unsaved inputs in the Profil tab: leaving the tab would drop them, so ask first.
   const [profileDirty, setProfileDirty] = useState(false);
   // Leaving via navigation (back, tab bar) while the profile has unsaved inputs.
@@ -238,6 +222,11 @@ export default function VereinScreen() {
   const showVerwaltung = canSeeVerwaltung(can);
   const tabs: Tab[] = showVerwaltung ? ['info', 'mitglieder', 'verwaltung', 'profil'] : ['info', 'mitglieder', 'profil'];
   const activeTab: Tab = tabs.includes(tab) ? tab : 'info';
+  // Opened with a tab (Mehr > Mein Profil, Heute shortcuts), also when already mounted.
+  const paramTab = route.params?.tab;
+  useEffect(() => {
+    if (paramTab) setTab(paramTab);
+  }, [paramTab, route.params]);
 
   // Returning from CreateClub after an approval: reload the memberships so
   // the new club shows up (the hook instance here keeps its old state).

@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRoute, type RouteProp } from '@react-navigation/native';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { navigate } from '@/navigation/navigationRef';
 import { useMyClubs } from '@/hooks/useMyClubs';
+import NoClubChoices from '@/components/onboarding/NoClubChoices';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import OrteTab from '@/components/standorte/OrteTab';
@@ -21,7 +24,11 @@ type Tab = 'orte' | 'material';
 export default function StandorteScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const [tab, setTab] = useState<Tab>('orte');
+  const route = useRoute<RouteProp<RootStackParamList, 'Standorte'>>();
+  const [tab, setTab] = useState<Tab>(route.params?.tab ?? 'orte');
+  useEffect(() => {
+    if (route.params?.tab) setTab(route.params.tab);
+  }, [route.params]);
   const { activeClub, error: clubsError, loading: clubsLoading } = useMyClubs();
 
   return (
@@ -40,19 +47,8 @@ export default function StandorteScreen() {
       ) : !activeClub && clubsError ? (
         <ClubsLoadError />
       ) : !activeClub ? (
-        // Same "no club" copy/UX as VereinScreen -- a member with no club
-        // shouldn't see a different empty state per screen.
         <View className="px-6 pt-6">
-          <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t('verein.no-club.title')}</Text>
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-4">{t('verein.no-club.body')}</Text>
-          <TouchableOpacity
-            className="bg-primary dark:bg-primary-dark rounded-lg py-3 items-center self-start px-5"
-            onPress={() => navigate('JoinClub')}
-          >
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">
-              {t('verein.no-club.join')}
-            </Text>
-          </TouchableOpacity>
+          <NoClubChoices />
         </View>
       ) : (
         <>

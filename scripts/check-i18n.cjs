@@ -10,6 +10,7 @@
  * back to English per key at runtime (see LanguageContext `t()`), so a missing key is a prioritisation question, not
  * an error. Dynamic keys (`t(`a.${x}`)`) are not checked.
  */
+/* global __dirname */
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');

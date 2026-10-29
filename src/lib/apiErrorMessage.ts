@@ -60,7 +60,6 @@ const CODE_KEYS: Record<string, string> = {
 /** True when the request never reached the server (no connection, timeout): status 0, or a network-level failure. */
 export function isOfflineError(err: unknown): boolean {
   if (err instanceof ApiError) return err.status === 0;
-  if (err instanceof TypeError) return true;
   if (err instanceof Error) return /network request failed|failed to fetch|timed? ?out/i.test(err.message);
   return !!err && typeof err === 'object' && (err as ErrorLike).status === 0;
 }

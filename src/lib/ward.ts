@@ -112,22 +112,6 @@ export function isConsentTextOutdated(err: unknown): boolean {
   return code === 'consent_text_outdated';
 }
 
-export type NavRoute = 'Home' | 'Heute' | 'Verein' | 'Kalender' | 'Standorte' | 'Mitteilungen' | 'Notifications' | 'Settings';
-
-const CLUB_ONLY_ROUTES: readonly NavRoute[] = ['Home', 'Verein', 'Kalender', 'Standorte', 'Mitteilungen'];
-
-/**
- * Which Navbar entries show. `Heute` only for accounts with wards; a guardian-only account (no club membership) gets no
- * club entries at all (nothing to show there), just Heute, notices and settings. Guests and everyone else: unchanged.
- */
-export function visibleNavRoutes(routes: readonly NavRoute[], flags: { hasWards: boolean; guardianOnly: boolean }): NavRoute[] {
-  return routes.filter((r) => {
-    if (r === 'Heute') return flags.hasWards;
-    if (flags.guardianOnly && CLUB_ONLY_ROUTES.includes(r)) return false;
-    return true;
-  });
-}
-
 export const ABSENCE_NOTE_MAX = 200;
 
 /** Client-side mirror of the backend period check (end not before start); the server stays authoritative. */

@@ -23,6 +23,8 @@ import StandorteScreen from '@/screens/StandorteScreen';
 import ClubApplicationsScreen from '@/screens/ClubApplicationsScreen';
 import ProfileModulesScreen from '@/screens/ProfileModulesScreen';
 import HeuteScreen from '@/screens/HeuteScreen';
+import MehrScreen from '@/screens/MehrScreen';
+import SucheScreen from '@/screens/SucheScreen';
 import PrivacyCenterScreen from '@/screens/PrivacyCenterScreen';
 import AbstimmungenScreen from '@/screens/AbstimmungenScreen';
 import VersammlungScreen from '@/screens/VersammlungScreen';
@@ -57,9 +59,11 @@ import { navigationRef } from './navigationRef';
 export type RootStackParamList = {
   Home: undefined;
   Dashboard: undefined;
-  Verein: undefined;
-  Kalender: undefined;
-  Standorte: undefined;
+  Verein: { tab?: 'info' | 'mitglieder' | 'verwaltung' | 'profil' } | undefined;
+  Kalender: { tab?: 'termine' | 'verfuegbarkeit' | 'treffen'; eventId?: string } | undefined;
+  Standorte: { tab?: 'orte' | 'material' } | undefined;
+  Mehr: undefined;
+  Suche: undefined;
   JoinClub: undefined;
   CreateClub: undefined;
   ClubApplications: undefined;
@@ -130,6 +134,16 @@ function MainNavigator() {
         {() => (
           <RequireAuth>
             <KalenderScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Mehr" component={MehrScreen} />
+
+      <RootStack.Screen name="Suche">
+        {() => (
+          <RequireAuth>
+            <SucheScreen />
           </RequireAuth>
         )}
       </RootStack.Screen>
