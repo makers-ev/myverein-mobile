@@ -12,6 +12,7 @@ import WardSwitcher from '@/components/guardian/WardSwitcher';
 import AbsenceSection from '@/components/privacy/AbsenceSection';
 import ConsentsSection from '@/components/privacy/ConsentsSection';
 import WardEventsSection from '@/components/guardian/WardEventsSection';
+import { AcknowledgementsEntry, MyCardEntry, MyDocumentsEntry } from '@/components/documents/DocumentsEntry';
 import WardContactsSection from '@/components/guardian/WardContactsSection';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
@@ -107,6 +108,9 @@ export default function HeuteScreen({ navigation }: Props) {
             onGone={handleGone}
           />
           <WardContactsSection contacts={contacts} />
+          <MyCardEntry forChild />
+          <AcknowledgementsEntry clubId={selected.clubId} />
+          <MyDocumentsEntry />
         </ScrollView>
       )}
     </SafeAreaView>

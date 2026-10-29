@@ -1,4 +1,7 @@
-import React, { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+
+import { clearDocumentFileCache } from '@/lib/media';
+import { clearAllCardCache } from '@/lib/memberCardCache';
 
 import { resumePushRegistration, unregisterPushToken } from '@/notifications/pushRegistration';
 import { authClient, websiteUrl } from './auth-client';
@@ -76,7 +79,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { data: session, isPending, refetch: refetchSession } = authClient.useSession();
+  const { data: session, isPending, error: sessionError, refetch: refetchSession } = authClient.useSession();
   const [twoFactorPending, setTwoFactorPending] = useState(false);
 
   // @better-auth/expo's post-mutation session refresh can race the native
@@ -166,9 +169,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { success: true };
   }, []);
 
+  // The offline membership-card copy must not outlive the session: wiped when the session ended without a network error
+  // (expired, revoked elsewhere, signed out) -- an offline start (session fetch failed) keeps it, that is its purpose.
+  useEffect(() => {
+    if (!isPending && !session && !sessionError) {
+      void clearAllCardCache();
+      clearDocumentFileCache();
+      clearDocumentFileCache();
+    }
+  }, [isPending, session, sessionError]);
+
+  // Downloaded documents of a session that was killed before its screen closed.
+  useEffect(() => {
+    clearDocumentFileCache();
+  }, []);
+
   const signOut = useCallback(async () => {
     // Needs the still-valid session; best effort and time-boxed, never blocks the logout.
     try {
+      void clearAllCardCache();
       await unregisterPushToken();
       await authClient.signOut();
       setTwoFactorPending(false);
@@ -188,6 +207,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: error.message ?? 'Unable to delete account.', code: typeof error.code === 'string' ? error.code : undefined };
     }
 
+    void clearAllCardCache();
+    clearDocumentFileCache();
     scheduleSessionRefetch();
     return { success: true };
   }, [scheduleSessionRefetch]);

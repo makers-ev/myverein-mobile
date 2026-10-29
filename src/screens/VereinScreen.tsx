@@ -16,6 +16,9 @@ import VerwaltungTab, { canSeeVerwaltung } from '@/components/verein/VerwaltungT
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
+import ClubDocumentReader from '@/components/documents/ClubDocumentReader';
+import { AcknowledgementsEntry, ArchiveEntry, CardCheckEntry, MyCardEntry, MyDocumentsEntry } from '@/components/documents/DocumentsEntry';
+import { FileText } from 'lucide-react-native';
 
 type Tab = 'info' | 'mitglieder' | 'profil' | 'verwaltung';
 
@@ -59,6 +62,8 @@ function VereinsinfoTab({ clubId }: { clubId: string }) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { info, loading } = useClubInfo(clubId);
+  // The document being read (slug + title from the list); the text itself is fetched by the reader per slug.
+  const [reading, setReading] = useState<{ slug: string; title: string } | null>(null);
 
   if (loading || !info) {
     return (
@@ -92,16 +97,33 @@ function VereinsinfoTab({ clubId }: { clubId: string }) {
         {info.pages.length === 0 ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.info.pages.empty')}</Text>
         ) : (
-          info.pages.map((p, i) => (
-            <View
-              key={p.id}
-              className={`py-2 ${i === info.pages.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}
-            >
-              <Text className="text-foreground dark:text-foreground-dark text-sm font-medium">{p.title}</Text>
-            </View>
-          ))
+          info.pages.map((p, i) => {
+            const openable = p.hasContent || p.hasAttachment || !!p.externalUrl;
+            return (
+              <TouchableOpacity
+                key={p.id}
+                disabled={!openable}
+                onPress={() => setReading({ slug: p.slug, title: p.title })}
+                accessibilityRole="button"
+                accessibilityLabel={p.title}
+                accessibilityHint={t('docs.reader.open-hint', { title: p.title })}
+                className={`flex-row items-center py-2 ${i === info.pages.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}
+                style={{ minHeight: 44, gap: 10 }}
+              >
+                <FileText size={18} color={themeColors.primary} />
+                <Text className="text-foreground dark:text-foreground-dark text-sm font-medium flex-1">{p.title}</Text>
+                {p.hasAttachment ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{t('docs.reader.has-pdf')}</Text> : null}
+              </TouchableOpacity>
+            );
+          })
         )}
       </SectionCard>
+      <MyCardEntry />
+      <MyDocumentsEntry />
+      <AcknowledgementsEntry clubId={clubId} />
+      <CardCheckEntry clubId={clubId} />
+      <ArchiveEntry clubId={clubId} />
+      <ClubDocumentReader clubId={clubId} slug={reading?.slug ?? null} title={reading?.title ?? ''} onClose={() => setReading(null)} />
     </>
   );
 }

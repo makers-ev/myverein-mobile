@@ -26,6 +26,11 @@ import HeuteScreen from '@/screens/HeuteScreen';
 import PrivacyCenterScreen from '@/screens/PrivacyCenterScreen';
 import AbstimmungenScreen from '@/screens/AbstimmungenScreen';
 import VersammlungScreen from '@/screens/VersammlungScreen';
+import MeineDokumenteScreen from '@/screens/MeineDokumenteScreen';
+import ArchivScreen from '@/screens/ArchivScreen';
+import BestaetigungenScreen from '@/screens/BestaetigungenScreen';
+import AusweisKontrolleScreen from '@/screens/AusweisKontrolleScreen';
+import MitgliedsausweisScreen from '@/screens/MitgliedsausweisScreen';
 import GuardianStartRedirect from '@/guardian/GuardianStartRedirect';
 import JoinClubScreen from '@/screens/JoinClubScreen';
 import CreateClubScreen from '@/screens/CreateClubScreen';
@@ -65,6 +70,11 @@ export type RootStackParamList = {
   PrivacyCenter: undefined;
   Abstimmungen: { ballotId?: string } | undefined;
   Versammlung: { meetingId?: string } | undefined;
+  MeineDokumente: undefined;
+  Archiv: undefined;
+  Bestaetigungen: undefined;
+  Mitgliedsausweis: undefined;
+  AusweisKontrolle: undefined;
   Login: { returnTo?: keyof RootStackParamList } | undefined;
   Signup: undefined;
   ForgotPassword: undefined;
@@ -289,6 +299,46 @@ function MainNavigator() {
         {(props) => (
           <RequireAuth>
             <VersammlungScreen {...props} />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="MeineDokumente">
+        {() => (
+          <RequireAuth>
+            <MeineDokumenteScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Archiv">
+        {() => (
+          <RequireAuth>
+            <ArchivScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Bestaetigungen">
+        {() => (
+          <RequireAuth>
+            <BestaetigungenScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Mitgliedsausweis">
+        {() => (
+          <RequireAuth>
+            <MitgliedsausweisScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="AusweisKontrolle">
+        {() => (
+          <RequireAuth>
+            <AusweisKontrolleScreen />
           </RequireAuth>
         )}
       </RootStack.Screen>

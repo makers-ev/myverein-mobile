@@ -1,4 +1,4 @@
-import { discardPickerFile } from './media';
+import { discardPickerFile, downloadDocumentFile } from './media';
 
 const mockDeleted: string[] = [];
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
@@ -31,5 +31,14 @@ describe('discardPickerFile', () => {
     discardPickerFile('file:///var/mobile/Media/DCIM/IMG_1.jpg');
     discardPickerFile('content://media/external/images/1');
     expect(mockDeleted).toEqual([]);
+  });
+});
+
+describe('downloadDocumentFile', () => {
+  it('refuses any path outside the document download routes before a request is made', async () => {
+    for (const path of ['/media/abc', '/auth/get-session', 'https://evil.example/documents/d1/download?clubId=c1']) {
+      const result = await downloadDocumentFile(path, 'Satzung', 'application/pdf');
+      expect(result).toMatchObject({ error: { status: 404 } });
+    }
   });
 });

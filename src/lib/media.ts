@@ -3,6 +3,7 @@ import { Directory, File, Paths, UploadType } from 'expo-file-system';
 import { authClient, backendUrl } from '@/auth/auth-client';
 import { ApiError, apiErrorFromResponse } from '@/lib/api';
 import { isReviewFilePath } from '@/lib/applicationReview';
+import { isDocumentDownloadPath, localDocumentFilename } from '@/lib/documents';
 import { progressPercent } from '@/lib/formSchema';
 import { sanitizeMediaFilename } from '@/lib/mediaKey';
 
@@ -59,6 +60,8 @@ const TRANSFER_TIMEOUT_MS = 30_000;
 // Form photos go through the media layer (EXIF stripping, magic bytes, quota) on possibly slow mobile networks: the upload
 // is only cancelled after this long WITHOUT progress, so a big photo on a slow line still completes.
 const FORM_UPLOAD_IDLE_TIMEOUT_MS = 60_000;
+// Documents are up to 10 MB PDFs/scans, so a download gets longer than the 30 s used for photos.
+const DOCUMENT_TRANSFER_TIMEOUT_MS = 90_000;
 
 // `File.upload()` is a native request, not `authClient.$fetch` -- the
 // session cookie isn't attached automatically, so it's read from the same
@@ -342,6 +345,80 @@ export async function downloadReviewImage(
     }
     if (!controller.signal.aborted && err instanceof Error) {
       // expo-file-system reports a non-2xx answer as `UnableToDownload` with the status code in the message.
+      const status = /\b([45]\d{2})\b/.exec(err.message)?.[1];
+      if (status) return { error: new ApiError(Number(status), 'UNKNOWN', 'Download failed') };
+    }
+    return { error: err };
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', forwardAbort);
+  }
+}
+
+const DOCUMENT_CACHE_DIR = 'document-files';
+/** Folder name of one screen instance (`useDocumentOpen`), so closing one screen never deletes another one's file. */
+const safeScope = (scope: string): string => scope.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 40) || 'shared';
+let documentFileCounter = 0;
+
+/**
+ * Deletes every file `downloadDocumentFile` left in the app cache. Called when a document screen closes and on its next
+ * open, so personal documents (receipts, confirmations) cannot linger after a crashed or killed session. With a `scope`
+ * only that instance's files go; without one everything goes (app start, sign-out, session end).
+ */
+export function clearDocumentFileCache(scope?: string): void {
+  try {
+    const dir = scope ? new Directory(Paths.cache, DOCUMENT_CACHE_DIR, safeScope(scope)) : new Directory(Paths.cache, DOCUMENT_CACHE_DIR);
+    if (dir.exists) dir.delete();
+  } catch {
+    // best-effort cache cleanup
+  }
+}
+
+/**
+ * Authenticated download of a document (club document attachment, archive document, personal document) into a private
+ * file in the app cache (`document-files/`), named after `title` with a matching extension so the viewer app recognises
+ * it. The backend streams only after its own permission check and audits sensitive downloads; there is no public or
+ * signed link, so the session cookie is sent -- and only to the three document routes (`isDocumentDownloadPath`, anything
+ * else is refused before a request is made). Nothing is persisted; the caller opens/shares the file and
+ * `clearDocumentFileCache()` removes it later. Failures come back as an `ApiError` (status parsed from the native error)
+ * or a plain `Error` (abort, local problem).
+ */
+export async function downloadDocumentFile(
+  path: string,
+  title: string,
+  mimeType: string | null | undefined,
+  signal?: AbortSignal,
+  scope?: string,
+): Promise<{ uri: string; mimeType: string } | { error: unknown }> {
+  if (!isDocumentDownloadPath(path)) return { error: new ApiError(404, 'NOT_FOUND', 'Not a document path') };
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), DOCUMENT_TRANSFER_TIMEOUT_MS);
+  const forwardAbort = () => controller.abort();
+  if (signal?.aborted) controller.abort();
+  else signal?.addEventListener('abort', forwardAbort, { once: true });
+  let dest: File | null = null;
+  try {
+    const dir = scope ? new Directory(Paths.cache, DOCUMENT_CACHE_DIR, safeScope(scope)) : new Directory(Paths.cache, DOCUMENT_CACHE_DIR);
+    dir.create({ idempotent: true, intermediates: true });
+    // A counter-named sub folder keeps the readable file name while two downloads of the same title cannot collide.
+    const sub = new Directory(dir, `${Date.now()}-${++documentFileCounter}`);
+    sub.create({ idempotent: true, intermediates: true });
+    dest = new File(sub, localDocumentFilename(title, mimeType));
+    const cookie = await getSessionCookie();
+    const downloaded = await File.downloadFileAsync(`${backendUrl}${path}`, dest, {
+      headers: { Cookie: cookie },
+      idempotent: true,
+      signal: controller.signal,
+    });
+    return { uri: downloaded.uri, mimeType: mimeType || 'application/octet-stream' };
+  } catch (err) {
+    try {
+      // A failed Android download can leave a partial file behind.
+      if (dest?.exists) dest.delete();
+    } catch {
+      // best-effort cache cleanup
+    }
+    if (!controller.signal.aborted && err instanceof Error) {
       const status = /\b([45]\d{2})\b/.exec(err.message)?.[1];
       if (status) return { error: new ApiError(Number(status), 'UNKNOWN', 'Download failed') };
     }
