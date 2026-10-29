@@ -43,11 +43,14 @@ describe('card state', () => {
 
 describe('cache record', () => {
   it('drops signed urls and rejects another account or garbage', () => {
-    const cached = toCachedCard(card, 'u1', 'file:///p.jpg', '2026-10-28T12:00:00Z', new Date('2026-10-28T12:00:00Z'));
+    const cached = toCachedCard(card, 'u1', 'c1_me.jpg', '2026-10-28T12:00:00Z', new Date('2026-10-28T12:00:00Z'));
     const raw = JSON.stringify(cached);
     expect(raw).not.toContain('signed');
     expect(parseCachedCard(raw, 'u1')?.card.token).toBe(card.token);
     expect(parseCachedCard(raw, 'u2')).toBeNull();
+    expect(raw).not.toContain('file:');
+    expect(parseCachedCard(raw, 'u1')?.photoFile).toBe('c1_me.jpg');
+    expect(parseCachedCard(raw.replace('c1_me.jpg', '../../x.jpg'), 'u1')?.photoFile).toBeNull();
     expect(parseCachedCard('{', 'u1')).toBeNull();
     expect(parseCachedCard(null, 'u1')).toBeNull();
     expect(parseCachedCard(JSON.stringify({ userId: 'u1', card: { state: 'x' } }), 'u1')).toBeNull();
@@ -57,7 +60,7 @@ describe('cache record', () => {
     expect(cardSubjectKey('c 1', 'a/b')).toBe('c_1_a_b');
     expect(photoNeedsRefresh(null, true, 0)).toBe(true);
     expect(photoNeedsRefresh(null, false, 0)).toBe(false);
-    const c = { photoUri: 'x', photoSavedAt: '2026-10-28T12:00:00Z' };
+    const c = { photoFile: 'x.jpg', photoSavedAt: '2026-10-28T12:00:00Z' };
     expect(photoNeedsRefresh(c, true, Date.parse('2026-10-28T13:00:00Z'))).toBe(false);
     expect(photoNeedsRefresh(c, true, Date.parse('2026-10-30T13:00:00Z'))).toBe(true);
   });

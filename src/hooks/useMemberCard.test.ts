@@ -8,7 +8,7 @@ import { useMemberCard, type MemberCardSubject } from './useMemberCard';
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
 jest.mock('@/auth/AuthProvider', () => ({ useAuth: () => ({ isAuthenticated: true, user: { id: 'u1' } }) }));
 jest.mock('@/lib/api', () => ({ ...jest.requireActual('@/lib/api'), apiFetch: jest.fn() }));
-jest.mock('@/lib/memberCardCache', () => ({ loadCachedCard: jest.fn(), saveCachedCard: jest.fn(), dropCachedCard: jest.fn() }));
+jest.mock('@/lib/memberCardCache', () => ({ cardPhotoUri: jest.fn(() => null), loadCachedCard: jest.fn(), saveCachedCard: jest.fn(), dropCachedCard: jest.fn() }));
 const apiFetchMock = apiFetch as jest.Mock;
 const loadMock = loadCachedCard as jest.Mock;
 const saveMock = saveCachedCard as jest.Mock;
@@ -19,7 +19,7 @@ const card = (over: Partial<MemberCard> = {}): MemberCard => ({
   member: { displayName: 'Mia', memberNumber: null, category: null, initials: 'M' }, club: { name: 'TSV', primaryColor: null, accentColor: null, logo: null },
   photo: null, photoConsent: false, checkedAt: '2026-10-28T12:00:00Z', ...over,
 });
-const cached = (): CachedCard => ({ userId: 'u1', card: { ...card(), club: { name: 'TSV', primaryColor: null, accentColor: null } }, photoUri: null, photoSavedAt: null, savedAt: '2026-10-27T12:00:00Z' });
+const cached = (): CachedCard => ({ userId: 'u1', card: { ...card(), club: { name: 'TSV', primaryColor: null, accentColor: null } }, photoFile: null, photoSavedAt: null, savedAt: '2026-10-27T12:00:00Z' });
 
 function deferred<T>() {
   let resolve: (v: T) => void = () => {};

@@ -25,11 +25,13 @@ export interface MemberCard {
 export interface CachedCard {
   userId: string;
   card: Omit<MemberCard, 'photo' | 'club'> & { club: Omit<MemberCard['club'], 'logo'> };
-  photoUri: string | null;
+  /** File name only (`<subject>.jpg` in the app document directory); the path is rebuilt on read, never stored. */
+  photoFile: string | null;
   photoSavedAt: string | null;
   savedAt: string;
 }
 
+const PHOTO_FILE = /^[A-Za-z0-9._-]{1,130}\.jpg$/;
 const CARD_STATES: readonly string[] = ['gueltig', 'abgelaufen', 'ausgetreten', 'ungueltig', 'nicht_ausgestellt'];
 
 /** Storage-safe key (SecureStore allows letters, digits, `.`, `-`, `_`) for one card of one club. */
@@ -56,12 +58,12 @@ export function canShowQr(card: Pick<MemberCard, 'state' | 'validUntil' | 'token
   return true;
 }
 
-export function toCachedCard(card: MemberCard, userId: string, photoUri: string | null, photoSavedAt: string | null, now: Date): CachedCard {
+export function toCachedCard(card: MemberCard, userId: string, photoFile: string | null, photoSavedAt: string | null, now: Date): CachedCard {
   const { photo: _photo, club, ...rest } = card;
   const { logo: _logo, ...clubRest } = club;
   void _photo;
   void _logo;
-  return { userId, card: { ...rest, club: clubRest }, photoUri, photoSavedAt, savedAt: now.toISOString() };
+  return { userId, card: { ...rest, club: clubRest }, photoFile, photoSavedAt, savedAt: now.toISOString() };
 }
 
 /** Parses a stored record; anything malformed or of another account is dropped (`null`). */
@@ -74,7 +76,7 @@ export function parseCachedCard(raw: string | null, userId: string): CachedCard 
     return {
       userId: v.userId,
       card: c,
-      photoUri: typeof v.photoUri === 'string' ? v.photoUri : null,
+      photoFile: typeof v.photoFile === 'string' && PHOTO_FILE.test(v.photoFile) ? v.photoFile : null,
       photoSavedAt: typeof v.photoSavedAt === 'string' ? v.photoSavedAt : null,
       savedAt: typeof v.savedAt === 'string' ? v.savedAt : c.checkedAt,
     };
@@ -105,9 +107,9 @@ export function formatCardStand(iso: string | null | undefined): string {
 }
 
 /** A stored photo is refreshed at most once a day (the signed URL is new on every card read). */
-export function photoNeedsRefresh(cached: Pick<CachedCard, 'photoUri' | 'photoSavedAt'> | null, hasPhoto: boolean, now: number): boolean {
+export function photoNeedsRefresh(cached: Pick<CachedCard, 'photoFile' | 'photoSavedAt'> | null, hasPhoto: boolean, now: number): boolean {
   if (!hasPhoto) return false;
-  if (!cached?.photoUri || !cached.photoSavedAt) return true;
+  if (!cached?.photoFile || !cached.photoSavedAt) return true;
   const saved = Date.parse(cached.photoSavedAt);
   return !Number.isFinite(saved) || now - saved > 24 * 60 * 60 * 1000;
 }

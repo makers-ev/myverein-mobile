@@ -4,7 +4,7 @@ import { AppState } from 'react-native';
 import { useAuth } from '@/auth/AuthProvider';
 import { apiFetch } from '@/lib/api';
 import { type CachedCard, type MemberCard, cardSubjectKey, isCardGone, isOfflineFailure, shouldCacheCard } from '@/lib/memberCard';
-import { dropCachedCard, loadCachedCard, saveCachedCard } from '@/lib/memberCardCache';
+import { cardPhotoUri, dropCachedCard, loadCachedCard, saveCachedCard } from '@/lib/memberCardCache';
 
 /** Whose card: the caller's own (`me`) or a ward's (`club_members.id`, guardian with a live link). */
 export type MemberCardSubject = { kind: 'self'; clubId: string } | { kind: 'ward'; clubId: string; wardId: string };
@@ -106,11 +106,11 @@ export function useMemberCard(subject: MemberCardSubject | null) {
   const current = slot && slot.key === key && enabled ? slot : null;
   let view: MemberCardView | null = null;
   if (current?.live) {
-    view = { card: current.live, photoUri: current.cached?.photoUri ?? current.live.photo?.url ?? null, fromCache: false, checkedAt: current.live.checkedAt };
+    view = { card: current.live, photoUri: cardPhotoUri(current.cached?.photoFile) ?? current.live.photo?.url ?? null, fromCache: false, checkedAt: current.live.checkedAt };
     // Prefer the signed URL while online; the local file is the offline fallback.
     if (current.live.photo?.url) view.photoUri = current.live.photo.url;
   } else if (current?.cached) {
-    view = { card: current.cached.card, photoUri: current.cached.photoUri, fromCache: true, checkedAt: current.cached.card.checkedAt };
+    view = { card: current.cached.card, photoUri: cardPhotoUri(current.cached.photoFile), fromCache: true, checkedAt: current.cached.card.checkedAt };
   }
   const gone = !!current && current.settled && !current.live && !current.cached && isCardGone(current.error);
   const offline = !!current && current.settled && !current.live && !!current.cached && isOfflineFailure(current.error);

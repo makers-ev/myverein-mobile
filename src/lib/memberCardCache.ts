@@ -52,13 +52,25 @@ export function loadCachedCard(subject: string, userId: string): Promise<CachedC
   });
 }
 
+/** Local photo file of a cached card (rebuilt from the stored file name), or `null` when it is gone. */
+export function cardPhotoUri(photoFile: string | null | undefined): string | null {
+  if (!photoFile) return null;
+  try {
+    const file = new File(new Directory(Paths.document, PHOTO_DIR), photoFile);
+    return file.exists ? file.uri : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Downloads the photo; returns the stored file name. */
 async function downloadPhoto(subject: string, url: string): Promise<string | null> {
   try {
     const dir = new Directory(Paths.document, PHOTO_DIR);
     dir.create({ idempotent: true, intermediates: true });
     const dest = new File(dir, `${subject}.jpg`);
     const downloaded = await File.downloadFileAsync(url, dest, { idempotent: true });
-    return downloaded.uri;
+    return downloaded.name;
   } catch {
     return null;
   }
@@ -71,25 +83,25 @@ export function saveCachedCard(subject: string, card: MemberCard, userId: string
     try {
       if (generation !== wipeGeneration) return null;
       const now = Date.now();
-      let photoUri = previous?.photoUri ?? null;
+      let photoFile = previous?.photoFile ?? null;
       let photoSavedAt = previous?.photoSavedAt ?? null;
       if (card.photo?.url && photoNeedsRefresh(previous, true, now)) {
-        const uri = await downloadPhoto(subject, card.photo.url);
-        if (uri) {
-          photoUri = uri;
+        const name = await downloadPhoto(subject, card.photo.url);
+        if (name) {
+          photoFile = name;
           photoSavedAt = new Date(now).toISOString();
         }
       } else if (!card.photo) {
         // No photo (consent withdrawn or none): the local copy goes too.
         deletePhoto(subject);
-        photoUri = null;
+        photoFile = null;
         photoSavedAt = null;
       }
       if (generation !== wipeGeneration) {
         deletePhoto(subject);
         return null;
       }
-      const record = toCachedCard(card, userId, photoUri, photoSavedAt, new Date(now));
+      const record = toCachedCard(card, userId, photoFile, photoSavedAt, new Date(now));
       await writeItem(secureStore, entryKey(subject), JSON.stringify(record));
       const index = await readIndex();
       if (!index.includes(subject)) await writeIndex([...index, subject]);

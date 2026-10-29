@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, Text, View } from 'react-native';
 import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
@@ -64,7 +64,7 @@ export default function MemberCardView({ view, onPhotoExpired }: Props) {
       <View className="p-4 flex-row items-center" style={{ gap: 16 }}>
         {view.photoUri ? (
           view.photoUri.startsWith('file:') ? (
-            <Image source={{ uri: view.photoUri }} style={{ width: 88, height: 110, borderRadius: 8 }} resizeMode="cover" accessibilityIgnoresInvertColors />
+            <LocalPhoto uri={view.photoUri} initials={card.member.initials} />
           ) : (
             <SignedImage uri={view.photoUri} style={{ width: 88, height: 110, borderRadius: 8 }} onExpired={onPhotoExpired} fallback={<Initials text={card.member.initials} />} />
           )
@@ -118,4 +118,11 @@ function Notice({ text, live }: { text: string; live?: boolean }) {
       {text}
     </Text>
   );
+}
+
+/** The offline photo file; a missing or unreadable file falls back to the initials. */
+function LocalPhoto({ uri, initials }: { uri: string; initials: string }) {
+  const [failed, setFailed] = useState<string | null>(null);
+  if (failed === uri) return <Initials text={initials} />;
+  return <Image source={{ uri }} style={{ width: 88, height: 110, borderRadius: 8 }} resizeMode="cover" accessibilityIgnoresInvertColors onError={() => setFailed(uri)} />;
 }
