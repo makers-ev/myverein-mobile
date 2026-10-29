@@ -1,5 +1,6 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+import { clearDocumentFileCache } from '@/lib/media';
 import { clearAllCardCache } from '@/lib/memberCardCache';
 
 import { resumePushRegistration, unregisterPushToken } from '@/notifications/pushRegistration';
@@ -171,8 +172,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // The offline membership-card copy must not outlive the session: wiped when the session ended without a network error
   // (expired, revoked elsewhere, signed out) -- an offline start (session fetch failed) keeps it, that is its purpose.
   useEffect(() => {
-    if (!isPending && !session && !sessionError) void clearAllCardCache();
+    if (!isPending && !session && !sessionError) {
+      void clearAllCardCache();
+      clearDocumentFileCache();
+      clearDocumentFileCache();
+    }
   }, [isPending, session, sessionError]);
+
+  // Downloaded documents of a session that was killed before its screen closed.
+  useEffect(() => {
+    clearDocumentFileCache();
+  }, []);
 
   const signOut = useCallback(async () => {
     // Needs the still-valid session; best effort and time-boxed, never blocks the logout.
@@ -198,6 +208,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     void clearAllCardCache();
+    clearDocumentFileCache();
     scheduleSessionRefetch();
     return { success: true };
   }, [scheduleSessionRefetch]);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { act, renderHook } from '@testing-library/react-native';
 
+import { clearDocumentFileCache } from '@/lib/media';
 import { clearAllCardCache } from '@/lib/memberCardCache';
 import { unregisterPushToken } from '@/notifications/pushRegistration';
 import { AuthProvider, useAuth } from './AuthProvider';
@@ -10,6 +11,7 @@ jest.mock('@/notifications/pushRegistration', () => ({
   resumePushRegistration: jest.fn(),
 }));
 
+jest.mock('@/lib/media', () => ({ clearDocumentFileCache: jest.fn() }));
 jest.mock('@/lib/memberCardCache', () => ({ clearAllCardCache: jest.fn().mockResolvedValue(undefined) }));
 
 jest.mock('./auth-client', () => ({
@@ -151,6 +153,7 @@ describe('AuthProvider', () => {
     authClient.useSession.mockReturnValue({ data: null, isPending: false, error: null, refetch: jest.fn() });
     await renderHook(() => useAuth(), { wrapper });
     expect(clearAllCardCache).toHaveBeenCalled();
+    expect(clearDocumentFileCache).toHaveBeenCalledWith();
   });
 
   it('signOut wipes the offline card copy', async () => {
@@ -162,5 +165,6 @@ describe('AuthProvider', () => {
       await result.current.signOut();
     });
     expect(clearAllCardCache).toHaveBeenCalled();
+    expect(clearDocumentFileCache).toHaveBeenCalledWith();
   });
 });

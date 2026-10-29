@@ -21,20 +21,21 @@ beforeEach(() => {
 });
 
 describe('useDocumentOpen', () => {
-  it('downloads, shares and clears the cache folder on mount and unmount', async () => {
+  it('downloads, shares and clears only its own cache folder on unmount', async () => {
     download.mockResolvedValue({ uri: 'file:///cache/document-files/1/Satzung.pdf', mimeType: 'application/pdf' });
     share.mockResolvedValue(true);
     const { result, unmount } = await renderHook(() => useDocumentOpen());
-    expect(clear).toHaveBeenCalledTimes(1);
+    expect(clear).not.toHaveBeenCalled();
     await act(async () => {
       await result.current.open(doc);
     });
-    expect(download).toHaveBeenCalledWith(doc.path, 'Satzung', 'application/pdf', expect.any(AbortSignal));
+    expect(download).toHaveBeenCalledWith(doc.path, 'Satzung', 'application/pdf', expect.any(AbortSignal), expect.any(String));
     expect(share).toHaveBeenCalledWith('file:///cache/document-files/1/Satzung.pdf', 'application/pdf', 'Satzung');
     expect(result.current.busyId).toBeNull();
     expect(result.current.error).toBeNull();
     await unmount();
-    expect(clear).toHaveBeenCalledTimes(2);
+    expect(clear).toHaveBeenCalledTimes(1);
+    expect(clear).toHaveBeenCalledWith(download.mock.calls[0][4]);
   });
 
   it('exposes a failed download and does not share', async () => {

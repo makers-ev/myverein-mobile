@@ -356,15 +356,18 @@ export async function downloadReviewImage(
 }
 
 const DOCUMENT_CACHE_DIR = 'document-files';
+/** Folder name of one screen instance (`useDocumentOpen`), so closing one screen never deletes another one's file. */
+const safeScope = (scope: string): string => scope.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 40) || 'shared';
 let documentFileCounter = 0;
 
 /**
  * Deletes every file `downloadDocumentFile` left in the app cache. Called when a document screen closes and on its next
- * open, so personal documents (receipts, confirmations) cannot linger after a crashed or killed session.
+ * open, so personal documents (receipts, confirmations) cannot linger after a crashed or killed session. With a `scope`
+ * only that instance's files go; without one everything goes (app start, sign-out, session end).
  */
-export function clearDocumentFileCache(): void {
+export function clearDocumentFileCache(scope?: string): void {
   try {
-    const dir = new Directory(Paths.cache, DOCUMENT_CACHE_DIR);
+    const dir = scope ? new Directory(Paths.cache, DOCUMENT_CACHE_DIR, safeScope(scope)) : new Directory(Paths.cache, DOCUMENT_CACHE_DIR);
     if (dir.exists) dir.delete();
   } catch {
     // best-effort cache cleanup
@@ -385,6 +388,7 @@ export async function downloadDocumentFile(
   title: string,
   mimeType: string | null | undefined,
   signal?: AbortSignal,
+  scope?: string,
 ): Promise<{ uri: string; mimeType: string } | { error: unknown }> {
   if (!isDocumentDownloadPath(path)) return { error: new ApiError(404, 'NOT_FOUND', 'Not a document path') };
   const controller = new AbortController();
@@ -394,7 +398,7 @@ export async function downloadDocumentFile(
   else signal?.addEventListener('abort', forwardAbort, { once: true });
   let dest: File | null = null;
   try {
-    const dir = new Directory(Paths.cache, DOCUMENT_CACHE_DIR);
+    const dir = scope ? new Directory(Paths.cache, DOCUMENT_CACHE_DIR, safeScope(scope)) : new Directory(Paths.cache, DOCUMENT_CACHE_DIR);
     dir.create({ idempotent: true, intermediates: true });
     // A counter-named sub folder keeps the readable file name while two downloads of the same title cannot collide.
     const sub = new Directory(dir, `${Date.now()}-${++documentFileCounter}`);

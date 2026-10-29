@@ -25,14 +25,17 @@ export function useDocumentOpen() {
   const busy = useRef(false);
   const controller = useRef<AbortController | null>(null);
   const alive = useRef(true);
+  // Own cache sub folder: closing this screen removes only its files, never those of another open document screen.
+  // Leftovers of a killed session are removed at app start and on sign-out (`AuthProvider`).
+  const scope = useRef(`s${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`);
 
   useEffect(() => {
     alive.current = true;
-    clearDocumentFileCache();
+    const mine = scope.current;
     return () => {
       alive.current = false;
       controller.current?.abort();
-      clearDocumentFileCache();
+      clearDocumentFileCache(mine);
     };
   }, []);
 
@@ -45,7 +48,7 @@ export function useDocumentOpen() {
     const ctrl = new AbortController();
     controller.current = ctrl;
     try {
-      const result = await downloadDocumentFile(doc.path, doc.title, doc.mimeType, ctrl.signal);
+      const result = await downloadDocumentFile(doc.path, doc.title, doc.mimeType, ctrl.signal, scope.current);
       if (!alive.current) return;
       if ('error' in result) {
         setError(result.error);
