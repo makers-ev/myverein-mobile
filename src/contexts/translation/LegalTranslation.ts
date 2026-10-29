@@ -85,15 +85,6 @@ const LegalTranslation: Translation = {
     'settings.legal.contact': 'Contact',
     'settings.replay-intro': 'Show introduction again',
 
-    'intro-modal.title': 'Welcome!',
-    'intro-modal.intro': "This template ships with a few things already wired up. Here's a quick look:",
-    'intro-modal.step1.title': 'Create your account',
-    'intro-modal.step1.text': 'Sign up or log in from Home -- email/password auth and optional two-factor authentication are already built in.',
-    'intro-modal.step2.title': 'Your account is protected',
-    'intro-modal.step2.text': 'Sessions, password resets, and account deletion are handled for you -- see Settings > Security.',
-    'intro-modal.step3.title': 'Explore Settings',
-    'intro-modal.step3.text': 'Language, theme, App Lock, and the legal pages (Privacy Policy, Terms of Service, Imprint) all live there -- start from that section when you build your own features.',
-    'intro-modal.button': "Let's go",
 
     'settings.section-appearance': 'Appearance',
     'settings.dark-mode': 'Dark mode',
@@ -176,15 +167,6 @@ const LegalTranslation: Translation = {
     'settings.legal.contact': 'Kontakt',
     'settings.replay-intro': 'Einführung erneut anzeigen',
 
-    'intro-modal.title': 'Willkommen!',
-    'intro-modal.intro': 'Dieses Template bringt einiges bereits fertig eingerichtet mit. Ein kurzer Überblick:',
-    'intro-modal.step1.title': 'Konto erstellen',
-    'intro-modal.step1.text': 'Registriere dich oder logge dich von der Startseite aus ein -- E-Mail/Passwort-Login und optionale Zwei-Faktor-Authentifizierung sind bereits eingebaut.',
-    'intro-modal.step2.title': 'Dein Konto ist geschützt',
-    'intro-modal.step2.text': 'Sessions, Passwort-Reset und Konto-Löschung sind bereits fertig -- siehe Einstellungen > Sicherheit.',
-    'intro-modal.step3.title': 'Einstellungen erkunden',
-    'intro-modal.step3.text': 'Sprache, Theme, App-Sperre und die Rechtstexte (Datenschutzerklärung, Nutzungsbedingungen, Impressum) findest du dort -- ein guter Startpunkt, bevor du eigene Funktionen baust.',
-    'intro-modal.button': "Los geht's",
 
     'settings.section-appearance': 'Erscheinungsbild',
     'settings.dark-mode': 'Dunkelmodus',
