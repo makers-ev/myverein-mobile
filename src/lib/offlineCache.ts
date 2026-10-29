@@ -25,12 +25,17 @@ const MAX_ENTRIES = 8;
 const queue = createSerialQueue();
 let wipeGeneration = 0;
 
+/** Read this BEFORE starting a fetch and pass it to `saveOffline`: a wipe that happens while the request is in flight then discards the late save. */
+export function getWipeGeneration(): number {
+  return wipeGeneration;
+}
+
 /** Club ids are UUIDs; anything else is refused so a key can never escape the directory. */
 const safeId = (clubId: string): string | null => (/^[A-Za-z0-9-]{1,64}$/.test(clubId) ? clubId : null);
 
 function fileFor(kind: OfflineKind, clubId: string): File | null {
   const id = safeId(clubId);
-  return id ? new File(new Directory(Paths.document, DIR), `${kind}.${id}.json`) : null;
+  return id ? new File(new Directory(Paths.cache, DIR), `${kind}.${id}.json`) : null;
 }
 
 async function readFile(file: File): Promise<FileShape> {
@@ -49,13 +54,12 @@ export function trimEntries(entries: FileShape, max = MAX_ENTRIES): FileShape {
   return Object.fromEntries(keys.slice(0, max).map((k) => [k, entries[k]!]));
 }
 
-export function saveOffline<T>(kind: OfflineKind, clubId: string, key: string, payload: T): Promise<void> {
-  const generation = wipeGeneration;
+export function saveOffline<T>(kind: OfflineKind, clubId: string, key: string, payload: T, generation: number = wipeGeneration): Promise<void> {
   return queue(async () => {
     try {
       const file = fileFor(kind, clubId);
       if (!file || generation !== wipeGeneration) return;
-      new Directory(Paths.document, DIR).create({ idempotent: true, intermediates: true });
+      new Directory(Paths.cache, DIR).create({ idempotent: true, intermediates: true });
       const entries = await readFile(file);
       entries[key] = { savedAt: new Date().toISOString(), payload };
       if (generation !== wipeGeneration) return;
@@ -99,7 +103,7 @@ export function dropOfflineClub(clubId: string): Promise<void> {
 export function pruneOfflineClubs(keepClubIds: string[]): Promise<void> {
   return queue(async () => {
     try {
-      const dir = new Directory(Paths.document, DIR);
+      const dir = new Directory(Paths.cache, DIR);
       if (!dir.exists) return;
       for (const item of dir.list()) {
         const m = /^(events|members)\.([A-Za-z0-9-]+)\.json$/.exec(item.name);
@@ -116,16 +120,22 @@ export function clearOfflineCache(): Promise<void> {
   wipeGeneration++;
   return queue(async () => {
     try {
-      const dir = new Directory(Paths.document, DIR);
+      const dir = new Directory(Paths.cache, DIR);
       if (dir.exists) dir.delete();
+      // Copies written by an earlier version lived in the (backed-up) document directory.
+      const legacy = new Directory(Paths.document, DIR);
+      if (legacy.exists) legacy.delete();
     } catch {
       // best-effort
     }
   });
 }
 
-/** The columns of a member that are safe to keep on the device: no contact data, birth date, address or signed photo URL. */
-export function toCachedMember<M extends { id: string; memberId: string | null; userId: string | null; hasAccount: boolean; name: string | null; status: unknown; effectiveStatus: unknown; category: string | null; categoryId: string | null; categoryName: string | null; categoryObject: unknown; joinedAt: string | null; leftAt: string | null; orgRole: string | null; roles: unknown; departments: unknown }>(m: M) {
+/** Statuses of people who left or died: never kept on the device. */
+export const UNCACHED_STATUSES: readonly unknown[] = ['ausgeschlossen', 'verstorben'];
+
+/** The columns of a member that are safe to keep on the device: no contact data, birth date, address, exit date or signed photo URL. */
+export function toCachedMember<M extends { id: string; memberId: string | null; userId: string | null; hasAccount: boolean; name: string | null; status: unknown; effectiveStatus: unknown; category: string | null; categoryId: string | null; categoryName: string | null; categoryObject: unknown; joinedAt: string | null; orgRole: string | null; roles: unknown; departments: unknown }>(m: M) {
   return {
     id: m.id,
     memberId: m.memberId,
@@ -139,7 +149,6 @@ export function toCachedMember<M extends { id: string; memberId: string | null; 
     categoryName: m.categoryName,
     categoryObject: m.categoryObject,
     joinedAt: m.joinedAt,
-    leftAt: m.leftAt,
     orgRole: m.orgRole,
     roles: m.roles,
     departments: m.departments,

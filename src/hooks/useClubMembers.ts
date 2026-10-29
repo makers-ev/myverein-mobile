@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
 import { isOfflineError } from '@/lib/apiErrorMessage';
-import { loadOffline, saveOffline, toCachedMember } from '@/lib/offlineCache';
+import { getWipeGeneration, loadOffline, saveOffline, toCachedMember, UNCACHED_STATUSES } from '@/lib/offlineCache';
 
 export const MEMBER_STATUSES = ['interessent', 'probe', 'aktiv', 'ruhend', 'ausgetreten', 'ausgeschlossen', 'verstorben'] as const;
 export type MemberStatus = (typeof MEMBER_STATUSES)[number];
@@ -139,6 +139,7 @@ export function useClubMembers(clubId: string | null, filters: ClubMemberFilters
 
   const refetch = useCallback(async () => {
     const id = ++requestId.current;
+    const wipeGeneration = getWipeGeneration();
     const parsed = JSON.parse(filterKey) as [string, MemberStatus[], string[], number];
     const active: ClubMemberFilters = { q: parsed[0], status: parsed[1], category: parsed[2], pageSize: parsed[3] };
     pageRef.current = 1;
@@ -161,7 +162,8 @@ export function useClubMembers(clubId: string | null, filters: ClubMemberFilters
       setStaleAt(null);
       // The unfiltered first page is what an offline start shows (no contact data, see `toCachedMember`).
       if (!active.q && !(active.category && active.category.length > 0)) {
-        void saveOffline('members', clubId, filterKey, { members: res.data.map(toCachedMember), total: res.total });
+        const keep = res.data.filter((m) => !UNCACHED_STATUSES.includes(m.status) && !UNCACHED_STATUSES.includes(m.effectiveStatus));
+        void saveOffline('members', clubId, filterKey, { members: keep.map(toCachedMember), total: res.total }, wipeGeneration);
       }
     } catch (err) {
       const copy =
@@ -169,7 +171,7 @@ export function useClubMembers(clubId: string | null, filters: ClubMemberFilters
           ? await loadOffline<{ members: ClubMember[]; total: number }>('members', clubId, filterKey)
           : null;
       if (id !== requestId.current) return;
-      setMembers(copy ? copy.payload.members : []);
+      setMembers(copy ? copy.payload.members.map((m) => ({ ...m, leftAt: null })) : []);
       setTotal(copy ? copy.payload.total : 0);
       setStaleAt(copy ? copy.savedAt : null);
       setError(!copy);

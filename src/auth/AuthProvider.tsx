@@ -217,7 +217,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     void clearAllCardCache();
-      void clearOfflineCache();
+    void clearOfflineCache();
     clearDocumentFileCache();
     scheduleSessionRefetch();
     return { success: true };
