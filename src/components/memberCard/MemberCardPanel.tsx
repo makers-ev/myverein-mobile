@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Body, Button, Card, ErrorRetry, Loading } from '@/components/assembly/ui';
 import OpenFileNotice from '@/components/documents/OpenFileNotice';
@@ -7,15 +7,28 @@ import { useDocumentOpen } from '@/hooks/useDocumentOpen';
 import { type MemberCardSubject, useMemberCard } from '@/hooks/useMemberCard';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { type CardPdfLayout, cardPdfPath } from '@/lib/documents';
-import { effectiveCardState, localDay } from '@/lib/memberCard';
+import { CONFIRM_GRACE_MS, isAwaitingConfirmation, effectiveCardState, localDay } from '@/lib/memberCard';
 import MemberCardView from './MemberCardView';
 
 /** Card of one subject with all states: loading, error + retry, no card, not issued, offline copy, PDF sharing. */
 export default function MemberCardPanel({ subject }: { subject: MemberCardSubject }) {
   const { t } = useLanguage();
-  const { view, loading, gone, failed, error, reload } = useMemberCard(subject);
+  const { view, loading, refreshing, gone, failed, error, reload } = useMemberCard(subject);
   const file = useDocumentOpen();
   const memberKey = subject.kind === 'self' ? 'me' : subject.wardId;
+
+  // A saved copy may be out of date (revoked, left): its QR waits for the server's answer. With a bad connection the
+  // wait ends after a short grace period so the offline display keeps working.
+  const unconfirmed = !!view?.fromCache && refreshing;
+  const [graceOver, setGraceOver] = useState(false);
+  useEffect(() => {
+    if (!unconfirmed) return;
+    const timer = setTimeout(() => setGraceOver(true), CONFIRM_GRACE_MS);
+    return () => {
+      clearTimeout(timer);
+      setGraceOver(false);
+    };
+  }, [unconfirmed]);
 
   if (loading) return <Loading />;
   if (gone) {
@@ -33,7 +46,7 @@ export default function MemberCardPanel({ subject }: { subject: MemberCardSubjec
 
   return (
     <>
-      <MemberCardView view={view} onPhotoExpired={() => void reload()} />
+      <MemberCardView view={view} confirming={isAwaitingConfirmation(!!view?.fromCache, refreshing, graceOver)} onPhotoExpired={() => void reload()} />
       {state === 'nicht_ausgestellt' ? (
         <Card>
           <Body muted>{t('card.not-issued')}</Body>

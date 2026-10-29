@@ -6,6 +6,7 @@ import {
   cardSubjectKey,
   effectiveCardState,
   formatCardStand,
+  isAwaitingConfirmation,
   isCardGone,
   isOfflineFailure,
   looksLikeCardToken,
@@ -95,5 +96,14 @@ describe('verify', () => {
     expect(readVerifyAnswer({ data: { result: 'whatever' } }).result).toBe('ungueltig');
     expect(readVerifyAnswer(null).result).toBe('ungueltig');
     expect(readVerifyAnswer({ data: { result: 'abgelaufen', member: { displayName: 'A' } } }).member).toBeUndefined();
+  });
+});
+
+describe('saved copy confirmation', () => {
+  it('holds the QR of a saved copy only while the server has not answered and the grace period runs', () => {
+    expect(isAwaitingConfirmation(true, true, false)).toBe(true);
+    expect(isAwaitingConfirmation(true, true, true)).toBe(false);
+    expect(isAwaitingConfirmation(true, false, false)).toBe(false);
+    expect(isAwaitingConfirmation(false, true, false)).toBe(false);
   });
 });

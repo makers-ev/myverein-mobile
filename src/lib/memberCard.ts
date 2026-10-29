@@ -31,6 +31,12 @@ export interface CachedCard {
   savedAt: string;
 }
 
+/** How long a saved card's QR waits for the server before the offline display takes over. */
+export const CONFIRM_GRACE_MS = 4000;
+
+/** A saved copy waits for the server before its QR is shown, unless the grace period is over (poor connection). */
+export const isAwaitingConfirmation = (fromCache: boolean, refreshing: boolean, graceOver: boolean): boolean => fromCache && refreshing && !graceOver;
+
 const PHOTO_FILE = /^[A-Za-z0-9._-]{1,130}\.jpg$/;
 const CARD_STATES: readonly string[] = ['gueltig', 'abgelaufen', 'ausgetreten', 'ungueltig', 'nicht_ausgestellt'];
 
