@@ -28,9 +28,13 @@ describe('download paths', () => {
     }
   });
 
-  it('encodes ids', () => {
+  it('encodes ids and refuses anything beyond plain id characters', () => {
     expect(archiveDownloadPath('c 1', 'a/b')).toBe('/documents/a%2Fb/download?clubId=c%201');
-    expect(isDocumentDownloadPath(archiveDownloadPath('c 1', 'a/b'))).toBe(true);
+    expect(isDocumentDownloadPath(archiveDownloadPath('c 1', 'a/b'))).toBe(false);
+    expect(isDocumentDownloadPath(archiveDownloadPath('2f0c-AB_9', 'a1b2'))).toBe(true);
+    for (const bad of ['/documents/a.b/download?clubId=c1', '/documents/a1/download?clubId=c1%2F..', '/documents/a1/download?clubId=c1&x=1', '/documents/%2e%2e/download?clubId=c1', '/documents/a1/download?clubId=']) {
+      expect(isDocumentDownloadPath(bad)).toBe(false);
+    }
   });
 });
 

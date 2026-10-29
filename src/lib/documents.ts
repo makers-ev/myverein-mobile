@@ -4,7 +4,7 @@
 import { sanitizeMediaFilename } from './mediaKey';
 
 /**
- * Backend paths the authenticated file download may call. A download sends the session cookie, so the path is built
+ * Backend paths the authenticated file download may call (ids and slugs are UUIDs / `[a-z0-9-]`, so every segment is limited to `[A-Za-z0-9_-]`). A download sends the session cookie, so the path is built
  * here from ids only and checked again by `isDocumentDownloadPath` -- anything else is refused before a request is made.
  */
 export const clubInfoAttachmentPath = (clubId: string, slug: string): string =>
@@ -26,12 +26,13 @@ export type CardPdfLayout = 'card' | 'a4';
 export const cardPdfPath = (clubId: string, memberKey: string, layout: CardPdfLayout): string =>
   `/club-members/${encodeURIComponent(memberKey)}/card.pdf?clubId=${encodeURIComponent(clubId)}&layout=${layout}`;
 
+const SEG = '[A-Za-z0-9_-]+';
 const DOWNLOAD_PATHS = [
-  /^\/acknowledgements\/[^/?#]+\/document\?clubId=[^&#]+$/,
-  /^\/club-members\/[^/?#]+\/card\.pdf\?clubId=[^&#]+&layout=(card|a4)$/,
-  /^\/club-info\/[^/?#]+\/attachment\?clubId=[^&#]+$/,
-  /^\/documents\/[^/?#]+\/download\?clubId=[^&#]+$/,
-  /^\/member-documents\/[^/?#]+\/[^/?#]+\/download\?clubId=[^&#]+$/,
+  new RegExp(`^/acknowledgements/${SEG}/document\\?clubId=${SEG}$`),
+  new RegExp(`^/club-members/${SEG}/card\\.pdf\\?clubId=${SEG}&layout=(card|a4)$`),
+  new RegExp(`^/club-info/${SEG}/attachment\\?clubId=${SEG}$`),
+  new RegExp(`^/documents/${SEG}/download\\?clubId=${SEG}$`),
+  new RegExp(`^/member-documents/${SEG}/${SEG}/download\\?clubId=${SEG}$`),
 ];
 
 export function isDocumentDownloadPath(path: string): boolean {
