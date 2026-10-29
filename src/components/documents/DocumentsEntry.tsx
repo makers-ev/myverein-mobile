@@ -50,9 +50,9 @@ export function ArchiveEntry({ clubId }: { clubId: string }) {
  */
 export function AcknowledgementsEntry({ clubId }: { clubId: string }) {
   const { t } = useLanguage();
-  const { items, openCount } = useAcknowledgements(clubId);
+  const { items, openCount, hasMore } = useAcknowledgements(clubId);
   if (!items || items.length === 0) return null;
-  const hint = openCount > 0 ? t('ack.entry.open', { count: openCount }) : t('ack.entry.hint');
+  const hint = openCount > 0 ? t('ack.entry.open', { count: hasMore ? `${openCount}+` : openCount }) : t('ack.entry.hint');
   return <EntryRow title={t('ack.entry')} hint={hint} onPress={() => navigate('Bestaetigungen')} />;
 }
 

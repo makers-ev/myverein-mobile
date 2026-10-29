@@ -18,11 +18,33 @@ describe('useAcknowledgements', () => {
         { id: '2', status: 'offen', canAnswer: false },
         { id: '3', status: 'bestaetigt', canAnswer: false },
       ],
+      page: 1,
+      pageSize: 50,
+      total: 3,
     });
     const { result } = await renderHook(() => useAcknowledgements('c1'));
     await act(async () => {});
-    expect(apiFetchMock).toHaveBeenCalledWith('/acknowledgements/mine?clubId=c1&pageSize=100');
+    expect(apiFetchMock).toHaveBeenCalledWith('/acknowledgements/mine?clubId=c1&page=1&pageSize=50');
     expect(result.current.openCount).toBe(1);
+    expect(result.current.hasMore).toBe(false);
+  });
+
+  it('loads further pages without duplicates and keeps the list when a page fails', async () => {
+    const row = (id: string) => ({ id, status: 'offen', canAnswer: true });
+    apiFetchMock.mockResolvedValueOnce({ data: [row('1'), row('2')], page: 1, pageSize: 2, total: 4 });
+    const { result } = await renderHook(() => useAcknowledgements('c1'));
+    await act(async () => {});
+    expect(result.current.hasMore).toBe(true);
+    apiFetchMock.mockRejectedValueOnce(new Error('offline'));
+    await act(async () => result.current.loadMore());
+    expect(result.current.items).toHaveLength(2);
+    expect(result.current.error).toBeTruthy();
+    apiFetchMock.mockResolvedValueOnce({ data: [row('2'), row('3'), row('4')], page: 2, pageSize: 2, total: 4 });
+    await act(async () => result.current.loadMore());
+    expect(apiFetchMock).toHaveBeenLastCalledWith('/acknowledgements/mine?clubId=c1&page=2&pageSize=50');
+    expect(result.current.items?.map((a) => a.id)).toEqual(['1', '2', '3', '4']);
+    expect(result.current.hasMore).toBe(false);
+    expect(result.current.error).toBeNull();
   });
 });
 

@@ -6,7 +6,7 @@ import { CheckCircle2, Circle, Clock, XCircle } from 'lucide-react-native';
 
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
 import AcknowledgementDetailView from '@/components/acknowledgements/AcknowledgementDetailView';
-import { Body, Card, ErrorRetry, Loading } from '@/components/assembly/ui';
+import { Body, Button, Card, ErrorRetry, Loading } from '@/components/assembly/ui';
 import ChipSelector, { type Chip } from '@/components/documents/ChipSelector';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useAcknowledgements } from '@/hooks/useAcknowledgements';
@@ -54,7 +54,7 @@ function Row({ item, isLast, onPress }: { item: MyAcknowledgement; isLast: boole
 /** One club's requests: open ones first, then answered/expired; a tap opens the detail (read, answer, proof). */
 function ClubAcknowledgements({ clubId }: { clubId: string }) {
   const { t } = useLanguage();
-  const { items, loading, error, reload } = useAcknowledgements(clubId);
+  const { items, loading, error, reload, hasMore, loadMore } = useAcknowledgements(clubId);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const { open, done } = useMemo(() => splitAcknowledgements(items ?? []), [items]);
@@ -97,6 +97,8 @@ function ClubAcknowledgements({ clubId }: { clubId: string }) {
           <Card title={t('ack.open')}>
             {open.length === 0 ? <Body muted>{t('ack.none-open')}</Body> : open.map((a, i) => <Row key={a.id} item={a} isLast={i === open.length - 1} onPress={() => setSelectedId(a.id)} />)}
           </Card>
+          {error ? <ErrorRetry message={apiErrorMessage(error, t, 'ack.error.load')} onRetry={() => (hasMore ? loadMore() : void reload())} /> : null}
+          {hasMore ? <Button secondary label={t('ack.more')} busy={loading} disabled={loading} onPress={loadMore} /> : null}
           {done.length > 0 ? (
             <Card title={t('ack.done')}>
               {done.map((a, i) => (

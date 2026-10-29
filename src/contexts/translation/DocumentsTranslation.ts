@@ -167,6 +167,7 @@ const DocumentsTranslation: Translation = {
     'ack.dialog.decline.title': 'Decline to confirm?',
     'ack.dialog.cancel': 'Cancel',
     'card.confirming': 'Checking the card with the club ...',
+    'ack.more': 'Load more',
   },
   de: {
     'docs.reader.valid-from': 'Gültig seit {{date}}',
@@ -330,6 +331,7 @@ const DocumentsTranslation: Translation = {
     'ack.dialog.decline.title': 'Bestätigung ablehnen?',
     'ack.dialog.cancel': 'Abbrechen',
     'card.confirming': 'Der Ausweis wird beim Verein geprüft ...',
+    'ack.more': 'Mehr laden',
   },
   fr: {},
   es: {},
