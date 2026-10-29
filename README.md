@@ -373,6 +373,25 @@ None of the above (except the push registration record) needs `expo-secure-store
 
 **Supported languages:** `src/contexts/translation/supportedLanguages.ts` is the single registry (`id`/`label`/`nativeLabel`/`isRTL`) both this app and `_template_better-auth-website` derive their `Language` union from — German, English, French, Spanish, Portuguese, Italian, Dutch, Polish, Russian, Japanese, and Chinese (Simplified), all LTR (`isRTL: false` for every entry; Arabic/RTL is a deliberately separate future scope, see the vault's `ADR-009`). `t()` falls back to the English value for any key missing in the active language instead of showing the raw key. **Completeness (Wave 14 DS3):** German and English are complete by contract and enforced by `npm run check:i18n` (part of `npm test` and CI). The other nine languages are first-pass or missing on purpose: an untranslated key falls back to English per key, the script only prints how many keys each language lacks so translation effort can be prioritised. `LegalTranslation.ts` stays German/English-only by design — `LegalDocumentLayout.tsx` shows a visible banner when it falls back to English there.
 
+## Components
+
+Shared building blocks (Wave 14 DS1). The names and props match the website's `src/components/ui.tsx` / `useConfirm` so a pattern is called the same on both platforms. Screens use these instead of local copies.
+
+| Component | Props | Use it for |
+|---|---|---|
+| `ui/Button` | `label`, `onPress`, `variant` (`primary` / `secondary` / `danger`), `disabled`, `loading`, `accessibilityHint` | Every tappable action. At least 44pt high; one `primary` per screen; `loading` blocks double taps while saving |
+| `ui/EmptyState` | `title`, `hint?`, `action?` | A list or section with nothing in it: say what is missing and offer the next step as `action` |
+| `ui/Skeleton` | `lines?` | Loading placeholder for lists and cards (instead of a lone spinner); hidden from screen readers |
+| `ui/ErrorState` | `error?`, `onRetry?`, `fallbackKey?` | A failed load: localised text via `mapApiError`, retry button, announced as an alert |
+| `ui/Badge` | `tone` (`neutral` / `primary` / `danger`), children | Role, status or count chips |
+| `ui/BentoTile` | `onPress?`, `emphasis?`, `minHeight?`, `accessibilityLabel?` | Card on the Heute and Mehr screens; pressable tiles are 44pt+ buttons |
+| `ui/FormSheet`, `ui/DateTimeField`, `ui/NotifySwitch`, `ui/MonthCalendar` | see the files | Form sheet shell, date/time picker, notify toggle, month grid |
+| `hooks/useConfirm` | `confirm({ title, message?, confirmLabel?, destructive? }) => Promise<boolean>` | Confirm destructive or irreversible actions (native alert; website: dialog) |
+| `hooks/useUnsavedChangesGuard` | `(dirty: boolean)` | Ask "discard draft?" on back, Android back and swipe when a form has unsaved input |
+| `lib/mapApiError` | `(err, t, fallbackKey?) => string` | Any caught error shown to a person; never print `err.message` |
+
+Tokens come from `theme/colors.ts` / `tailwind.config.js` (Tailwind classes with `dark:` variants, palettes from `PaletteProvider`). `components/Modals/ConfirmationModal` and `ConfirmationInputModal` remain for the two Settings flows that need a typed confirmation; new confirmations use `useConfirm`.
+
 ## Screens
 
 > **Unsubscribe links (Wave 9):** club e-mails carry a signed "Abmelden" link that points to the backend's `/unsubscribe/:token` page (website `/abmelden`), not to a screen of this app. In-app, the same choice lives in Settings -> notification settings (per account, all clubs; mandatory notices cannot be switched off). Members without an account have no in-app way back, see the vault's Feature List ("Weiterhin offen").
