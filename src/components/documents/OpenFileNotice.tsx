@@ -9,7 +9,7 @@ export default function OpenFileNotice({ error, unsupported }: { error: unknown;
   const { t } = useLanguage();
   if (!error && !unsupported) return null;
   return (
-    <Text accessibilityRole="alert" accessibilityLiveRegion="polite" className="text-destructive text-sm mb-2">
+    <Text accessibilityRole="alert" accessibilityLiveRegion="polite" className="text-destructive dark:text-destructive-dark text-sm mb-2">
       {unsupported ? t('docs.open.unsupported') : apiErrorMessage(error, t, 'docs.open.error')}
     </Text>
   );

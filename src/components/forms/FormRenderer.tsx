@@ -94,7 +94,7 @@ function FieldShell({
         {...(labelledByControl ? { importantForAccessibility: 'no' as const, accessibilityElementsHidden: true } : {})}
       >
         {field.label}
-        {field.required ? <Text className="text-destructive"> *</Text> : null}
+        {field.required ? <Text className="text-destructive dark:text-destructive-dark"> *</Text> : null}
       </Text>
       {field.helpText ? (
         <Text
@@ -106,7 +106,7 @@ function FieldShell({
       ) : null}
       <View className="mt-1.5">{children}</View>
       {errorText ? (
-        <Text className="text-destructive text-xs mt-1" accessibilityRole="alert" accessibilityLiveRegion="polite">
+        <Text className="text-destructive dark:text-destructive-dark text-xs mt-1" accessibilityRole="alert" accessibilityLiveRegion="polite">
           {errorText}
         </Text>
       ) : null}
@@ -642,7 +642,7 @@ function UploadField({ field, files, error, disabled, onUploadFile, onRemoveFile
                   className={`border border-border dark:border-border-dark rounded-lg px-3 items-center justify-center ${disabled || busy || removing ? 'opacity-60' : ''}`}
                   style={{ minHeight: 44 }}
                 >
-                  <Text className="text-destructive text-sm font-semibold">{t('forms.file.remove')}</Text>
+                  <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('forms.file.remove')}</Text>
                 </TouchableOpacity>
               ) : null}
             </View>
@@ -855,7 +855,7 @@ export default function FormRenderer({
               <CheckBox checked={checked} error={Boolean(error)} />
               <Text className={`flex-1 text-sm text-foreground dark:text-foreground-dark ${consent ? 'font-medium' : ''}`}>
                 {field.label}
-                {field.required ? <Text className="text-destructive"> *</Text> : null}
+                {field.required ? <Text className="text-destructive dark:text-destructive-dark"> *</Text> : null}
               </Text>
             </TouchableOpacity>
             {field.helpText ? (
@@ -864,7 +864,7 @@ export default function FormRenderer({
               </Text>
             ) : null}
             {error ? (
-              <Text className="text-destructive text-xs mt-1" style={{ paddingLeft: 34 }} accessibilityRole="alert" accessibilityLiveRegion="polite">
+              <Text className="text-destructive dark:text-destructive-dark text-xs mt-1" style={{ paddingLeft: 34 }} accessibilityRole="alert" accessibilityLiveRegion="polite">
                 {t(fieldErrorKey(error))}
               </Text>
             ) : null}

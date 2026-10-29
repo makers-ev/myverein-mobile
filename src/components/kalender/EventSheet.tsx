@@ -73,13 +73,13 @@ export function RsvpControl({ state, pending, onRsvp, onCancel }: RsvpProps) {
           {state === 'angemeldet' ? t('termine.rsvp.confirmed') : t('termine.rsvp.waitlist')}
         </Text>
         <TouchableOpacity onPress={onCancel} disabled={pending} accessibilityRole="button" className="min-h-[44px] justify-center">
-          <Text className="text-destructive text-xs font-semibold">{t('termine.cancel')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-xs font-semibold">{t('termine.cancel')}</Text>
         </TouchableOpacity>
       </View>
     );
   }
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       className={`bg-primary dark:bg-primary-dark rounded-lg py-2 px-4 items-center self-start ${pending ? 'opacity-70' : ''}`}
       onPress={onRsvp}
       disabled={pending}
@@ -116,7 +116,7 @@ export function CancelPreviewCard({
   } else if (!preview) {
     body = failed ? (
       <View>
-        <Text className="text-destructive text-sm mb-1">{t('termine.cancel.preview.error')}</Text>
+        <Text className="text-destructive dark:text-destructive-dark text-sm mb-1">{t('termine.cancel.preview.error')}</Text>
         <TouchableOpacity accessibilityRole="button" onPress={onRetry} className="min-h-[44px] justify-center self-start">
           <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
         </TouchableOpacity>
@@ -129,7 +129,7 @@ export function CancelPreviewCard({
       kind === 'already-cancelled' ? (
         <Text className="text-foreground dark:text-foreground-dark text-sm">{t('termine.cancel.preview.already')}</Text>
       ) : kind === 'too-large' ? (
-        <Text className="text-destructive text-sm">{t('termine.cancel.preview.too-large', { count: a.total })}</Text>
+        <Text className="text-destructive dark:text-destructive-dark text-sm">{t('termine.cancel.preview.too-large', { count: a.total })}</Text>
       ) : kind === 'nobody' ? (
         <Text className="text-foreground dark:text-foreground-dark text-sm">{t('termine.cancel.preview.nobody')}</Text>
       ) : (
@@ -429,7 +429,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
       ) : null}
       {detailExtras}
       {event?.cancelled ? (
-        <Text className="text-destructive text-sm font-bold">
+        <Text className="text-destructive dark:text-destructive-dark text-sm font-bold">
           {event.cancelReason ? `${t('termine.cancelled')} - ${t('termine.cancelled-reason', { reason: event.cancelReason })}` : t('termine.cancelled')}
         </Text>
       ) : participation ? (
@@ -532,7 +532,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
               style={{ minHeight: 44 }}
               accessibilityRole="button"
             >
-              <Text className="text-destructive text-sm font-semibold">{t('termine.cancel.open')}</Text>
+              <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('termine.cancel.open')}</Text>
             </TouchableOpacity>
           ) : null}
         </>
@@ -649,7 +649,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
               <ActivityIndicator color={themeColors.primary} />
             ) : seriesError || !seriesDetail ? (
               <View className="mb-3">
-                <Text className="text-destructive text-sm mb-1">{t('series.error.rule-load')}</Text>
+                <Text className="text-destructive dark:text-destructive-dark text-sm mb-1">{t('series.error.rule-load')}</Text>
                 <TouchableOpacity accessibilityRole="button" onPress={() => void refetchSeries()} className="min-h-[44px] justify-center self-start">
                   <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
                 </TouchableOpacity>

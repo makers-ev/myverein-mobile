@@ -47,7 +47,7 @@ function ErrorRetry({ message, onRetry }: { message: string; onRetry: () => void
   const { t } = useLanguage();
   return (
     <View className="py-6">
-      <Text className="text-destructive text-sm mb-3" accessibilityRole="alert">
+      <Text className="text-destructive dark:text-destructive-dark text-sm mb-3" accessibilityRole="alert">
         {message}
       </Text>
       <TouchableOpacity
@@ -66,7 +66,7 @@ function MeetingListRow({ meeting, onPress }: { meeting: Meeting; onPress: () =>
   const { t } = useLanguage();
   const typeLabel = useTypeLabel();
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3"
     >
@@ -172,8 +172,8 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
           <View className="mb-3">
             <DateTimeField value={scheduledAt} onChange={setScheduledAt} placeholder={t('treffen.scheduled-at.placeholder')} clearable />
           </View>
-          {error ? <Text className="text-destructive text-sm mb-3">{error}</Text> : null}
-          <TouchableOpacity
+          {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error}</Text> : null}
+          <TouchableOpacity accessibilityRole="button"
             className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${saving || !title.trim() || !type ? 'opacity-50' : ''}`}
             onPress={() => void handleCreate()}
             disabled={saving || !title.trim() || !type}
@@ -186,7 +186,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
           </TouchableOpacity>
         </View>
       ) : (
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button"
           className="bg-primary dark:bg-primary-dark rounded-lg py-3 items-center self-start px-5"
           onPress={() => setShowCreate(true)}
         >
@@ -240,7 +240,7 @@ function AgendaMinutes({
         <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">{meeting.minutes || t('treffen.minutes.empty')}</Text>
         {saved ? <Text className="text-success dark:text-success-dark text-xs mb-2">{t('treffen.agenda-minutes.saved')}</Text> : null}
         {canWrite ? (
-          <TouchableOpacity onPress={() => setEditing(true)} className="self-start">
+          <TouchableOpacity accessibilityRole="button" onPress={() => setEditing(true)} className="self-start">
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('treffen.agenda-minutes.save')}</Text>
           </TouchableOpacity>
         ) : null}
@@ -267,8 +267,8 @@ function AgendaMinutes({
         multiline
         numberOfLines={3}
       />
-      {error ? <Text className="text-destructive text-sm mb-3">{error}</Text> : null}
-      <TouchableOpacity
+      {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error}</Text> : null}
+      <TouchableOpacity accessibilityRole="button"
         className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${saving ? 'opacity-70' : ''}`}
         onPress={() => void handleSave()}
         disabled={saving}
@@ -413,7 +413,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
 
   return (
     <>
-      <TouchableOpacity onPress={onBack} className="mb-3 self-start">
+      <TouchableOpacity accessibilityRole="button" onPress={onBack} className="mb-3 self-start">
         <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('treffen.back')}</Text>
       </TouchableOpacity>
 
@@ -445,9 +445,9 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">
             {t('treffen.rsvp.current')}: {t(`treffen.rsvp.response.${ownInvite.response}`)}
           </Text>
-          {rsvpError ? <Text className="text-destructive text-sm mb-2">{rsvpError}</Text> : null}
+          {rsvpError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{rsvpError}</Text> : null}
           <View className="flex-row" style={{ gap: 10 }}>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               className={`bg-primary dark:bg-primary-dark rounded-lg py-2 px-4 ${rsvpSaving ? 'opacity-70' : ''}`}
               onPress={() => void handleRespond('zugesagt')}
               disabled={rsvpSaving}
@@ -456,7 +456,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
                 {t('treffen.rsvp.accept')}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               className={`bg-muted dark:bg-muted-dark rounded-lg py-2 px-4 ${rsvpSaving ? 'opacity-70' : ''}`}
               onPress={() => void handleRespond('abgesagt')}
               disabled={rsvpSaving}
@@ -482,14 +482,14 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
             <View className="flex-1">
               <DateTimeField value={candidateInput} onChange={setCandidateInput} placeholder={t('treffen.overlap.candidate-placeholder')} />
             </View>
-            <TouchableOpacity className="bg-muted dark:bg-muted-dark rounded-lg py-2.5 px-3" onPress={handleAddCandidate}>
+            <TouchableOpacity accessibilityRole="button" className="bg-muted dark:bg-muted-dark rounded-lg py-2.5 px-3" onPress={handleAddCandidate}>
               <Text className="text-foreground dark:text-foreground-dark text-xs font-bold">{t('treffen.overlap.add-candidate')}</Text>
             </TouchableOpacity>
           </View>
 
-          {overlapError ? <Text className="text-destructive text-sm mt-2">{overlapError}</Text> : null}
+          {overlapError ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-2">{overlapError}</Text> : null}
 
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${overlapChecking || candidates.length === 0 ? 'opacity-70' : ''}`}
             onPress={() => void handleCheckOverlap()}
             disabled={overlapChecking || candidates.length === 0}
@@ -641,8 +641,8 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
               value={resResult}
               onChangeText={setResResult}
             />
-            {resError ? <Text className="text-destructive text-sm mb-3">{resError}</Text> : null}
-            <TouchableOpacity
+            {resError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{resError}</Text> : null}
+            <TouchableOpacity accessibilityRole="button"
               className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${resSaving ? 'opacity-70' : ''}`}
               onPress={() => void handleCreateResolution()}
               disabled={resSaving}
@@ -657,7 +657,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
             </TouchableOpacity>
           </View>
         ) : (
-          <TouchableOpacity className="self-start mt-2" onPress={() => setShowResolutionForm(true)}>
+          <TouchableOpacity accessibilityRole="button" className="self-start mt-2" onPress={() => setShowResolutionForm(true)}>
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('treffen.resolutions.create')}</Text>
           </TouchableOpacity>
         )}

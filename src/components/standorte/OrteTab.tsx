@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Text, TouchableOpacity, View } from 'react-native';
 import { Clock, ExternalLink, Eye, EyeOff, Info, Link2, MapPin, User, Wifi } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
@@ -31,7 +31,7 @@ function LocationPhotoPlaceholder({ className }: { className: string }) {
 
 function LocationCard({ location, onPress, onPhotoExpired }: { location: Location; onPress: () => void; onPhotoExpired: () => void }) {
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl mb-4 overflow-hidden shadow-sm"
     >
@@ -144,7 +144,7 @@ function LinkRow({ link, isLast, onEdit }: { link: LocationLink; isLast: boolean
   const themeColors = useThemeColors();
   return (
     <View className={`flex-row items-center py-2.5 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`} style={{ gap: 8 }}>
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         onPress={() => Linking.openURL(link.url).catch((err) => console.error('Error opening URL:', err))}
         className="flex-1 flex-row items-center"
         style={{ gap: 8 }}
@@ -215,7 +215,7 @@ function LocationDetail({
         </TouchableOpacity>
         {error && (
           <>
-            <Text className="text-destructive text-sm mb-2">{t('standorte.detail.error')}</Text>
+            <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{t('standorte.detail.error')}</Text>
             <TouchableOpacity onPress={reload} accessibilityRole="button" hitSlop={8}>
               <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('standorte.keys.retry')}</Text>
             </TouchableOpacity>
@@ -236,7 +236,7 @@ function LocationDetail({
 
       {error && (
         <View className="flex-row items-center mb-3" style={{ gap: 8 }}>
-          <Text className="flex-1 text-destructive text-xs">{t('standorte.keys.refresh-error')}</Text>
+          <Text className="flex-1 text-destructive dark:text-destructive-dark text-xs">{t('standorte.keys.refresh-error')}</Text>
           <TouchableOpacity onPress={reload} accessibilityRole="button" hitSlop={8}>
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.keys.retry')}</Text>
           </TouchableOpacity>
@@ -262,7 +262,7 @@ function LocationDetail({
       {!!location.address && (
         <SectionCard title={t('standorte.detail.address')}>
           <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">{location.address}</Text>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             onPress={handleDirections}
             className="flex-row items-center self-start bg-primary dark:bg-primary-dark rounded-lg py-2.5 px-4"
             style={{ gap: 6 }}
@@ -343,8 +343,12 @@ function LocationDetail({
  * `locations:write` additionally manages locations, WiFi networks, links and key issue/return;
  * `locations:read_access` shows key holders and history read-only.
  */
-export default function OrteTab({ clubId }: { clubId: string }) {
-  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+export default function OrteTab({ clubId, locationId }: { clubId: string; locationId?: string }) {
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(locationId ?? null);
+  // Opened from the search with a place: show its detail, also when the screen is already mounted.
+  useEffect(() => {
+    if (locationId) setSelectedLocationId(locationId);
+  }, [locationId]);
   const { can } = useOwnMembership(clubId);
   const canWrite = can('locations:write');
   const canSeeKeys = canWrite || can('locations:read_access');

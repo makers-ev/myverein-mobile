@@ -2,6 +2,14 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import { detectSystemLanguage } from '@/contexts/translation/systemLanguage';
+
+// The boundary sits above LanguageProvider, so it carries its own two texts (device language, English otherwise).
+const TEXTS = {
+  de: { title: 'Etwas ist schiefgelaufen', body: 'Die App hat einen unerwarteten Fehler gemeldet. Versuche es bitte erneut.', retry: 'Erneut versuchen' },
+  en: { title: 'Something went wrong', body: 'The app ran into an unexpected problem. Please try again.', retry: 'Try again' },
+};
+
 interface ErrorBoundaryProps {
   children: ReactNode;
 }
@@ -36,20 +44,22 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   render() {
     const { error } = this.state;
+    const texts = detectSystemLanguage() === 'de' ? TEXTS.de : TEXTS.en;
 
     if (error) {
       return (
         <SafeAreaView className="flex-1 bg-muted dark:bg-muted-dark">
           <View className="flex-1 justify-center items-center p-6">
-            <Text className="text-xl font-bold mb-2 text-foreground dark:text-foreground-dark">Something went wrong</Text>
+            <Text className="text-xl font-bold mb-2 text-foreground dark:text-foreground-dark">{texts.title}</Text>
             <Text className="text-sm text-center mb-6 text-muted-foreground dark:text-muted-foreground-dark">
-              {error.message || 'An unexpected error occurred.'}
+              {texts.body}
             </Text>
             <TouchableOpacity
               className="bg-primary dark:bg-primary-dark py-3 px-6 rounded-lg"
               onPress={this.handleReset}
+              accessibilityRole="button"
             >
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold text-base">Try again</Text>
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold text-base">{texts.retry}</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>

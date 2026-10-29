@@ -74,9 +74,25 @@ export default function AppLockGate({ children }: AppLockGateProps) {
     );
   }
 
-  if (isLocked && lockPin) {
-    return <AppLockScreen pin={lockPin} onUnlock={() => setIsLocked(false)} />;
-  }
+  const showLock = isLocked && !!lockPin;
 
-  return <>{children}</>;
+  // The app stays mounted underneath (navigation state, drafts, scroll positions survive a short background trip); the
+  // lock screen covers it and the covered tree is hidden from touch and screen readers.
+  return (
+    <View style={{ flex: 1 }}>
+      <View
+        style={{ flex: 1 }}
+        pointerEvents={showLock ? 'none' : 'auto'}
+        accessibilityElementsHidden={showLock}
+        importantForAccessibility={showLock ? 'no-hide-descendants' : 'auto'}
+      >
+        {children}
+      </View>
+      {showLock ? (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, elevation: 1000 }} accessibilityViewIsModal>
+          <AppLockScreen pin={lockPin} onUnlock={() => setIsLocked(false)} />
+        </View>
+      ) : null}
+    </View>
+  );
 }

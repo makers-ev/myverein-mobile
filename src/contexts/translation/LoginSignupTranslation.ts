@@ -19,7 +19,7 @@ const LoginSignupTranslation: Translation = {
 
     'signup.title': 'Create Account',
     'signup.description': 'Create your account',
-    'signup.username': 'Username',
+    'signup.username': 'Your name',
     'signup.email': 'Email',
     'signup.password': 'Password',
     'signup.confirm-password': 'Re-enter password',
@@ -66,7 +66,7 @@ const LoginSignupTranslation: Translation = {
 
     'signup.title': 'Account erstellen',
     'signup.description': 'Erstelle deinen Account',
-    'signup.username': 'Benutzername',
+    'signup.username': 'Dein Name',
     'signup.email': 'E-Mail',
     'signup.password': 'Passwort',
     'signup.confirm-password': 'Passwort erneut eingeben',

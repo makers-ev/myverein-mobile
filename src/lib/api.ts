@@ -1,4 +1,5 @@
 import { authClient, backendUrl } from '@/auth/auth-client';
+import { RequestTimeoutError } from '@/lib/withTimeout';
 
 /** Mirrors the backend's `AppError`/`ErrorCode` shape (src/lib/errors.ts). */
 export class ApiError extends Error {
@@ -21,6 +22,15 @@ interface ApiFetchOptions {
 }
 
 /**
+ * Fetch-level failure with no HTTP response: React Native's `fetch` rejects with a `TypeError` ("Network request failed"),
+ * and the app's own `withTimeout` rejects with `RequestTimeoutError`. Any other error (a bug, an abort someone asked for)
+ * is not "offline" and must surface as what it is.
+ */
+export function isNetworkFailure(err: unknown): boolean {
+  return err instanceof TypeError || err instanceof RequestTimeoutError || (err instanceof Error && err.message === 'Network request failed');
+}
+
+/**
  * Typed wrapper around `authClient.$fetch` -- see README.md's "Adding a new
  * API request" for the full recipe this implements. Callers pass a bare
  * path (`/notifications`); this is the one place that prepends `backendUrl`,
@@ -28,10 +38,19 @@ interface ApiFetchOptions {
  * own `/api/auth` base, not the backend root.
  */
 export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
-  const { data, error } = await authClient.$fetch<T>(`${backendUrl}${path}`, {
-    method: options.method ?? 'GET',
-    body: options.body,
-  });
+  let result;
+  try {
+    result = await authClient.$fetch<T>(`${backendUrl}${path}`, {
+      method: options.method ?? 'GET',
+      body: options.body,
+    });
+  } catch (err) {
+    // The request never reached the server (no connection, timeout): status 0, so screens can say "no connection"
+    // (`mapApiError`) and read-only screens can fall back to their offline copy. Anything else is rethrown.
+    if (isNetworkFailure(err)) throw new ApiError(0, 'NETWORK_ERROR', 'Network request failed');
+    throw err;
+  }
+  const { data, error } = result;
 
   if (error) {
     // The backend answers `{ error: { code, message, details } }`; better-fetch spreads that body into `error`.

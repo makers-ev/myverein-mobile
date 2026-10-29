@@ -22,7 +22,7 @@ export default function InfoModal({
 }: InfoModalProps) {
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         className="flex-1 justify-center items-center"
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
         onPress={onClose}
@@ -30,7 +30,7 @@ export default function InfoModal({
       >
         <View className="bg-white rounded-lg p-5 max-w-xs w-80 relative">
           {showCloseIcon && (
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               onPress={onClose}
               className="absolute top-2 right-2 p-1"
               accessibilityLabel="Close"

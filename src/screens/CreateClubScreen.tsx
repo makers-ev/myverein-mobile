@@ -7,9 +7,12 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
+import Button from '@/components/ui/Button';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { withScheme } from '@/lib/withScheme';
+import { goToTab } from '@/navigation/navigationRef';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import {
   CLAIMED_ROLES,
@@ -97,7 +100,7 @@ function guessMime(name: string): string | null {
 
 function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       className={`px-3 py-1.5 rounded-full ${active ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark'}`}
     >
@@ -110,43 +113,12 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
   );
 }
 
-function PrimaryButton({
-  label,
-  onPress,
-  busy,
-  disabled,
-}: {
-  label: string;
-  onPress: () => void;
-  busy?: boolean;
-  disabled?: boolean;
-}) {
-  const themeColors = useThemeColors();
-  return (
-    <TouchableOpacity
-      className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center ${busy || disabled ? 'opacity-70' : ''}`}
-      onPress={onPress}
-      disabled={busy || disabled}
-    >
-      {busy ? (
-        <ActivityIndicator color={themeColors.primaryForeground} />
-      ) : (
-        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">{label}</Text>
-      )}
-    </TouchableOpacity>
-  );
+function PrimaryButton({ label, onPress, busy, disabled }: { label: string; onPress: () => void; busy?: boolean; disabled?: boolean }) {
+  return <Button label={label} onPress={onPress} loading={busy} disabled={disabled} />;
 }
 
 function SecondaryButton({ label, onPress, disabled }: { label: string; onPress: () => void; disabled?: boolean }) {
-  return (
-    <TouchableOpacity
-      className={`bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-lg py-3.5 items-center ${disabled ? 'opacity-70' : ''}`}
-      onPress={onPress}
-      disabled={disabled}
-    >
-      <Text className="text-foreground dark:text-foreground-dark text-base font-semibold">{label}</Text>
-    </TouchableOpacity>
-  );
+  return <Button variant="secondary" label={label} onPress={onPress} disabled={disabled} />;
 }
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
@@ -190,6 +162,9 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
   const [uploads, setUploads] = useState<UploadItem[]>([]);
   const [uploadSeq, setUploadSeq] = useState(0);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  // Last state the server has (step 1 is saved with "Weiter"): anything different is an unsaved draft -> ask before leaving.
+  const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify({ form: initialForm(registration), role: normalizeClaimedRole(registration?.claimedRole) }));
+  useUnsavedChangesGuard(JSON.stringify({ form, role }) !== savedSnapshot);
 
   const documents = registration?.documents ?? [];
   const isEv = form.legalForm === 'e_v';
@@ -228,6 +203,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
     setBusy(true);
     try {
       await saveDraft(buildInput());
+      setSavedSnapshot(JSON.stringify({ form, role }));
       setStep(2);
     } catch (err) {
       handleSaveError(err);
@@ -297,6 +273,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
       // Role may have changed on the summary step -- persist before submit.
       try {
         await saveDraft(buildInput());
+        setSavedSnapshot(JSON.stringify({ form, role }));
       } catch (err) {
         handleSaveError(err);
         return;
@@ -338,7 +315,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
       <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
         {step === 1 && (
           <>
-            <Text className={LABEL_CLASS}>{t('create-club.name.label')}</Text>
+            <Text className={LABEL_CLASS}>{t('create-club.name.label')} *</Text>
             <TextInput
               className={INPUT_CLASS}
               placeholder={t('create-club.name.placeholder')}
@@ -361,7 +338,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
 
             {isEv ? (
               <>
-                <Text className={LABEL_CLASS}>{t('create-club.register-court.label')}</Text>
+                <Text className={LABEL_CLASS}>{t('create-club.register-court.label')} *</Text>
                 <TextInput
                   className={INPUT_CLASS}
                   placeholder={t('create-club.register-court.placeholder')}
@@ -369,7 +346,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
                   value={form.registerCourt}
                   onChangeText={set('registerCourt')}
                 />
-                <Text className={LABEL_CLASS}>{t('create-club.register-number.label')}</Text>
+                <Text className={LABEL_CLASS}>{t('create-club.register-number.label')} *</Text>
                 <TextInput
                   className={INPUT_CLASS}
                   placeholder={t('create-club.register-number.placeholder')}
@@ -381,21 +358,22 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
               </>
             ) : null}
 
-            <Text className={LABEL_CLASS}>{t('create-club.street.label')}</Text>
-            <TextInput className={INPUT_CLASS} value={form.street} onChangeText={set('street')} />
+            <Text className={LABEL_CLASS}>{t('create-club.street.label')} *</Text>
+            <TextInput className={INPUT_CLASS} value={form.street} onChangeText={set('street')} autoComplete="street-address" textContentType="streetAddressLine1" />
 
             <View className="flex-row" style={{ gap: 10 }}>
               <View style={{ width: 110 }}>
-                <Text className={LABEL_CLASS}>{t('create-club.postal-code.label')}</Text>
+                <Text className={LABEL_CLASS}>{t('create-club.postal-code.label')} *</Text>
                 <TextInput
                   className={INPUT_CLASS}
                   keyboardType="number-pad"
+                  autoComplete="postal-code"
                   value={form.postalCode}
                   onChangeText={set('postalCode')}
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text className={LABEL_CLASS}>{t('create-club.city.label')}</Text>
+                <Text className={LABEL_CLASS}>{t('create-club.city.label')} *</Text>
                 <TextInput className={INPUT_CLASS} value={form.city} onChangeText={set('city')} />
               </View>
             </View>
@@ -416,7 +394,8 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
               {t('create-club.slug-hint')}
             </Text>
 
-            {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
+            {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{error}</Text> : null}
+            {!dataValid ? <Text className="text-xs mb-2 text-center text-muted-foreground dark:text-muted-foreground-dark">{t('create-club.required-hint')}</Text> : null}
             <PrimaryButton label={t('create-club.next')} onPress={() => void handleSaveData()} busy={busy} disabled={!dataValid} />
           </>
         )}
@@ -444,7 +423,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
                 {removingId === doc.id ? (
                   <ActivityIndicator color={themeColors.primary} />
                 ) : (
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button"
                     onPress={() => void handleRemove(doc.id)}
                     accessibilityLabel={t('create-club.docs.remove')}
                     hitSlop={8}
@@ -462,7 +441,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
                     {item.name}
                   </Text>
                   <Text
-                    className={`text-xs ${item.status === 'error' ? 'text-destructive' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}
+                    className={`text-xs ${item.status === 'error' ? 'text-destructive dark:text-destructive-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}
                   >
                     {item.status === 'error' ? (item.error ?? t('create-club.docs.error.upload')) : t('create-club.docs.uploading')}
                   </Text>
@@ -470,7 +449,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
                 {item.status === 'uploading' ? (
                   <ActivityIndicator color={themeColors.primary} />
                 ) : (
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button"
                     onPress={() => setUploads((prev) => prev.filter((u) => u.localId !== item.localId))}
                     accessibilityLabel={t('create-club.docs.dismiss')}
                     hitSlop={8}
@@ -488,7 +467,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
               ))}
             </View>
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               className="flex-row items-center justify-center border border-border dark:border-border-dark rounded-lg py-3 mb-2"
               style={{ gap: 8 }}
               onPress={() => void handlePickDocument()}
@@ -500,7 +479,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
               {t('create-club.docs.pdf-hint')}
             </Text>
 
-            {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
+            {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{error}</Text> : null}
             <View style={{ gap: 10 }}>
               <PrimaryButton
                 label={t('create-club.next')}
@@ -562,7 +541,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
               {t('create-club.slug-hint')}
             </Text>
 
-            {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
+            {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{error}</Text> : null}
             <View style={{ gap: 10 }}>
               <PrimaryButton label={t('create-club.submit')} onPress={() => void handleSubmit()} busy={busy} disabled={!confirmed} />
               <SecondaryButton label={t('create-club.back')} onPress={() => setStep(2)} disabled={busy} />
@@ -598,7 +577,7 @@ function StatusView({
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 25 }}
     >
       <View className="bg-card dark:bg-card-dark p-6 rounded-2xl">
-        {notice ? <Text className="text-destructive text-sm mb-3 text-center">{notice}</Text> : null}
+        {notice ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{notice}</Text> : null}
         <Text className="text-xs font-semibold uppercase text-center mb-1 text-muted-foreground dark:text-muted-foreground-dark">
           {registration.clubName}
         </Text>
@@ -674,7 +653,7 @@ export default function CreateClubScreen({ navigation }: Props) {
         <Text className="text-sm text-center mb-4 text-muted-foreground dark:text-muted-foreground-dark">
           {t('create-club.error.load')}
         </Text>
-        <TouchableOpacity className="bg-primary dark:bg-primary-dark rounded-lg py-3 px-6" onPress={() => void refetch()}>
+        <TouchableOpacity accessibilityRole="button" className="bg-primary dark:bg-primary-dark rounded-lg py-3 px-6" onPress={() => void refetch()}>
           <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">
             {t('verein.applications.retry')}
           </Text>
@@ -719,7 +698,7 @@ export default function CreateClubScreen({ navigation }: Props) {
         setEditing(true);
       }}
       // VereinScreen reloads its clubs on focus, so just return there.
-      onOpenClub={() => navigation.navigate('Verein')}
+      onOpenClub={() => goToTab('Verein')}
       onBack={() => navigation.goBack()}
     />
   );

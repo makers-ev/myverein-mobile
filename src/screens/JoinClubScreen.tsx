@@ -243,7 +243,7 @@ export default function JoinClubScreen({ navigation }: Props) {
               returnKeyType="go"
             />
             {loadErrorKey ? (
-              <Text className="text-destructive text-sm mb-2" accessibilityRole="alert" accessibilityLiveRegion="polite">
+              <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert" accessibilityLiveRegion="polite">
                 {t(loadErrorKey)}
               </Text>
             ) : null}
@@ -296,7 +296,7 @@ export default function JoinClubScreen({ navigation }: Props) {
             ) : null}
             {refreshFailed ? (
               <View className="mt-3" accessibilityRole="alert">
-                <Text className="text-destructive text-sm">{t('forms.apply.refreshFailed')}</Text>
+                <Text className="text-destructive dark:text-destructive-dark text-sm">{t('forms.apply.refreshFailed')}</Text>
                 <TouchableOpacity
                   onPress={() => void load(club.slug, club.mode ?? undefined, true)}
                   accessibilityRole="button"
@@ -354,12 +354,12 @@ export default function JoinClubScreen({ navigation }: Props) {
                       className={`self-start mt-1 ${withdrawBusy ? 'opacity-60' : ''}`}
                       style={{ minHeight: 44, justifyContent: 'center' }}
                     >
-                      <Text className="text-destructive text-sm font-semibold">{t('forms.apply.withdraw')}</Text>
+                      <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('forms.apply.withdraw')}</Text>
                     </TouchableOpacity>
                   </View>
                 ))}
                 {actionErrorKey ? (
-                  <Text className="text-destructive text-sm mt-2" accessibilityRole="alert" accessibilityLiveRegion="polite">
+                  <Text className="text-destructive dark:text-destructive-dark text-sm mt-2" accessibilityRole="alert" accessibilityLiveRegion="polite">
                     {t(actionErrorKey)}
                   </Text>
                 ) : null}
@@ -424,7 +424,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                     {resendState === 'sent' ? (
                       <Text className="text-sm mt-2 text-foreground dark:text-foreground-dark">{t('forms.apply.unverified.sent')}</Text>
                     ) : null}
-                    {resendState === 'failed' ? <Text className="text-destructive text-sm mt-2">{t('forms.apply.unverified.failed')}</Text> : null}
+                    {resendState === 'failed' ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-2">{t('forms.apply.unverified.failed')}</Text> : null}
                     <View className="flex-row flex-wrap mt-2" style={{ gap: 8 }}>
                       <TouchableOpacity
                         onPress={() => void resend()}

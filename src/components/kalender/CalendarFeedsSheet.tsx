@@ -29,7 +29,7 @@ function ActionButton({ label, onPress, disabled, destructive }: { label: string
       className={`justify-center px-3 ${disabled ? 'opacity-50' : ''}`}
       style={{ minHeight: 44 }}
     >
-      <Text className={`text-sm font-semibold ${destructive ? 'text-destructive' : 'text-primary dark:text-primary-dark'}`}>{label}</Text>
+      <Text className={`text-sm font-semibold ${destructive ? 'text-destructive dark:text-destructive-dark' : 'text-primary dark:text-primary-dark'}`}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -61,7 +61,7 @@ function NewLinkCard({ link, onDone }: { link: NewCalendarFeed; onDone: () => vo
   return (
     <View className="border border-primary dark:border-primary-dark rounded-xl p-3 mb-4" accessibilityLiveRegion="polite">
       <Text className="text-foreground dark:text-foreground-dark text-sm font-bold mb-1">{t('feeds.new.title')}</Text>
-      <Text className="text-destructive text-xs mb-2">{t('feeds.warning')}</Text>
+      <Text className="text-destructive dark:text-destructive-dark text-xs mb-2">{t('feeds.warning')}</Text>
       <Text selectable className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">
         {url}
       </Text>
@@ -70,7 +70,7 @@ function NewLinkCard({ link, onDone }: { link: NewCalendarFeed; onDone: () => vo
         <ActionButton label={t('feeds.share')} onPress={() => void share()} />
         <ActionButton label={t('ui.done')} onPress={onDone} />
       </View>
-      {message ? <Text className="text-destructive text-xs mt-1">{message}</Text> : null}
+      {message ? <Text className="text-destructive dark:text-destructive-dark text-xs mt-1">{message}</Text> : null}
     </View>
   );
 }
@@ -171,7 +171,7 @@ export default function CalendarFeedsSheet({ visible, onClose, clubId, calendars
         <ActivityIndicator color={themeColors.primary} />
       ) : error && feeds.length === 0 ? (
         <View>
-          <Text className="text-destructive text-sm mb-1">{t('feeds.list.error')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm mb-1">{t('feeds.list.error')}</Text>
           <ActionButton label={t('connection.retry')} onPress={() => void refetch()} />
         </View>
       ) : feeds.length === 0 ? (

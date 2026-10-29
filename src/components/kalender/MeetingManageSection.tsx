@@ -103,7 +103,7 @@ export default function MeetingManageSection({ meeting, onUpdate, onDelete }: Pr
       ) : null}
 
       {error ? (
-        <Text className="text-destructive text-sm mt-3" accessibilityRole="alert">
+        <Text className="text-destructive dark:text-destructive-dark text-sm mt-3" accessibilityRole="alert">
           {error}
         </Text>
       ) : null}
@@ -118,7 +118,7 @@ export default function MeetingManageSection({ meeting, onUpdate, onDelete }: Pr
         {busy === 'delete' ? (
           <ActivityIndicator color={themeColors.destructive} size="small" />
         ) : (
-          <Text className="text-destructive text-sm font-semibold">{t('treffen.delete')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('treffen.delete')}</Text>
         )}
       </TouchableOpacity>
     </View>

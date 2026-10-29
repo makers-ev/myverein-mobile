@@ -52,7 +52,7 @@ function NotificationCard({ n, onChange }: { n: NotificationItem; onChange: () =
       <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
         <Text className="flex-1 text-foreground dark:text-foreground-dark font-bold text-sm">{title}</Text>
         <View className="flex-row items-center" style={{ gap: 4 }}>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             onPress={() => void (n.read ? markUnread(n.id) : markRead(n.id)).then(onChange)}
             hitSlop={8}
             className="p-1"
@@ -65,7 +65,7 @@ function NotificationCard({ n, onChange }: { n: NotificationItem; onChange: () =
             )}
           </TouchableOpacity>
           {n.deletable && (
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               onPress={handleDelete}
               hitSlop={8}
               className="p-1"
@@ -102,7 +102,7 @@ export default function NotificationsScreen() {
 
         <View className="flex-row mb-4" style={{ gap: 8 }}>
           {(['unread', 'read'] as const).map((value) => (
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               key={value}
               onPress={() => setTab(value)}
               className={`px-4 py-2 rounded-full ${

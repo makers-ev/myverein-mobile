@@ -1,5 +1,7 @@
 import { ApiError, apiErrorFromResponse } from './api';
-import { apiErrorKey, apiErrorMessage, erasureBlockerKey } from './apiErrorMessage';
+import { mapApiError } from './mapApiError';
+import { apiErrorKey, apiErrorMessage, erasureBlockerKey, isOfflineError } from './apiErrorMessage';
+import { RequestTimeoutError } from './withTimeout';
 
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
 
@@ -59,5 +61,39 @@ describe('apiErrorFromResponse', () => {
   it('falls back to UNKNOWN for an empty or broken body', () => {
     expect(apiErrorFromResponse(500, null).code).toBe('UNKNOWN');
     expect(apiErrorFromResponse(502, '<html>').code).toBe('UNKNOWN');
+  });
+});
+
+describe('mapApiError (Wave 14 DS2)', () => {
+  const t = (key: string) => `[${key}]`;
+  it('maps stable backend codes and auth results without echoing server text', () => {
+    expect(mapApiError(new ApiError(400, 'query_too_short', 'Query too short'), t)).toBe('[api.error.query-too-short]');
+    expect(mapApiError(new ApiError(400, 'QUERY_TOO_SHORT', 'x'), t)).toBe('[api.error.query-too-short]');
+    expect(mapApiError({ code: 'INVALID_EMAIL_OR_PASSWORD', status: 401, error: 'Unable to sign in.' }, t)).toBe('[auth.error.invalid-credentials]');
+    expect(mapApiError({ status: 429 }, t)).toBe('[api.error.rate-limit]');
+    expect(mapApiError({ error: 'x' }, t, 'custom.key')).toBe('[custom.key]');
+  });
+  it('shows a no-connection text for network failures', () => {
+    expect(mapApiError(new ApiError(0, 'UNKNOWN', 'Failed to fetch'), t)).toBe('[api.error.offline]');
+    expect(mapApiError(new TypeError('Network request failed'), t)).toBe('[api.error.offline]');
+    expect(mapApiError({ status: 0 }, t)).toBe('[api.error.offline]');
+  });
+});
+
+describe('network failures (Wave 14 N5)', () => {
+  it('apiFetch-level network errors become status 0 and map to the offline text', () => {
+    const t = (key: string) => `[${key}]`;
+    expect(mapApiError(new ApiError(0, 'NETWORK_ERROR', 'Network request failed'), t)).toBe('[api.error.offline]');
+  });
+});
+
+describe('offline detection (narrow)', () => {
+  it('counts only TypeError, "Network request failed" and the own timeout as offline', () => {
+    expect(isOfflineError(new TypeError('Network request failed'))).toBe(true);
+    expect(isOfflineError(new Error('Network request failed'))).toBe(true);
+    expect(isOfflineError(new RequestTimeoutError())).toBe(true);
+    expect(isOfflineError(new Error('request timed out by the server proxy'))).toBe(false);
+    expect(isOfflineError(new Error('aborted'))).toBe(false);
+    expect(isOfflineError(new ApiError(500, 'X', 'x'))).toBe(false);
   });
 });

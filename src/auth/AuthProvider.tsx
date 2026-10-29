@@ -2,6 +2,7 @@ import React, { createContext, ReactNode, useCallback, useContext, useEffect, us
 
 import { clearDocumentFileCache } from '@/lib/media';
 import { clearAllCardCache } from '@/lib/memberCardCache';
+import { clearOfflineCache } from '@/lib/offlineCache';
 
 import { resumePushRegistration, unregisterPushToken } from '@/notifications/pushRegistration';
 import { authClient, websiteUrl } from './auth-client';
@@ -17,6 +18,8 @@ interface AuthResult {
   error?: string;
   /** Machine-readable backend/Better Auth code when there is one (e.g. `ERASURE_SOLE_OWNER`); never shown raw. */
   code?: string;
+  /** HTTP status of the failed call (0 = no connection); lets the UI pick a localised text. */
+  status?: number;
 }
 
 /** Minimal shape of a Better Auth session as returned by `listSessions()`. */
@@ -76,6 +79,11 @@ interface AuthContextType {
   requestPasswordReset: (email: string) => Promise<AuthResult>;
 }
 
+/** Failed Better Auth call as a result: fixed English `error` (developer text, never shown) plus `code`/`status` for `mapApiError`. */
+function failure(error: { code?: unknown; status?: number }, message: string): AuthResult {
+  return { success: false, error: message, code: typeof error.code === 'string' ? error.code : undefined, status: error.status };
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -95,7 +103,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await authClient.signIn.email({ email, password });
 
     if (error) {
-      return { success: false, error: error.message ?? 'Unable to sign in.' };
+      // A bare 401 from the sign-in call (no error code) means wrong e-mail or password.
+      const code = typeof error.code === 'string' && error.code ? error.code : error.status === 401 ? 'INVALID_EMAIL_OR_PASSWORD' : undefined;
+      return { ...failure({ ...error, code }, 'Unable to sign in.') };
     }
 
     // Better Auth's twoFactor plugin short-circuits the normal session
@@ -116,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await authClient.twoFactor.verifyTotp({ code });
 
     if (error) {
-      return { success: false, error: error.message ?? 'Invalid verification code.' };
+      return { ...failure(error, 'Invalid verification code.') };
     }
 
     setTwoFactorPending(false);
@@ -137,7 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (error) {
-      return { success: false, error: error.message ?? 'Unable to create account.' };
+      return { ...failure(error, 'Unable to create account.') };
     }
 
     return { success: true };
@@ -150,7 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (error) {
-      return { success: false, error: error.message ?? 'Unable to resend the verification email.' };
+      return { ...failure(error, 'Unable to resend the verification email.') };
     }
 
     return { success: true };
@@ -163,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (error) {
-      return { success: false, error: error.message ?? 'Unable to send the password reset email.' };
+      return { ...failure(error, 'Unable to send the password reset email.') };
     }
 
     return { success: true };
@@ -174,7 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isPending && !session && !sessionError) {
       void clearAllCardCache();
-      clearDocumentFileCache();
+      void clearOfflineCache();
       clearDocumentFileCache();
     }
   }, [isPending, session, sessionError]);
@@ -188,6 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Needs the still-valid session; best effort and time-boxed, never blocks the logout.
     try {
       void clearAllCardCache();
+      void clearOfflineCache();
       await unregisterPushToken();
       await authClient.signOut();
       setTwoFactorPending(false);
@@ -204,10 +215,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (error) {
       resumePushRegistration();
-      return { success: false, error: error.message ?? 'Unable to delete account.', code: typeof error.code === 'string' ? error.code : undefined };
+      return { ...failure(error, 'Unable to delete account.') };
     }
 
     void clearAllCardCache();
+    void clearOfflineCache();
     clearDocumentFileCache();
     scheduleSessionRefetch();
     return { success: true };
@@ -217,7 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await authClient.updateUser({ name });
 
     if (error) {
-      return { success: false, error: error.message ?? 'Unable to update profile.' };
+      return { ...failure(error, 'Unable to update profile.') };
     }
 
     return { success: true };
@@ -235,7 +247,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) {
-        return { success: false, error: error.message ?? 'Unable to change password.' };
+        return { ...failure(error, 'Unable to change password.') };
       }
 
       return { success: true };
@@ -247,7 +259,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await authClient.listSessions();
 
     if (error) {
-      return { success: false, error: error.message ?? 'Unable to load sessions.', sessions: [] };
+      return { ...failure(error, 'Unable to load sessions.'), sessions: [] };
     }
 
     return { success: true, sessions: data ?? [] };
@@ -257,7 +269,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await authClient.revokeSession({ token });
 
     if (error) {
-      return { success: false, error: error.message ?? 'Unable to revoke session.' };
+      return { ...failure(error, 'Unable to revoke session.') };
     }
 
     return { success: true };
@@ -271,7 +283,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await authClient.twoFactor.enable({ password });
 
     if (error) {
-      return { success: false, error: error.message ?? 'Unable to enable two-factor authentication.' };
+      return { ...failure(error, 'Unable to enable two-factor authentication.') };
     }
 
     // `data` is a discriminated union ({ method: "otp" } | { method: "totp"; totpURI; backupCodes })
@@ -285,7 +297,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await authClient.twoFactor.disable({ password });
 
     if (error) {
-      return { success: false, error: error.message ?? 'Unable to disable two-factor authentication.' };
+      return { ...failure(error, 'Unable to disable two-factor authentication.') };
     }
 
     return { success: true };

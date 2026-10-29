@@ -44,7 +44,7 @@ export default function MyApplicationsStatus({ open, decided, phase, errorKey, d
   const error =
     errorKey !== null ? (
       <View className="mt-4" accessibilityRole="alert">
-        <Text className="text-destructive text-sm">{t('forms.apply.status.loadFailed')}</Text>
+        <Text className="text-destructive dark:text-destructive-dark text-sm">{t('forms.apply.status.loadFailed')}</Text>
         <TouchableOpacity onPress={onRetry} accessibilityRole="button" className="self-start" style={{ minHeight: 44, justifyContent: 'center' }}>
           <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('forms.apply.retry')}</Text>
         </TouchableOpacity>

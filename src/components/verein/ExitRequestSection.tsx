@@ -198,7 +198,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
   const staleBanner =
     loaded && error ? (
       <View className="mt-3">
-        <Text className="text-destructive text-sm mb-1" accessibilityRole="alert">
+        <Text className="text-destructive dark:text-destructive-dark text-sm mb-1" accessibilityRole="alert">
           {t('exit.refresh-error')}
         </Text>
         <TouchableOpacity onPress={() => void refetch()} style={{ minHeight: 44, justifyContent: 'center' }} accessibilityRole="button">
@@ -213,7 +213,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
   } else if (!loaded && error) {
     body = (
       <View>
-        <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
+        <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
           {t('exit.load-error')}
         </Text>
         <TouchableOpacity
@@ -248,7 +248,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
           accessibilityLabel={t('exit.withdraw')}
           accessibilityState={{ disabled: withdrawing, busy: withdrawing }}
         >
-          {withdrawing ? <ActivityIndicator color={themeColors.primary} /> : <Text className="text-destructive text-sm font-bold">{t('exit.withdraw')}</Text>}
+          {withdrawing ? <ActivityIndicator color={themeColors.primary} /> : <Text className="text-destructive dark:text-destructive-dark text-sm font-bold">{t('exit.withdraw')}</Text>}
         </TouchableOpacity>
       </View>
     );
@@ -259,7 +259,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
       <View>
         <Text className={`${mutedClass} mb-3`}>{noticeHint(preview, t)}</Text>
         {lastRejected ? (
-          <Text className="text-destructive text-sm mb-3">{t('exit.rejected', { note: lastRejected.decisionNote ?? '—' })}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{t('exit.rejected', { note: lastRejected.decisionNote ?? '—' })}</Text>
         ) : null}
         <TouchableOpacity
           className="border border-border dark:border-border-dark rounded-xl items-center justify-center"
@@ -268,7 +268,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
           accessibilityRole="button"
           accessibilityLabel={t('exit.start')}
         >
-          <Text className="text-destructive text-sm font-bold">{t('exit.start')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm font-bold">{t('exit.start')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -287,7 +287,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
         </Text>
       ) : null}
       {actionError ? (
-        <Text className="text-destructive text-sm mt-3" accessibilityRole="alert">
+        <Text className="text-destructive dark:text-destructive-dark text-sm mt-3" accessibilityRole="alert">
           {actionError}
         </Text>
       ) : null}
@@ -354,7 +354,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
           />
         ) : exitForm.error ? (
           <View>
-            <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
+            <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
               {t('forms.exit.loadError')}
             </Text>
             <TouchableOpacity
@@ -375,7 +375,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
                 style={{ minHeight: 44 }}
                 accessibilityRole="button"
               >
-                <Text className="text-destructive text-sm font-bold">{t('forms.exit.skipForm')}</Text>
+                <Text className="text-destructive dark:text-destructive-dark text-sm font-bold">{t('forms.exit.skipForm')}</Text>
               </TouchableOpacity>
             ) : null}
           </View>

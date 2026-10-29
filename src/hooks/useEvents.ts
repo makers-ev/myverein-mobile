@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
+import { isOfflineError } from '@/lib/apiErrorMessage';
+import { dropOfflineClubIfDenied, getWipeGeneration, loadOffline, saveOffline } from '@/lib/offlineCache';
 import { deleteSeriesQuery, type EventSeries, type SeriesPreview, type SeriesRequestOptions, type SeriesScope } from '@/lib/eventSeries';
 import { cancelBody, withNotify, withNotifyQuery, type CancelPreview } from '@/lib/notifyOptions';
 
@@ -56,6 +58,8 @@ export function useEvents(clubId: string | null, range?: EventRange) {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(!!clubId);
   const [loadError, setLoadError] = useState<unknown>(null);
+  // Set while the list is the offline copy (no connection): ISO time the copy was saved. Read-only data.
+  const [staleAt, setStaleAt] = useState<string | null>(null);
   // Only the latest request may write state, so a slow older month can't overwrite a newer one.
   const requestId = useRef(0);
   const from = range?.from;
@@ -63,6 +67,7 @@ export function useEvents(clubId: string | null, range?: EventRange) {
 
   const refetch = useCallback(async () => {
     const id = ++requestId.current;
+    const wipeGeneration = getWipeGeneration();
     if (!clubId) {
       setEvents([]);
       setLoading(false);
@@ -75,11 +80,20 @@ export function useEvents(clubId: string | null, range?: EventRange) {
       if (from) params.append('from', from);
       if (to) params.append('to', to);
       const { data } = await apiFetch<{ data: CalendarEvent[] }>(`/events?${params.toString()}`);
-      if (id === requestId.current) setEvents(Array.isArray(data) ? data.filter(Boolean).map(normalizeEvent) : []);
-    } catch (err) {
+      const list = Array.isArray(data) ? data.filter(Boolean).map(normalizeEvent) : [];
       if (id === requestId.current) {
-        setEvents([]);
-        setLoadError(err);
+        setEvents(list);
+        setStaleAt(null);
+        void saveOffline('events', clubId, `${from ?? ''}|${to ?? ''}`, list, wipeGeneration);
+      }
+    } catch (err) {
+      dropOfflineClubIfDenied(err, clubId);
+      // No connection: show the last copy of this range (read-only) instead of an error, when there is one.
+      const copy = isOfflineError(err) ? await loadOffline<CalendarEvent[]>('events', clubId, `${from ?? ''}|${to ?? ''}`) : null;
+      if (id === requestId.current) {
+        setEvents(copy ? copy.payload : []);
+        setStaleAt(copy ? copy.savedAt : null);
+        setLoadError(copy ? null : err);
       }
     } finally {
       if (id === requestId.current) setLoading(false);
@@ -90,7 +104,7 @@ export function useEvents(clubId: string | null, range?: EventRange) {
     void refetch();
   }, [refetch]);
 
-  return { events, loading, loadError, refetch };
+  return { events, loading, loadError, staleAt, refetch };
 }
 
 /** RSVP actions for a club's events -- kept separate so callers that only need these don't pull in the list fetch. */

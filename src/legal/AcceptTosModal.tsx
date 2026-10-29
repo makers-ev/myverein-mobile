@@ -70,7 +70,7 @@ export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProp
                         ))}
                     </ScrollView>
 
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button"
                         activeOpacity={0.7}
                         onPress={() => setIsChecked(!isChecked)}
                         className="flex-row items-center mb-6"
@@ -93,7 +93,7 @@ export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProp
                         </Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button"
                         disabled={!isChecked}
                         onPress={handleAccept}
                         className={`py-4 rounded-xl items-center ${

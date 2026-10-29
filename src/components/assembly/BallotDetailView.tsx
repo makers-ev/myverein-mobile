@@ -167,7 +167,7 @@ export default function BallotDetailView({ clubId, ballotId, onBack }: Props) {
 
       {failure ? (
         <View className="mb-3">
-          <Text accessibilityRole="alert" className="text-destructive text-sm">
+          <Text accessibilityRole="alert" className="text-destructive dark:text-destructive-dark text-sm">
             {failure}
           </Text>
         </View>

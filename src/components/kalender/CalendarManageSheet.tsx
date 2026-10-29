@@ -93,7 +93,7 @@ export default function CalendarManageSheet({ visible, onClose, clubId, calendar
             <DepartmentPicker departments={departments} value={departmentId} onChange={setDepartmentId} />
           </Field>
         ) : null}
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button"
           className={`bg-primary dark:bg-primary-dark rounded-xl py-3 items-center ${!name.trim() || creating ? 'opacity-50' : ''}`}
           onPress={() => void handleCreate()}
           disabled={!name.trim() || creating}
@@ -203,7 +203,7 @@ function CalendarCard({
 
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl mb-3 overflow-hidden">
-      <TouchableOpacity onPress={onToggle} className="flex-row items-center p-3" style={{ gap: 10 }}>
+      <TouchableOpacity accessibilityRole="button" onPress={onToggle} className="flex-row items-center p-3" style={{ gap: 10 }}>
         <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: color }} />
         <View className="flex-1">
           <Text className="text-foreground dark:text-foreground-dark font-bold text-sm">{calendar.name}</Text>
@@ -230,7 +230,7 @@ function CalendarCard({
                 maxLength={200}
                 placeholderTextColor={themeColors.mutedForeground}
               />
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 onPress={() => void run(() => updateCalendar(calendar.id, { name: name.trim() }))}
                 disabled={busy || !name.trim() || name.trim() === calendar.name}
                 className={`bg-primary dark:bg-primary-dark rounded-xl px-3 py-2.5 ${busy || !name.trim() || name.trim() === calendar.name ? 'opacity-50' : ''}`}
@@ -261,7 +261,7 @@ function CalendarCard({
                 </Text>
                 <View className="flex-row flex-wrap mb-3" style={{ gap: 6 }}>
                   {grants.map((g) => (
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button"
                       key={g.id}
                       disabled={busy}
                       onPress={() =>
@@ -332,8 +332,8 @@ function CalendarCard({
           {locked ? (
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('kalender.manage.default.locked')}</Text>
           ) : (
-            <TouchableOpacity onPress={confirmDelete} disabled={busy} className="self-start py-1">
-              <Text className="text-destructive text-sm font-semibold">{t('kalender.manage.delete')}</Text>
+            <TouchableOpacity accessibilityRole="button" onPress={confirmDelete} disabled={busy} className="self-start py-1">
+              <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('kalender.manage.delete')}</Text>
             </TouchableOpacity>
           )}
         </View>

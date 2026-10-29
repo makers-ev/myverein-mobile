@@ -98,7 +98,7 @@ describe('decision errors', () => {
     expect(reviewErrorKey(new ApiError(422, 'UNPROCESSABLE_ENTITY', 'Unknown or archived category'))).toBe('forms.review.err.category');
     expect(reviewErrorKey(new ApiError(403, 'FORBIDDEN', 'm'))).toBe('api.error.forbidden');
     expect(reviewErrorKey(new ApiError(409, 'CONFLICT', 'm', { code: 'member_rejoin_blocked' }))).toBe('forms.err.rejoinBlocked');
-    expect(reviewErrorKey(new TypeError('network'))).toBe('alert.general-error-description');
+    expect(reviewErrorKey(new Error('boom'))).toBe('alert.general-error-description');
   });
 });
 

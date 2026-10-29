@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
+import { isOfflineError } from '@/lib/apiErrorMessage';
+import { dropOfflineClubIfDenied, getWipeGeneration, loadOffline, saveOffline, toCachedMember, UNCACHED_STATUSES } from '@/lib/offlineCache';
 
 export const MEMBER_STATUSES = ['interessent', 'probe', 'aktiv', 'ruhend', 'ausgetreten', 'ausgeschlossen', 'verstorben'] as const;
 export type MemberStatus = (typeof MEMBER_STATUSES)[number];
@@ -124,6 +126,8 @@ export function useClubMembers(clubId: string | null, filters: ClubMemberFilters
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState(false);
+  // Set while the list is the offline copy (no connection): ISO time it was saved. Read-only, non-sensitive columns only.
+  const [staleAt, setStaleAt] = useState<string | null>(null);
 
   const requestId = useRef(0);
   const pageRef = useRef(1);
@@ -135,6 +139,7 @@ export function useClubMembers(clubId: string | null, filters: ClubMemberFilters
 
   const refetch = useCallback(async () => {
     const id = ++requestId.current;
+    const wipeGeneration = getWipeGeneration();
     const parsed = JSON.parse(filterKey) as [string, MemberStatus[], string[], number];
     const active: ClubMemberFilters = { q: parsed[0], status: parsed[1], category: parsed[2], pageSize: parsed[3] };
     pageRef.current = 1;
@@ -154,11 +159,23 @@ export function useClubMembers(clubId: string | null, filters: ClubMemberFilters
       if (id !== requestId.current) return;
       setMembers(res.data);
       setTotal(res.total);
-    } catch {
+      setStaleAt(null);
+      // The unfiltered first page is what an offline start shows (no contact data, see `toCachedMember`).
+      if (!active.q && !(active.category && active.category.length > 0)) {
+        const keep = res.data.filter((m) => !UNCACHED_STATUSES.includes(m.status) && !UNCACHED_STATUSES.includes(m.effectiveStatus));
+        void saveOffline('members', clubId, filterKey, { members: keep.map(toCachedMember), total: res.total }, wipeGeneration);
+      }
+    } catch (err) {
+      dropOfflineClubIfDenied(err, clubId);
+      const copy =
+        isOfflineError(err) && !active.q && !(active.category && active.category.length > 0)
+          ? await loadOffline<{ members: ClubMember[]; total: number }>('members', clubId, filterKey)
+          : null;
       if (id !== requestId.current) return;
-      setMembers([]);
-      setTotal(0);
-      setError(true);
+      setMembers(copy ? copy.payload.members.map((m) => ({ ...m, leftAt: null })) : []);
+      setTotal(copy ? copy.payload.total : 0);
+      setStaleAt(copy ? copy.savedAt : null);
+      setError(!copy);
     } finally {
       if (id === requestId.current) {
         setFetching(false);
@@ -179,7 +196,7 @@ export function useClubMembers(clubId: string | null, filters: ClubMemberFilters
 
   // Derived synchronously: true from the first render with a new club/filter, so no empty-state flash.
   const loading = fetching || (!!clubId && settledKey !== currentKey);
-  const hasMore = members.length < total;
+  const hasMore = members.length < total && !staleAt;
 
   const loadMore = useCallback(async () => {
     if (!clubId || loading || loadingMore || !hasMore) return;
@@ -205,7 +222,7 @@ export function useClubMembers(clubId: string | null, filters: ClubMemberFilters
     }
   }, [clubId, filterKey, loading, loadingMore, hasMore]);
 
-  return { members, total, loading, loadingMore, error, loadMoreError, hasMore, refetch, loadMore };
+  return { members, total, loading, loadingMore, error, loadMoreError, hasMore, staleAt, refetch, loadMore };
 }
 
 const DIRECTORY_PAGE_SIZE = 100;

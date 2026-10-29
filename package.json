@@ -60,7 +60,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "jest"
+    "check:i18n": "node scripts/check-i18n.cjs",
+    "test": "node scripts/check-i18n.cjs && jest"
   },
   "jest": {
     "preset": "jest-expo"

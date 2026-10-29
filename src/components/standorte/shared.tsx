@@ -23,9 +23,9 @@ export type Tone = 'success' | 'warning' | 'destructive' | 'primary' | 'muted';
 
 // Full literal class names so NativeWind's content scan picks them up.
 const TONE_CLASSES: Record<Tone, { bg: string; text: string }> = {
-  success: { bg: 'bg-success/15 dark:bg-success-dark/15', text: 'text-success dark:text-success-dark' },
-  warning: { bg: 'bg-warning/15 dark:bg-warning-dark/15', text: 'text-warning dark:text-warning-dark' },
-  destructive: { bg: 'bg-destructive/15 dark:bg-destructive-dark/15', text: 'text-destructive dark:text-destructive-dark' },
+  success: { bg: 'bg-success/10 dark:bg-success-dark/10', text: 'text-success dark:text-success-dark' },
+  warning: { bg: 'bg-warning/10 dark:bg-warning-dark/10', text: 'text-warning dark:text-warning-dark' },
+  destructive: { bg: 'bg-destructive/10 dark:bg-destructive-dark/10', text: 'text-destructive dark:text-destructive-dark' },
   primary: { bg: 'bg-primary/10 dark:bg-primary-dark/10', text: 'text-primary dark:text-primary-dark' },
   muted: { bg: 'bg-muted dark:bg-muted-dark', text: 'text-muted-foreground dark:text-muted-foreground-dark' },
 };
@@ -61,7 +61,7 @@ export function ChipPicker<T extends string>({
   const chips = options.map((o) => {
     const active = o.value === value;
     return (
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         key={o.value}
         onPress={() => onChange(o.value)}
         className={`px-3 py-1.5 rounded-full border ${
@@ -90,7 +90,7 @@ export function ChipPicker<T extends string>({
 export function IconButton({ kind, onPress, label }: { kind: 'add' | 'edit'; onPress: () => void; label: string }) {
   const themeColors = useThemeColors();
   return kind === 'add' ? (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       accessibilityLabel={label}
       className="w-9 h-9 rounded-full bg-primary dark:bg-primary-dark items-center justify-center"
@@ -98,7 +98,7 @@ export function IconButton({ kind, onPress, label }: { kind: 'add' | 'edit'; onP
       <Plus size={18} color={themeColors.primaryForeground} />
     </TouchableOpacity>
   ) : (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       accessibilityLabel={label}
       hitSlop={8}

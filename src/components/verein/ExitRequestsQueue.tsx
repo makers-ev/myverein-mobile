@@ -52,7 +52,7 @@ function Checklist({ detail, loading, error }: { detail: ExitRequestDetail | nul
       {loading ? (
         <Text className={muted}>{t('admin.exits.checklist.loading')}</Text>
       ) : error || !detail ? (
-        <Text className="text-destructive text-xs">{t('admin.exits.checklist.error')}</Text>
+        <Text className="text-destructive dark:text-destructive-dark text-xs">{t('admin.exits.checklist.error')}</Text>
       ) : detail.checklist.isEmpty ? (
         <Text className={muted}>{t('admin.exits.checklist.empty')}</Text>
       ) : (
@@ -189,7 +189,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
   const staleBanner =
     loaded && error ? (
       <View className="mb-2">
-        <Text className="text-destructive text-sm mb-1" accessibilityRole="alert">
+        <Text className="text-destructive dark:text-destructive-dark text-sm mb-1" accessibilityRole="alert">
           {t('admin.exits.refresh-error')}
         </Text>
         <TouchableOpacity onPress={() => void refetch()} style={{ minHeight: 44, justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('verein.retry')}>
@@ -204,7 +204,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
   } else if (!loaded && error) {
     body = (
       <View>
-        <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
+        <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
           {t('admin.exits.error')}
         </Text>
         <TouchableOpacity
@@ -227,7 +227,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
         <View key={r.id} className={`py-3 ${i === requests.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}>
           <View className="flex-row items-center justify-between" style={{ gap: 8 }}>
             <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm flex-1">{r.memberName ?? '—'}</Text>
-            {r.kind === 'exclusion' ? <Text className="text-destructive text-xs font-semibold">{t('admin.exits.kind.exclusion')}</Text> : null}
+            {r.kind === 'exclusion' ? <Text className="text-destructive dark:text-destructive-dark text-xs font-semibold">{t('admin.exits.kind.exclusion')}</Text> : null}
             {!r.hasAccount ? <Text className={muted}>{t('admin.exits.no-account')}</Text> : null}
           </View>
           <Text className={`${muted} mt-0.5`}>{t('admin.exits.requested', { date: formatDay(r.requestedOn) })}</Text>
@@ -254,7 +254,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
               accessibilityRole="button"
               accessibilityLabel={`${t('admin.exits.reject')}: ${r.memberName ?? ''}`}
             >
-              <Text className="text-destructive text-sm font-bold">{t('admin.exits.reject')}</Text>
+              <Text className="text-destructive dark:text-destructive-dark text-sm font-bold">{t('admin.exits.reject')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -268,7 +268,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
         {t('admin.exits.title')}
       </Text>
       {listError ? (
-        <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
+        <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
           {listError}
         </Text>
       ) : null}

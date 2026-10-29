@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
+import { dropOfflineClubIfDenied } from '@/lib/offlineCache';
 import type { ClubMember } from './useClubMembers';
 
 export type ClubPermission =
@@ -61,8 +62,9 @@ export function useOwnMembership(clubId: string | null) {
     try {
       const { data } = await apiFetch<{ data: ClubMember }>(`/club-members/me?clubId=${clubId}`);
       if (id === requestId.current) setStored({ clubId, member: data });
-    } catch {
-      // Keep no membership; can() stays false (deny by default).
+    } catch (err) {
+      // Keep no membership; can() stays false (deny by default). 403/404 = no longer a member: drop the offline copies.
+      dropOfflineClubIfDenied(err, clubId);
     } finally {
       if (id === requestId.current) setLoading(false);
     }

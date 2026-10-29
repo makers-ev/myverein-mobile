@@ -238,7 +238,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
             className={`flex-1 border border-border dark:border-border-dark rounded-xl items-center justify-center ${busy ? 'opacity-60' : ''}`}
             style={{ minHeight: 48 }}
           >
-            <Text className="text-destructive font-bold">{t('verein.applications.reject')}</Text>
+            <Text className="text-destructive dark:text-destructive-dark font-bold">{t('verein.applications.reject')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => void decide('approve')}
@@ -291,7 +291,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
         >
           {error ? (
             <View className="mt-4" accessibilityRole="alert">
-              <Text className="text-destructive text-sm mb-3">{t(reviewErrorKey(error))}</Text>
+              <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{t(reviewErrorKey(error))}</Text>
               <TouchableOpacity
                 onPress={() => void refetch()}
                 accessibilityRole="button"
@@ -488,7 +488,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
                               />
                             ) : null}
                             {fileErrors[f.id] ? (
-                              <Text className="text-destructive text-xs mt-1" accessibilityRole="alert" accessibilityLiveRegion="polite">
+                              <Text className="text-destructive dark:text-destructive-dark text-xs mt-1" accessibilityRole="alert" accessibilityLiveRegion="polite">
                                 {fileErrors[f.id]}
                               </Text>
                             ) : null}
@@ -659,7 +659,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
               ) : null}
 
               {errorKey ? (
-                <Text className="text-destructive text-sm mt-4" accessibilityRole="alert" accessibilityLiveRegion="polite">
+                <Text className="text-destructive dark:text-destructive-dark text-sm mt-4" accessibilityRole="alert" accessibilityLiveRegion="polite">
                   {t(errorKey)}
                 </Text>
               ) : null}

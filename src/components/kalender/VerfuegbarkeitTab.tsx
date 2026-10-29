@@ -130,7 +130,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
   return (
     <>
       <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-        {error ? <Text className="text-destructive text-sm mb-3">{error}</Text> : null}
+        {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error}</Text> : null}
 
         {WEEKDAY_KEYS.map((key, day) => {
           const row = rows[day] ?? DEFAULT_ROW;
@@ -208,7 +208,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
                     {fromDateString(exc.date)?.toLocaleDateString(language, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
                   </Text>
                   <View className={`px-2 py-0.5 rounded-full ${exc.isAvailable ? 'bg-success/10' : 'bg-destructive/10'}`}>
-                    <Text className={`text-xs font-semibold ${exc.isAvailable ? 'text-success dark:text-success-dark' : 'text-destructive'}`}>
+                    <Text className={`text-xs font-semibold ${exc.isAvailable ? 'text-success dark:text-success-dark' : 'text-destructive dark:text-destructive-dark'}`}>
                       {t(exc.isAvailable ? 'verfuegbarkeit.exceptions.available' : 'verfuegbarkeit.exceptions.unavailable')}
                     </Text>
                   </View>
@@ -217,7 +217,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
                   <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">{exc.note}</Text>
                 ) : null}
               </View>
-              <TouchableOpacity onPress={() => void handleDeleteException(exc.id)} hitSlop={8} className="p-1">
+              <TouchableOpacity accessibilityRole="button" onPress={() => void handleDeleteException(exc.id)} hitSlop={8} className="p-1">
                 <Trash2 size={18} color={themeColors.mutedForeground} />
               </TouchableOpacity>
             </View>
@@ -255,9 +255,9 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
             onChangeText={setExcNote}
           />
 
-          {excError ? <Text className="text-destructive text-sm mb-3">{excError}</Text> : null}
+          {excError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{excError}</Text> : null}
 
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${excSaving || !excDate ? 'opacity-70' : ''}`}
             onPress={() => void handleAddException()}
             disabled={excSaving || !excDate}

@@ -31,7 +31,7 @@ export default function VisibilitySection({ clubId, clubMemberId }: { clubId: st
         <ActivityIndicator color={themeColors.primary} />
       ) : !levels ? (
         <>
-          <Text className="text-destructive text-sm">{apiErrorMessage(error, t, 'datenschutz.visibility.load-error')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'datenschutz.visibility.load-error')}</Text>
           <TouchableOpacity accessibilityRole="button" onPress={() => void reload()} className="min-h-[44px] justify-center self-start">
             <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
           </TouchableOpacity>
@@ -66,7 +66,7 @@ export default function VisibilitySection({ clubId, clubMemberId }: { clubId: st
         ))
       )}
       {saveError ? (
-        <Text className="text-destructive text-sm mt-2" accessibilityRole="alert">
+        <Text className="text-destructive dark:text-destructive-dark text-sm mt-2" accessibilityRole="alert">
           {saveError}
         </Text>
       ) : null}

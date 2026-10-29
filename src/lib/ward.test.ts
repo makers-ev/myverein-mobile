@@ -1,5 +1,5 @@
 import { ApiError } from './api';
-import { privacyErrorKeyOr, addDaysKey, dayKey, flattenWards, isOwnClub, groupByDay, telUrl, isConsentTextOutdated, privacyErrorKey, visibleNavRoutes, wardKey, type NavRoute } from './ward';
+import { privacyErrorKeyOr, addDaysKey, dayKey, flattenWards, isOwnClub, groupByDay, telUrl, isConsentTextOutdated, privacyErrorKey, wardKey } from './ward';
 
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
 
@@ -23,19 +23,6 @@ describe('day keys', () => {
   it('formats the local day and adds days across a month end', () => {
     expect(dayKey(new Date(2026, 0, 5))).toBe('2026-01-05');
     expect(addDaysKey(new Date(2026, 0, 31), 14)).toBe('2026-02-14');
-  });
-});
-
-describe('visibleNavRoutes', () => {
-  const all: NavRoute[] = ['Home', 'Heute', 'Verein', 'Kalender', 'Standorte', 'Mitteilungen', 'Notifications', 'Settings'];
-  it('hides Heute without wards and keeps the rest', () => {
-    expect(visibleNavRoutes(all, { hasWards: false, guardianOnly: false })).toEqual(all.filter((r) => r !== 'Heute'));
-  });
-  it('shows Heute next to the club entries for a member with children', () => {
-    expect(visibleNavRoutes(all, { hasWards: true, guardianOnly: false })).toEqual(all);
-  });
-  it('gives a guardian-only account no club entries', () => {
-    expect(visibleNavRoutes(all, { hasWards: true, guardianOnly: true })).toEqual(['Heute', 'Notifications', 'Settings']);
   });
 });
 

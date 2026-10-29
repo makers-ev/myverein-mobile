@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import Logo from '@/components/Logo';
@@ -26,7 +27,7 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
     try {
       const result = await onLogin(email, password);
       if (!result.success) {
-        setError(result.error ?? t('alert.general-error-description'));
+        setError(mapApiError(result, t, 'alert.general-error-description'));
       }
     } finally {
       setIsSubmitting(false);
@@ -60,6 +61,9 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
+            autoComplete="email"
+            textContentType="emailAddress"
+            accessibilityLabel={t('login.username')}
             value={email}
             onChangeText={setEmail}
           />
@@ -72,15 +76,21 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
             placeholder="********"
             placeholderTextColor={themeColors.mutedForeground}
             secureTextEntry
+            autoComplete="current-password"
+            textContentType="password"
+            accessibilityLabel={t('login.password')}
             value={password}
             onChangeText={setPassword}
           />
 
-          {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
+          {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{error}</Text> : null}
 
           <TouchableOpacity
             className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-1 ${isSubmitting ? 'opacity-70' : ''}`}
             onPress={handleLogin}
+            accessibilityRole="button"
+            accessibilityLabel={t('login.button')}
+            accessibilityState={{ disabled: isSubmitting || !email || !password, busy: isSubmitting }}
             disabled={isSubmitting || !email || !password}
           >
             {isSubmitting ? (
@@ -92,13 +102,13 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity className="mt-3 items-center" onPress={onForgotPassword}>
+          <TouchableOpacity accessibilityRole="button" className="mt-3 items-center" onPress={onForgotPassword}>
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm font-semibold">
               {t('login.forgot.password')}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity className="mt-4 items-center" onPress={onNavigateToSignup}>
+          <TouchableOpacity accessibilityRole="button" className="mt-4 items-center" onPress={onNavigateToSignup}>
             <Text className="text-primary dark:text-primary-dark text-sm font-semibold">
               {t('login.create.account')}
             </Text>

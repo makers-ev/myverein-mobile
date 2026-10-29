@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View, ScrollView } from 'react-native';
 
+import OfflineNotice from '@/components/ui/OfflineNotice';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { navigate } from '@/navigation/navigationRef';
@@ -125,7 +126,7 @@ function MemberRow({
  * `club_stats:read` the member-count KPI card. Create/edit/import are
  * deliberately web-only.
  */
-export default function MembersTab({ clubId }: { clubId: string }) {
+export default function MembersTab({ clubId, memberId }: { clubId: string; memberId?: string }) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { can, loading: membershipLoading } = useOwnMembership(clubId);
@@ -153,7 +154,7 @@ export default function MembersTab({ clubId }: { clubId: string }) {
   );
 
   const { categories } = useMemberCategories(clubId, isManager);
-  const { members, total, loading, loadingMore, error, loadMoreError, hasMore, refetch, loadMore } = useClubMembers(
+  const { members, total, loading, loadingMore, error, loadMoreError, hasMore, staleAt, refetch, loadMore } = useClubMembers(
     membershipLoading ? null : clubId,
     filters,
   );
@@ -183,6 +184,12 @@ export default function MembersTab({ clubId }: { clubId: string }) {
     },
     [],
   );
+
+  // Opened from the search with a member: open the detail sheet as soon as that row is in the loaded list.
+  useEffect(() => {
+    const hit = memberId ? members.find((m) => m.id === memberId) : undefined;
+    if (hit) setSelected((prev) => (prev?.id === hit.id ? prev : hit));
+  }, [memberId, members]);
 
   // The sheet shows the freshest list row, falling back to the tapped snapshot (e.g. after a refetch dropped page 2).
   // Right after a photo change the response's fresh URL wins until the list refetch has settled.
@@ -270,13 +277,14 @@ export default function MembersTab({ clubId }: { clubId: string }) {
         </View>
       ) : null}
 
+      {staleAt ? <OfflineNotice savedAt={staleAt} /> : null}
       {loading && members.length === 0 ? (
         <View className="py-12 items-center" accessibilityLabel={t('verein.members.loading')}>
           <ActivityIndicator color={themeColors.primary} />
         </View>
       ) : error ? (
         <View className="py-6">
-          <Text className="text-destructive text-sm mb-3" accessibilityRole="alert">
+          <Text className="text-destructive dark:text-destructive-dark text-sm mb-3" accessibilityRole="alert">
             {t('verein.members.error')}
           </Text>
           <TouchableOpacity
@@ -321,7 +329,7 @@ export default function MembersTab({ clubId }: { clubId: string }) {
             />
           ))}
           {loadMoreError ? (
-            <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
+            <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
               {t('verein.members.load-more.error')}
             </Text>
           ) : null}

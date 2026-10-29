@@ -75,7 +75,7 @@ export default function MeetingInvitees({ invitees, directory, nameFor, onAdd, o
               {busyId === inv.memberId ? (
                 <ActivityIndicator color={themeColors.destructive} size="small" />
               ) : (
-                <Text className="text-destructive text-xs font-semibold">{t('treffen.invitees.remove')}</Text>
+                <Text className="text-destructive dark:text-destructive-dark text-xs font-semibold">{t('treffen.invitees.remove')}</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -83,7 +83,7 @@ export default function MeetingInvitees({ invitees, directory, nameFor, onAdd, o
       )}
 
       {error ? (
-        <Text className="text-destructive text-sm mt-2" accessibilityRole="alert">
+        <Text className="text-destructive dark:text-destructive-dark text-sm mt-2" accessibilityRole="alert">
           {error}
         </Text>
       ) : null}

@@ -47,7 +47,7 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
 
   return (
     <>
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         onPress={openPicker}
         className="flex-row items-center border border-border dark:border-border-dark bg-card dark:bg-card-dark rounded-xl px-3 py-2.5"
         style={{ gap: 8 }}
@@ -57,7 +57,7 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
           {label}
         </Text>
         {clearable && value ? (
-          <TouchableOpacity onPress={() => onChange(null)} hitSlop={8}>
+          <TouchableOpacity accessibilityRole="button" onPress={() => onChange(null)} hitSlop={8}>
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('ui.clear')}</Text>
           </TouchableOpacity>
         ) : null}
@@ -106,10 +106,10 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
             ) : null}
 
             <View className="flex-row mt-4" style={{ gap: 10 }}>
-              <TouchableOpacity onPress={() => setOpen(false)} className="flex-1 border border-border dark:border-border-dark rounded-xl py-3 items-center">
+              <TouchableOpacity accessibilityRole="button" onPress={() => setOpen(false)} className="flex-1 border border-border dark:border-border-dark rounded-xl py-3 items-center">
                 <Text className="text-foreground dark:text-foreground-dark font-semibold">{t('ui.cancel')}</Text>
               </TouchableOpacity>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 onPress={() => {
                   onChange(draft);
                   setOpen(false);
@@ -128,7 +128,7 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
 
 function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       className={`px-3 py-1.5 rounded-full border ${
         active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'border-border dark:border-border-dark'

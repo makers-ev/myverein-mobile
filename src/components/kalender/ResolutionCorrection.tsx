@@ -56,7 +56,7 @@ export default function ResolutionCorrection({
     <View className="mt-2 pt-3 border-t border-border dark:border-border-dark">
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.resolutions.correct.hint')}</Text>
       <TextInput className={`${inputClass} mb-3`} value={description} onChangeText={setDescription} placeholder={t('treffen.resolutions.description')} placeholderTextColor={themeColors.mutedForeground} />
-      {problems.required ? <Text className="text-destructive text-xs mb-2">{t('treffen.resolutions.error.required')}</Text> : null}
+      {problems.required ? <Text className="text-destructive dark:text-destructive-dark text-xs mb-2">{t('treffen.resolutions.error.required')}</Text> : null}
       <View className="flex-row" style={{ gap: 8 }}>
         {(
           [
@@ -71,7 +71,7 @@ export default function ResolutionCorrection({
           </View>
         ))}
       </View>
-      {problems.votes ? <Text className="text-destructive text-xs mt-1">{t('treffen.resolutions.error.votes')}</Text> : null}
+      {problems.votes ? <Text className="text-destructive dark:text-destructive-dark text-xs mt-1">{t('treffen.resolutions.error.votes')}</Text> : null}
       <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 mt-3">{t('treffen.resolutions.result')}</Text>
       <TextInput className={`${inputClass} mb-3`} value={result} onChangeText={setResult} placeholder={t('treffen.resolutions.result.placeholder')} placeholderTextColor={themeColors.mutedForeground} />
       <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1">{t('treffen.resolutions.correction-note')}</Text>
@@ -89,11 +89,11 @@ export default function ResolutionCorrection({
         maxLength={2000}
         onBlur={() => setNoteTouched(true)}
       />
-      {noteTouched && problems.note ? <Text className="text-destructive text-xs mb-2">{t('treffen.resolutions.error.note')}</Text> : null}
+      {noteTouched && problems.note ? <Text className="text-destructive dark:text-destructive-dark text-xs mb-2">{t('treffen.resolutions.error.note')}</Text> : null}
       {valid && built === 'no-change' ? (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{t('treffen.resolutions.correct.nochange')}</Text>
       ) : null}
-      {error ? <Text className="text-destructive text-sm mb-3">{error}</Text> : null}
+      {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error}</Text> : null}
       <View className="flex-row items-center" style={{ gap: 16 }}>
         <TouchableOpacity
           className={`flex-1 bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${canSubmit ? '' : 'opacity-60'}`}

@@ -105,7 +105,7 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
         </View>
       ) : error && absences.length === 0 ? (
         <View className="mt-2">
-          <Text className="text-destructive text-sm">{apiErrorMessage(error, t, 'absence.load-error')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'absence.load-error')}</Text>
           <TouchableOpacity accessibilityRole="button" onPress={() => void reload()} className="min-h-[44px] justify-center self-start">
             <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
           </TouchableOpacity>
@@ -121,7 +121,7 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
             </View>
             {canReport ? (
               <TouchableOpacity accessibilityRole="button" accessibilityLabel={`${t('absence.withdraw')}: ${t(`absence.kind.${a.kind}`)} - ${period(a)}`} onPress={() => confirmWithdraw(a)} className="justify-center" style={{ minHeight: 44 }}>
-                <Text className="text-destructive text-sm font-semibold">{t('absence.withdraw')}</Text>
+                <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('absence.withdraw')}</Text>
               </TouchableOpacity>
             ) : null}
           </View>
