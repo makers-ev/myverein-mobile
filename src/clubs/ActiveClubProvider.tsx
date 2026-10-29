@@ -2,6 +2,8 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 
 import { useAuth } from '@/auth/AuthProvider';
 import { apiFetch } from '@/lib/api';
+import { isOfflineError } from '@/lib/apiErrorMessage';
+import { loadOffline, pruneOfflineClubs, saveOffline } from '@/lib/offlineCache';
 import { isOwnClub } from '@/lib/ward';
 import { clearStoredActiveClubId, getStoredActiveClubId, setStoredActiveClubId } from './activeClubStorage';
 
@@ -72,10 +74,21 @@ export function ActiveClubProvider({ children }: { children: React.ReactNode }) 
     setError(false);
     try {
       const { data } = await apiFetch<{ data: MyClub[] }>('/my-clubs');
-      if (id === requestId.current) setClubs(data);
-    } catch {
-      // Keep the previous list and flag the failure instead of reporting "no club".
-      if (id === requestId.current) setError(true);
+      if (id === requestId.current) {
+        setClubs(data);
+        // Offline start: the club list is what lets Kalender and Mitgliederliste show their copies. Copies of clubs
+        // the person is no longer in are removed.
+        void saveOffline('clubs', 'my-clubs', 'list', data);
+        void pruneOfflineClubs(data.map((c) => c.clubId));
+      }
+    } catch (err) {
+      // No connection and nothing loaded yet: use the last known list so the offline copies can be shown.
+      const copy = isOfflineError(err) ? await loadOffline<MyClub[]>('clubs', 'my-clubs', 'list') : null;
+      if (id === requestId.current) {
+        if (copy && Array.isArray(copy.payload)) setClubs((prev) => (prev.length > 0 ? prev : copy.payload));
+        // Keep the previous list and flag the failure instead of reporting "no club".
+        else setError(true);
+      }
     } finally {
       if (id === requestId.current) {
         setLoading(false);

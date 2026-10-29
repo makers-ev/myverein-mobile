@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { CalendarPlus, ClipboardCheck, Plus, Repeat, Settings2, Timer } from 'lucide-react-native';
 
+import OfflineNotice from '@/components/ui/OfflineNotice';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
@@ -41,7 +42,7 @@ function EventRow({ event, color, rsvp, onPress, onAttendance }: { event: Calend
   const themeColors = useThemeColors();
 
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       className="flex-row bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl mb-3 overflow-hidden"
     >
@@ -125,7 +126,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
   const [month, setMonth] = useState(() => new Date());
   const [selectedDay, setSelectedDay] = useState(() => toDayKey(new Date()));
   const range = useMemo(() => monthRange(month), [month]);
-  const { events, loading, loadError, refetch } = useEvents(clubId, range);
+  const { events, loading, loadError, staleAt, refetch } = useEvents(clubId, range);
   const { rsvp, cancelRsvp } = useEventRsvp(clubId, refetch);
   const { createEvent, updateEvent, deleteEvent, cancelEvent } = useEventMutations(clubId, refetch);
   const seriesActions = useEventSeries(clubId, refetch);
@@ -277,9 +278,10 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
 
   return (
     <>
+      {staleAt ? <OfflineNotice savedAt={staleAt} /> : null}
       {canWrite ? (
         <View className="flex-row mb-3" style={{ gap: 8 }}>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             onPress={() => setManageOpen(true)}
             className="flex-1 flex-row items-center justify-center border border-border dark:border-border-dark rounded-xl py-2.5"
             style={{ gap: 6 }}
@@ -287,7 +289,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
             <Settings2 size={16} color={themeColors.foreground} />
             <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('kalender.manage.open')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             onPress={() => setSheetTarget({ day: selectedDate })}
             className="flex-1 flex-row items-center justify-center bg-primary dark:bg-primary-dark rounded-xl py-2.5"
             style={{ gap: 6 }}

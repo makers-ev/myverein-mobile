@@ -105,6 +105,7 @@ export default function Navbar() {
                             {showTitles && (
                                 <Text
                                     numberOfLines={1}
+                                    maxFontSizeMultiplier={1.3}
                                     className={`text-[11px] mt-0.5 ${isActive ? 'font-bold underline' : 'font-medium'}`}
                                     style={{ color: themeColors.primaryForeground }}
                                 >

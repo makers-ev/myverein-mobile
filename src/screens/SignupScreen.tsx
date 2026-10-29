@@ -163,7 +163,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
             <Text className="text-destructive text-sm text-center mb-2">{error}</Text>
           ) : null}
 
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className="mt-8 bg-primary dark:bg-primary-dark rounded-xl py-4 active:opacity-80"
             onPress={handleSubmit}
             disabled={isSubmitting}
@@ -175,7 +175,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className="mt-4"
             onPress={onNavigateToLogin}
           >

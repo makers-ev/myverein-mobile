@@ -12,6 +12,7 @@ jest.mock('@/notifications/pushRegistration', () => ({
 }));
 
 jest.mock('@/lib/media', () => ({ clearDocumentFileCache: jest.fn() }));
+jest.mock('@/lib/offlineCache', () => ({ clearOfflineCache: jest.fn().mockResolvedValue(undefined) }));
 jest.mock('@/lib/memberCardCache', () => ({ clearAllCardCache: jest.fn().mockResolvedValue(undefined) }));
 
 jest.mock('./auth-client', () => ({

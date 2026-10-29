@@ -61,7 +61,7 @@ export function ChipPicker<T extends string>({
   const chips = options.map((o) => {
     const active = o.value === value;
     return (
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         key={o.value}
         onPress={() => onChange(o.value)}
         className={`px-3 py-1.5 rounded-full border ${
@@ -90,7 +90,7 @@ export function ChipPicker<T extends string>({
 export function IconButton({ kind, onPress, label }: { kind: 'add' | 'edit'; onPress: () => void; label: string }) {
   const themeColors = useThemeColors();
   return kind === 'add' ? (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       accessibilityLabel={label}
       className="w-9 h-9 rounded-full bg-primary dark:bg-primary-dark items-center justify-center"
@@ -98,7 +98,7 @@ export function IconButton({ kind, onPress, label }: { kind: 'add' | 'edit'; onP
       <Plus size={18} color={themeColors.primaryForeground} />
     </TouchableOpacity>
   ) : (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       accessibilityLabel={label}
       hitSlop={8}

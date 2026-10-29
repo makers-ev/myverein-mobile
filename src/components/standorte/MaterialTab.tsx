@@ -62,7 +62,7 @@ function OverdueChip() {
 function ItemCard({ item, locationName, onPress }: { item: InventoryItem; locationName: string | null; onPress: () => void }) {
   const themeColors = useThemeColors();
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       className="flex-row bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-3"
       style={{ gap: 12 }}
@@ -380,7 +380,7 @@ function MaterialDetail({
 
   return (
     <>
-      <TouchableOpacity onPress={onBack} className="mb-3 self-start">
+      <TouchableOpacity accessibilityRole="button" onPress={onBack} className="mb-3 self-start">
         <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('material.back')}</Text>
       </TouchableOpacity>
 
@@ -427,7 +427,7 @@ function MaterialDetail({
         {returnError ? <Text className="text-destructive text-sm mt-3">{returnError}</Text> : null}
 
         {ownOpenLoan ? (
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${returningLoanId ? 'opacity-70' : ''}`}
             onPress={() => void handleReturn(ownOpenLoan.id)}
             disabled={!!returningLoanId}
@@ -443,7 +443,7 @@ function MaterialDetail({
         ) : !hasOpenLoan && selfLoansOff ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-3">{t('material.loans.self-disabled')}</Text>
         ) : !hasOpenLoan ? (
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${borrowSaving ? 'opacity-70' : ''}`}
             onPress={() => void handleBorrow()}
             disabled={borrowSaving}
@@ -490,7 +490,7 @@ function MaterialDetail({
             />
 
             <View className="flex-row items-center mb-3" style={{ gap: 10 }}>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 className={`flex-row items-center bg-muted dark:bg-muted-dark rounded-lg py-2 px-3 ${photoUploading ? 'opacity-70' : ''}`}
                 style={{ gap: 6 }}
                 onPress={upload.choose}
@@ -522,7 +522,7 @@ function MaterialDetail({
 
             {damageError ?? upload.error ? <Text className="text-destructive text-sm mb-3">{damageError ?? upload.error}</Text> : null}
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${damageSaving || photoUploading ? 'opacity-70' : ''}`}
               onPress={() => void handleSubmitDamage()}
               disabled={damageSaving || photoUploading}
@@ -537,7 +537,7 @@ function MaterialDetail({
             </TouchableOpacity>
           </View>
         ) : (
-          <TouchableOpacity className="self-start mt-2" onPress={() => setShowDamageForm(true)}>
+          <TouchableOpacity accessibilityRole="button" className="self-start mt-2" onPress={() => setShowDamageForm(true)}>
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('material.damage-reports.create')}</Text>
           </TouchableOpacity>
         )}

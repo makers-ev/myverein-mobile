@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -11,6 +11,7 @@ import { apiFetch } from '@/lib/api';
 import PushNotice from '@/components/push/PushNotice';
 import { usePushScreenTarget } from '@/notifications/usePushScreenTarget';
 import NoClubChoices from '@/components/onboarding/NoClubChoices';
+import TabChips from '@/components/ui/TabChips';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import type { CalendarEvent } from '@/hooks/useEvents';
@@ -86,7 +87,7 @@ export default function KalenderScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="px-6 pt-4">
-        <Text className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">{t('nav.kalender')}</Text>
+        <Text accessibilityRole="header" className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">{t('nav.kalender')}</Text>
         {activeClub ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-2" numberOfLines={1}>
             {activeClub.clubName}
@@ -109,25 +110,7 @@ export default function KalenderScreen() {
       ) : (
         <>
           <View className="px-6 pt-3">
-            <View className="flex-row mb-4" style={{ gap: 8 }}>
-              {(['termine', 'verfuegbarkeit', 'treffen'] as const).map((value) => (
-                <TouchableOpacity
-                  key={value}
-                  onPress={() => setTab(value)}
-                  className={`px-4 py-2 rounded-full ${tab === value ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}
-                >
-                  <Text
-                    className={`text-sm font-semibold ${
-                      tab === value
-                        ? 'text-primary-foreground dark:text-primary-foreground-dark'
-                        : 'text-muted-foreground dark:text-muted-foreground-dark'
-                    }`}
-                  >
-                    {t(`kalender.tab.${value}`)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <TabChips tabs={(['termine', 'verfuegbarkeit', 'treffen'] as const).map((value) => ({ value, label: t(`kalender.tab.${value}`) }))} active={tab} onChange={setTab} />
           </View>
 
           <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>

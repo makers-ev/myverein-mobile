@@ -60,7 +60,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
             <Text className="text-primary dark:text-primary-dark text-sm mb-3 text-center">
               {t('forgot-password.sent')}
             </Text>
-            <TouchableOpacity className="mt-4 items-center" onPress={onBackToLogin}>
+            <TouchableOpacity accessibilityRole="button" className="mt-4 items-center" onPress={onBackToLogin}>
               <Text className="text-primary dark:text-primary-dark text-sm font-semibold">
                 {t('forgot-password.back-to-login')}
               </Text>
@@ -87,7 +87,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
 
             {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-1 ${isSubmitting ? 'opacity-70' : ''}`}
               onPress={handleSubmit}
               disabled={isSubmitting || !email}
@@ -101,7 +101,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity className="mt-4 items-center" onPress={onBackToLogin}>
+            <TouchableOpacity accessibilityRole="button" className="mt-4 items-center" onPress={onBackToLogin}>
               <Text className="text-primary dark:text-primary-dark text-sm font-semibold">
                 {t('forgot-password.back-to-login')}
               </Text>

@@ -79,7 +79,7 @@ export function RsvpControl({ state, pending, onRsvp, onCancel }: RsvpProps) {
     );
   }
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       className={`bg-primary dark:bg-primary-dark rounded-lg py-2 px-4 items-center self-start ${pending ? 'opacity-70' : ''}`}
       onPress={onRsvp}
       disabled={pending}

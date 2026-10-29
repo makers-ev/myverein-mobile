@@ -2,6 +2,7 @@ import React, { createContext, ReactNode, useCallback, useContext, useEffect, us
 
 import { clearDocumentFileCache } from '@/lib/media';
 import { clearAllCardCache } from '@/lib/memberCardCache';
+import { clearOfflineCache } from '@/lib/offlineCache';
 
 import { resumePushRegistration, unregisterPushToken } from '@/notifications/pushRegistration';
 import { authClient, websiteUrl } from './auth-client';
@@ -181,7 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isPending && !session && !sessionError) {
       void clearAllCardCache();
-      clearDocumentFileCache();
+      void clearOfflineCache();
       clearDocumentFileCache();
     }
   }, [isPending, session, sessionError]);
@@ -195,6 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Needs the still-valid session; best effort and time-boxed, never blocks the logout.
     try {
       void clearAllCardCache();
+      void clearOfflineCache();
       await unregisterPushToken();
       await authClient.signOut();
       setTwoFactorPending(false);
@@ -215,6 +217,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     void clearAllCardCache();
+      void clearOfflineCache();
     clearDocumentFileCache();
     scheduleSessionRefetch();
     return { success: true };

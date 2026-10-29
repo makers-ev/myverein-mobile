@@ -217,7 +217,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
                   <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">{exc.note}</Text>
                 ) : null}
               </View>
-              <TouchableOpacity onPress={() => void handleDeleteException(exc.id)} hitSlop={8} className="p-1">
+              <TouchableOpacity accessibilityRole="button" onPress={() => void handleDeleteException(exc.id)} hitSlop={8} className="p-1">
                 <Trash2 size={18} color={themeColors.mutedForeground} />
               </TouchableOpacity>
             </View>
@@ -257,7 +257,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
 
           {excError ? <Text className="text-destructive text-sm mb-3">{excError}</Text> : null}
 
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${excSaving || !excDate ? 'opacity-70' : ''}`}
             onPress={() => void handleAddException()}
             disabled={excSaving || !excDate}

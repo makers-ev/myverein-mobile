@@ -78,3 +78,10 @@ describe('mapApiError (Wave 14 DS2)', () => {
     expect(mapApiError({ status: 0 }, t)).toBe('[api.error.offline]');
   });
 });
+
+describe('network failures (Wave 14 N5)', () => {
+  it('apiFetch-level network errors become status 0 and map to the offline text', () => {
+    const t = (key: string) => `[${key}]`;
+    expect(mapApiError(new ApiError(0, 'NETWORK_ERROR', 'Network request failed'), t)).toBe('[api.error.offline]');
+  });
+});

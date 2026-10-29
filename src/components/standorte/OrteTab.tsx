@@ -31,7 +31,7 @@ function LocationPhotoPlaceholder({ className }: { className: string }) {
 
 function LocationCard({ location, onPress, onPhotoExpired }: { location: Location; onPress: () => void; onPhotoExpired: () => void }) {
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl mb-4 overflow-hidden shadow-sm"
     >
@@ -144,7 +144,7 @@ function LinkRow({ link, isLast, onEdit }: { link: LocationLink; isLast: boolean
   const themeColors = useThemeColors();
   return (
     <View className={`flex-row items-center py-2.5 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`} style={{ gap: 8 }}>
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         onPress={() => Linking.openURL(link.url).catch((err) => console.error('Error opening URL:', err))}
         className="flex-1 flex-row items-center"
         style={{ gap: 8 }}
@@ -262,7 +262,7 @@ function LocationDetail({
       {!!location.address && (
         <SectionCard title={t('standorte.detail.address')}>
           <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">{location.address}</Text>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             onPress={handleDirections}
             className="flex-row items-center self-start bg-primary dark:bg-primary-dark rounded-lg py-2.5 px-4"
             style={{ gap: 6 }}

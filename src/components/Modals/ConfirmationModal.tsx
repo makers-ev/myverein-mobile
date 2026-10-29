@@ -33,7 +33,7 @@ export default function ConfirmationModal({
       visible={visible}
       onRequestClose={onClose}
     >
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         className="flex-1 justify-center items-center bg-black bg-opacity-50"
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
         onPress={onClose}
@@ -51,7 +51,7 @@ export default function ConfirmationModal({
           {buttons.length > 0 && (
             <View className="flex-row justify-around">
               {buttons.slice(0, 2).map((button, index) => (
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   key={index}
                   className={`py-2 px-4 rounded-md ${button.color}`}
                   onPress={button.onPress}

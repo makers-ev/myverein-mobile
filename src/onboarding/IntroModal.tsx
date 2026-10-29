@@ -46,7 +46,7 @@ export default function IntroModal({ visible, onClose }: IntroModalProps) {
   return (
     <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-        <TouchableOpacity className="flex-1" onPress={onClose} activeOpacity={1} accessibilityElementsHidden importantForAccessibility="no" />
+        <TouchableOpacity accessibilityRole="button" className="flex-1" onPress={onClose} activeOpacity={1} accessibilityElementsHidden importantForAccessibility="no" />
         <View
           accessibilityViewIsModal
           className="bg-card dark:bg-card-dark rounded-3xl px-6 pt-6 pb-6"

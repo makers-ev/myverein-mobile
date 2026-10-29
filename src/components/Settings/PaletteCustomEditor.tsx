@@ -39,7 +39,7 @@ export default function PaletteCustomEditor({ customAnchors, onChange }: Palette
                             {mode}
                         </Text>
                         {(['background', 'foreground', 'primary'] as const).map((key) => (
-                            <TouchableOpacity
+                            <TouchableOpacity accessibilityRole="button"
                                 key={key}
                                 onPress={() => setEditing({ mode, key })}
                                 className="flex-row items-center justify-between px-2 py-1.5 rounded bg-muted dark:bg-muted-dark border border-border dark:border-border-dark"
@@ -57,7 +57,7 @@ export default function PaletteCustomEditor({ customAnchors, onChange }: Palette
 
             <Modal visible={editing !== null} animationType="slide" transparent onRequestClose={() => setEditing(null)}>
                 <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-                    <TouchableOpacity className="flex-1" onPress={() => setEditing(null)} activeOpacity={1} />
+                    <TouchableOpacity accessibilityRole="button" className="flex-1" onPress={() => setEditing(null)} activeOpacity={1} />
                     <View className="bg-card dark:bg-card-dark rounded-t-3xl p-6">
                         {editing && (
                             <ColorPicker value={customAnchors[editing.mode][editing.key]} onCompleteJS={commitColor}>

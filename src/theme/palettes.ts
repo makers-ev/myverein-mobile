@@ -1,5 +1,6 @@
 // Palette registry (ADR-008), mirrors the website's `src/theme/palettes.ts`
-// values exactly so the two platforms look the same. `destructive`/`success`
+// values exactly so the two platforms look the same. Wave 14 N5: muted text and the ink-navy dark accent were
+// darkened/lightened to reach WCAG AA (4.5:1), guarded by `contrast.test.ts` -- keep the website in step. `destructive`/`success`
 // in colors.ts stay outside the palette -- semantic colors (danger/success)
 // shouldn't drift with the chosen accent.
 export interface TokenSet {
@@ -28,7 +29,7 @@ export const palettes = {
         label: 'Vereinsblau',
         light: {
             background: '#fafaf7', foreground: '#22252b',
-            card: '#ffffff', muted: '#eef0f2', mutedForeground: '#6b7280',
+            card: '#ffffff', muted: '#eef0f2', mutedForeground: '#5b6270',
             border: '#e2e4e8',
             primary: '#2c4870', primaryForeground: '#ffffff',
             accent: '#8a6408', accentForeground: '#ffffff',
@@ -45,7 +46,7 @@ export const palettes = {
         label: 'Ink Navy',
         light: {
             background: '#ffffff', foreground: '#2e3338',
-            card: '#ffffff', muted: '#f1f2f4', mutedForeground: '#6b7280',
+            card: '#ffffff', muted: '#f1f2f4', mutedForeground: '#5b6270',
             border: '#e3e4e6',
             primary: '#1e293b', primaryForeground: '#ffffff',
             accent: '#1e293b', accentForeground: '#ffffff',
@@ -54,8 +55,8 @@ export const palettes = {
             background: '#1e1e1e', foreground: '#dcddde',
             card: '#2a2a2b', muted: '#2a2a2b', mutedForeground: '#9a9a9d',
             border: '#3a3a3c',
-            primary: '#64748b', primaryForeground: '#ffffff',
-            accent: '#64748b', accentForeground: '#ffffff',
+            primary: '#8a9ab0', primaryForeground: '#1e1e1e',
+            accent: '#8a9ab0', accentForeground: '#1e1e1e',
         },
     },
     ocean: {
@@ -79,7 +80,7 @@ export const palettes = {
         label: 'Forest',
         light: {
             background: '#ffffff', foreground: '#232b24',
-            card: '#ffffff', muted: '#f0f4ef', mutedForeground: '#667368',
+            card: '#ffffff', muted: '#f0f4ef', mutedForeground: '#5f6b61',
             border: '#dfe6dd',
             primary: '#2f6f4e', primaryForeground: '#ffffff',
             accent: '#2f6f4e', accentForeground: '#ffffff',
@@ -96,7 +97,7 @@ export const palettes = {
         label: 'Sunset',
         light: {
             background: '#fffefb', foreground: '#322620',
-            card: '#ffffff', muted: '#f6efe7', mutedForeground: '#8a7360',
+            card: '#ffffff', muted: '#f6efe7', mutedForeground: '#765f4c',
             border: '#ece0d3',
             primary: '#c2542a', primaryForeground: '#ffffff',
             accent: '#c2542a', accentForeground: '#ffffff',

@@ -99,7 +99,7 @@ function guessMime(name: string): string | null {
 
 function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       className={`px-3 py-1.5 rounded-full ${active ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark'}`}
     >
@@ -422,7 +422,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
                 {removingId === doc.id ? (
                   <ActivityIndicator color={themeColors.primary} />
                 ) : (
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button"
                     onPress={() => void handleRemove(doc.id)}
                     accessibilityLabel={t('create-club.docs.remove')}
                     hitSlop={8}
@@ -448,7 +448,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
                 {item.status === 'uploading' ? (
                   <ActivityIndicator color={themeColors.primary} />
                 ) : (
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button"
                     onPress={() => setUploads((prev) => prev.filter((u) => u.localId !== item.localId))}
                     accessibilityLabel={t('create-club.docs.dismiss')}
                     hitSlop={8}
@@ -466,7 +466,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
               ))}
             </View>
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               className="flex-row items-center justify-center border border-border dark:border-border-dark rounded-lg py-3 mb-2"
               style={{ gap: 8 }}
               onPress={() => void handlePickDocument()}
@@ -652,7 +652,7 @@ export default function CreateClubScreen({ navigation }: Props) {
         <Text className="text-sm text-center mb-4 text-muted-foreground dark:text-muted-foreground-dark">
           {t('create-club.error.load')}
         </Text>
-        <TouchableOpacity className="bg-primary dark:bg-primary-dark rounded-lg py-3 px-6" onPress={() => void refetch()}>
+        <TouchableOpacity accessibilityRole="button" className="bg-primary dark:bg-primary-dark rounded-lg py-3 px-6" onPress={() => void refetch()}>
           <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">
             {t('verein.applications.retry')}
           </Text>

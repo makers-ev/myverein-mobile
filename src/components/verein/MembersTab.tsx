@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View, ScrollView } from 'react-native';
 
+import OfflineNotice from '@/components/ui/OfflineNotice';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { navigate } from '@/navigation/navigationRef';
@@ -153,7 +154,7 @@ export default function MembersTab({ clubId }: { clubId: string }) {
   );
 
   const { categories } = useMemberCategories(clubId, isManager);
-  const { members, total, loading, loadingMore, error, loadMoreError, hasMore, refetch, loadMore } = useClubMembers(
+  const { members, total, loading, loadingMore, error, loadMoreError, hasMore, staleAt, refetch, loadMore } = useClubMembers(
     membershipLoading ? null : clubId,
     filters,
   );
@@ -270,6 +271,7 @@ export default function MembersTab({ clubId }: { clubId: string }) {
         </View>
       ) : null}
 
+      {staleAt ? <OfflineNotice savedAt={staleAt} /> : null}
       {loading && members.length === 0 ? (
         <View className="py-12 items-center" accessibilityLabel={t('verein.members.loading')}>
           <ActivityIndicator color={themeColors.primary} />

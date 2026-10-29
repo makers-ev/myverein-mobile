@@ -16,6 +16,7 @@ import MembersTab from '@/components/verein/MembersTab';
 import VerwaltungTab, { canSeeVerwaltung } from '@/components/verein/VerwaltungTab';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import NoClubChoices from '@/components/onboarding/NoClubChoices';
+import TabChips from '@/components/ui/TabChips';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import ClubDocumentReader from '@/components/documents/ClubDocumentReader';
@@ -161,7 +162,7 @@ function NoClubState() {
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">
             {t(`create-club.status.${registration.status}.body`)}
           </Text>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className="bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center self-start px-5"
             onPress={() => navigate('CreateClub')}
           >
@@ -261,26 +262,7 @@ export default function VereinScreen() {
       ) : (
         <>
           <View className="px-6 pt-3">
-            <View className="flex-row mb-4" style={{ gap: 8 }} accessibilityRole="tablist">
-              {tabs.map((value) => (
-                <TouchableOpacity
-                  key={value}
-                  onPress={() => selectTab(value)}
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: activeTab === value }}
-                  style={{ minHeight: 44, justifyContent: 'center' }}
-                  className={`px-4 py-2 rounded-full ${activeTab === value ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}
-                >
-                  <Text
-                    className={`text-sm font-semibold ${
-                      activeTab === value ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'
-                    }`}
-                  >
-                    {t(`verein.tab.${value}`)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <TabChips tabs={tabs.map((value) => ({ value, label: t(`verein.tab.${value}`) }))} active={activeTab} onChange={selectTab} />
           </View>
 
           <ScrollView key={activeClub.clubId} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>

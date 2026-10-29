@@ -57,7 +57,7 @@ export default function EmailVerificationScreen({ email, onResend, onBackToLogin
           ) : null}
           {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
 
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-1 ${isSubmitting ? 'opacity-70' : ''}`}
             onPress={handleResend}
             disabled={isSubmitting}
@@ -71,7 +71,7 @@ export default function EmailVerificationScreen({ email, onResend, onBackToLogin
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity className="mt-4 items-center" onPress={onBackToLogin}>
+          <TouchableOpacity accessibilityRole="button" className="mt-4 items-center" onPress={onBackToLogin}>
             <Text className="text-primary dark:text-primary-dark text-sm font-semibold">
               {t('email-verification.back-to-login')}
             </Text>

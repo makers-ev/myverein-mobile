@@ -102,13 +102,13 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity className="mt-3 items-center" onPress={onForgotPassword}>
+          <TouchableOpacity accessibilityRole="button" className="mt-3 items-center" onPress={onForgotPassword}>
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm font-semibold">
               {t('login.forgot.password')}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity className="mt-4 items-center" onPress={onNavigateToSignup}>
+          <TouchableOpacity accessibilityRole="button" className="mt-4 items-center" onPress={onNavigateToSignup}>
             <Text className="text-primary dark:text-primary-dark text-sm font-semibold">
               {t('login.create.account')}
             </Text>

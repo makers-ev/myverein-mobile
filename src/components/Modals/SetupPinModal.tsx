@@ -71,11 +71,11 @@ export default function SetupPinModal({ visible, onClose, onConfirm }: SetupPinM
                     </View>
 
                     <View className="flex-row justify-between">
-                        <TouchableOpacity onPress={onClose} className="flex-1 py-3">
+                        <TouchableOpacity accessibilityRole="button" onPress={onClose} className="flex-1 py-3">
                             <Text className="text-center text-gray-500 font-semibold">{t('setup-pin-modal.button-cancel')}</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity
+                        <TouchableOpacity accessibilityRole="button"
                             onPress={handleSave}
                             disabled={!isMatch}
                             className={`flex-1 py-3 rounded-xl ${isMatch ? 'bg-blue-600' : 'bg-gray-300'}`}
