@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Linking, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useIsFocused } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
@@ -21,10 +21,18 @@ export default function AusweisKontrolleScreen() {
   const { activeClub, loading: clubLoading } = useActiveClub();
   const clubId = activeClub?.clubId ?? null;
   const { loading: rightsLoading, can } = useOwnMembership(clubId);
-  const { phase, onScan, retry, reset, canRetry } = useCardVerification(clubId);
+  const { phase, onScan, retry, reset, clear, canRetry } = useCardVerification(clubId);
   const [permission, requestPermission] = useCameraPermissions();
   const focused = useIsFocused();
   const allowed = can('member_cards:verify');
+
+  // Leaving the screen drops the last result (name, photo) and the scan state.
+  useFocusEffect(
+    useCallback(() => {
+      return () => clear();
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- `clear` only calls the stable reset
+    }, []),
+  );
 
   let body: React.ReactNode;
   if (clubLoading || (rightsLoading && !allowed)) {

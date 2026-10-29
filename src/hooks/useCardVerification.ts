@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 
 import { apiFetch, ApiError } from '@/lib/api';
 import { looksLikeCardToken, readVerifyAnswer, type VerifyAnswer } from '@/lib/memberCard';
+
+/** After "next card" the same QR is ignored for this long (the card is usually still in front of the camera). */
+export const RESCAN_COOLDOWN_MS = 2500;
 
 export type VerificationPhase =
   | { kind: 'scanning' }
@@ -22,6 +26,8 @@ export function useCardVerification(clubId: string | null) {
   const token = useRef<string | null>(null);
   const alive = useRef(true);
   const generation = useRef(0);
+  const last = useRef<{ text: string; until: number } | null>(null);
+  const lastText = useRef<string | null>(null);
 
   useEffect(() => {
     alive.current = true;
@@ -57,7 +63,10 @@ export function useCardVerification(clubId: string | null) {
   const onScan = useCallback(
     (text: string) => {
       if (locked.current) return;
+      if (last.current && last.current.text === text && Date.now() < last.current.until) return;
+      last.current = null;
       locked.current = true;
+      lastText.current = text;
       if (!looksLikeCardToken(text)) {
         setPhase({ kind: 'result', answer: { result: 'ungueltig', checkedAt: '' }, notACard: true });
         return;
@@ -72,12 +81,31 @@ export function useCardVerification(clubId: string | null) {
     if (token.current) void send(token.current);
   }, [send]);
 
-  const reset = useCallback(() => {
+  /** Back to scanning. With `cooldown` (the "next card" button) the card just checked is not read again at once. */
+  const reset = useCallback((cooldown = true) => {
     generation.current++;
     token.current = null;
     locked.current = false;
+    last.current = cooldown && lastText.current ? { text: lastText.current, until: Date.now() + RESCAN_COOLDOWN_MS } : null;
+    lastText.current = null;
     setPhase({ kind: 'scanning' });
   }, []);
 
-  return { phase, onScan, retry, reset, canRetry: phase.kind === 'failed' && phase.reason === 'offline' };
+  // A result (name, photo) must not stay on screen for the next person who picks up the phone, nor carry over to another
+  // club: leave the result when the app goes to the background and when the club changes.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') reset(false);
+    });
+    return () => sub.remove();
+  }, [reset]);
+  const lastClub = useRef(clubId);
+  useEffect(() => {
+    if (lastClub.current !== clubId) {
+      lastClub.current = clubId;
+      reset(false);
+    }
+  }, [clubId, reset]);
+
+  return { phase, onScan, retry, reset: () => reset(true), clear: () => reset(false), canRetry: phase.kind === 'failed' && phase.reason === 'offline' };
 }

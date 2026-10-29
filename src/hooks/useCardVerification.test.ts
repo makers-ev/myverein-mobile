@@ -1,3 +1,4 @@
+import { AppState } from 'react-native';
 import { act, renderHook } from '@testing-library/react-native';
 
 import { ApiError, apiFetch } from '@/lib/api';
@@ -49,7 +50,7 @@ describe('useCardVerification', () => {
     await act(async () => result.current.retry());
     expect(apiFetchMock).toHaveBeenCalledTimes(1);
     await act(async () => result.current.reset());
-    await act(async () => result.current.onScan(TOKEN));
+    await act(async () => result.current.onScan(TOKEN + 'B'));
     expect(result.current.phase).toEqual({ kind: 'failed', reason: 'forbidden' });
   });
 
@@ -61,5 +62,42 @@ describe('useCardVerification', () => {
     await act(async () => result.current.reset());
     await act(async () => finish({ data: { result: 'gueltig', checkedAt: 'x' } }));
     expect(result.current.phase).toEqual({ kind: 'scanning' });
+  });
+
+  it('ignores the same code right after "next card" but reads it again after the cooldown', async () => {
+    apiFetchMock.mockResolvedValue({ data: { result: 'gueltig', checkedAt: 'x' } });
+    const now = jest.spyOn(Date, 'now').mockReturnValue(1_000_000);
+    const { result } = await renderHook(() => useCardVerification('c1'));
+    await act(async () => result.current.onScan(TOKEN));
+    await act(async () => result.current.reset());
+    await act(async () => result.current.onScan(TOKEN));
+    expect(apiFetchMock).toHaveBeenCalledTimes(1);
+    expect(result.current.phase).toEqual({ kind: 'scanning' });
+    await act(async () => result.current.onScan(TOKEN + 'other'));
+    expect(apiFetchMock).toHaveBeenCalledTimes(2);
+    await act(async () => result.current.reset());
+    now.mockReturnValue(1_000_000 + 3000);
+    await act(async () => result.current.onScan(TOKEN + 'other'));
+    expect(apiFetchMock).toHaveBeenCalledTimes(3);
+    now.mockRestore();
+  });
+
+  it('drops the result when the app goes to the background or the club changes', async () => {
+    apiFetchMock.mockResolvedValue({ data: { result: 'gueltig', checkedAt: 'x' } });
+    let listener: (s: string) => void = () => {};
+    const spy = jest.spyOn(AppState, 'addEventListener').mockImplementation(((_: string, l: (s: string) => void) => {
+      listener = l;
+      return { remove: jest.fn() };
+    }) as never);
+    const { result, rerender } = await renderHook((p: { club: string }) => useCardVerification(p.club), { initialProps: { club: 'c1' } });
+    await act(async () => result.current.onScan(TOKEN));
+    expect(result.current.phase.kind).toBe('result');
+    await act(async () => listener('background'));
+    expect(result.current.phase).toEqual({ kind: 'scanning' });
+    await act(async () => result.current.onScan(TOKEN));
+    expect(result.current.phase.kind).toBe('result');
+    await rerender({ club: 'c2' });
+    expect(result.current.phase).toEqual({ kind: 'scanning' });
+    spy.mockRestore();
   });
 });
