@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Linking, Text, View } from 'react-native';
+import { Linking, ScrollView, Text, View } from 'react-native';
 
 import { parseMarkdown, safeHref, type Block, type Inline } from '@/lib/markdown';
 
@@ -46,6 +46,45 @@ function renderInline(nodes: Inline[], keyPrefix: string): React.ReactNode[] {
   });
 }
 
+function plainLength(nodes: Inline[]): number {
+  return nodes.reduce((n, x) => n + (x.type === 'text' || x.type === 'code' ? x.text.length : plainLength(x.children)), 0);
+}
+
+/** Column widths from the longest cell (readable minimum, capped so one long cell wraps instead of stretching the table). */
+function columnWidths(header: Inline[][], rows: Inline[][][]): number[] {
+  return header.map((h, c) => {
+    const longest = Math.max(plainLength(h), ...rows.map((r) => plainLength(r[c] ?? [])));
+    return Math.min(220, Math.max(72, longest * 8 + 24));
+  });
+}
+
+function TableView({ block, keyPrefix }: { block: Extract<Block, { type: 'table' }>; keyPrefix: string }) {
+  const widths = columnWidths(block.header, block.rows);
+  const cell = (nodes: Inline[], c: number, r: number, head: boolean) => (
+    <View key={`${keyPrefix}.${r}.${c}`} style={{ width: widths[c] }} className={`px-2 py-2 border-r border-border dark:border-border-dark ${head ? 'bg-muted dark:bg-muted-dark' : ''}`}>
+      <Text
+        accessibilityRole={head ? 'header' : undefined}
+        style={{ textAlign: block.align[c] ?? 'left', fontWeight: head ? '700' : '400' }}
+        className="text-foreground dark:text-foreground-dark text-sm leading-5"
+      >
+        {renderInline(nodes, `${keyPrefix}.${r}.${c}`)}
+      </Text>
+    </View>
+  );
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator role="grid" className="mb-3">
+      <View className="border border-b-0 border-border dark:border-border-dark rounded-lg overflow-hidden">
+        <View className="flex-row border-b border-border dark:border-border-dark">{block.header.map((h, c) => cell(h, c, 0, true))}</View>
+        {block.rows.map((row, r) => (
+          <View key={`${keyPrefix}.row${r}`} className="flex-row border-b border-border dark:border-border-dark">
+            {row.map((cl, c) => cell(cl, c, r + 1, false))}
+          </View>
+        ))}
+      </View>
+    </ScrollView>
+  );
+}
+
 const HEADING_CLASS = {
   1: 'text-xl font-black mt-2 mb-2',
   2: 'text-lg font-bold mt-2 mb-1.5',
@@ -77,6 +116,8 @@ function BlockView({ block, index }: { block: Block; index: number }) {
           </Text>
         </View>
       );
+    case 'table':
+      return <TableView block={block} keyPrefix={key} />;
     case 'rule':
       return <View className="h-px bg-border dark:bg-border-dark my-3" />;
     case 'list':

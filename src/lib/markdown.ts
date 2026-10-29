@@ -2,6 +2,7 @@
 // `components/ui/Markdown.tsx` renders with plain <Text>/<View>, so there is NO HTML path at all: raw HTML in the source
 // is just text, and the only link targets that survive are http(s) and mailto (everything else renders as plain text).
 // Supported: # ## ### headings, paragraphs, - * + bullet and 1. ordered lists, > quotes, fenced code, --- rules,
+// GFM pipe tables (header, `---`/`:--`/`:-:`/`--:` separator, rows, escaped `\|`, ragged rows padded/cut to the header),
 // **bold**, *italic* / _italic_, `code`, [label](url). Anything else is shown literally. Pure, so it is unit-tested.
 
 export type Inline =
@@ -17,10 +18,48 @@ export type Block =
   | { type: 'list'; ordered: boolean; items: Inline[][] }
   | { type: 'quote'; children: Inline[] }
   | { type: 'code'; text: string }
+  | { type: 'table'; align: TableAlign[]; header: Inline[][]; rows: Inline[][][] }
   | { type: 'rule' };
+
+export type TableAlign = 'left' | 'center' | 'right' | null;
 
 const MAX_SOURCE = 100_000;
 const MAX_DEPTH = 4;
+const MAX_TABLE_COLS = 20;
+const MAX_TABLE_ROWS = 500;
+
+/** Cells of a pipe row: outer pipes optional, `\|` stays a literal pipe inside a cell. */
+export function splitTableRow(line: string): string[] {
+  let t = line.trim();
+  if (t.startsWith('|')) t = t.slice(1);
+  if (t.endsWith('|') && !t.endsWith('\\|')) t = t.slice(0, -1);
+  const cells: string[] = [];
+  let cur = '';
+  for (let i = 0; i < t.length; i++) {
+    if (t[i] === '\\' && t[i + 1] === '|') {
+      cur += '|';
+      i += 1;
+    } else if (t[i] === '|') {
+      cells.push(cur.trim());
+      cur = '';
+    } else cur += t[i];
+  }
+  cells.push(cur.trim());
+  return cells;
+}
+
+/** Alignment per column when `line` is a table separator row (`| --- | :-: |`), otherwise `null`. */
+export function parseTableSeparator(line: string): TableAlign[] | null {
+  if (!line.includes('-') || !line.includes('|') && !/^\s*:?-+:?\s*$/.test(line)) return null;
+  const cells = splitTableRow(line);
+  const align: TableAlign[] = [];
+  for (const c of cells) {
+    const m = /^(:)?-+(:)?$/.exec(c);
+    if (!m) return null;
+    align.push(m[1] && m[2] ? 'center' : m[2] ? 'right' : m[1] ? 'left' : null);
+  }
+  return align;
+}
 
 /** Only http(s) and mailto links are ever clickable; `javascript:`, `data:`, relative and scheme-less targets are not. */
 export function safeHref(raw: string): string | null {
@@ -121,6 +160,24 @@ export function parseMarkdown(source: string): Block[] {
       i += 1;
       blocks.push({ type: 'code', text: code.join('\n') });
       continue;
+    }
+    // Table: a pipe row directly followed by a separator row with the same number of columns (it may interrupt a paragraph).
+    if (trimmed.includes('|') && i + 1 < lines.length) {
+      const align = parseTableSeparator(lines[i + 1]!);
+      const head = splitTableRow(trimmed);
+      if (align && align.length === head.length && head.length <= MAX_TABLE_COLS) {
+        flushPara();
+        const cols = head.length;
+        const rows: Inline[][][] = [];
+        i += 2;
+        while (i < lines.length && rows.length < MAX_TABLE_ROWS && lines[i]!.trim() !== '' && lines[i]!.includes('|')) {
+          const cells = splitTableRow(lines[i]!);
+          rows.push(Array.from({ length: cols }, (_, c) => parseInline(cells[c] ?? '')));
+          i += 1;
+        }
+        blocks.push({ type: 'table', align, header: head.map((c) => parseInline(c)), rows });
+        continue;
+      }
     }
     const heading = /^(#{1,6})\s+(.*?)\s*#*\s*$/.exec(trimmed);
     if (heading) {

@@ -45,3 +45,45 @@ describe('parseMarkdown', () => {
     expect(() => parseMarkdown('*'.repeat(5000) + '[' .repeat(3000) + '`')).not.toThrow();
   });
 });
+
+describe('tables', () => {
+  const text = (nodes: { type: string; text?: string }[]) => nodes.map((n) => n.text ?? '').join('');
+
+  it('parses the sample table instead of a paragraph', () => {
+    const blocks = parseMarkdown('| Kategorie | Jahresbeitrag |\n| --- | --- |\n| Aktiv | 120 € |');
+    expect(blocks).toHaveLength(1);
+    const t = blocks[0] as Extract<(typeof blocks)[number], { type: 'table' }>;
+    expect(t.type).toBe('table');
+    expect(t.header.map(text)).toEqual(['Kategorie', 'Jahresbeitrag']);
+    expect(t.rows.map((r) => r.map(text))).toEqual([['Aktiv', '120 €']]);
+    expect(t.align).toEqual([null, null]);
+  });
+
+  it('reads alignment, inline formatting, escaped pipes and tolerates ragged rows and missing outer pipes', () => {
+    const [t] = parseMarkdown('A | B | C\n:-- | :-: | --:\n**x** | a \\| b\n1 | 2 | 3 | 4\n\nafter') as never[];
+    const table = t as { type: string; align: unknown[]; rows: { type: string; text?: string }[][][] };
+    expect(table.align).toEqual(['left', 'center', 'right']);
+    expect(table.rows[0]![0]![0]!.type).toBe('bold');
+    expect(text(table.rows[0]![1]!)).toBe('a | b');
+    expect(table.rows[0]![2]).toEqual([]);
+    expect(table.rows[1]!.map(text)).toEqual(['1', '2', '3']);
+  });
+
+  it('keeps consecutive table lines out of the paragraph, and a paragraph before/after intact', () => {
+    const blocks = parseMarkdown('Intro\n| a | b |\n|---|---|\n| 1 | 2 |\n| 3 | 4 |\nText nach der Tabelle');
+    expect(blocks.map((b) => b.type)).toEqual(['paragraph', 'table', 'paragraph']);
+    expect((blocks[1] as { rows: unknown[] }).rows).toHaveLength(2);
+  });
+
+  it('does not make a table from a pipe line without a matching separator', () => {
+    expect(parseMarkdown('a | b\n--- | ---\n').map((b) => b.type)).toEqual(['table']);
+    expect(parseMarkdown('a | b | c\n--- | ---').map((b) => b.type)).toEqual(['paragraph']);
+    expect(parseMarkdown('a | b\nplain text').map((b) => b.type)).toEqual(['paragraph']);
+  });
+
+  it('keeps links in cells safe', () => {
+    const [t] = parseMarkdown('| l |\n|---|\n| [x](javascript:alert(1)) |') as never[];
+    const cell = (t as { rows: { type: string }[][][] }).rows[0]![0]!;
+    expect(cell.some((n) => n.type === 'link')).toBe(false);
+  });
+});
