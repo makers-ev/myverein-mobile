@@ -403,6 +403,23 @@ Shared building blocks (Wave 14 DS1). The names and props match the website's `s
 
 Tokens come from `theme/colors.ts` / `tailwind.config.js` (Tailwind classes with `dark:` variants, palettes from `PaletteProvider`). `components/Modals/ConfirmationModal` and `ConfirmationInputModal` remain for the two Settings flows that need a typed confirmation; new confirmations use `useConfirm`.
 
+## Parity with the website
+
+Wave 14 N6: which gaps are deliberate. The app is for the member's everyday (answer, find, show, report); the website is where the board works with density (create, import, configure). Decisions per row; the full matrix lives in the vault.
+
+| Function | App | Decision |
+|---|---|---|
+| Create/edit roles, departments, categories | read-only (Vereinsinfo: board and departments) | **web-only**, forms and tables are laptop work; the app shows the result |
+| Create/edit/import/export member data, status changes | view, own profile, photo of members (`members:write`) | **web-only** (see Verein row) |
+| Decide applications and exit requests | yes (Verein > Verwaltung, Heute to-dos) | both |
+| Write announcements/messages | read, mark read | **web-only** (authoring), push/e-mail reach the app |
+| Create/edit votes, assemblies, minutes | vote, RSVP, proxy, check-in | **web-only** for authoring, both for taking part |
+| Upload/manage documents, branding/logo | read, download, own card | **web-only** (the Heute setup checklist says so) |
+| Borrow/return material, report damage (with photo) | yes (Mehr > Material) | app has it; the website shows loans read-only, adding the capture there is tracked in the vault matrix |
+| Calendar: month vs. list | month grid with day list | different layout on purpose (small screen); both show the same events and RSVP |
+| Club switcher | yes | website gets it in Wave 14 S1 |
+| Global search | yes (Heute > magnifier) | both, server-side permission filter |
+
 ## Screens
 
 > **Unsubscribe links (Wave 9):** club e-mails carry a signed "Abmelden" link that points to the backend's `/unsubscribe/:token` page (website `/abmelden`), not to a screen of this app. In-app, the same choice lives in Settings -> notification settings (per account, all clubs; mandatory notices cannot be switched off). Members without an account have no in-app way back, see the vault's Feature List ("Weiterhin offen").
