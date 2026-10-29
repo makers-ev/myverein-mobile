@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
 import { isOfflineError } from '@/lib/apiErrorMessage';
-import { getWipeGeneration, loadOffline, saveOffline } from '@/lib/offlineCache';
+import { dropOfflineClubIfDenied, getWipeGeneration, loadOffline, saveOffline } from '@/lib/offlineCache';
 import { deleteSeriesQuery, type EventSeries, type SeriesPreview, type SeriesRequestOptions, type SeriesScope } from '@/lib/eventSeries';
 import { cancelBody, withNotify, withNotifyQuery, type CancelPreview } from '@/lib/notifyOptions';
 
@@ -87,6 +87,7 @@ export function useEvents(clubId: string | null, range?: EventRange) {
         void saveOffline('events', clubId, `${from ?? ''}|${to ?? ''}`, list, wipeGeneration);
       }
     } catch (err) {
+      dropOfflineClubIfDenied(err, clubId);
       // No connection: show the last copy of this range (read-only) instead of an error, when there is one.
       const copy = isOfflineError(err) ? await loadOffline<CalendarEvent[]>('events', clubId, `${from ?? ''}|${to ?? ''}`) : null;
       if (id === requestId.current) {

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
 import { isOfflineError } from '@/lib/apiErrorMessage';
-import { getWipeGeneration, loadOffline, saveOffline, toCachedMember, UNCACHED_STATUSES } from '@/lib/offlineCache';
+import { dropOfflineClubIfDenied, getWipeGeneration, loadOffline, saveOffline, toCachedMember, UNCACHED_STATUSES } from '@/lib/offlineCache';
 
 export const MEMBER_STATUSES = ['interessent', 'probe', 'aktiv', 'ruhend', 'ausgetreten', 'ausgeschlossen', 'verstorben'] as const;
 export type MemberStatus = (typeof MEMBER_STATUSES)[number];
@@ -166,6 +166,7 @@ export function useClubMembers(clubId: string | null, filters: ClubMemberFilters
         void saveOffline('members', clubId, filterKey, { members: keep.map(toCachedMember), total: res.total }, wipeGeneration);
       }
     } catch (err) {
+      dropOfflineClubIfDenied(err, clubId);
       const copy =
         isOfflineError(err) && !active.q && !(active.category && active.category.length > 0)
           ? await loadOffline<{ members: ClubMember[]; total: number }>('members', clubId, filterKey)

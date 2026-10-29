@@ -99,6 +99,15 @@ export function dropOfflineClub(clubId: string): Promise<void> {
   });
 }
 
+/**
+ * Call with the error of a club route: a 403/404 from a club-scoped list means the person is no longer a member there
+ * (removed, left), so that club's copies are dropped instead of being shown on the next offline start.
+ */
+export function dropOfflineClubIfDenied(err: unknown, clubId: string | null): void {
+  const status = err && typeof err === 'object' ? (err as { status?: unknown }).status : undefined;
+  if (clubId && (status === 403 || status === 404)) void dropOfflineClub(clubId);
+}
+
 /** Removes the copies of every club that is not in `keepClubIds` (called with the fresh membership list). */
 export function pruneOfflineClubs(keepClubIds: string[]): Promise<void> {
   return queue(async () => {
