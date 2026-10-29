@@ -1,4 +1,5 @@
 import { ApiError, apiErrorFromResponse } from './api';
+import { mapApiError } from './mapApiError';
 import { apiErrorKey, apiErrorMessage, erasureBlockerKey } from './apiErrorMessage';
 
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
@@ -59,5 +60,20 @@ describe('apiErrorFromResponse', () => {
   it('falls back to UNKNOWN for an empty or broken body', () => {
     expect(apiErrorFromResponse(500, null).code).toBe('UNKNOWN');
     expect(apiErrorFromResponse(502, '<html>').code).toBe('UNKNOWN');
+  });
+});
+
+describe('mapApiError (Wave 14 DS2)', () => {
+  const t = (key: string) => `[${key}]`;
+  it('maps stable backend codes and auth results without echoing server text', () => {
+    expect(mapApiError(new ApiError(400, 'query_too_short', 'Query too short'), t)).toBe('[api.error.query-too-short]');
+    expect(mapApiError({ code: 'INVALID_EMAIL_OR_PASSWORD', status: 401, error: 'Unable to sign in.' }, t)).toBe('[auth.error.invalid-credentials]');
+    expect(mapApiError({ status: 429 }, t)).toBe('[api.error.rate-limit]');
+    expect(mapApiError({ error: 'x' }, t, 'custom.key')).toBe('[custom.key]');
+  });
+  it('shows a no-connection text for network failures', () => {
+    expect(mapApiError(new ApiError(0, 'UNKNOWN', 'Failed to fetch'), t)).toBe('[api.error.offline]');
+    expect(mapApiError(new TypeError('Network request failed'), t)).toBe('[api.error.offline]');
+    expect(mapApiError({ status: 0 }, t)).toBe('[api.error.offline]');
   });
 });

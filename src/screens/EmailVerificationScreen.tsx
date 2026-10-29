@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 
@@ -27,7 +28,7 @@ export default function EmailVerificationScreen({ email, onResend, onBackToLogin
       if (result.success) {
         setSent(true);
       } else {
-        setError(result.error ?? t('email-verification.resend-error'));
+        setError(mapApiError(result, t, 'email-verification.resend-error'));
       }
     } finally {
       setIsSubmitting(false);

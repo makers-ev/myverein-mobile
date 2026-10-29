@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { Mail, Lock } from 'lucide-react-native';
+import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import Logo from '@/components/Logo';
@@ -18,7 +19,7 @@ interface SignupFormData {
 }
 
 interface SignupScreenProps {
-  onSubmit?: (formData: SignupFormData) => Promise<{ success: boolean; error?: string }>;
+  onSubmit?: (formData: SignupFormData) => Promise<{ success: boolean; error?: string; code?: string; status?: number }>;
   onNavigateToLogin?: () => void;
 }
 
@@ -48,11 +49,11 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
     try {
       const result = await onSubmit(formData);
       if (!result.success) {
-        setError(result.error ?? t('alert.general-error-description'));
+        setError(mapApiError(result, t, 'alert.general-error-description'));
       }
     } catch (err) {
       // A network-level failure throws instead of resolving with { error }.
-      setError(err instanceof Error ? err.message : t('alert.general-error-description'));
+      setError(mapApiError(err, t));
     } finally {
       setIsSubmitting(false);
     }

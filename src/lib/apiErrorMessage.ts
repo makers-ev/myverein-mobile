@@ -32,13 +32,54 @@ export function erasureBlockerKey(code: unknown): string | null {
   }
 }
 
+/** Anything carrying a machine-readable error: an `ApiError` or an auth result (`{ code, status }`). */
+interface ErrorLike {
+  code?: unknown;
+  status?: unknown;
+}
+
+/**
+ * Backend (snake_case, Wave 14 DS2) and Better Auth (UPPER_SNAKE) error codes with their own, more helpful text than
+ * the generic status fallback. Everything not listed falls back to the HTTP status text, then to the caller's key.
+ */
+const CODE_KEYS: Record<string, string> = {
+  query_too_short: 'api.error.query-too-short',
+  INVALID_EMAIL_OR_PASSWORD: 'auth.error.invalid-credentials',
+  EMAIL_NOT_VERIFIED: 'auth.error.email-not-verified',
+  USER_ALREADY_EXISTS: 'auth.error.user-exists',
+  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: 'auth.error.user-exists',
+  INVALID_PASSWORD: 'auth.error.invalid-password',
+  PASSWORD_TOO_SHORT: 'auth.error.password-short',
+  PASSWORD_TOO_LONG: 'auth.error.password-long',
+  INVALID_EMAIL: 'auth.error.invalid-email',
+  INVALID_TWO_FACTOR_COOKIE: 'auth.error.two-factor-expired',
+  INVALID_CODE: 'auth.error.two-factor-code',
+  INVALID_TOKEN: 'auth.error.token-invalid',
+};
+
+/** True when the request never reached the server (no connection, timeout): status 0, or a network-level failure. */
+export function isOfflineError(err: unknown): boolean {
+  if (err instanceof ApiError) return err.status === 0;
+  if (err instanceof TypeError) return true;
+  if (err instanceof Error) return /network request failed|failed to fetch|timed? ?out/i.test(err.message);
+  return !!err && typeof err === 'object' && (err as ErrorLike).status === 0;
+}
+
 export function apiErrorKey(err: unknown, fallbackKey = 'alert.general-error-description'): string {
+  if (isOfflineError(err)) return 'api.error.offline';
+  // Auth results (`{ code, status }`, no Error instance) share the same mapping.
+  if (err && typeof err === 'object' && !(err instanceof Error)) {
+    const { code, status } = err as ErrorLike;
+    if (typeof code === 'string' && CODE_KEYS[code]) return CODE_KEYS[code]!;
+    return typeof status === 'number' ? apiErrorKey(new ApiError(status, typeof code === 'string' ? code : 'UNKNOWN', ''), fallbackKey) : fallbackKey;
+  }
   if (!(err instanceof ApiError)) return fallbackKey;
   // Machine-readable conflicts carry `details.code`; it wins over the generic status text.
   const detailsCode = (err.details as { code?: unknown } | undefined)?.code;
   if (detailsCode === 'default_calendar_required') return 'kalender.error.default-required';
   const erasure = erasureBlockerKey(err.code);
   if (erasure) return erasure;
+  if (CODE_KEYS[err.code]) return CODE_KEYS[err.code]!;
   switch (err.code) {
     case 'ALREADY_MEMBER':
       return 'api.error.already-member';

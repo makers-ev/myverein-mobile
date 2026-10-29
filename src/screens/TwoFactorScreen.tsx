@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useAttemptLockout } from '@/hooks/useAttemptLockout';
 import { useThemeColors } from '@/theme/colors';
@@ -38,7 +39,7 @@ export default function TwoFactorScreen({ onVerify, onCancel }: TwoFactorScreenP
         registerSuccess();
       } else {
         registerFailure();
-        setError(result.error ?? t('alert.general-error-description'));
+        setError(mapApiError(result, t, 'alert.general-error-description'));
       }
     } finally {
       setIsSubmitting(false);

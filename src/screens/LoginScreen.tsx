@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import Logo from '@/components/Logo';
@@ -26,7 +27,7 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
     try {
       const result = await onLogin(email, password);
       if (!result.success) {
-        setError(result.error ?? t('alert.general-error-description'));
+        setError(mapApiError(result, t, 'alert.general-error-description'));
       }
     } finally {
       setIsSubmitting(false);

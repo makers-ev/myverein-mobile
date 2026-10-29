@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import Logo from '@/components/Logo';
@@ -27,7 +28,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
       if (result.success) {
         setSent(true);
       } else {
-        setError(result.error ?? t('forgot-password.error'));
+        setError(mapApiError(result, t, 'forgot-password.error'));
       }
     } finally {
       setIsSubmitting(false);

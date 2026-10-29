@@ -233,7 +233,7 @@ function MainNavigator() {
             onSubmit={async (formData) => {
               const name = [formData.firstName, formData.lastName].filter(Boolean).join(' ').trim();
               if (!formData.email || !formData.password) {
-                return { success: false, error: 'Email and password are required.' };
+                return { success: false, error: 'Email and password are required.', status: 400 };
               }
               const result = await signUp({
                 email: formData.email,

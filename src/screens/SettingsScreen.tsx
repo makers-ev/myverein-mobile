@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, Linking, Alert, ActivityIndica
 import { useNavigation } from '@react-navigation/native';
 import { colorScheme, useColorScheme } from 'nativewind';
 import Constants from 'expo-constants';
+import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { supportedLanguages } from '@/contexts/translation/supportedLanguages';
 import { useThemeColors } from '@/theme/colors';
@@ -499,7 +500,7 @@ function ProfileSection({
         const result = await updateProfile(name);
         setSubmitting(false);
         if (!result.success) {
-            setError(result.error ?? t('alert.general-error-description'));
+            setError(mapApiError(result, t, 'alert.general-error-description'));
             return;
         }
         onSaved();
@@ -567,7 +568,7 @@ function SecuritySection({
         const result = await changePassword(currentPassword, newPassword);
         setPasswordSubmitting(false);
         if (!result.success) {
-            setPasswordError(result.error ?? t('alert.general-error-description'));
+            setPasswordError(mapApiError(result, t, 'alert.general-error-description'));
             return;
         }
         setCurrentPassword('');
@@ -597,7 +598,7 @@ function SecuritySection({
         const result = await enableTwoFactor(twoFactorPassword);
         setTwoFactorSubmitting(false);
         if (!result.success) {
-            setTwoFactorError(result.error ?? t('alert.general-error-description'));
+            setTwoFactorError(mapApiError(result, t, 'alert.general-error-description'));
             return;
         }
         setTotpUri(result.totpUri ?? null);
@@ -611,7 +612,7 @@ function SecuritySection({
         const result = await verifyTwoFactor(totpCode);
         setTwoFactorSubmitting(false);
         if (!result.success) {
-            setTwoFactorError(result.error ?? t('alert.general-error-description'));
+            setTwoFactorError(mapApiError(result, t, 'alert.general-error-description'));
             return;
         }
         resetTwoFactorFlow();
@@ -624,7 +625,7 @@ function SecuritySection({
         const result = await disableTwoFactor(twoFactorPassword);
         setTwoFactorSubmitting(false);
         if (!result.success) {
-            setTwoFactorError(result.error ?? t('alert.general-error-description'));
+            setTwoFactorError(mapApiError(result, t, 'alert.general-error-description'));
             return;
         }
         resetTwoFactorFlow();
