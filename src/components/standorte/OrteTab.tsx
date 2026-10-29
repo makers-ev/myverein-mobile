@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Text, TouchableOpacity, View } from 'react-native';
 import { Clock, ExternalLink, Eye, EyeOff, Info, Link2, MapPin, User, Wifi } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
@@ -343,8 +343,12 @@ function LocationDetail({
  * `locations:write` additionally manages locations, WiFi networks, links and key issue/return;
  * `locations:read_access` shows key holders and history read-only.
  */
-export default function OrteTab({ clubId }: { clubId: string }) {
-  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+export default function OrteTab({ clubId, locationId }: { clubId: string; locationId?: string }) {
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(locationId ?? null);
+  // Opened from the search with a place: show its detail, also when the screen is already mounted.
+  useEffect(() => {
+    if (locationId) setSelectedLocationId(locationId);
+  }, [locationId]);
   const { can } = useOwnMembership(clubId);
   const canWrite = can('locations:write');
   const canSeeKeys = canWrite || can('locations:read_access');

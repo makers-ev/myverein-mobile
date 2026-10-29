@@ -126,7 +126,7 @@ function MemberRow({
  * `club_stats:read` the member-count KPI card. Create/edit/import are
  * deliberately web-only.
  */
-export default function MembersTab({ clubId }: { clubId: string }) {
+export default function MembersTab({ clubId, memberId }: { clubId: string; memberId?: string }) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { can, loading: membershipLoading } = useOwnMembership(clubId);
@@ -184,6 +184,12 @@ export default function MembersTab({ clubId }: { clubId: string }) {
     },
     [],
   );
+
+  // Opened from the search with a member: open the detail sheet as soon as that row is in the loaded list.
+  useEffect(() => {
+    const hit = memberId ? members.find((m) => m.id === memberId) : undefined;
+    if (hit) setSelected((prev) => (prev?.id === hit.id ? prev : hit));
+  }, [memberId, members]);
 
   // The sheet shows the freshest list row, falling back to the tapped snapshot (e.g. after a refetch dropped page 2).
   // Right after a photo change the response's fresh URL wins until the list refetch has settled.

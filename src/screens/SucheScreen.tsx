@@ -71,13 +71,13 @@ export default function SucheScreen() {
         ) : loading ? (
           <Skeleton lines={4} />
         ) : results && total === 0 ? (
-          <EmptyState title={t('search.empty.title')} hint={t('search.empty.body')} action={<Button variant="secondary" label={t('search.empty.action')} onPress={() => navigation.navigate('Kalender')} />} />
+          <EmptyState title={t('search.empty.title')} hint={t('search.empty.body')} action={<Button variant="secondary" label={t('search.empty.action')} onPress={() => setQuery('')} />} />
         ) : results ? (
           <>
             {results.members && results.members.length > 0 ? (
               <Group title={t('search.group.members')}>
                 {results.members.map((m) => (
-                  <ListRow key={m.id} title={m.name} hint={m.departmentNames?.join(', ')} onPress={() => navigation.navigate('Verein', { tab: 'mitglieder' })} />
+                  <ListRow key={m.id} title={m.name} hint={m.departmentNames?.join(', ')} onPress={() => navigation.navigate('Verein', { tab: 'mitglieder', memberId: m.id })} />
                 ))}
               </Group>
             ) : null}
@@ -98,7 +98,7 @@ export default function SucheScreen() {
             {results.locations.length > 0 ? (
               <Group title={t('search.group.locations')}>
                 {results.locations.map((l) => (
-                  <ListRow key={l.id} title={l.name} onPress={() => navigation.navigate('Standorte', { tab: 'orte' })} />
+                  <ListRow key={l.id} title={l.name} onPress={() => navigation.navigate('Standorte', { tab: 'orte', locationId: l.id })} />
                 ))}
               </Group>
             ) : null}

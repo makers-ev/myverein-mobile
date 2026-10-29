@@ -57,7 +57,7 @@ export default function StandorteScreen() {
           </View>
 
           <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
-            {tab === 'orte' && <OrteTab clubId={activeClub.clubId} />}
+            {tab === 'orte' && <OrteTab clubId={activeClub.clubId} locationId={route.params?.locationId} />}
             {tab === 'material' && <MaterialTab clubId={activeClub.clubId} />}
           </ScrollView>
         </>

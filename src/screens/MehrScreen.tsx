@@ -53,6 +53,10 @@ export default function MehrScreen({ navigation }: Props) {
           <ListRow title={t('mehr.signin')} hint={t('mehr.signin.hint')} onPress={() => navigation.navigate('Login', {})} />
         ) : null}
 
+        {isAuthenticated && activeClub && !guardianOnly ? (
+          <ListRow title={t('search.title')} hint={t('search.placeholder')} onPress={() => navigation.navigate('Suche')} />
+        ) : null}
+
         {showClub ? (
           <Section title={t('mehr.section.club')}>
             <ListRow title={t('mehr.orte')} hint={t('mehr.orte.hint')} onPress={() => requireAuth(() => navigation.navigate('Standorte', { tab: 'orte' }))} />

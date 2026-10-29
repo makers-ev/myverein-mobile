@@ -63,9 +63,9 @@ import { useWards } from '@/hooks/useWards';
 export type RootStackParamList = {
   Home: undefined;
   Dashboard: undefined;
-  Verein: { tab?: 'info' | 'mitglieder' | 'verwaltung' | 'profil' } | undefined;
+  Verein: { tab?: 'info' | 'mitglieder' | 'verwaltung' | 'profil'; memberId?: string } | undefined;
   Kalender: { tab?: 'termine' | 'verfuegbarkeit' | 'treffen'; eventId?: string } | undefined;
-  Standorte: { tab?: 'orte' | 'material' } | undefined;
+  Standorte: { tab?: 'orte' | 'material'; locationId?: string } | undefined;
   Mehr: undefined;
   Suche: undefined;
   JoinClub: undefined;
