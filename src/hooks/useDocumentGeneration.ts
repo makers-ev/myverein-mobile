@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
-import type { GenerationJob, GenerationTemplate } from '@/lib/documents';
+import { isJobRunning, type GenerationJob, type GenerationTemplate } from '@/lib/documents';
 import { pollJob } from '@/lib/jobPolling';
 import { useScopedResource } from './useScopedResource';
 
@@ -60,6 +60,9 @@ export function useDocumentGeneration(clubId: string | null) {
         if (!done) return null;
         return { ok: true, job: done };
       } catch (error) {
+        // The job was created but a status poll failed (network): it keeps running on the server, so say "still running"
+        // and let the file show up in the list instead of reporting a failure.
+        if (last && isJobRunning(last)) return { ok: true, job: last };
         return { ok: false, error, job: last };
       } finally {
         busy.current = false;
