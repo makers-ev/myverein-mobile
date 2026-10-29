@@ -44,6 +44,7 @@ interface ErrorLike {
  */
 const CODE_KEYS: Record<string, string> = {
   query_too_short: 'api.error.query-too-short',
+  QUERY_TOO_SHORT: 'api.error.query-too-short',
   INVALID_EMAIL_OR_PASSWORD: 'auth.error.invalid-credentials',
   EMAIL_NOT_VERIFIED: 'auth.error.email-not-verified',
   USER_ALREADY_EXISTS: 'auth.error.user-exists',

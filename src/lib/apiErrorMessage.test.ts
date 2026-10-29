@@ -67,6 +67,7 @@ describe('mapApiError (Wave 14 DS2)', () => {
   const t = (key: string) => `[${key}]`;
   it('maps stable backend codes and auth results without echoing server text', () => {
     expect(mapApiError(new ApiError(400, 'query_too_short', 'Query too short'), t)).toBe('[api.error.query-too-short]');
+    expect(mapApiError(new ApiError(400, 'QUERY_TOO_SHORT', 'x'), t)).toBe('[api.error.query-too-short]');
     expect(mapApiError({ code: 'INVALID_EMAIL_OR_PASSWORD', status: 401, error: 'Unable to sign in.' }, t)).toBe('[auth.error.invalid-credentials]');
     expect(mapApiError({ status: 429 }, t)).toBe('[api.error.rate-limit]');
     expect(mapApiError({ error: 'x' }, t, 'custom.key')).toBe('[custom.key]');
