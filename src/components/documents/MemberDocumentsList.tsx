@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useDocumentOpen } from '@/hooks/useDocumentOpen';
 import { useGenerationTemplates } from '@/hooks/useDocumentGeneration';
 import { useMemberDocuments, type MemberDocumentsSubject } from '@/hooks/useDocuments';
+import { useReportOnce } from '@/hooks/useReportOnce';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { formatDocumentDate, formatFileSize, memberDocumentDownloadPath } from '@/lib/documents';
@@ -48,9 +49,8 @@ export default function MemberDocumentsList({ subject, wardName, onGone }: Props
       <RequestConfirmationCard clubId={ownClubId} clubMemberId={membership.clubMemberId} disabled={!!file.busyId} onReady={(id) => void openGenerated(id)} />
     ) : null;
 
-  React.useEffect(() => {
-    if (gone && subject.kind === 'ward') onGone();
-  }, [gone, subject.kind, onGone]);
+  // Once per child that turned out to be gone: the parent's wards reload re-renders this list, so no effect on `onGone`.
+  useReportOnce(gone && subject.kind === 'ward', subject.kind === 'ward' ? `${subject.clubId}:${subject.wardId}` : null, onGone);
 
   if (loading && !documents) return <Loading />;
   if (gone) {

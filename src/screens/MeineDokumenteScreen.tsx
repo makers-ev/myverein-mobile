@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -33,6 +33,10 @@ export default function MeineDokumenteScreen() {
   ];
   const selected = subjects.find((s) => s.key === choice) ?? subjects[0] ?? null;
   const ward = selected && selected.key !== SELF ? wards.find((w) => wardKey(w) === selected.key) ?? null : null;
+
+  const handleGone = useCallback(() => {
+    void reloadWards();
+  }, [reloadWards]);
 
   const refresh = async () => {
     setRefreshing(true);
@@ -73,7 +77,7 @@ export default function MeineDokumenteScreen() {
             key={`${selected.key}:${version}`}
             subject={ward ? { kind: 'ward', clubId: ward.clubId, wardId: ward.wardId } : { kind: 'self', clubId: ownClub!.clubId }}
             wardName={ward ? (ward.firstName ?? ward.name) : null}
-            onGone={() => void reloadWards()}
+            onGone={handleGone}
           />
         )}
       </ScrollView>
