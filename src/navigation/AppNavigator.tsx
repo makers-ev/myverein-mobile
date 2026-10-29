@@ -42,6 +42,8 @@ import PrivacyPolicyScreen from '@/legal/PrivacyPolicyScreen';
 import ImprintScreen from '@/legal/ImprintScreen';
 import TermsOfServiceScreen from '@/legal/TermsOfServiceScreen';
 import { useThemeColors, useNavigationTheme } from '@/theme/colors';
+import { useLanguage } from '@/contexts/translation/LanguageContext';
+import FirstRunGate from '@/onboarding/FirstRunGate';
 import PushDeepLinkRouter from '@/notifications/PushDeepLinkRouter';
 import { setNavigationReady } from '@/notifications/pushTargetStore';
 import { navigationRef } from './navigationRef';
@@ -103,6 +105,9 @@ function MainNavigator() {
     isAuthenticated,
   } = useAuth();
   const themeColors = useThemeColors();
+  const { t } = useLanguage();
+  // Detail screens reached from a tab get a visible title and back arrow (swipe/hardware back keep working).
+  const sub = (titleKey: string) => ({ headerShown: true, title: t(titleKey), headerBackTitle: t('common.back') });
 
   return (
     // Navbar sits here, outside the Navigator's own screens, so it stays
@@ -111,6 +116,8 @@ function MainNavigator() {
     // TwoFactorNavigator (see AppNavigator's own comment on that).
     <View style={{ flex: 1 }}>
       <Navbar />
+      {/* Terms of service and the one-time introduction, on whichever screen the app opens first. */}
+      <FirstRunGate />
       {/* native-stack defaults contentStyle to white; needed for the
           Android system bars, see App.tsx's StatusBar/NavigationBar. */}
       <RootStack.Navigator
@@ -140,7 +147,7 @@ function MainNavigator() {
 
       <RootStack.Screen name="Mehr" component={MehrScreen} />
 
-      <RootStack.Screen name="Suche">
+      <RootStack.Screen name="Suche" options={sub('search.title')}>
         {() => (
           <RequireAuth>
             <SucheScreen />
@@ -172,7 +179,7 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
-      <RootStack.Screen name="ClubApplications">
+      <RootStack.Screen name="ClubApplications" options={sub('verein.applications.open')}>
         {() => (
           <RequireAuth>
             <ClubApplicationsScreen />
@@ -180,7 +187,7 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
-      <RootStack.Screen name="ProfileModules">
+      <RootStack.Screen name="ProfileModules" options={sub('forms.pm.title')}>
         {() => (
           <RequireAuth>
             <ProfileModulesScreen />
@@ -188,7 +195,7 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
-      <RootStack.Screen name="Notifications">
+      <RootStack.Screen name="Notifications" options={sub('mehr.platform')}>
         {() => (
           <RequireAuth>
             <NotificationsScreen />
@@ -222,7 +229,7 @@ function MainNavigator() {
               // TwoFactorNavigator in that case, so there's nowhere here to
               // navigate to yet.
               if (result.success) {
-                navigation.navigate(route.params?.returnTo ?? 'Home');
+                navigation.navigate(route.params?.returnTo ?? 'Dashboard');
               }
               return result;
             }}
@@ -301,7 +308,7 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
-      <RootStack.Screen name="Abstimmungen">
+      <RootStack.Screen name="Abstimmungen" options={sub('assembly.dashboard.Abstimmungen')}>
         {(props) => (
           <RequireAuth>
             <AbstimmungenScreen {...props} />
@@ -309,7 +316,7 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
-      <RootStack.Screen name="Versammlung">
+      <RootStack.Screen name="Versammlung" options={sub('assembly.dashboard.Versammlung')}>
         {(props) => (
           <RequireAuth>
             <VersammlungScreen {...props} />
@@ -317,7 +324,7 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
-      <RootStack.Screen name="MeineDokumente">
+      <RootStack.Screen name="MeineDokumente" options={sub('mydocs.entry')}>
         {() => (
           <RequireAuth>
             <MeineDokumenteScreen />
@@ -325,7 +332,7 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
-      <RootStack.Screen name="Archiv">
+      <RootStack.Screen name="Archiv" options={sub('archive.entry')}>
         {() => (
           <RequireAuth>
             <ArchivScreen />
@@ -333,7 +340,7 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
-      <RootStack.Screen name="Bestaetigungen">
+      <RootStack.Screen name="Bestaetigungen" options={sub('ack.entry')}>
         {() => (
           <RequireAuth>
             <BestaetigungenScreen />
@@ -341,7 +348,7 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
-      <RootStack.Screen name="Mitgliedsausweis">
+      <RootStack.Screen name="Mitgliedsausweis" options={sub('card.entry')}>
         {() => (
           <RequireAuth>
             <MitgliedsausweisScreen />
@@ -349,7 +356,7 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
-      <RootStack.Screen name="AusweisKontrolle">
+      <RootStack.Screen name="AusweisKontrolle" options={sub('check.entry')}>
         {() => (
           <RequireAuth>
             <AusweisKontrolleScreen />
