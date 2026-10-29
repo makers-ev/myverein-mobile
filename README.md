@@ -42,7 +42,8 @@ Then press `a` for Android, `i` for iOS, or `w` for web in the Expo CLI, or scan
 | `npm run android` / `npm run ios` / `npm run web` | Start and open a specific platform |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
-| `npm test` | Jest |
+| `npm run check:i18n` | DE/EN key and placeholder parity of every translation module, plus a check that each literal `t('key')` in `src/` has a German and an English text (`scripts/check-i18n.cjs`) |
+| `npm test` | `check:i18n`, then Jest |
 
 ## Architecture
 
@@ -368,7 +369,7 @@ Exit requests (Wave 7 M2) and the Verwaltung tab add **no persisted state**: req
 
 None of the above (except the push registration record) needs `expo-secure-store` — language, theme, and the two title toggles are non-sensitive UI preferences, so plain `AsyncStorage` is the right tool; only the session token and App Lock PIN go through the keychain. Everything else — user profile, sessions list, 2FA state — is fetched from the backend on demand through `AuthProvider`, never cached locally beyond React state.
 
-**Supported languages:** `src/contexts/translation/supportedLanguages.ts` is the single registry (`id`/`label`/`nativeLabel`/`isRTL`) both this app and `_template_better-auth-website` derive their `Language` union from — German, English, French, Spanish, Portuguese, Italian, Dutch, Polish, Russian, Japanese, and Chinese (Simplified), all LTR (`isRTL: false` for every entry; Arabic/RTL is a deliberately separate future scope, see the vault's `ADR-009`). `t()` falls back to the English value for any key missing in the active language instead of showing the raw key. `LegalTranslation.ts` stays German/English-only by design — `LegalDocumentLayout.tsx` shows a visible banner when it falls back to English there.
+**Supported languages:** `src/contexts/translation/supportedLanguages.ts` is the single registry (`id`/`label`/`nativeLabel`/`isRTL`) both this app and `_template_better-auth-website` derive their `Language` union from — German, English, French, Spanish, Portuguese, Italian, Dutch, Polish, Russian, Japanese, and Chinese (Simplified), all LTR (`isRTL: false` for every entry; Arabic/RTL is a deliberately separate future scope, see the vault's `ADR-009`). `t()` falls back to the English value for any key missing in the active language instead of showing the raw key. **Completeness (Wave 14 DS3):** German and English are complete by contract and enforced by `npm run check:i18n` (part of `npm test` and CI). The other nine languages are first-pass or missing on purpose: an untranslated key falls back to English per key, the script only prints how many keys each language lacks so translation effort can be prioritised. `LegalTranslation.ts` stays German/English-only by design — `LegalDocumentLayout.tsx` shows a visible banner when it falls back to English there.
 
 ## Screens
 
