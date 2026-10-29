@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, TextInput } from 'react-native';
+import { Alert, Text, TextInput } from 'react-native';
 
 import { Body, Button, Card, ErrorRetry, Loading } from '@/components/assembly/ui';
 import OpenFileNotice from '@/components/documents/OpenFileNotice';
@@ -61,6 +61,19 @@ export default function AcknowledgementDetailView({ clubId, item, onChanged, onB
     }
   };
 
+  // A legally relevant answer gets one more deliberate step; the dialog names the document and, for a child, the child.
+  const ask = (decision: 'bestaetigt' | 'abgelehnt') => {
+    if (needsPassword && !password) {
+      setMessage(t('ack.error.reauth_required'));
+      return;
+    }
+    const who = forChild ? t('ack.for-child', { name: item.personName }) : '';
+    Alert.alert(decision === 'bestaetigt' ? t('ack.dialog.confirm.title') : t('ack.dialog.decline.title'), [item.documentTitle, who].filter(Boolean).join('\n'), [
+      { text: t('ack.dialog.cancel'), style: 'cancel' },
+      { text: decision === 'bestaetigt' ? t('ack.confirm') : t('ack.decline'), style: decision === 'bestaetigt' ? 'default' : 'destructive', onPress: () => void answer(decision) },
+    ]);
+  };
+
   const mimeType = current.mimeType ?? 'application/pdf';
   const proofBy = current.givenBy === 'guardian' ? t('ack.proof.by-guardian') : current.givenBy === 'board_paper' ? t('ack.proof.by-board') : t('ack.proof.by-self');
 
@@ -103,8 +116,8 @@ export default function AcknowledgementDetailView({ clubId, item, onChanged, onB
               />
             </>
           ) : null}
-          <Button label={t('ack.confirm')} busy={busy} disabled={busy} onPress={() => void answer('bestaetigt')} />
-          <Button secondary label={t('ack.decline')} disabled={busy} onPress={() => void answer('abgelehnt')} />
+          <Button label={t('ack.confirm')} busy={busy} disabled={busy} onPress={() => ask('bestaetigt')} />
+          <Button secondary label={t('ack.decline')} disabled={busy} onPress={() => ask('abgelehnt')} />
           {message ? (
             <Text accessibilityRole="alert" accessibilityLiveRegion="polite" className="text-destructive text-sm">
               {message}
