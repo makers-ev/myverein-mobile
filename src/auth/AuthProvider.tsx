@@ -103,7 +103,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await authClient.signIn.email({ email, password });
 
     if (error) {
-      return { ...failure(error, 'Unable to sign in.') };
+      // A bare 401 from the sign-in call (no error code) means wrong e-mail or password.
+      const code = typeof error.code === 'string' && error.code ? error.code : error.status === 401 ? 'INVALID_EMAIL_OR_PASSWORD' : undefined;
+      return { ...failure({ ...error, code }, 'Unable to sign in.') };
     }
 
     // Better Auth's twoFactor plugin short-circuits the normal session

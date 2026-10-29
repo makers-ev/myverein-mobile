@@ -1,4 +1,4 @@
-import { ApiError } from './api';
+import { ApiError, isNetworkFailure } from './api';
 
 type Translate = (key: string, params?: Record<string, string | number>) => string;
 
@@ -61,7 +61,7 @@ const CODE_KEYS: Record<string, string> = {
 /** True when the request never reached the server (no connection, timeout): status 0, or a network-level failure. */
 export function isOfflineError(err: unknown): boolean {
   if (err instanceof ApiError) return err.status === 0;
-  if (err instanceof Error) return /network request failed|failed to fetch|timed? ?out/i.test(err.message);
+  if (err instanceof Error) return isNetworkFailure(err);
   return !!err && typeof err === 'object' && (err as ErrorLike).status === 0;
 }
 

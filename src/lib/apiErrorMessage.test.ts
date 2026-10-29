@@ -1,6 +1,7 @@
 import { ApiError, apiErrorFromResponse } from './api';
 import { mapApiError } from './mapApiError';
-import { apiErrorKey, apiErrorMessage, erasureBlockerKey } from './apiErrorMessage';
+import { apiErrorKey, apiErrorMessage, erasureBlockerKey, isOfflineError } from './apiErrorMessage';
+import { RequestTimeoutError } from './withTimeout';
 
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
 
@@ -83,5 +84,16 @@ describe('network failures (Wave 14 N5)', () => {
   it('apiFetch-level network errors become status 0 and map to the offline text', () => {
     const t = (key: string) => `[${key}]`;
     expect(mapApiError(new ApiError(0, 'NETWORK_ERROR', 'Network request failed'), t)).toBe('[api.error.offline]');
+  });
+});
+
+describe('offline detection (narrow)', () => {
+  it('counts only TypeError, "Network request failed" and the own timeout as offline', () => {
+    expect(isOfflineError(new TypeError('Network request failed'))).toBe(true);
+    expect(isOfflineError(new Error('Network request failed'))).toBe(true);
+    expect(isOfflineError(new RequestTimeoutError())).toBe(true);
+    expect(isOfflineError(new Error('request timed out by the server proxy'))).toBe(false);
+    expect(isOfflineError(new Error('aborted'))).toBe(false);
+    expect(isOfflineError(new ApiError(500, 'X', 'x'))).toBe(false);
   });
 });

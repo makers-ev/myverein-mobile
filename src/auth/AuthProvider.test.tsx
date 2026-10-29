@@ -64,6 +64,17 @@ describe('AuthProvider', () => {
     expect(result.current.twoFactorPending).toBe(true);
   });
 
+  it('signIn maps a bare 401 to the invalid-credentials code', async () => {
+    authClient.signIn.email.mockResolvedValue({ data: null, error: { status: 401 } });
+
+    const { result } = await renderHook(() => useAuth(), { wrapper });
+
+    await act(async () => {
+      const outcome = await result.current.signIn('user@example.com', 'wrong');
+      expect(outcome).toMatchObject({ success: false, code: 'INVALID_EMAIL_OR_PASSWORD', status: 401 });
+    });
+  });
+
   it('isAuthenticated is false while twoFactorPending is true even with a session present', async () => {
     authClient.useSession.mockReturnValue({
       data: { session: { id: 's1' }, user: { id: 'u1', email: 'user@example.com' } },

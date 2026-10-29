@@ -1,4 +1,5 @@
 import { authClient, backendUrl } from '@/auth/auth-client';
+import { RequestTimeoutError } from '@/lib/withTimeout';
 
 /** Mirrors the backend's `AppError`/`ErrorCode` shape (src/lib/errors.ts). */
 export class ApiError extends Error {
@@ -20,9 +21,13 @@ interface ApiFetchOptions {
   body?: unknown;
 }
 
-/** Fetch-level failure with no HTTP response (React Native: `TypeError: Network request failed`). */
+/**
+ * Fetch-level failure with no HTTP response: React Native's `fetch` rejects with a `TypeError` ("Network request failed"),
+ * and the app's own `withTimeout` rejects with `RequestTimeoutError`. Any other error (a bug, an abort someone asked for)
+ * is not "offline" and must surface as what it is.
+ */
 export function isNetworkFailure(err: unknown): boolean {
-  return err instanceof Error && /network request failed|failed to fetch|network error|timed? ?out|aborted/i.test(err.message);
+  return err instanceof TypeError || err instanceof RequestTimeoutError || (err instanceof Error && err.message === 'Network request failed');
 }
 
 /**

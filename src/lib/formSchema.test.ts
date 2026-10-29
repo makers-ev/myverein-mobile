@@ -294,7 +294,7 @@ describe('error mapping', () => {
     expect(key(422, 'X', undefined, 'At most 5 files per submission')).toBe('forms.err.fileCount');
     expect(key(429, 'TOO_MANY_REQUESTS')).toBe('api.error.rate-limit');
     expect(key(500, 'INTERNAL')).toBe('api.error.server');
-    expect(formErrorKey(new TypeError('network'))).toBe('alert.general-error-description');
+    expect(formErrorKey(new Error('boom'))).toBe('alert.general-error-description');
   });
 
   it('maps child warnings and refuses unknown ones', () => {
