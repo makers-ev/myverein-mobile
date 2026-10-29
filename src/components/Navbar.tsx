@@ -6,7 +6,7 @@ import { CalendarCheck, Calendar, Ellipsis, Megaphone, Users, type LucideIcon } 
 import { useAuth } from '@/auth/AuthProvider';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
-import { navigate, navigationRef } from '@/navigation/navigationRef';
+import { goToTab, navigationRef } from '@/navigation/navigationRef';
 import { tabForRoute, tabTarget, visibleTabs, type TabKey } from '@/navigation/tabs';
 import { getShowNavbarTitles } from '@/settings/appSettingsStorage';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
@@ -86,7 +86,7 @@ export default function Navbar() {
                     return (
                         <TouchableOpacity
                             key={tab}
-                            onPress={() => navigate(tabTarget(tab, { isAuthenticated, hasWards, guardianOnly }))}
+                            onPress={() => goToTab(tabTarget(tab, { isAuthenticated, hasWards, guardianOnly }))}
                             activeOpacity={0.7}
                             accessibilityRole="tab"
                             accessibilityLabel={badge > 0 ? t('nav.badge-label', { label, count: badge }) : label}

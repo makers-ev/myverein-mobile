@@ -1,4 +1,4 @@
-import { createNavigationContainerRef } from '@react-navigation/native';
+import { createNavigationContainerRef, StackActions } from '@react-navigation/native';
 import type { RootStackParamList } from './AppNavigator';
 
 /**
@@ -26,4 +26,13 @@ export function navigate<RouteName extends keyof RootStackParamList>(
     // for this exact helper.
     (navigationRef.navigate as (name: RouteName, params?: RootStackParamList[RouteName]) => void)(name, params);
   }
+}
+
+/**
+ * Opens a tab root without growing the stack: pops back to it when it is already in the stack, otherwise replaces the
+ * current screen with it (`StackActions.popTo`). Removed screens still emit `beforeRemove`, so unsaved-changes guards
+ * (CreateClub, forms) keep asking.
+ */
+export function goToTab<RouteName extends keyof RootStackParamList>(name: RouteName, params?: RootStackParamList[RouteName]) {
+  if (navigationRef.isReady()) navigationRef.dispatch(StackActions.popTo(name as string, params as object | undefined));
 }

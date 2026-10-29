@@ -54,3 +54,12 @@ export function tabTarget(tab: TabKey, ctx: TabContext): keyof RootStackParamLis
 export function visibleTabs(ctx: Pick<TabContext, 'guardianOnly'>): TabKey[] {
   return TAB_ORDER.filter((tab) => !(ctx.guardianOnly && (tab === 'kalender' || tab === 'mitteilungen' || tab === 'verein')));
 }
+
+/** Routes a guardian-only account (no club) cannot use: the hidden tabs' roots. */
+const CLUB_ONLY_ROUTES: readonly (keyof RootStackParamList)[] = ['Kalender', 'Mitteilungen', 'Verein', 'Standorte', 'ClubApplications', 'ProfileModules', 'Abstimmungen', 'Versammlung', 'Archiv', 'Bestaetigungen', 'AusweisKontrolle'];
+
+/** Where to go after sign-in: `returnTo` only when the account can reach it, otherwise the account's own Heute. */
+export function resolveReturnTo(returnTo: keyof RootStackParamList | undefined, ctx: TabContext): keyof RootStackParamList {
+  if (returnTo && !(ctx.guardianOnly && CLUB_ONLY_ROUTES.includes(returnTo)) && returnTo !== 'Login') return returnTo;
+  return tabTarget('heute', { ...ctx, isAuthenticated: true });
+}

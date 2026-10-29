@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
 
-import { navigationRef } from '@/navigation/navigationRef';
+import { goToTab, navigationRef } from '@/navigation/navigationRef';
 import { useWards } from '@/hooks/useWards';
 
-const CLUB_START_ROUTES = ['Home', 'Dashboard'];
+// Also the club-only tab roots: a guardian-only account that signed in from one of them (returnTo) has nothing there.
+const CLUB_START_ROUTES = ['Home', 'Dashboard', 'Kalender', 'Mitteilungen', 'Verein'];
 
 /**
  * Start routing for guardian-only accounts: no club, only wards. They land on "Heute" instead of the club dashboard
@@ -24,7 +25,7 @@ export default function GuardianStartRedirect() {
       const current = navigationRef.getCurrentRoute()?.name;
       if (current && CLUB_START_ROUTES.includes(current)) {
         done.current = true;
-        navigationRef.navigate('Heute');
+        goToTab('Heute');
       }
     };
     tryRedirect();

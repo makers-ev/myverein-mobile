@@ -6,6 +6,9 @@ type Translation = Record<Language, Record<string, string>>;
 // languages fall back to English per key (see LanguageContext's `t()` and `npm run check:i18n`).
 const NavigationTranslation: Translation = {
   en: {
+    'auth.required.action': 'Sign in',
+    'auth.required.body': 'This page is only available with an account.',
+    'auth.required.title': 'Please sign in',
     'create-club.required-hint': 'Fields marked * are required. You can continue once they are all filled in.',
     'mehr.create': 'Start a club',
     'mehr.create.hint': 'Register and set up your club',
@@ -118,6 +121,9 @@ const NavigationTranslation: Translation = {
     'today.wards.hint': 'Events, consents and trainer contacts',
   },
   de: {
+    'auth.required.action': 'Anmelden',
+    'auth.required.body': 'Diese Seite gibt es nur mit Konto.',
+    'auth.required.title': 'Bitte melde dich an',
     'create-club.required-hint': 'Mit * markierte Felder sind Pflicht. Weiter geht es, sobald alle ausgefüllt sind.',
     'mehr.create': 'Einen Verein gründen',
     'mehr.create.hint': 'Verein registrieren und einrichten',

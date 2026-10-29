@@ -11,6 +11,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import ListRow from '@/components/ui/ListRow';
 import { MyCardEntry, MyDocumentsEntry } from '@/components/documents/DocumentsEntry';
+import { goToTab } from '@/navigation/navigationRef';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Mehr'>;
@@ -56,7 +57,7 @@ export default function MehrScreen({ navigation }: Props) {
           <Section title={t('mehr.section.club')}>
             <ListRow title={t('mehr.orte')} hint={t('mehr.orte.hint')} onPress={() => requireAuth(() => navigation.navigate('Standorte', { tab: 'orte' }))} />
             <ListRow title={t('mehr.material')} hint={t('mehr.material.hint')} onPress={() => requireAuth(() => navigation.navigate('Standorte', { tab: 'material' }))} />
-            <ListRow title={t('mehr.verfuegbarkeit')} hint={t('mehr.verfuegbarkeit.hint')} onPress={() => requireAuth(() => navigation.navigate('Kalender', { tab: 'verfuegbarkeit' }))} />
+            <ListRow title={t('mehr.verfuegbarkeit')} hint={t('mehr.verfuegbarkeit.hint')} onPress={() => requireAuth(() => goToTab('Kalender', { tab: 'verfuegbarkeit' }))} />
           </Section>
         ) : null}
 
@@ -69,7 +70,7 @@ export default function MehrScreen({ navigation }: Props) {
 
         <Section title={t('mehr.section.account')}>
           {isAuthenticated && activeClub && !guardianOnly ? (
-            <ListRow title={t('mehr.profile')} hint={t('mehr.profile.hint')} onPress={() => navigation.navigate('Verein', { tab: 'profil' })} />
+            <ListRow title={t('mehr.profile')} hint={t('mehr.profile.hint')} onPress={() => goToTab('Verein', { tab: 'profil' })} />
           ) : null}
           {isAuthenticated ? <ListRow title={t('mehr.privacy')} hint={t('mehr.privacy.hint')} onPress={() => navigation.navigate('PrivacyCenter')} /> : null}
           {isAuthenticated ? (

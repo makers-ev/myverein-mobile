@@ -12,6 +12,7 @@ import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { withScheme } from '@/lib/withScheme';
+import { goToTab } from '@/navigation/navigationRef';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import {
   CLAIMED_ROLES,
@@ -697,7 +698,7 @@ export default function CreateClubScreen({ navigation }: Props) {
         setEditing(true);
       }}
       // VereinScreen reloads its clubs on focus, so just return there.
-      onOpenClub={() => navigation.navigate('Verein')}
+      onOpenClub={() => goToTab('Verein')}
       onBack={() => navigation.goBack()}
     />
   );

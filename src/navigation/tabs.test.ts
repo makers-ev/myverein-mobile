@@ -1,6 +1,6 @@
 jest.mock('./AppNavigator', () => ({}));
 
-import { tabForRoute, tabTarget, visibleTabs, TAB_ORDER, TAB_ROUTES } from './tabs';
+import { resolveReturnTo, tabForRoute, tabTarget, visibleTabs, TAB_ORDER, TAB_ROUTES } from './tabs';
 
 describe('tabs', () => {
   it('has exactly five tabs in the agreed order', () => {
@@ -30,5 +30,19 @@ describe('tabs', () => {
   it('hides club tabs for guardian-only accounts', () => {
     expect(visibleTabs({ guardianOnly: true })).toEqual(['heute', 'mehr']);
     expect(visibleTabs({ guardianOnly: false })).toHaveLength(5);
+  });
+});
+
+describe('resolveReturnTo', () => {
+  const member = { isAuthenticated: true, hasWards: false, guardianOnly: false };
+  const guardian = { isAuthenticated: true, hasWards: true, guardianOnly: true };
+  it('keeps a reachable returnTo and falls back to Heute', () => {
+    expect(resolveReturnTo('Kalender', member)).toBe('Kalender');
+    expect(resolveReturnTo(undefined, member)).toBe('Dashboard');
+    expect(resolveReturnTo('Login', member)).toBe('Dashboard');
+  });
+  it('sends a guardian-only account away from club-only routes', () => {
+    expect(resolveReturnTo('Kalender', guardian)).toBe('Heute');
+    expect(resolveReturnTo('Settings', guardian)).toBe('Settings');
   });
 });

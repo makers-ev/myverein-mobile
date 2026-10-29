@@ -46,7 +46,9 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import FirstRunGate from '@/onboarding/FirstRunGate';
 import PushDeepLinkRouter from '@/notifications/PushDeepLinkRouter';
 import { setNavigationReady } from '@/notifications/pushTargetStore';
-import { navigationRef } from './navigationRef';
+import { goToTab, navigationRef } from './navigationRef';
+import { resolveReturnTo } from './tabs';
+import { useWards } from '@/hooks/useWards';
 
 /**
  * "Browse first" model (see "## Guest mode" in CLAUDE.md): still one stack,
@@ -94,6 +96,15 @@ export type RootStackParamList = {
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
+/** Heute is for signed-in users: a guest (e.g. after signing out while it was open) is moved to the guest start page. */
+function DashboardGate(props: React.ComponentProps<typeof DashboardScreen>) {
+  const { isAuthenticated } = useAuth();
+  useEffect(() => {
+    if (!isAuthenticated) goToTab('Home');
+  }, [isAuthenticated]);
+  return isAuthenticated ? <DashboardScreen {...props} /> : null;
+}
+
 function MainNavigator() {
   const {
     signIn,
@@ -106,6 +117,7 @@ function MainNavigator() {
   } = useAuth();
   const themeColors = useThemeColors();
   const { t } = useLanguage();
+  const { hasWards, guardianOnly } = useWards();
   // Detail screens reached from a tab get a visible title and back arrow (swipe/hardware back keep working).
   const sub = (titleKey: string) => ({ headerShown: true, title: t(titleKey), headerBackTitle: t('common.back') });
 
@@ -127,7 +139,7 @@ function MainNavigator() {
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: themeColors.background } }}
       >
       <RootStack.Screen name="Home" component={HomeScreen} />
-      <RootStack.Screen name="Dashboard" component={DashboardScreen} />
+      <RootStack.Screen name="Dashboard" component={DashboardGate} />
 
       <RootStack.Screen name="Verein">
         {() => (
@@ -229,7 +241,8 @@ function MainNavigator() {
               // TwoFactorNavigator in that case, so there's nowhere here to
               // navigate to yet.
               if (result.success) {
-                navigation.navigate(route.params?.returnTo ?? 'Dashboard');
+                // Replaces Login (no stack growth); a guardian-only account never lands on club-only screens.
+                goToTab(resolveReturnTo(route.params?.returnTo, { isAuthenticated: true, hasWards, guardianOnly }));
               }
               return result;
             }}
@@ -292,7 +305,7 @@ function MainNavigator() {
             onDeleteAccount={async (password) => {
               const result = await deleteAccount(password);
               if (result.success) {
-                navigation.navigate('Home');
+                goToTab('Home');
               }
               return result;
             }}

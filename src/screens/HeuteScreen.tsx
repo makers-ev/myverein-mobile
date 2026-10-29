@@ -14,6 +14,7 @@ import ConsentsSection from '@/components/privacy/ConsentsSection';
 import WardEventsSection from '@/components/guardian/WardEventsSection';
 import { AcknowledgementsEntry, MyCardEntry, MyDocumentsEntry } from '@/components/documents/DocumentsEntry';
 import WardContactsSection from '@/components/guardian/WardContactsSection';
+import { goToTab } from '@/navigation/navigationRef';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Heute'>;
@@ -86,7 +87,7 @@ export default function HeuteScreen({ navigation }: Props) {
               {goneNotice ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">{t('heute.gone')}</Text> : null}
               <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t('heute.empty.title')}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">{t('heute.empty.body')}</Text>
-              <TouchableOpacity accessibilityRole="button" onPress={() => navigation.navigate('Dashboard')} className="min-h-[44px] justify-center self-start">
+              <TouchableOpacity accessibilityRole="button" onPress={() => goToTab('Dashboard')} className="min-h-[44px] justify-center self-start">
                 <Text className="text-primary dark:text-primary-dark font-semibold">{t('heute.empty.dashboard')}</Text>
               </TouchableOpacity>
             </>
