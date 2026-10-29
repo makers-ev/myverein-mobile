@@ -77,7 +77,7 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
 
   if (form.fatalKey) {
     return (
-      <Text className="text-destructive text-sm mt-4" accessibilityRole="alert">
+      <Text className="text-destructive dark:text-destructive-dark text-sm mt-4" accessibilityRole="alert">
         {t(form.fatalKey)}
       </Text>
     );
@@ -138,10 +138,10 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
 
       {form.submitErrorKey || errorList.length > 0 ? (
         <View className="mt-2" accessibilityRole="alert" accessibilityLiveRegion="polite">
-          {form.submitErrorKey ? <Text className="text-destructive text-sm">{t(form.submitErrorKey)}</Text> : null}
+          {form.submitErrorKey ? <Text className="text-destructive dark:text-destructive-dark text-sm">{t(form.submitErrorKey)}</Text> : null}
           {errorList.length > 0 ? (
             <View className="mt-1">
-              <Text className="text-destructive text-sm font-semibold">{t('forms.summary.title')}</Text>
+              <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('forms.summary.title')}</Text>
               {errorList.map((e) => (
                 <TouchableOpacity
                   key={e.key}
@@ -150,7 +150,7 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
                   accessibilityLabel={`${e.label}: ${t(fieldErrorKey(e.code))}`}
                   style={{ minHeight: 44, justifyContent: 'center' }}
                 >
-                  <Text className="text-destructive text-sm">
+                  <Text className="text-destructive dark:text-destructive-dark text-sm">
                     {'• '}
                     {e.label}: {t(fieldErrorKey(e.code))}
                   </Text>
@@ -188,7 +188,7 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
           className={`items-center mt-2 ${busy ? 'opacity-60' : ''}`}
           style={{ minHeight: 44, justifyContent: 'center' }}
         >
-          <Text className="text-destructive text-sm font-semibold">{t('forms.apply.discard')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('forms.apply.discard')}</Text>
         </TouchableOpacity>
       ) : null}
     </View>

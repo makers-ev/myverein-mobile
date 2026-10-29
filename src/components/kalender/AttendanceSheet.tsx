@@ -182,7 +182,7 @@ export default function AttendanceSheet({ visible, onClose, clubId, event }: Pro
         </View>
       ) : att.loadError && !view ? (
         <View className="py-4">
-          <Text className="text-destructive text-sm mb-2">{apiErrorMessage(att.loadError, t)}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{apiErrorMessage(att.loadError, t)}</Text>
           <TouchableOpacity onPress={() => void att.reload()} accessibilityRole="button" className="self-start justify-center" style={{ minHeight: 44 }}>
             <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
           </TouchableOpacity>
@@ -205,8 +205,8 @@ export default function AttendanceSheet({ visible, onClose, clubId, event }: Pro
               </TouchableOpacity>
             </View>
           ) : null}
-          {att.problem === 'rejected' ? <Text className="text-destructive text-sm mb-3">{t('att.sync.rejected')}</Text> : null}
-          {att.problem === 'reason_required' ? <Text className="text-destructive text-sm mb-3">{t('att.sync.reason-required')}</Text> : null}
+          {att.problem === 'rejected' ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{t('att.sync.rejected')}</Text> : null}
+          {att.problem === 'reason_required' ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{t('att.sync.reason-required')}</Text> : null}
 
           {!canEdit ? (
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">{t('att.read-only')}</Text>

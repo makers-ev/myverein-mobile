@@ -61,7 +61,7 @@ function SeriesPreviewList({ body, previewSeries }: { body: Record<string, unkno
     <View className="border border-border dark:border-border-dark rounded-xl p-3 mb-3" accessibilityLiveRegion="polite">
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold mb-1">{t('series.preview.title')}</Text>
       {loading ? <ActivityIndicator color={themeColors.primary} /> : null}
-      {!loading && failed ? <Text className="text-destructive text-sm">{failed}</Text> : null}
+      {!loading && failed ? <Text className="text-destructive dark:text-destructive-dark text-sm">{failed}</Text> : null}
       {!loading && !failed && preview ? (
         preview.occurrences.length === 0 ? (
           <Text className="text-foreground dark:text-foreground-dark text-sm">{t('series.preview.none')}</Text>

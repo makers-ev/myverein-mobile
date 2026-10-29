@@ -183,7 +183,7 @@ export function LocationForm({
               accessibilityRole="button"
               style={{ minHeight: 44, justifyContent: 'center' }}
             >
-              <Text className="text-destructive text-sm font-semibold">{t('standorte.form.photo-remove')}</Text>
+              <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('standorte.form.photo-remove')}</Text>
             </TouchableOpacity>
           ) : null}
         </View>

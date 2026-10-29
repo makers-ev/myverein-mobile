@@ -56,14 +56,14 @@ export default function FormSheet({
                 accessibilityLabel={t('ui.delete')}
                 style={{ minHeight: 44, justifyContent: 'center' }}
               >
-                <Text className="text-destructive text-sm font-semibold">{t('ui.delete')}</Text>
+                <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('ui.delete')}</Text>
               </TouchableOpacity>
             ) : null}
           </View>
 
           <KeyboardAwareScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 12 }} keyboardShouldPersistTaps="handled">
             {children}
-            {error ? <Text className="text-destructive text-sm mt-2">{error}</Text> : null}
+            {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-2">{error}</Text> : null}
           </KeyboardAwareScrollView>
 
           <View className="flex-row px-5 pb-4 pt-2" style={{ gap: 10 }}>

@@ -43,7 +43,7 @@ function LinkButton({ label, onPress, disabled, danger }: { label: string; onPre
       className={`justify-center px-3 ${disabled ? 'opacity-50' : ''}`}
       style={{ minHeight: 44 }}
     >
-      <Text className={`text-sm font-semibold ${danger ? 'text-destructive' : 'text-primary dark:text-primary-dark'}`}>{label}</Text>
+      <Text className={`text-sm font-semibold ${danger ? 'text-destructive dark:text-destructive-dark' : 'text-primary dark:text-primary-dark'}`}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -196,7 +196,7 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
         </View>
       ) : rides.error && !rides.data ? (
         <View className="py-4">
-          <Text className="text-destructive text-sm mb-2">{apiErrorMessage(rides.error, t)}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{apiErrorMessage(rides.error, t)}</Text>
           <LinkButton label={t('connection.retry')} onPress={() => void rides.reload()} />
         </View>
       ) : rides.data ? (

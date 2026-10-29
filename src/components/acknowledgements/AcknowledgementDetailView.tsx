@@ -119,7 +119,7 @@ export default function AcknowledgementDetailView({ clubId, item, onChanged, onB
           <Button label={t('ack.confirm')} busy={busy} disabled={busy} onPress={() => ask('bestaetigt')} />
           <Button secondary label={t('ack.decline')} disabled={busy} onPress={() => ask('abgelehnt')} />
           {message ? (
-            <Text accessibilityRole="alert" accessibilityLiveRegion="polite" className="text-destructive text-sm">
+            <Text accessibilityRole="alert" accessibilityLiveRegion="polite" className="text-destructive dark:text-destructive-dark text-sm">
               {message}
             </Text>
           ) : null}
@@ -133,7 +133,7 @@ export default function AcknowledgementDetailView({ clubId, item, onChanged, onB
           {current.status === 'offen' && !current.canAnswer ? <Body muted>{t('ack.read-only')}</Body> : null}
           {current.status === 'abgelaufen' ? <Body muted>{t('ack.expired-hint')}</Body> : null}
           {message ? (
-            <Text accessibilityRole="alert" accessibilityLiveRegion="polite" className="text-destructive text-sm">
+            <Text accessibilityRole="alert" accessibilityLiveRegion="polite" className="text-destructive dark:text-destructive-dark text-sm">
               {message}
             </Text>
           ) : null}

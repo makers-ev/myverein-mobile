@@ -331,7 +331,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         {loading ? <ActivityIndicator size="small" color={themeColors.primary} /> : null}
       </View>
 
-      {error || loadError ? <Text className="text-destructive text-sm mb-3">{error ?? apiErrorMessage(loadError, t)}</Text> : null}
+      {error || loadError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error ?? apiErrorMessage(loadError, t)}</Text> : null}
 
       {!loading && dayEvents.length === 0 ? (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('termine.day-empty')}</Text>

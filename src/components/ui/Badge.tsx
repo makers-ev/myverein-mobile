@@ -6,7 +6,7 @@ type Tone = 'neutral' | 'primary' | 'danger';
 const TONES: Record<Tone, { box: string; text: string }> = {
   neutral: { box: 'bg-muted dark:bg-muted-dark', text: 'text-muted-foreground dark:text-muted-foreground-dark' },
   primary: { box: 'bg-primary/10 dark:bg-primary-dark/10', text: 'text-primary dark:text-primary-dark' },
-  danger: { box: 'bg-destructive/10', text: 'text-destructive' },
+  danger: { box: 'bg-destructive/10 dark:bg-destructive-dark/10', text: 'text-destructive dark:text-destructive-dark' },
 };
 
 /** Small status chip (role, state, count). Same name and `tone` values as the website's `Badge`. */

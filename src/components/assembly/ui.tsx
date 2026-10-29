@@ -48,7 +48,7 @@ export function ErrorRetry({ message, onRetry }: { message: string; onRetry: () 
   const { t } = useLanguage();
   return (
     <View className="py-4">
-      <Text accessibilityRole="alert" className="text-destructive text-sm mb-2">
+      <Text accessibilityRole="alert" className="text-destructive dark:text-destructive-dark text-sm mb-2">
         {message}
       </Text>
       <TouchableOpacity accessibilityRole="button" onPress={onRetry} className="min-h-[44px] justify-center self-start">

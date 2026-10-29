@@ -80,10 +80,10 @@ export default function TwoFactorScreen({ onVerify, onCancel }: TwoFactorScreenP
             onChangeText={setCode}
           />
 
-          {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
+          {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{error}</Text> : null}
 
           {isLocked ? (
-            <Text className="text-destructive text-xs font-semibold mb-3 text-center">{lockoutMessage}</Text>
+            <Text className="text-destructive dark:text-destructive-dark text-xs font-semibold mb-3 text-center">{lockoutMessage}</Text>
           ) : (
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3 text-center">{attemptsMessage}</Text>
           )}

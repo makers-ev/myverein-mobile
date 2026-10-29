@@ -215,7 +215,7 @@ function LocationDetail({
         </TouchableOpacity>
         {error && (
           <>
-            <Text className="text-destructive text-sm mb-2">{t('standorte.detail.error')}</Text>
+            <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{t('standorte.detail.error')}</Text>
             <TouchableOpacity onPress={reload} accessibilityRole="button" hitSlop={8}>
               <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('standorte.keys.retry')}</Text>
             </TouchableOpacity>
@@ -236,7 +236,7 @@ function LocationDetail({
 
       {error && (
         <View className="flex-row items-center mb-3" style={{ gap: 8 }}>
-          <Text className="flex-1 text-destructive text-xs">{t('standorte.keys.refresh-error')}</Text>
+          <Text className="flex-1 text-destructive dark:text-destructive-dark text-xs">{t('standorte.keys.refresh-error')}</Text>
           <TouchableOpacity onPress={reload} accessibilityRole="button" hitSlop={8}>
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.keys.retry')}</Text>
           </TouchableOpacity>

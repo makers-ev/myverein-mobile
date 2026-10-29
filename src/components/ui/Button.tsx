@@ -15,7 +15,7 @@ interface Props {
 const STYLES = {
   primary: { box: 'bg-primary dark:bg-primary-dark', text: 'text-primary-foreground dark:text-primary-foreground-dark' },
   secondary: { box: 'bg-card dark:bg-card-dark border border-border dark:border-border-dark', text: 'text-primary dark:text-primary-dark' },
-  danger: { box: 'bg-card dark:bg-card-dark border border-destructive', text: 'text-destructive' },
+  danger: { box: 'bg-card dark:bg-card-dark border border-destructive', text: 'text-destructive dark:text-destructive-dark' },
 } as const;
 
 /** The standard button: at least 44pt high, label as accessibility name, busy and disabled states announced. */

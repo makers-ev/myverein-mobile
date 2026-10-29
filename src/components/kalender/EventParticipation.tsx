@@ -59,7 +59,7 @@ function Button({
     variant === 'primary'
       ? 'text-primary-foreground dark:text-primary-foreground-dark font-bold'
       : variant === 'danger'
-        ? 'text-destructive font-semibold'
+        ? 'text-destructive dark:text-destructive-dark font-semibold'
         : 'text-foreground dark:text-foreground-dark font-semibold';
   return (
     <TouchableOpacity
@@ -314,7 +314,7 @@ function SubjectRegistration({
         </Text>
       ) : null}
       {error ? (
-        <Text className="text-destructive text-sm" accessibilityRole="alert" accessibilityLiveRegion="polite">
+        <Text className="text-destructive dark:text-destructive-dark text-sm" accessibilityRole="alert" accessibilityLiveRegion="polite">
           {error}
         </Text>
       ) : null}
@@ -395,7 +395,7 @@ function GuestLinkCard({ clubId, event, info, onChanged }: { clubId: string; eve
           <Text selectable className="text-foreground dark:text-foreground-dark text-xs mb-1">
             {fresh}
           </Text>
-          <Text className="text-destructive text-xs mb-1">{t('reg.guest.once')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-xs mb-1">{t('reg.guest.once')}</Text>
           <View className="flex-row flex-wrap">
             <TouchableOpacity onPress={() => void share()} accessibilityRole="button" className="justify-center px-3" style={{ minHeight: 44 }}>
               <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('reg.guest.share')}</Text>
@@ -426,11 +426,11 @@ function GuestLinkCard({ clubId, event, info, onChanged }: { clubId: string; eve
             className={`justify-center px-3 ${busy ? 'opacity-50' : ''}`}
             style={{ minHeight: 44 }}
           >
-            <Text className="text-destructive text-sm font-semibold">{t('reg.guest.revoke')}</Text>
+            <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('reg.guest.revoke')}</Text>
           </TouchableOpacity>
         ) : null}
       </View>
-      {message ? <Text className="text-destructive text-xs">{message}</Text> : null}
+      {message ? <Text className="text-destructive dark:text-destructive-dark text-xs">{message}</Text> : null}
     </View>
   );
 }
@@ -476,7 +476,7 @@ export default function EventParticipation({ clubId, event, fallback, onChanged 
       <View style={{ gap: 10 }}>
         {!info && reg.error ? (
           <View accessibilityLiveRegion="polite">
-            <Text className="text-destructive text-sm">{t('reg.load-error')}</Text>
+            <Text className="text-destructive dark:text-destructive-dark text-sm">{t('reg.load-error')}</Text>
             <TouchableOpacity onPress={() => void reg.reload()} accessibilityRole="button" className="self-start justify-center" style={{ minHeight: 44 }}>
               <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
             </TouchableOpacity>

@@ -160,7 +160,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
           </View>
 
           {error ? (
-            <Text className="text-destructive text-sm text-center mb-2">{error}</Text>
+            <Text className="text-destructive dark:text-destructive-dark text-sm text-center mb-2">{error}</Text>
           ) : null}
 
           <TouchableOpacity accessibilityRole="button"

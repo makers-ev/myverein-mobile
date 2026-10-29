@@ -44,7 +44,7 @@ export default function CheckInSection({ clubId, meetingId }: { clubId: string; 
         className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3 min-h-[48px]"
       />
       {error ? (
-        <Text accessibilityRole="alert" className="text-destructive text-sm mb-2">
+        <Text accessibilityRole="alert" className="text-destructive dark:text-destructive-dark text-sm mb-2">
           {error}
         </Text>
       ) : null}

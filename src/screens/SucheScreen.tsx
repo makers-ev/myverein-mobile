@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { useThemeColors } from '@/theme/colors';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import { useClubSearch } from '@/hooks/useToday';
@@ -21,6 +22,7 @@ import type { RootStackParamList } from '@/navigation/AppNavigator';
  */
 export default function SucheScreen() {
   const { t, language } = useLanguage();
+  const themeColors = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { activeClub } = useMyClubs();
   const [query, setQuery] = useState('');
@@ -44,7 +46,7 @@ export default function SucheScreen() {
             value={query}
             onChangeText={setQuery}
             placeholder={t('search.placeholder')}
-            placeholderTextColor="#6b7280"
+            placeholderTextColor={themeColors.mutedForeground}
             accessibilityLabel={t('search.input-label')}
             returnKeyType="search"
             autoCorrect={false}

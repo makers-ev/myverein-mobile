@@ -181,7 +181,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
               </View>
             ) : failure ? (
               <View>
-                <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
+                <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
                   {failure === 'notFound' ? t('forms.cred.overview.errorNotFound') : failure === 'rateLimit' ? t('api.error.rate-limit') : t('forms.cred.overview.error')}
                 </Text>
                 <TouchableOpacity
@@ -261,7 +261,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
                   );
                 })}
                 {openError ? (
-                  <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
+                  <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
                     {t('forms.cred.overview.openError')}
                   </Text>
                 ) : null}

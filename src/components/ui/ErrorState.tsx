@@ -17,7 +17,7 @@ export default function ErrorState({ error, onRetry, fallbackKey }: Props) {
   const { t } = useLanguage();
   return (
     <View accessibilityRole="alert" className="py-4">
-      <Text className="text-destructive text-sm mb-1">{mapApiError(error, t, fallbackKey)}</Text>
+      <Text className="text-destructive dark:text-destructive-dark text-sm mb-1">{mapApiError(error, t, fallbackKey)}</Text>
       {onRetry ? (
         <TouchableOpacity
           accessibilityRole="button"

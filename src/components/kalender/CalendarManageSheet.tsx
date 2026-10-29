@@ -333,7 +333,7 @@ function CalendarCard({
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('kalender.manage.default.locked')}</Text>
           ) : (
             <TouchableOpacity accessibilityRole="button" onPress={confirmDelete} disabled={busy} className="self-start py-1">
-              <Text className="text-destructive text-sm font-semibold">{t('kalender.manage.delete')}</Text>
+              <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('kalender.manage.delete')}</Text>
             </TouchableOpacity>
           )}
         </View>

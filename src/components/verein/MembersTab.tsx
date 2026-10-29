@@ -278,7 +278,7 @@ export default function MembersTab({ clubId }: { clubId: string }) {
         </View>
       ) : error ? (
         <View className="py-6">
-          <Text className="text-destructive text-sm mb-3" accessibilityRole="alert">
+          <Text className="text-destructive dark:text-destructive-dark text-sm mb-3" accessibilityRole="alert">
             {t('verein.members.error')}
           </Text>
           <TouchableOpacity
@@ -323,7 +323,7 @@ export default function MembersTab({ clubId }: { clubId: string }) {
             />
           ))}
           {loadMoreError ? (
-            <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
+            <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
               {t('verein.members.load-more.error')}
             </Text>
           ) : null}

@@ -423,8 +423,8 @@ function MaterialDetail({
           loans.map((l, i) => <LoanRow key={l.id} loan={l} isLast={i === loans.length - 1} />)
         )}
 
-        {borrowError && !selfLoansOff ? <Text className="text-destructive text-sm mt-3">{borrowError}</Text> : null}
-        {returnError ? <Text className="text-destructive text-sm mt-3">{returnError}</Text> : null}
+        {borrowError && !selfLoansOff ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-3">{borrowError}</Text> : null}
+        {returnError ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-3">{returnError}</Text> : null}
 
         {ownOpenLoan ? (
           <TouchableOpacity accessibilityRole="button"
@@ -475,7 +475,7 @@ function MaterialDetail({
             />
           ))
         )}
-        {triageError ? <Text className="text-destructive text-sm mt-2">{triageError}</Text> : null}
+        {triageError ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-2">{triageError}</Text> : null}
 
         {showDamageForm ? (
           <View className="mt-3 pt-3 border-t border-border dark:border-border-dark">
@@ -514,13 +514,13 @@ function MaterialDetail({
                     {t('material.damage-reports.photo-attached')}
                   </Text>
                   <TouchableOpacity onPress={() => setPhotoKey(null)} accessibilityRole="button" hitSlop={8}>
-                    <Text className="text-destructive text-xs font-semibold">{t('material.damage-reports.photo-remove')}</Text>
+                    <Text className="text-destructive dark:text-destructive-dark text-xs font-semibold">{t('material.damage-reports.photo-remove')}</Text>
                   </TouchableOpacity>
                 </>
               ) : null}
             </View>
 
-            {damageError ?? upload.error ? <Text className="text-destructive text-sm mb-3">{damageError ?? upload.error}</Text> : null}
+            {damageError ?? upload.error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{damageError ?? upload.error}</Text> : null}
 
             <TouchableOpacity accessibilityRole="button"
               className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${damageSaving || photoUploading ? 'opacity-70' : ''}`}

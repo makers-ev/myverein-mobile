@@ -160,7 +160,7 @@ export default function MeetingAttendance({ invitees, attendance, directory, nam
       )}
 
       {error ? (
-        <Text className="text-destructive text-sm mt-3" accessibilityRole="alert">
+        <Text className="text-destructive dark:text-destructive-dark text-sm mt-3" accessibilityRole="alert">
           {error}
         </Text>
       ) : null}

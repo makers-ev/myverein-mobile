@@ -58,7 +58,7 @@ export default function DataRightsSection({ clubId }: { clubId: string }) {
           {exportData.loading ? <ActivityIndicator color={themeColors.primary} /> : <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">{t('datenschutz.export.show')}</Text>}
         </TouchableOpacity>
         {exportData.error ? (
-          <Text className="text-destructive text-sm mt-2" accessibilityRole="alert">
+          <Text className="text-destructive dark:text-destructive-dark text-sm mt-2" accessibilityRole="alert">
             {apiErrorMessage(exportData.error, t, 'datenschutz.export.error')}
           </Text>
         ) : null}
@@ -87,7 +87,7 @@ export default function DataRightsSection({ clubId }: { clubId: string }) {
             className={`border border-destructive rounded-xl items-center justify-center ${saving ? 'opacity-50' : ''}`}
             style={{ minHeight: 48 }}
           >
-            {saving ? <ActivityIndicator color={themeColors.primary} /> : <Text className="text-destructive font-semibold text-sm">{t('datenschutz.erasure.request')}</Text>}
+            {saving ? <ActivityIndicator color={themeColors.primary} /> : <Text className="text-destructive dark:text-destructive-dark font-semibold text-sm">{t('datenschutz.erasure.request')}</Text>}
           </TouchableOpacity>
         )}
         {notice ? (
@@ -96,7 +96,7 @@ export default function DataRightsSection({ clubId }: { clubId: string }) {
           </Text>
         ) : null}
         {failure ? (
-          <Text className="text-destructive text-sm mt-2" accessibilityRole="alert">
+          <Text className="text-destructive dark:text-destructive-dark text-sm mt-2" accessibilityRole="alert">
             {failure}
           </Text>
         ) : null}
@@ -106,7 +106,7 @@ export default function DataRightsSection({ clubId }: { clubId: string }) {
           <ActivityIndicator color={themeColors.primary} />
         ) : error && requests.length === 0 ? (
           <>
-            <Text className="text-destructive text-sm">{apiErrorMessage(error, t, 'datenschutz.requests.error')}</Text>
+            <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'datenschutz.requests.error')}</Text>
             <TouchableOpacity accessibilityRole="button" onPress={() => void reload()} className="min-h-[44px] justify-center self-start">
               <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
             </TouchableOpacity>

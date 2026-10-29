@@ -40,7 +40,7 @@ export default function MemberStatsCard({ clubId }: { clubId: string }) {
         </View>
       ) : error && !stats ? (
         <View>
-          <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
+          <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
             {t('verein.stats.error')}
           </Text>
           <TouchableOpacity

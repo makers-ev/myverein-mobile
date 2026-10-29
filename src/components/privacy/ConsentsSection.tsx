@@ -103,7 +103,7 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
         <ActivityIndicator color={themeColors.primary} />
       ) : error && consents.length === 0 ? (
         <View>
-          <Text className="text-destructive text-sm">{apiErrorMessage(error, t, 'consent.load-error')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'consent.load-error')}</Text>
           <TouchableOpacity accessibilityRole="button" onPress={() => void reload()} className="min-h-[44px] justify-center self-start">
             <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
           </TouchableOpacity>
@@ -177,7 +177,7 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
                     className={`border border-border dark:border-border-dark rounded-xl items-center justify-center ${saving ? 'opacity-50' : ''}`}
                     style={{ minHeight: 48 }}
                   >
-                    <Text className={`font-semibold text-sm ${open.state === 'granted' ? 'text-destructive' : 'text-foreground dark:text-foreground-dark'}`}>{t(actions.decline)}</Text>
+                    <Text className={`font-semibold text-sm ${open.state === 'granted' ? 'text-destructive dark:text-destructive-dark' : 'text-foreground dark:text-foreground-dark'}`}>{t(actions.decline)}</Text>
                   </TouchableOpacity>
                 ) : null}
               </View>
@@ -185,7 +185,7 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('consent.read-only', { name: wardName ?? '' })}</Text>
             )}
             {sheetError ? (
-              <Text className="text-destructive text-sm mt-3" accessibilityRole="alert">
+              <Text className="text-destructive dark:text-destructive-dark text-sm mt-3" accessibilityRole="alert">
                 {sheetError}
               </Text>
             ) : null}

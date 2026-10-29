@@ -14,3 +14,11 @@ export function contrastRatio(a: string, b: string): number {
   const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (hi! + 0.05) / (lo! + 0.05);
 }
+
+/** `fg` at `alpha` over `bg` (both `#rrggbb`), as `#rrggbb` -- the colour a translucent badge background really shows. */
+export function blend(fg: string, bg: string, alpha: number): string {
+  const f = parseInt(fg.replace('#', ''), 16);
+  const b = parseInt(bg.replace('#', ''), 16);
+  const mixed = [16, 8, 0].map((shift) => Math.round(((f >> shift) & 255) * alpha + ((b >> shift) & 255) * (1 - alpha)));
+  return `#${mixed.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+}

@@ -59,14 +59,14 @@ export default function MemberPhotoEditor({ clubId, target, name, photoUrl, hint
                 accessibilityRole="button"
                 accessibilityLabel={t('member-photo.remove')}
               >
-                <Text className="text-destructive text-sm font-semibold">{t('member-photo.remove')}</Text>
+                <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('member-photo.remove')}</Text>
               </TouchableOpacity>
             ) : null}
           </View>
         )}
       </View>
       {error ? (
-        <Text className="text-destructive text-sm mt-2" accessibilityRole="alert">
+        <Text className="text-destructive dark:text-destructive-dark text-sm mt-2" accessibilityRole="alert">
           {error}
         </Text>
       ) : null}

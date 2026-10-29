@@ -2,6 +2,7 @@ import { useColorScheme } from 'nativewind';
 import { DarkTheme, DefaultTheme, type Theme as NavigationTheme } from '@react-navigation/native';
 
 import { usePalette } from './PaletteProvider';
+import { FIXED_COLORS } from './palettes';
 
 /**
  * Fixed regardless of the chosen palette (ADR-008) -- danger/success/warning
@@ -11,10 +12,6 @@ import { usePalette } from './PaletteProvider';
  * classNames through NativeWind CSS variables. `warning` added for
  * MyVerein's overdue-loan/maintenance-due/open-Beitrag states.
  */
-const FIXED_COLORS = {
-  light: { destructive: '#DC2626', success: '#43A047', warning: '#9C5F13' },
-  dark: { destructive: '#DC2626', success: '#66BB6A', warning: '#E8B84B' },
-} as const;
 
 export type ThemeColors = {
   background: string;

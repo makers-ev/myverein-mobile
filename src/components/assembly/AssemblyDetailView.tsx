@@ -87,7 +87,7 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
       </Text>
       <Body muted>{m.scheduledAt ? new Date(m.scheduledAt).toLocaleString(language, { dateStyle: 'full', timeStyle: 'short' }) : t('treffen.scheduled-at.pending')}</Body>
       {error ? (
-        <Text accessibilityRole="alert" className="text-destructive text-sm mb-3">
+        <Text accessibilityRole="alert" className="text-destructive dark:text-destructive-dark text-sm mb-3">
           {error}
         </Text>
       ) : null}

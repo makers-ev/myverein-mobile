@@ -24,7 +24,7 @@ export default function ClubNoticeCard({ clubId }: { clubId: string }) {
         <ActivityIndicator color={themeColors.primary} />
       ) : error && !notice ? (
         <>
-          <Text className="text-destructive text-sm">{apiErrorMessage(error, t, 'datenschutz.notice.error')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'datenschutz.notice.error')}</Text>
           <TouchableOpacity accessibilityRole="button" onPress={() => void reload()} className="min-h-[44px] justify-center self-start">
             <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
           </TouchableOpacity>

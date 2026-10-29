@@ -393,7 +393,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
               {t('create-club.slug-hint')}
             </Text>
 
-            {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
+            {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{error}</Text> : null}
             {!dataValid ? <Text className="text-xs mb-2 text-center text-muted-foreground dark:text-muted-foreground-dark">{t('create-club.required-hint')}</Text> : null}
             <PrimaryButton label={t('create-club.next')} onPress={() => void handleSaveData()} busy={busy} disabled={!dataValid} />
           </>
@@ -440,7 +440,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
                     {item.name}
                   </Text>
                   <Text
-                    className={`text-xs ${item.status === 'error' ? 'text-destructive' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}
+                    className={`text-xs ${item.status === 'error' ? 'text-destructive dark:text-destructive-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}
                   >
                     {item.status === 'error' ? (item.error ?? t('create-club.docs.error.upload')) : t('create-club.docs.uploading')}
                   </Text>
@@ -478,7 +478,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
               {t('create-club.docs.pdf-hint')}
             </Text>
 
-            {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
+            {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{error}</Text> : null}
             <View style={{ gap: 10 }}>
               <PrimaryButton
                 label={t('create-club.next')}
@@ -540,7 +540,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
               {t('create-club.slug-hint')}
             </Text>
 
-            {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
+            {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{error}</Text> : null}
             <View style={{ gap: 10 }}>
               <PrimaryButton label={t('create-club.submit')} onPress={() => void handleSubmit()} busy={busy} disabled={!confirmed} />
               <SecondaryButton label={t('create-club.back')} onPress={() => setStep(2)} disabled={busy} />
@@ -576,7 +576,7 @@ function StatusView({
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 25 }}
     >
       <View className="bg-card dark:bg-card-dark p-6 rounded-2xl">
-        {notice ? <Text className="text-destructive text-sm mb-3 text-center">{notice}</Text> : null}
+        {notice ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{notice}</Text> : null}
         <Text className="text-xs font-semibold uppercase text-center mb-1 text-muted-foreground dark:text-muted-foreground-dark">
           {registration.clubName}
         </Text>

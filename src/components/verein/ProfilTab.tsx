@@ -226,7 +226,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
         accessibilityLabel={label}
         {...extra}
       />
-      {fieldError ? <Text className="text-destructive text-xs mt-1">{fieldError}</Text> : null}
+      {fieldError ? <Text className="text-destructive dark:text-destructive-dark text-xs mt-1">{fieldError}</Text> : null}
     </Field>
   );
 
@@ -313,7 +313,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
       </View>
 
       {error ? (
-        <Text className="text-destructive text-sm mb-3" accessibilityRole="alert">
+        <Text className="text-destructive dark:text-destructive-dark text-sm mb-3" accessibilityRole="alert">
           {error}
         </Text>
       ) : null}
@@ -348,7 +348,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
           accessibilityRole="button"
           accessibilityLabel={t('profil.discard')}
         >
-          <Text className="text-destructive text-sm font-semibold">{t('profil.discard')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('profil.discard')}</Text>
         </TouchableOpacity>
       ) : null}
 

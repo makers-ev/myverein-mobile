@@ -45,7 +45,7 @@ function LinkButton({ label, onPress, disabled, danger }: { label: string; onPre
       className={`justify-center px-3 ${disabled ? 'opacity-50' : ''}`}
       style={{ minHeight: 44 }}
     >
-      <Text className={`text-sm font-semibold ${danger ? 'text-destructive' : 'text-primary dark:text-primary-dark'}`}>{label}</Text>
+      <Text className={`text-sm font-semibold ${danger ? 'text-destructive dark:text-destructive-dark' : 'text-primary dark:text-primary-dark'}`}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -182,12 +182,12 @@ export default function HelpersSheet({ visible, onClose, clubId, event }: Props)
         </View>
       ) : helpers.error && !plan ? (
         <View className="py-4">
-          <Text className="text-destructive text-sm mb-2">{apiErrorMessage(helpers.error, t)}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{apiErrorMessage(helpers.error, t)}</Text>
           <LinkButton label={t('connection.retry')} onPress={() => void helpers.reload()} />
         </View>
       ) : plan ? (
         <View>
-          {plan.cancelled ? <Text className="text-destructive text-sm font-bold mb-3">{t('termine.cancelled')}</Text> : null}
+          {plan.cancelled ? <Text className="text-destructive dark:text-destructive-dark text-sm font-bold mb-3">{t('termine.cancelled')}</Text> : null}
 
           {plan.mine.length > 0 ? (
             <View className="border border-primary dark:border-primary-dark rounded-xl p-3 mb-3" accessibilityLiveRegion="polite">

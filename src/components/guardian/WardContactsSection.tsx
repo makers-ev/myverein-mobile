@@ -35,7 +35,7 @@ export default function WardContactsSection({ contacts }: { contacts: ReturnType
         <ActivityIndicator color={themeColors.primary} />
       ) : error && rows.length === 0 ? (
         <View>
-          <Text className="text-destructive text-sm">{t('heute.contacts.error')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm">{t('heute.contacts.error')}</Text>
           <TouchableOpacity accessibilityRole="button" onPress={() => void reload()} className="min-h-[44px] justify-center self-start">
             <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
           </TouchableOpacity>

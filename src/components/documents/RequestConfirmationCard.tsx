@@ -42,7 +42,7 @@ export default function RequestConfirmationCard({ clubId, clubMemberId, onReady,
       <Body muted>{t('confirmation.hint')}</Body>
       <Button label={working ? t('confirmation.working') : t('confirmation.request')} onPress={() => void run()} busy={working} disabled={disabled} />
       {message ? (
-        <Text accessibilityRole={message.error ? 'alert' : undefined} accessibilityLiveRegion="polite" className={message.error ? 'text-destructive text-sm' : 'text-muted-foreground dark:text-muted-foreground-dark text-sm'}>
+        <Text accessibilityRole={message.error ? 'alert' : undefined} accessibilityLiveRegion="polite" className={message.error ? 'text-destructive dark:text-destructive-dark text-sm' : 'text-muted-foreground dark:text-muted-foreground-dark text-sm'}>
           {message.text}
         </Text>
       ) : null}

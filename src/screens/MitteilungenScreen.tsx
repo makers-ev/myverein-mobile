@@ -167,7 +167,7 @@ export default function MitteilungenScreen() {
             </View>
           ) : error && messages.length === 0 ? (
             <View>
-              <Text className="text-destructive text-sm mb-2">{apiErrorMessage(error, t)}</Text>
+              <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{apiErrorMessage(error, t)}</Text>
               <TouchableOpacity accessibilityRole="button" onPress={() => void refetch()} className="min-h-[44px] justify-center self-start">
                 <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
               </TouchableOpacity>
@@ -179,7 +179,7 @@ export default function MitteilungenScreen() {
             </View>
           ) : (
             <>
-              {error ? <Text className="text-destructive text-xs mb-3">{t('mitteilungen.refresh-failed')}</Text> : null}
+              {error ? <Text className="text-destructive dark:text-destructive-dark text-xs mb-3">{t('mitteilungen.refresh-failed')}</Text> : null}
               {messages.map((message) => (
                 <MessageCard key={message.id} message={message} onPress={() => handleOpen(message)} />
               ))}

@@ -187,7 +187,7 @@ export default function ClubApplicationsScreen() {
 
           {error ? (
             <View className="items-start mb-3" accessibilityRole="alert">
-              <Text className="text-destructive text-sm mb-3">{t('verein.applications.error')}</Text>
+              <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{t('verein.applications.error')}</Text>
               <TouchableOpacity
                 className="bg-primary dark:bg-primary-dark rounded-lg px-5 items-center justify-center"
                 style={{ minHeight: 44 }}

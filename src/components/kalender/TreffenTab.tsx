@@ -47,7 +47,7 @@ function ErrorRetry({ message, onRetry }: { message: string; onRetry: () => void
   const { t } = useLanguage();
   return (
     <View className="py-6">
-      <Text className="text-destructive text-sm mb-3" accessibilityRole="alert">
+      <Text className="text-destructive dark:text-destructive-dark text-sm mb-3" accessibilityRole="alert">
         {message}
       </Text>
       <TouchableOpacity
@@ -172,7 +172,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
           <View className="mb-3">
             <DateTimeField value={scheduledAt} onChange={setScheduledAt} placeholder={t('treffen.scheduled-at.placeholder')} clearable />
           </View>
-          {error ? <Text className="text-destructive text-sm mb-3">{error}</Text> : null}
+          {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error}</Text> : null}
           <TouchableOpacity accessibilityRole="button"
             className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${saving || !title.trim() || !type ? 'opacity-50' : ''}`}
             onPress={() => void handleCreate()}
@@ -267,7 +267,7 @@ function AgendaMinutes({
         multiline
         numberOfLines={3}
       />
-      {error ? <Text className="text-destructive text-sm mb-3">{error}</Text> : null}
+      {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error}</Text> : null}
       <TouchableOpacity accessibilityRole="button"
         className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${saving ? 'opacity-70' : ''}`}
         onPress={() => void handleSave()}
@@ -445,7 +445,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">
             {t('treffen.rsvp.current')}: {t(`treffen.rsvp.response.${ownInvite.response}`)}
           </Text>
-          {rsvpError ? <Text className="text-destructive text-sm mb-2">{rsvpError}</Text> : null}
+          {rsvpError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{rsvpError}</Text> : null}
           <View className="flex-row" style={{ gap: 10 }}>
             <TouchableOpacity accessibilityRole="button"
               className={`bg-primary dark:bg-primary-dark rounded-lg py-2 px-4 ${rsvpSaving ? 'opacity-70' : ''}`}
@@ -487,7 +487,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
             </TouchableOpacity>
           </View>
 
-          {overlapError ? <Text className="text-destructive text-sm mt-2">{overlapError}</Text> : null}
+          {overlapError ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-2">{overlapError}</Text> : null}
 
           <TouchableOpacity accessibilityRole="button"
             className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${overlapChecking || candidates.length === 0 ? 'opacity-70' : ''}`}
@@ -641,7 +641,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
               value={resResult}
               onChangeText={setResResult}
             />
-            {resError ? <Text className="text-destructive text-sm mb-3">{resError}</Text> : null}
+            {resError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{resError}</Text> : null}
             <TouchableOpacity accessibilityRole="button"
               className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${resSaving ? 'opacity-70' : ''}`}
               onPress={() => void handleCreateResolution()}

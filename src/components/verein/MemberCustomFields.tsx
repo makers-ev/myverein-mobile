@@ -150,7 +150,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
   if (status === 'failed' || !fields) {
     return (
       <View className={wrapper}>
-        <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
+        <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
           {t('forms.cf.values.loadError')}
         </Text>
         <TouchableOpacity
@@ -260,7 +260,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
           {dirty && !busy ? <Text className={mutedClass}>{t('profil.unsaved')}</Text> : null}
           {result ? (
             <Text
-              className={`text-sm ${result.ok ? 'text-success dark:text-success-dark' : 'text-destructive'}`}
+              className={`text-sm ${result.ok ? 'text-success dark:text-success-dark' : 'text-destructive dark:text-destructive-dark'}`}
               accessibilityRole={result.ok ? undefined : 'alert'}
               accessibilityLiveRegion="polite"
             >

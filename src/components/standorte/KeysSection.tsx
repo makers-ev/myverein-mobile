@@ -123,7 +123,7 @@ function IssueKeySheet({
             <View className="mt-2">
               {search.error ? (
                 <View className="py-2">
-                  <Text className="text-destructive text-sm mb-1">
+                  <Text className="text-destructive dark:text-destructive-dark text-sm mb-1">
                     {t('standorte.keys.search-error')} {apiErrorMessage(search.error, t)}
                   </Text>
                   <TouchableOpacity onPress={() => void search.refetch()} accessibilityRole="button" hitSlop={8} className="self-start">
@@ -301,7 +301,7 @@ export default function KeysSection({
             <ActivityIndicator color={themeColors.primary} />
           ) : history.error && history.entries.length === 0 ? (
             <View>
-              <Text className="text-destructive text-sm mb-2">{t('standorte.keys.history-error')}</Text>
+              <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{t('standorte.keys.history-error')}</Text>
               <TouchableOpacity onPress={() => void history.refetch()} accessibilityRole="button" hitSlop={8} className="self-start">
                 <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.keys.retry')}</Text>
               </TouchableOpacity>
@@ -313,7 +313,7 @@ export default function KeysSection({
               {history.entries.map((e, i) => (
                 <HistoryRow key={e.id} entry={e} isLast={i === history.entries.length - 1 && !history.hasMore} />
               ))}
-              {history.error && <Text className="text-destructive text-xs mt-2">{t('standorte.keys.history-error')}</Text>}
+              {history.error && <Text className="text-destructive dark:text-destructive-dark text-xs mt-2">{t('standorte.keys.history-error')}</Text>}
               {history.hasMore && (
                 <TouchableOpacity onPress={() => void history.loadMore()} disabled={history.loadingMore} accessibilityRole="button" hitSlop={8} className="self-start mt-2">
                   {history.loadingMore ? (

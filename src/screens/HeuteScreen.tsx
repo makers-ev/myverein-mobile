@@ -76,7 +76,7 @@ export default function HeuteScreen({ navigation }: Props) {
         <View className="px-6 pt-6">
           {error ? (
             <>
-              <Text className="text-destructive text-sm mb-2">{t('heute.load-error')}</Text>
+              <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{t('heute.load-error')}</Text>
               <TouchableOpacity accessibilityRole="button" onPress={() => void reload()} className="min-h-[44px] justify-center self-start">
                 <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
               </TouchableOpacity>

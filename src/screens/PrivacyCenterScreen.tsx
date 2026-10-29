@@ -48,7 +48,7 @@ export default function PrivacyCenterScreen({ navigation }: Props) {
         </View>
       ) : clubError ? (
         <View className="px-6 pt-4">
-          <Text className="text-destructive text-sm mb-2">{t('datenschutz.load-error')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{t('datenschutz.load-error')}</Text>
           <TouchableOpacity accessibilityRole="button" onPress={() => void refetch()} className="min-h-[44px] justify-center self-start">
             <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
           </TouchableOpacity>

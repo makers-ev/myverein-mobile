@@ -229,14 +229,14 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                         color: 'bg-green-600',
                     },
                 ]}
-                titleColor="text-destructive"
+                titleColor="text-destructive dark:text-destructive-dark"
             />
 
             <ConfirmationInputModal
                 visible={deleteAccountPopup}
                 onClose={() => setDeleteAccountPopup(false)}
                 title={t('settings.delete-account-confirm')}
-                titleColor="text-destructive"
+                titleColor="text-destructive dark:text-destructive-dark"
                 message={t('settings.delete-password-prompt')}
                 messageColor="text-muted-foreground"
                 secureTextEntry
@@ -427,7 +427,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                 {isAuthenticated && (
                 <View className="items-center justify-center mb-5">
                     <View className="w-full border-2 border-destructive p-4 rounded-md bg-card dark:bg-card-dark">
-                        <Text className="text-lg font-bold text-destructive mb-2 text-center">
+                        <Text className="text-lg font-bold text-destructive dark:text-destructive-dark mb-2 text-center">
                             {t('settings.danger-zone')}
                         </Text>
 
@@ -518,7 +518,7 @@ function ProfileSection({
             <Text className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-muted-foreground dark:text-muted-foreground-dark border border-border dark:border-border-dark mb-3">
                 {user?.email}
             </Text>
-            {error && <Text className="text-destructive text-sm mb-2">{error}</Text>}
+            {error && <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{error}</Text>}
             <TouchableOpacity accessibilityRole="button"
                 className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${submitting ? 'opacity-70' : ''}`}
                 onPress={handleSave}
@@ -661,7 +661,7 @@ function SecuritySection({
                             value={newPassword}
                             onChangeText={setNewPassword}
                         />
-                        {passwordError && <Text className="text-destructive text-sm mb-2">{passwordError}</Text>}
+                        {passwordError && <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{passwordError}</Text>}
                         <View className="flex-row" style={{ gap: 8 }}>
                             <TouchableOpacity accessibilityRole="button"
                                 className={`bg-primary dark:bg-primary-dark rounded-lg px-3 py-2 ${passwordSubmitting ? 'opacity-70' : ''}`}
@@ -724,7 +724,7 @@ function SecuritySection({
                             value={twoFactorPassword}
                             onChangeText={setTwoFactorPassword}
                         />
-                        {twoFactorError && <Text className="text-destructive text-sm mb-2">{twoFactorError}</Text>}
+                        {twoFactorError && <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{twoFactorError}</Text>}
                         <View className="flex-row" style={{ gap: 8 }}>
                             <TouchableOpacity accessibilityRole="button"
                                 className={`rounded-lg px-3 py-2 ${twoFactorStep === 'disable' ? 'bg-destructive' : 'bg-primary dark:bg-primary-dark'} ${twoFactorSubmitting ? 'opacity-70' : ''}`}
@@ -764,7 +764,7 @@ function SecuritySection({
                             value={totpCode}
                             onChangeText={setTotpCode}
                         />
-                        {twoFactorError && <Text className="text-destructive text-sm mb-2">{twoFactorError}</Text>}
+                        {twoFactorError && <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{twoFactorError}</Text>}
                         <View className="flex-row" style={{ gap: 8 }}>
                             <TouchableOpacity accessibilityRole="button"
                                 className={`bg-primary dark:bg-primary-dark rounded-lg px-3 py-2 ${twoFactorSubmitting ? 'opacity-70' : ''}`}

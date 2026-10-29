@@ -77,7 +77,7 @@ function ModuleCard({ module: m, name, description, helpText, allowed, reason, b
         {busy ? (
           <ActivityIndicator color={active ? colors.primary : colors.primaryForeground} />
         ) : (
-          <Text className={`text-sm font-bold ${active ? 'text-destructive' : 'text-primary-foreground dark:text-primary-foreground-dark'}`}>{actionLabel}</Text>
+          <Text className={`text-sm font-bold ${active ? 'text-destructive dark:text-destructive-dark' : 'text-primary-foreground dark:text-primary-foreground-dark'}`}>{actionLabel}</Text>
         )}
       </TouchableOpacity>
     </View>
@@ -165,7 +165,7 @@ export default function ProfileModulesScreen() {
         </View>
       ) : failure ? (
         <View className="px-6">
-          <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
+          <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
             {failure === 'rateLimit' ? t('api.error.rate-limit') : t('forms.pm.loadError')}
           </Text>
           {retryButton}
@@ -182,7 +182,7 @@ export default function ProfileModulesScreen() {
 
           {result ? (
             <Text
-              className={`text-sm mt-2 mb-1 ${result.ok ? 'text-success dark:text-success-dark' : 'text-destructive'}`}
+              className={`text-sm mt-2 mb-1 ${result.ok ? 'text-success dark:text-success-dark' : 'text-destructive dark:text-destructive-dark'}`}
               accessibilityRole={result.ok ? undefined : 'alert'}
               accessibilityLiveRegion="polite"
             >
@@ -191,7 +191,7 @@ export default function ProfileModulesScreen() {
           ) : null}
           {loadFailedAfterData ? (
             <View className="mt-2 mb-1">
-              <Text className="text-destructive text-sm mb-2" accessibilityRole="alert">
+              <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
                 {t('forms.pm.refreshError')}
               </Text>
               {retryButton}

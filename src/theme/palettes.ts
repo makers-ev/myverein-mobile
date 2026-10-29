@@ -100,7 +100,7 @@ export const palettes = {
             card: '#ffffff', muted: '#f6efe7', mutedForeground: '#765f4c',
             border: '#ece0d3',
             primary: '#c2542a', primaryForeground: '#ffffff',
-            accent: '#c2542a', accentForeground: '#ffffff',
+            accent: '#b04a22', accentForeground: '#ffffff',
         },
         dark: {
             background: '#241813', foreground: '#ecdfd4',
@@ -119,3 +119,13 @@ export const DEFAULT_PALETTE_ID: PaletteId = 'vereinsblau';
 export function isPredefinedPaletteId(value: string): value is keyof typeof palettes {
     return Object.prototype.hasOwnProperty.call(palettes, value);
 }
+
+/**
+ * Semantic colors, fixed regardless of the chosen palette (ADR-008). `destructive` is darker in light mode and lighter in
+ * dark mode so red text/badges reach AA (4.5:1) on every surface -- text must pair `text-destructive` with
+ * `dark:text-destructive-dark`. Mirrored in `tailwind.config.js`; `contrast.test.ts` checks them.
+ */
+export const FIXED_COLORS = {
+  light: { destructive: '#A81818', success: '#256B2B', warning: '#8A5310' },
+  dark: { destructive: '#FCA5A5', success: '#66BB6A', warning: '#E8B84B' },
+} as const;

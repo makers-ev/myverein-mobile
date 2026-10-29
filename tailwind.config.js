@@ -27,10 +27,10 @@ module.exports = {
         'accent-foreground': { DEFAULT: 'rgb(var(--color-accent-foreground) / <alpha-value>)', dark: 'rgb(var(--color-accent-foreground-dark) / <alpha-value>)' },
         // Fixed regardless of palette (ADR-008) -- danger/success/warning
         // colors shouldn't shift with the chosen accent, so these stay
-        // plain static hex (matches src/theme/colors.ts's FIXED_COLORS).
-        destructive: { DEFAULT: '#DC2626', dark: '#DC2626' },
-        success: { DEFAULT: '#43A047', dark: '#66BB6A' },
-        warning: { DEFAULT: '#9C5F13', dark: '#E8B84B' },
+        // plain static hex (matches FIXED_COLORS in src/theme/palettes.ts).
+        destructive: { DEFAULT: '#A81818', dark: '#FCA5A5' },
+        success: { DEFAULT: '#256B2B', dark: '#66BB6A' },
+        warning: { DEFAULT: '#8A5310', dark: '#E8B84B' },
       },
     },
   },

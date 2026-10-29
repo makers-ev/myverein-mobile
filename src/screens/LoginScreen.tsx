@@ -83,7 +83,7 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
             onChangeText={setPassword}
           />
 
-          {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
+          {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{error}</Text> : null}
 
           <TouchableOpacity
             className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-1 ${isSubmitting ? 'opacity-70' : ''}`}
