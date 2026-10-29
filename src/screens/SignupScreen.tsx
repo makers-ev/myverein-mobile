@@ -81,10 +81,13 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
             <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4">
 
               <View className="mb-4">
-                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">First Name</Text>
+                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">{t('signup.first-name')}</Text>
                 <TextInput
                   className="bg-muted dark:bg-muted-dark p-3 rounded-xl text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
-                  placeholder="Your first name"
+                  placeholder={t('signup.first-name.placeholder')}
+                  accessibilityLabel={t('signup.first-name')}
+                  autoComplete="given-name"
+                  textContentType="givenName"
                   placeholderTextColor={themeColors.mutedForeground}
                   value={formData.firstName}
                   onChangeText={(value) => handleInputChange('firstName', value)}
@@ -92,10 +95,13 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
               </View>
 
               <View className="mb-4">
-                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">Last Name</Text>
+                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">{t('signup.last-name')}</Text>
                 <TextInput
                   className="bg-muted dark:bg-muted-dark p-3 rounded-xl text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
-                  placeholder="Your last name"
+                  placeholder={t('signup.last-name.placeholder')}
+                  accessibilityLabel={t('signup.last-name')}
+                  autoComplete="family-name"
+                  textContentType="familyName"
                   placeholderTextColor={themeColors.mutedForeground}
                   value={formData.lastName}
                   onChangeText={(value) => handleInputChange('lastName', value)}
@@ -108,13 +114,13 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
           {/* Contact Section */}
           <View className="mb-8">
             <Text className="text-lg font-bold text-foreground dark:text-foreground-dark mb-3 ml-1">
-              Contact
+              {t('signup.contact')}
             </Text>
 
             <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4">
 
               <View className="mb-4">
-                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">Email</Text>
+                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">{t('signup.email')}</Text>
                 <View className="flex-row items-center bg-muted dark:bg-muted-dark p-3 rounded-xl border border-border dark:border-border-dark">
                   <IconMail size={18} color={themeColors.mutedForeground} />
                   <TextInput
@@ -123,6 +129,9 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
                     placeholderTextColor={themeColors.mutedForeground}
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    autoComplete="email"
+                    textContentType="emailAddress"
+                    accessibilityLabel={t('signup.email')}
                     value={formData.email}
                     onChangeText={(value) => handleInputChange('email', value)}
                   />
@@ -138,6 +147,9 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
                     placeholder="********"
                     placeholderTextColor={themeColors.mutedForeground}
                     secureTextEntry
+                    autoComplete="new-password"
+                    textContentType="newPassword"
+                    accessibilityLabel={t('signup.password')}
                     value={formData.password}
                     onChangeText={(value) => handleInputChange('password', value)}
                   />

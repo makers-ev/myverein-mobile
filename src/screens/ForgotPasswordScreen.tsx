@@ -78,6 +78,9 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="email-address"
+              autoComplete="email"
+              textContentType="emailAddress"
+              accessibilityLabel={t('login.username')}
               value={email}
               onChangeText={setEmail}
             />

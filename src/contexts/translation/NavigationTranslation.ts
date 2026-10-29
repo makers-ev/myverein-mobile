@@ -6,6 +6,7 @@ type Translation = Record<Language, Record<string, string>>;
 // languages fall back to English per key (see LanguageContext's `t()` and `npm run check:i18n`).
 const NavigationTranslation: Translation = {
   en: {
+    'create-club.required-hint': 'Fields marked * are required. You can continue once they are all filled in.',
     'mehr.create': 'Start a club',
     'mehr.create.hint': 'Register and set up your club',
     'mehr.join': 'Join a club',
@@ -72,6 +73,12 @@ const NavigationTranslation: Translation = {
     'search.placeholder': 'Members, events, documents, places',
     'search.title': 'Search',
     'search.too-short': 'Please enter at least 2 characters.',
+    'signup.contact': 'Contact',
+    'signup.email': 'E-mail',
+    'signup.first-name': 'First name',
+    'signup.first-name.placeholder': 'Your first name',
+    'signup.last-name': 'Last name',
+    'signup.last-name.placeholder': 'Your last name',
     'today.ballots': 'Vote open',
     'today.ballots.count': '{{count}} vote(s) waiting for you',
     'today.board.applications': 'Open applications',
@@ -110,6 +117,7 @@ const NavigationTranslation: Translation = {
     'today.wards.hint': 'Events, consents and trainer contacts',
   },
   de: {
+    'create-club.required-hint': 'Mit * markierte Felder sind Pflicht. Weiter geht es, sobald alle ausgefüllt sind.',
     'mehr.create': 'Einen Verein gründen',
     'mehr.create.hint': 'Verein registrieren und einrichten',
     'mehr.join': 'Einem Verein beitreten',
@@ -176,6 +184,12 @@ const NavigationTranslation: Translation = {
     'search.placeholder': 'Mitglieder, Termine, Dokumente, Orte',
     'search.title': 'Suche',
     'search.too-short': 'Bitte gib mindestens 2 Zeichen ein.',
+    'signup.contact': 'Kontakt',
+    'signup.email': 'E-Mail',
+    'signup.first-name': 'Vorname',
+    'signup.first-name.placeholder': 'Dein Vorname',
+    'signup.last-name': 'Nachname',
+    'signup.last-name.placeholder': 'Dein Nachname',
     'today.ballots': 'Abstimmung offen',
     'today.ballots.count': '{{count}} Abstimmung(en), jetzt abstimmen',
     'today.board.applications': 'Offene Anträge',

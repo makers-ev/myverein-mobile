@@ -7,6 +7,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
+import Button from '@/components/ui/Button';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { withScheme } from '@/lib/withScheme';
@@ -110,43 +112,12 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
   );
 }
 
-function PrimaryButton({
-  label,
-  onPress,
-  busy,
-  disabled,
-}: {
-  label: string;
-  onPress: () => void;
-  busy?: boolean;
-  disabled?: boolean;
-}) {
-  const themeColors = useThemeColors();
-  return (
-    <TouchableOpacity
-      className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center ${busy || disabled ? 'opacity-70' : ''}`}
-      onPress={onPress}
-      disabled={busy || disabled}
-    >
-      {busy ? (
-        <ActivityIndicator color={themeColors.primaryForeground} />
-      ) : (
-        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">{label}</Text>
-      )}
-    </TouchableOpacity>
-  );
+function PrimaryButton({ label, onPress, busy, disabled }: { label: string; onPress: () => void; busy?: boolean; disabled?: boolean }) {
+  return <Button label={label} onPress={onPress} loading={busy} disabled={disabled} />;
 }
 
 function SecondaryButton({ label, onPress, disabled }: { label: string; onPress: () => void; disabled?: boolean }) {
-  return (
-    <TouchableOpacity
-      className={`bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-lg py-3.5 items-center ${disabled ? 'opacity-70' : ''}`}
-      onPress={onPress}
-      disabled={disabled}
-    >
-      <Text className="text-foreground dark:text-foreground-dark text-base font-semibold">{label}</Text>
-    </TouchableOpacity>
-  );
+  return <Button variant="secondary" label={label} onPress={onPress} disabled={disabled} />;
 }
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
@@ -190,6 +161,9 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
   const [uploads, setUploads] = useState<UploadItem[]>([]);
   const [uploadSeq, setUploadSeq] = useState(0);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  // Last state the server has (step 1 is saved with "Weiter"): anything different is an unsaved draft -> ask before leaving.
+  const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify({ form: initialForm(registration), role: normalizeClaimedRole(registration?.claimedRole) }));
+  useUnsavedChangesGuard(JSON.stringify({ form, role }) !== savedSnapshot);
 
   const documents = registration?.documents ?? [];
   const isEv = form.legalForm === 'e_v';
@@ -228,6 +202,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
     setBusy(true);
     try {
       await saveDraft(buildInput());
+      setSavedSnapshot(JSON.stringify({ form, role }));
       setStep(2);
     } catch (err) {
       handleSaveError(err);
@@ -297,6 +272,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
       // Role may have changed on the summary step -- persist before submit.
       try {
         await saveDraft(buildInput());
+        setSavedSnapshot(JSON.stringify({ form, role }));
       } catch (err) {
         handleSaveError(err);
         return;
@@ -338,7 +314,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
       <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
         {step === 1 && (
           <>
-            <Text className={LABEL_CLASS}>{t('create-club.name.label')}</Text>
+            <Text className={LABEL_CLASS}>{t('create-club.name.label')} *</Text>
             <TextInput
               className={INPUT_CLASS}
               placeholder={t('create-club.name.placeholder')}
@@ -361,7 +337,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
 
             {isEv ? (
               <>
-                <Text className={LABEL_CLASS}>{t('create-club.register-court.label')}</Text>
+                <Text className={LABEL_CLASS}>{t('create-club.register-court.label')} *</Text>
                 <TextInput
                   className={INPUT_CLASS}
                   placeholder={t('create-club.register-court.placeholder')}
@@ -369,7 +345,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
                   value={form.registerCourt}
                   onChangeText={set('registerCourt')}
                 />
-                <Text className={LABEL_CLASS}>{t('create-club.register-number.label')}</Text>
+                <Text className={LABEL_CLASS}>{t('create-club.register-number.label')} *</Text>
                 <TextInput
                   className={INPUT_CLASS}
                   placeholder={t('create-club.register-number.placeholder')}
@@ -381,21 +357,22 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
               </>
             ) : null}
 
-            <Text className={LABEL_CLASS}>{t('create-club.street.label')}</Text>
-            <TextInput className={INPUT_CLASS} value={form.street} onChangeText={set('street')} />
+            <Text className={LABEL_CLASS}>{t('create-club.street.label')} *</Text>
+            <TextInput className={INPUT_CLASS} value={form.street} onChangeText={set('street')} autoComplete="street-address" textContentType="streetAddressLine1" />
 
             <View className="flex-row" style={{ gap: 10 }}>
               <View style={{ width: 110 }}>
-                <Text className={LABEL_CLASS}>{t('create-club.postal-code.label')}</Text>
+                <Text className={LABEL_CLASS}>{t('create-club.postal-code.label')} *</Text>
                 <TextInput
                   className={INPUT_CLASS}
                   keyboardType="number-pad"
+                  autoComplete="postal-code"
                   value={form.postalCode}
                   onChangeText={set('postalCode')}
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text className={LABEL_CLASS}>{t('create-club.city.label')}</Text>
+                <Text className={LABEL_CLASS}>{t('create-club.city.label')} *</Text>
                 <TextInput className={INPUT_CLASS} value={form.city} onChangeText={set('city')} />
               </View>
             </View>
@@ -417,6 +394,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
             </Text>
 
             {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
+            {!dataValid ? <Text className="text-xs mb-2 text-center text-muted-foreground dark:text-muted-foreground-dark">{t('create-club.required-hint')}</Text> : null}
             <PrimaryButton label={t('create-club.next')} onPress={() => void handleSaveData()} busy={busy} disabled={!dataValid} />
           </>
         )}

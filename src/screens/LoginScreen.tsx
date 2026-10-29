@@ -61,6 +61,9 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
+            autoComplete="email"
+            textContentType="emailAddress"
+            accessibilityLabel={t('login.username')}
             value={email}
             onChangeText={setEmail}
           />
@@ -73,6 +76,9 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
             placeholder="********"
             placeholderTextColor={themeColors.mutedForeground}
             secureTextEntry
+            autoComplete="current-password"
+            textContentType="password"
+            accessibilityLabel={t('login.password')}
             value={password}
             onChangeText={setPassword}
           />
@@ -82,6 +88,9 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
           <TouchableOpacity
             className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-1 ${isSubmitting ? 'opacity-70' : ''}`}
             onPress={handleLogin}
+            accessibilityRole="button"
+            accessibilityLabel={t('login.button')}
+            accessibilityState={{ disabled: isSubmitting || !email || !password, busy: isSubmitting }}
             disabled={isSubmitting || !email || !password}
           >
             {isSubmitting ? (
