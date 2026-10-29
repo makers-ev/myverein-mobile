@@ -138,6 +138,7 @@ export default function ArchiveBrowser({ clubId, folderId, onFolderChange }: Pro
               }
             />
           ))}
+          {docs.error ? <ErrorRetry message={apiErrorMessage(docs.error, t, 'archive.error')} onRetry={() => (docs.hasMore ? docs.loadMore() : void docs.reload())} /> : null}
           {docs.hasMore ? <Button secondary label={t('archive.more')} busy={docs.loading} onPress={docs.loadMore} /> : null}
         </Card>
       )}
