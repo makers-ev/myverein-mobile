@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Text, TouchableOpacity, View } from 'react-native';
 import { Clock, ExternalLink, Eye, EyeOff, Info, Link2, MapPin, User, Wifi } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { DOCS_PATHS } from '@/lib/docsUrl';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -82,7 +83,7 @@ function LocationList({ clubId, canWrite, onSelect }: { clubId: string; canWrite
       </View>
 
       {locations.length === 0 ? (
-        <EmptyState icon={<MapPin size={26} color={themeColors.primary} />} text={t('standorte.list.empty')} />
+        <EmptyState icon={<MapPin size={26} color={themeColors.primary} />} text={t('standorte.list.empty')} docsPath={DOCS_PATHS.places} />
       ) : (
         locations.map((loc) => <LocationCard key={loc.id} location={loc} onPress={() => onSelect(loc.id)} onPhotoExpired={onPhotoExpired} />)
       )}

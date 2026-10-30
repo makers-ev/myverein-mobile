@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -11,6 +11,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import ListRow from '@/components/ui/ListRow';
 import { MyCardEntry, MyDocumentsEntry } from '@/components/documents/DocumentsEntry';
+import { openDocs } from '@/lib/docsUrl';
 import { goToTab } from '@/navigation/navigationRef';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
@@ -80,6 +81,15 @@ export default function MehrScreen({ navigation }: Props) {
           {isAuthenticated ? (
             <ListRow title={t('mehr.platform')} hint={t('mehr.platform.hint')} badge={platformUnread} onPress={() => navigation.navigate('Notifications')} />
           ) : null}
+          <ListRow
+            title={t('docs.help.title')}
+            hint={t('docs.help.hint')}
+            onPress={() => {
+              void openDocs().then((ok) => {
+                if (!ok) Alert.alert(t('docs.open-error.title'), t('docs.open-error.message'));
+              });
+            }}
+          />
           <ListRow title={t('mehr.settings')} hint={t('mehr.settings.hint')} onPress={() => navigation.navigate('Settings')} />
         </Section>
 
