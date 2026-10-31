@@ -42,7 +42,7 @@ export function SettingsDropdownOption({
   return (
     <View className="items-center">
       <View className="w-80 bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-xl">
-        <TouchableOpacity onPress={handlePress}>
+        <TouchableOpacity accessibilityRole="button" onPress={handlePress}>
           <Text className="p-4 text-lg text-center text-foreground dark:text-foreground-dark">
             {isDropdown && selectedValue && showSelectedValueInTitle
               ? `${infoField}: ${
@@ -60,7 +60,7 @@ export function SettingsDropdownOption({
           visible={isDropdownVisible}
           onRequestClose={() => setIsDropdownVisible(false)}
         >
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className="flex-1 justify-center items-center"
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
             onPress={() => setIsDropdownVisible(false)}
@@ -71,7 +71,7 @@ export function SettingsDropdownOption({
                 data={dropdownOptions}
                 keyExtractor={(item) => item.value}
                 renderItem={({ item }) => (
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button"
                     className={`flex-row justify-between items-center py-2 px-3 rounded ${
                       selectedValue === item.value ? "bg-muted dark:bg-muted-dark" : ""
                     }`}

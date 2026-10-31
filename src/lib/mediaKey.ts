@@ -13,13 +13,3 @@
 export function sanitizeMediaFilename(name: string): string {
   return name.replace(/[^A-Za-z0-9._-]/g, '_');
 }
-
-/**
- * Strips the `/media/` prefix myverein-backend's `withPhotoUrl`
- * (src/routes/inventory-items.ts) adds to a damage report's stored
- * `photoUrl`, back to a bare media key for `downloadMediaUri`.
- */
-export function damageReportPhotoKey(photoUrl: string | null): string | null {
-  if (!photoUrl) return null;
-  return photoUrl.startsWith('/media/') ? photoUrl.slice('/media/'.length) : photoUrl;
-}

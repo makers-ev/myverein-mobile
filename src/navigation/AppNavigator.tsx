@@ -13,6 +13,7 @@ import ForgotPasswordScreen from '@/screens/ForgotPasswordScreen';
 import HomeScreen from '@/screens/HomeScreen';
 import LoginScreen from '@/screens/LoginScreen';
 import NotificationsScreen from '@/screens/NotificationsScreen';
+import MitteilungenScreen from '@/screens/MitteilungenScreen';
 import SignupScreen from '@/screens/SignupScreen';
 import TwoFactorScreen from '@/screens/TwoFactorScreen';
 import SettingsScreen from '@/screens/SettingsScreen';
@@ -20,14 +21,34 @@ import VereinScreen from '@/screens/VereinScreen';
 import KalenderScreen from '@/screens/KalenderScreen';
 import StandorteScreen from '@/screens/StandorteScreen';
 import ClubApplicationsScreen from '@/screens/ClubApplicationsScreen';
+import ProfileModulesScreen from '@/screens/ProfileModulesScreen';
+import HeuteScreen from '@/screens/HeuteScreen';
+import MehrScreen from '@/screens/MehrScreen';
+import SucheScreen from '@/screens/SucheScreen';
+import PrivacyCenterScreen from '@/screens/PrivacyCenterScreen';
+import AbstimmungenScreen from '@/screens/AbstimmungenScreen';
+import VersammlungScreen from '@/screens/VersammlungScreen';
+import MeineDokumenteScreen from '@/screens/MeineDokumenteScreen';
+import ArchivScreen from '@/screens/ArchivScreen';
+import BestaetigungenScreen from '@/screens/BestaetigungenScreen';
+import AusweisKontrolleScreen from '@/screens/AusweisKontrolleScreen';
+import MitgliedsausweisScreen from '@/screens/MitgliedsausweisScreen';
+import GuardianStartRedirect from '@/guardian/GuardianStartRedirect';
 import JoinClubScreen from '@/screens/JoinClubScreen';
+import CreateClubScreen from '@/screens/CreateClubScreen';
 import AppLockGate from '@/components/AppLock/AppLockGate';
 import Navbar from '@/components/Navbar';
 import PrivacyPolicyScreen from '@/legal/PrivacyPolicyScreen';
 import ImprintScreen from '@/legal/ImprintScreen';
 import TermsOfServiceScreen from '@/legal/TermsOfServiceScreen';
 import { useThemeColors, useNavigationTheme } from '@/theme/colors';
-import { navigationRef } from './navigationRef';
+import { useLanguage } from '@/contexts/translation/LanguageContext';
+import FirstRunGate from '@/onboarding/FirstRunGate';
+import PushDeepLinkRouter from '@/notifications/PushDeepLinkRouter';
+import { setNavigationReady } from '@/notifications/pushTargetStore';
+import { goToTab, navigationRef } from './navigationRef';
+import { resolveReturnTo } from './tabs';
+import { useWards } from '@/hooks/useWards';
 
 /**
  * "Browse first" model (see "## Guest mode" in CLAUDE.md): still one stack,
@@ -42,12 +63,26 @@ import { navigationRef } from './navigationRef';
 export type RootStackParamList = {
   Home: undefined;
   Dashboard: undefined;
-  Verein: undefined;
-  Kalender: undefined;
-  Standorte: undefined;
+  Verein: { tab?: 'info' | 'mitglieder' | 'verwaltung' | 'profil'; memberId?: string } | undefined;
+  Kalender: { tab?: 'termine' | 'verfuegbarkeit' | 'treffen'; eventId?: string } | undefined;
+  Standorte: { tab?: 'orte' | 'material'; locationId?: string } | undefined;
+  Mehr: undefined;
+  Suche: undefined;
   JoinClub: undefined;
+  CreateClub: undefined;
   ClubApplications: undefined;
+  ProfileModules: undefined;
   Notifications: undefined;
+  Mitteilungen: undefined;
+  Heute: undefined;
+  PrivacyCenter: undefined;
+  Abstimmungen: { ballotId?: string } | undefined;
+  Versammlung: { meetingId?: string } | undefined;
+  MeineDokumente: undefined;
+  Archiv: undefined;
+  Bestaetigungen: undefined;
+  Mitgliedsausweis: undefined;
+  AusweisKontrolle: undefined;
   Login: { returnTo?: keyof RootStackParamList } | undefined;
   Signup: undefined;
   ForgotPassword: undefined;
@@ -61,6 +96,15 @@ export type RootStackParamList = {
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
+/** Heute is for signed-in users: a guest (e.g. after signing out while it was open) is moved to the guest start page. */
+function DashboardGate(props: React.ComponentProps<typeof DashboardScreen>) {
+  const { isAuthenticated } = useAuth();
+  useEffect(() => {
+    if (!isAuthenticated) goToTab('Home');
+  }, [isAuthenticated]);
+  return isAuthenticated ? <DashboardScreen {...props} /> : null;
+}
+
 function MainNavigator() {
   const {
     signIn,
@@ -72,6 +116,10 @@ function MainNavigator() {
     isAuthenticated,
   } = useAuth();
   const themeColors = useThemeColors();
+  const { t } = useLanguage();
+  const { hasWards, guardianOnly } = useWards();
+  // Detail screens reached from a tab get a visible title and back arrow (swipe/hardware back keep working).
+  const sub = (titleKey: string) => ({ headerShown: true, title: t(titleKey), headerBackTitle: t('common.back') });
 
   return (
     // Navbar sits here, outside the Navigator's own screens, so it stays
@@ -80,6 +128,8 @@ function MainNavigator() {
     // TwoFactorNavigator (see AppNavigator's own comment on that).
     <View style={{ flex: 1 }}>
       <Navbar />
+      {/* Terms of service and the one-time introduction, on whichever screen the app opens first. */}
+      <FirstRunGate />
       {/* native-stack defaults contentStyle to white; needed for the
           Android system bars, see App.tsx's StatusBar/NavigationBar. */}
       <RootStack.Navigator
@@ -89,7 +139,7 @@ function MainNavigator() {
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: themeColors.background } }}
       >
       <RootStack.Screen name="Home" component={HomeScreen} />
-      <RootStack.Screen name="Dashboard" component={DashboardScreen} />
+      <RootStack.Screen name="Dashboard" component={DashboardGate} />
 
       <RootStack.Screen name="Verein">
         {() => (
@@ -103,6 +153,16 @@ function MainNavigator() {
         {() => (
           <RequireAuth>
             <KalenderScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Mehr" component={MehrScreen} />
+
+      <RootStack.Screen name="Suche" options={sub('search.title')}>
+        {() => (
+          <RequireAuth>
+            <SucheScreen />
           </RequireAuth>
         )}
       </RootStack.Screen>
@@ -123,7 +183,15 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
-      <RootStack.Screen name="ClubApplications">
+      <RootStack.Screen name="CreateClub">
+        {(props) => (
+          <RequireAuth>
+            <CreateClubScreen {...props} />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="ClubApplications" options={sub('verein.applications.open')}>
         {() => (
           <RequireAuth>
             <ClubApplicationsScreen />
@@ -131,10 +199,34 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
-      <RootStack.Screen name="Notifications">
+      <RootStack.Screen name="ProfileModules" options={sub('forms.pm.title')}>
+        {() => (
+          <RequireAuth>
+            <ProfileModulesScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Notifications" options={sub('mehr.platform')}>
         {() => (
           <RequireAuth>
             <NotificationsScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Mitteilungen">
+        {() => (
+          <RequireAuth>
+            <MitteilungenScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Heute">
+        {(props) => (
+          <RequireAuth>
+            <HeuteScreen {...props} />
           </RequireAuth>
         )}
       </RootStack.Screen>
@@ -149,7 +241,8 @@ function MainNavigator() {
               // TwoFactorNavigator in that case, so there's nowhere here to
               // navigate to yet.
               if (result.success) {
-                navigation.navigate(route.params?.returnTo ?? 'Home');
+                // Replaces Login (no stack growth); a guardian-only account never lands on club-only screens.
+                goToTab(resolveReturnTo(route.params?.returnTo, { isAuthenticated: true, hasWards, guardianOnly }));
               }
               return result;
             }}
@@ -174,7 +267,7 @@ function MainNavigator() {
             onSubmit={async (formData) => {
               const name = [formData.firstName, formData.lastName].filter(Boolean).join(' ').trim();
               if (!formData.email || !formData.password) {
-                return { success: false, error: 'Email and password are required.' };
+                return { success: false, error: 'Email and password are required.', status: 400 };
               }
               const result = await signUp({
                 email: formData.email,
@@ -212,11 +305,75 @@ function MainNavigator() {
             onDeleteAccount={async (password) => {
               const result = await deleteAccount(password);
               if (result.success) {
-                navigation.navigate('Home');
+                goToTab('Home');
               }
               return result;
             }}
           />
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="PrivacyCenter">
+        {(props) => (
+          <RequireAuth>
+            <PrivacyCenterScreen {...props} />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Abstimmungen" options={sub('assembly.dashboard.Abstimmungen')}>
+        {(props) => (
+          <RequireAuth>
+            <AbstimmungenScreen {...props} />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Versammlung" options={sub('assembly.dashboard.Versammlung')}>
+        {(props) => (
+          <RequireAuth>
+            <VersammlungScreen {...props} />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="MeineDokumente" options={sub('mydocs.entry')}>
+        {() => (
+          <RequireAuth>
+            <MeineDokumenteScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Archiv" options={sub('archive.entry')}>
+        {() => (
+          <RequireAuth>
+            <ArchivScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Bestaetigungen" options={sub('ack.entry')}>
+        {() => (
+          <RequireAuth>
+            <BestaetigungenScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Mitgliedsausweis" options={sub('card.entry')}>
+        {() => (
+          <RequireAuth>
+            <MitgliedsausweisScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="AusweisKontrolle" options={sub('check.entry')}>
+        {() => (
+          <RequireAuth>
+            <AusweisKontrolleScreen />
+          </RequireAuth>
         )}
       </RootStack.Screen>
 
@@ -299,8 +456,12 @@ export default function AppNavigator() {
     // AppLockGate only activates once a PIN has been set in Settings --
     // stays inert until then, for guests and signed-in users alike.
     <AppLockGate>
-      <NavigationContainer ref={navigationRef} theme={navigationTheme}>
+      <NavigationContainer ref={navigationRef} theme={navigationTheme} onReady={() => setNavigationReady(true)}>
         {twoFactorPending ? <TwoFactorNavigator /> : <MainNavigator />}
+        {/* Routes a tapped push (Wave 9 M3); renders nothing. */}
+        <PushDeepLinkRouter />
+        {/* Guardian-only accounts start on "Heute" (Wave 10 M5); renders nothing. */}
+        <GuardianStartRedirect />
       </NavigationContainer>
     </AppLockGate>
   );

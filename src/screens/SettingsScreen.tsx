@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, Linking, Alert, ActivityIndica
 import { useNavigation } from '@react-navigation/native';
 import { colorScheme, useColorScheme } from 'nativewind';
 import Constants from 'expo-constants';
+import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { supportedLanguages } from '@/contexts/translation/supportedLanguages';
 import { useThemeColors } from '@/theme/colors';
@@ -12,6 +13,7 @@ import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 
 // Component imports
 import { SettingsSwitchOption } from '@/components/Settings/SettingsSwitchOption';
+import NotificationPreferencesSection from '@/components/Settings/NotificationPreferencesSection';
 import { SettingsDropdownOption } from '@/components/Settings/SettingsDropdownOption';
 
 // Modal imports
@@ -23,6 +25,7 @@ import VerifyPinModal from '@/components/Modals/VerifyPinModal';
 import IntroModal from '@/onboarding/IntroModal';
 
 import { getAppLockPin, setAppLockPin, clearAppLockPin } from '@/auth/appLockStorage';
+import { erasureBlockerKey } from '@/lib/apiErrorMessage';
 import { useAttemptLockout } from '@/hooks/useAttemptLockout';
 import {
     getShowTopbarTitles,
@@ -37,7 +40,7 @@ import PaletteCustomEditor from '@/components/Settings/PaletteCustomEditor';
 
 interface SettingsScreenProps {
   onLogout?: () => void;
-  onDeleteAccount?: (password: string) => Promise<{ success: boolean; error?: string }>;
+  onDeleteAccount?: (password: string) => Promise<{ success: boolean; error?: string; code?: string }>;
 }
 
 const openURL = (url: string) => {
@@ -226,14 +229,14 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                         color: 'bg-green-600',
                     },
                 ]}
-                titleColor="text-destructive"
+                titleColor="text-destructive dark:text-destructive-dark"
             />
 
             <ConfirmationInputModal
                 visible={deleteAccountPopup}
                 onClose={() => setDeleteAccountPopup(false)}
                 title={t('settings.delete-account-confirm')}
-                titleColor="text-destructive"
+                titleColor="text-destructive dark:text-destructive-dark"
                 message={t('settings.delete-password-prompt')}
                 messageColor="text-muted-foreground"
                 secureTextEntry
@@ -247,7 +250,9 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                     if (!onDeleteAccount) return;
                     const result = await onDeleteAccount(password);
                     if (!result.success) {
-                        Alert.alert(t('alert.general-error-title'), result.error ?? t('alert.general-error-description'));
+                        // Raw backend text never reaches the UI: known ERASURE_<BLOCKER> codes get a readable explanation.
+                        const blocker = erasureBlockerKey(result.code);
+                        Alert.alert(t('alert.general-error-title'), blocker ? t(blocker) : t('alert.general-error-description'));
                     }
                 }}
             />
@@ -284,6 +289,8 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                             onSaved={(message) => setSavedMessage(message)}
                         />
 
+                        <NotificationPreferencesSection />
+
                         <SessionsSection listSessions={listSessions} revokeSession={revokeSession} currentSessionToken={undefined} onSaved={(message) => setSavedMessage(message)} />
 
                         <DebugSection />
@@ -301,7 +308,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                             {t('home.guest-body')}
                         </Text>
                         <View className="flex-row" style={{ gap: 12 }}>
-                            <TouchableOpacity
+                            <TouchableOpacity accessibilityRole="button"
                                 className="flex-1 bg-primary dark:bg-primary-dark rounded-xl py-3"
                                 onPress={() => navigation.navigate('Signup')}
                             >
@@ -309,7 +316,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                                     {t('home.signup-cta')}
                                 </Text>
                             </TouchableOpacity>
-                            <TouchableOpacity
+                            <TouchableOpacity accessibilityRole="button"
                                 className="flex-1 border border-border dark:border-border-dark rounded-xl py-3"
                                 onPress={() => navigation.navigate('Login', {})}
                             >
@@ -377,25 +384,38 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                 </SectionCard>
 
                 <SectionCard title={t('settings.section-legal')}>
-                    <TouchableOpacity className="py-2" onPress={() => setIsIntroModalVisible(true)}>
+                    <TouchableOpacity accessibilityRole="button" className="py-2" onPress={() => setIsIntroModalVisible(true)}>
                         <Text className="text-foreground dark:text-foreground-dark">{t('settings.replay-intro')}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity className="py-2" onPress={() => navigation.navigate('PrivacyPolicy')}>
+                    <TouchableOpacity accessibilityRole="button" className="py-2" onPress={() => navigation.navigate('PrivacyPolicy')}>
                         <Text className="text-foreground dark:text-foreground-dark">{t('settings.legal.privacy')}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity className="py-2" onPress={() => navigation.navigate('TermsOfService')}>
+                    <TouchableOpacity accessibilityRole="button" className="py-2" onPress={() => navigation.navigate('TermsOfService')}>
                         <Text className="text-foreground dark:text-foreground-dark">{t('settings.legal.tos')}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity className="py-2" onPress={() => navigation.navigate('Imprint')}>
+                    <TouchableOpacity accessibilityRole="button" className="py-2" onPress={() => navigation.navigate('Imprint')}>
                         <Text className="text-foreground dark:text-foreground-dark">{t('settings.legal.imprint')}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity className="py-2" onPress={() => openURL(CONTACT_URL)}>
+                    <TouchableOpacity accessibilityRole="button" className="py-2" onPress={() => openURL(CONTACT_URL)}>
                         <Text className="text-foreground dark:text-foreground-dark">{t('settings.legal.contact')}</Text>
                     </TouchableOpacity>
                 </SectionCard>
 
+                {isAuthenticated && (
+                    <SectionCard title={t('datenschutz.title')} subtitle={t('datenschutz.settings-hint')}>
+                        <TouchableOpacity
+                            className="bg-primary dark:bg-primary-dark py-2.5 px-4 rounded-lg"
+                            accessibilityRole="button"
+                            onPress={() => navigation.navigate('PrivacyCenter')}>
+                            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold text-center">
+                                {t('datenschutz.open')}
+                            </Text>
+                        </TouchableOpacity>
+                    </SectionCard>
+                )}
+
                 <SectionCard title={t('settings.section-app-lock')}>
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button"
                         className={`${appLockActive ? 'bg-destructive' : 'bg-primary dark:bg-primary-dark'} py-2.5 px-4 rounded-lg`}
                         onPress={handlePinButtonPress}>
                         <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold text-center">
@@ -407,11 +427,11 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                 {isAuthenticated && (
                 <View className="items-center justify-center mb-5">
                     <View className="w-full border-2 border-destructive p-4 rounded-md bg-card dark:bg-card-dark">
-                        <Text className="text-lg font-bold text-destructive mb-2 text-center">
+                        <Text className="text-lg font-bold text-destructive dark:text-destructive-dark mb-2 text-center">
                             {t('settings.danger-zone')}
                         </Text>
 
-                        <TouchableOpacity
+                        <TouchableOpacity accessibilityRole="button"
                             className="bg-destructive py-2 px-4 rounded-md my-1"
                             onPress={() => setLogoutPopup(true)}>
                             <Text className="text-primary-foreground text-base font-bold text-center">
@@ -419,7 +439,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                             </Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity
+                        <TouchableOpacity accessibilityRole="button"
                             className="bg-destructive py-2 px-4 rounded-md my-1"
                             onPress={() => setDeleteAccountPopup(true)}>
                             <Text className="text-primary-foreground text-base font-bold text-center">
@@ -480,7 +500,7 @@ function ProfileSection({
         const result = await updateProfile(name);
         setSubmitting(false);
         if (!result.success) {
-            setError(result.error ?? t('alert.general-error-description'));
+            setError(mapApiError(result, t, 'alert.general-error-description'));
             return;
         }
         onSaved();
@@ -498,8 +518,8 @@ function ProfileSection({
             <Text className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-muted-foreground dark:text-muted-foreground-dark border border-border dark:border-border-dark mb-3">
                 {user?.email}
             </Text>
-            {error && <Text className="text-destructive text-sm mb-2">{error}</Text>}
-            <TouchableOpacity
+            {error && <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{error}</Text>}
+            <TouchableOpacity accessibilityRole="button"
                 className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${submitting ? 'opacity-70' : ''}`}
                 onPress={handleSave}
                 disabled={submitting}
@@ -548,7 +568,7 @@ function SecuritySection({
         const result = await changePassword(currentPassword, newPassword);
         setPasswordSubmitting(false);
         if (!result.success) {
-            setPasswordError(result.error ?? t('alert.general-error-description'));
+            setPasswordError(mapApiError(result, t, 'alert.general-error-description'));
             return;
         }
         setCurrentPassword('');
@@ -578,7 +598,7 @@ function SecuritySection({
         const result = await enableTwoFactor(twoFactorPassword);
         setTwoFactorSubmitting(false);
         if (!result.success) {
-            setTwoFactorError(result.error ?? t('alert.general-error-description'));
+            setTwoFactorError(mapApiError(result, t, 'alert.general-error-description'));
             return;
         }
         setTotpUri(result.totpUri ?? null);
@@ -592,7 +612,7 @@ function SecuritySection({
         const result = await verifyTwoFactor(totpCode);
         setTwoFactorSubmitting(false);
         if (!result.success) {
-            setTwoFactorError(result.error ?? t('alert.general-error-description'));
+            setTwoFactorError(mapApiError(result, t, 'alert.general-error-description'));
             return;
         }
         resetTwoFactorFlow();
@@ -605,7 +625,7 @@ function SecuritySection({
         const result = await disableTwoFactor(twoFactorPassword);
         setTwoFactorSubmitting(false);
         if (!result.success) {
-            setTwoFactorError(result.error ?? t('alert.general-error-description'));
+            setTwoFactorError(mapApiError(result, t, 'alert.general-error-description'));
             return;
         }
         resetTwoFactorFlow();
@@ -619,7 +639,7 @@ function SecuritySection({
                 <Text className="font-semibold text-foreground dark:text-foreground-dark">{t('settings.change-password')}</Text>
 
                 {!showPasswordForm ? (
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button"
                         className="mt-2 self-start bg-muted dark:bg-muted-dark rounded-lg px-3 py-2"
                         onPress={() => setShowPasswordForm(true)}
                     >
@@ -641,9 +661,9 @@ function SecuritySection({
                             value={newPassword}
                             onChangeText={setNewPassword}
                         />
-                        {passwordError && <Text className="text-destructive text-sm mb-2">{passwordError}</Text>}
+                        {passwordError && <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{passwordError}</Text>}
                         <View className="flex-row" style={{ gap: 8 }}>
-                            <TouchableOpacity
+                            <TouchableOpacity accessibilityRole="button"
                                 className={`bg-primary dark:bg-primary-dark rounded-lg px-3 py-2 ${passwordSubmitting ? 'opacity-70' : ''}`}
                                 onPress={handleChangePassword}
                                 disabled={passwordSubmitting || !currentPassword || newPassword.length < 8}
@@ -656,7 +676,7 @@ function SecuritySection({
                                     </Text>
                                 )}
                             </TouchableOpacity>
-                            <TouchableOpacity
+                            <TouchableOpacity accessibilityRole="button"
                                 className="border border-border dark:border-border-dark rounded-lg px-3 py-2"
                                 onPress={() => {
                                     setShowPasswordForm(false);
@@ -682,7 +702,7 @@ function SecuritySection({
                 </View>
 
                 {twoFactorStep === 'idle' && (
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button"
                         className={`mt-2 self-start rounded-lg px-3 py-2 ${twoFactorEnabled ? 'bg-muted dark:bg-muted-dark' : 'bg-primary dark:bg-primary-dark'}`}
                         onPress={() => setTwoFactorStep(twoFactorEnabled ? 'disable' : 'enable')}
                     >
@@ -704,9 +724,9 @@ function SecuritySection({
                             value={twoFactorPassword}
                             onChangeText={setTwoFactorPassword}
                         />
-                        {twoFactorError && <Text className="text-destructive text-sm mb-2">{twoFactorError}</Text>}
+                        {twoFactorError && <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{twoFactorError}</Text>}
                         <View className="flex-row" style={{ gap: 8 }}>
-                            <TouchableOpacity
+                            <TouchableOpacity accessibilityRole="button"
                                 className={`rounded-lg px-3 py-2 ${twoFactorStep === 'disable' ? 'bg-destructive' : 'bg-primary dark:bg-primary-dark'} ${twoFactorSubmitting ? 'opacity-70' : ''}`}
                                 onPress={twoFactorStep === 'disable' ? handleDisableTwoFactor : startTwoFactorEnable}
                                 disabled={twoFactorSubmitting || !twoFactorPassword}
@@ -719,7 +739,7 @@ function SecuritySection({
                                     </Text>
                                 )}
                             </TouchableOpacity>
-                            <TouchableOpacity className="border border-border dark:border-border-dark rounded-lg px-3 py-2" onPress={resetTwoFactorFlow}>
+                            <TouchableOpacity accessibilityRole="button" className="border border-border dark:border-border-dark rounded-lg px-3 py-2" onPress={resetTwoFactorFlow}>
                                 <Text className="text-foreground dark:text-foreground-dark">{t('settings.cancel')}</Text>
                             </TouchableOpacity>
                         </View>
@@ -744,9 +764,9 @@ function SecuritySection({
                             value={totpCode}
                             onChangeText={setTotpCode}
                         />
-                        {twoFactorError && <Text className="text-destructive text-sm mb-2">{twoFactorError}</Text>}
+                        {twoFactorError && <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{twoFactorError}</Text>}
                         <View className="flex-row" style={{ gap: 8 }}>
-                            <TouchableOpacity
+                            <TouchableOpacity accessibilityRole="button"
                                 className={`bg-primary dark:bg-primary-dark rounded-lg px-3 py-2 ${twoFactorSubmitting ? 'opacity-70' : ''}`}
                                 onPress={handleVerifyTwoFactor}
                                 disabled={twoFactorSubmitting || totpCode.length !== 6}
@@ -759,7 +779,7 @@ function SecuritySection({
                                     </Text>
                                 )}
                             </TouchableOpacity>
-                            <TouchableOpacity className="border border-border dark:border-border-dark rounded-lg px-3 py-2" onPress={resetTwoFactorFlow}>
+                            <TouchableOpacity accessibilityRole="button" className="border border-border dark:border-border-dark rounded-lg px-3 py-2" onPress={resetTwoFactorFlow}>
                                 <Text className="text-foreground dark:text-foreground-dark">{t('settings.cancel')}</Text>
                             </TouchableOpacity>
                         </View>
@@ -827,7 +847,7 @@ function SessionsSection({
                                 {new Date(s.createdAt).toLocaleString()}
                             </Text>
                         </View>
-                        <TouchableOpacity
+                        <TouchableOpacity accessibilityRole="button"
                             className={`bg-destructive rounded-lg px-3 py-2 ${revokingToken === s.token ? 'opacity-70' : ''}`}
                             onPress={() => handleRevoke(s.token)}
                             disabled={revokingToken === s.token}
@@ -870,7 +890,7 @@ function DebugSection() {
 
     return (
         <SectionCard title={t('settings.section-debug')} subtitle={t('settings.debug-description')}>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
                 className={`self-start bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-lg px-3 py-2 ${isLoading ? 'opacity-70' : ''}`}
                 onPress={handlePing}
                 disabled={isLoading}

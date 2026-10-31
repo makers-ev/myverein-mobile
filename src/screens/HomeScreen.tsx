@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CalendarDays, MapPin, Users } from 'lucide-react-native';
@@ -12,10 +12,6 @@ import Logo from '@/components/Logo';
 import SignedInCard from '@/components/SignedInCard';
 import BentoTile from '@/components/ui/BentoTile';
 import FadeIn from '@/components/ui/FadeIn';
-import AcceptTosModal from '@/legal/AcceptTosModal';
-import { hasAcceptedTos, setTosAccepted } from '@/legal/tosAcceptanceStorage';
-import IntroModal from '@/onboarding/IntroModal';
-import { hasSeenIntro, setIntroSeen } from '@/onboarding/introSeenStorage';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
@@ -31,34 +27,6 @@ export default function HomeScreen({ navigation }: Props) {
   const { isAuthenticated } = useAuth();
   const { requireAuth } = useRequireAuth();
   const colors = useThemeColors();
-
-  const [tosModalVisible, setTosModalVisible] = useState(false);
-  const [introModalVisible, setIntroModalVisible] = useState(false);
-
-  // Intro only shows once ToS is out of the way -- never stack two blocking modals.
-  const maybeShowIntro = () => {
-    hasSeenIntro().then((seen) => {
-      if (!seen) setIntroModalVisible(true);
-    });
-  };
-
-  useEffect(() => {
-    hasAcceptedTos().then((accepted) => {
-      if (!accepted) setTosModalVisible(true);
-      else maybeShowIntro();
-    });
-  }, []);
-
-  const handleAcceptTos = () => {
-    void setTosAccepted();
-    setTosModalVisible(false);
-    maybeShowIntro();
-  };
-
-  const handleCloseIntro = () => {
-    void setIntroSeen(true);
-    setIntroModalVisible(false);
-  };
 
   const featureTile = (key: keyof typeof FEATURES, minHeight: number, delay: number) => {
     const { icon: Icon, route } = FEATURES[key];
@@ -81,9 +49,6 @@ export default function HomeScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <AcceptTosModal visible={tosModalVisible} onAccept={handleAcceptTos} />
-      <IntroModal visible={introModalVisible} onClose={handleCloseIntro} />
-
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 120 }}>
         <View className="p-6" style={{ gap: 12 }}>
           <View className="mb-2">

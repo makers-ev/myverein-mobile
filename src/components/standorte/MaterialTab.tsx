@@ -1,12 +1,17 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { AlertTriangle, Camera, MapPin, Package, Wrench } from 'lucide-react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { DOCS_PATHS } from '@/lib/docsUrl';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
-import { uploadMedia, downloadMediaUri } from '@/lib/media';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
+import SignedImage from '@/components/ui/SignedImage';
+import { isNetworkFailure, isUnknownMediaKey } from '@/lib/memberPhoto';
+import { useImageUpload } from '@/hooks/useImageUpload';
+import { useThrottledCallback } from '@/hooks/useThrottledCallback';
+import { useClubSettings } from '@/hooks/useClubSettings';
 import { useLocations, type Location } from '@/hooks/useLocations';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import {
@@ -14,7 +19,6 @@ import {
   useInventoryItemDetail,
   useInventoryActions,
   useInventoryMutations,
-  damageReportPhotoKey,
   type DamageReportStatus,
   type InventoryItem,
   type InventoryLoan,
@@ -59,7 +63,7 @@ function OverdueChip() {
 function ItemCard({ item, locationName, onPress }: { item: InventoryItem; locationName: string | null; onPress: () => void }) {
   const themeColors = useThemeColors();
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       className="flex-row bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-3"
       style={{ gap: 12 }}
@@ -140,7 +144,7 @@ function MaterialList({
       )}
 
       {visible.length === 0 ? (
-        <EmptyState icon={<Package size={26} color={themeColors.primary} />} text={t('material.list.empty')} />
+        <EmptyState icon={<Package size={26} color={themeColors.primary} />} text={t('material.list.empty')} docsPath={DOCS_PATHS.places} />
       ) : (
         visible.map((i) => <ItemCard key={i.id} item={i} locationName={locationName(i.locationId)} onPress={() => onSelect(i.id)} />)
       )}
@@ -172,59 +176,30 @@ function LoanRow({ loan, isLast }: { loan: InventoryLoan; isLast: boolean }) {
   );
 }
 
-// Loaded lazily per row: each photo needs its own authenticated round-trip (see media.ts's `downloadMediaUri`).
-function DamageReportPhoto({ clubId, photoUrl }: { clubId: string; photoUrl: string | null }) {
-  const themeColors = useThemeColors();
-  const key = damageReportPhotoKey(photoUrl);
-  const [uri, setUri] = useState<string | null>(null);
-  const [loading, setLoading] = useState(!!key);
+// Signed photo URLs expire; an image error triggers one refetch of the detail (fresh URLs), at most once per 10 s.
+const PHOTO_REFRESH_MS = 10_000;
 
-  useEffect(() => {
-    if (!key) {
-      setUri(null);
-      setLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    void downloadMediaUri(clubId, key).then((resolved) => {
-      if (!cancelled) {
-        setUri(resolved);
-        setLoading(false);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [clubId, key]);
-
-  if (loading) {
-    return (
-      <View className="w-16 h-16 rounded-lg items-center justify-center bg-muted dark:bg-muted-dark">
-        <ActivityIndicator size="small" color={themeColors.primary} />
-      </View>
-    );
-  }
-  if (!uri) return null;
-  return <Image source={{ uri }} className="w-16 h-16 rounded-lg" resizeMode="cover" />;
+function DamageReportPhoto({ photoUrl, onExpired }: { photoUrl: string | null; onExpired: () => void }) {
+  if (!photoUrl) return null;
+  return <SignedImage uri={photoUrl} className="w-16 h-16 rounded-lg" onExpired={onExpired} />;
 }
 
 function DamageReportRow({
-  clubId,
   report,
   isLast,
+  onPhotoExpired,
   onStatusChange,
 }: {
-  clubId: string;
   report: DamageReport;
   isLast: boolean;
+  onPhotoExpired: () => void;
   /** Set when the viewer may triage (inventory:write). */
   onStatusChange?: (status: DamageReportStatus) => void;
 }) {
   const { t } = useLanguage();
   return (
     <View className={`flex-row py-2.5 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`} style={{ gap: 10 }}>
-      <DamageReportPhoto clubId={clubId} photoUrl={report.photoUrl} />
+      <DamageReportPhoto photoUrl={report.photoUrl} onExpired={onPhotoExpired} />
       <View className="flex-1">
         <Text className="text-foreground dark:text-foreground-dark text-sm font-medium mb-1">{report.description}</Text>
         <View className="flex-row items-center mb-1" style={{ gap: 8 }}>
@@ -291,11 +266,18 @@ function MaterialDetail({
   const [showDamageForm, setShowDamageForm] = useState(false);
   const [description, setDescription] = useState('');
   const [photoKey, setPhotoKey] = useState<string | null>(null);
-  const [photoUploading, setPhotoUploading] = useState(false);
   const [damageSaving, setDamageSaving] = useState(false);
   const [damageError, setDamageError] = useState<string | null>(null);
-  // Bumped on every pick + form reset so a slow upload can't write into a newer form session.
-  const uploadTokenRef = useRef(0);
+  // Keys only (from `POST /media`); the signed preview URL is not kept.
+  const upload = useImageUpload({ clubId, t, onUploaded: (media) => setPhotoKey(media.key) });
+  const photoUploading = upload.busy;
+  const lostResponse = useRef(false);
+  const onPhotoExpired = useThrottledCallback(() => void refetch(), PHOTO_REFRESH_MS);
+
+  // Club switch `allowSelfLoans`; inventory:write holders are exempt. A 403 on borrow also flips it for this session.
+  const { settings, refresh: refreshSettings } = useClubSettings(clubId);
+  const [borrowForbidden, setBorrowForbidden] = useState(false);
+  const selfLoansOff = !canWrite && (settings?.allowSelfLoans === false || borrowForbidden);
 
   const handleBorrow = async () => {
     setBorrowSaving(true);
@@ -303,7 +285,14 @@ function MaterialDetail({
     try {
       await borrow();
     } catch (err) {
-      setBorrowError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      // The 403 carries no dedicated code, so re-read the club setting: only "switched off" gets the special text.
+      const disabled = err instanceof ApiError && err.status === 403 && (await refreshSettings())?.allowSelfLoans === false;
+      if (disabled) {
+        setBorrowForbidden(true);
+        setBorrowError(t('material.loans.self-disabled'));
+      } else {
+        setBorrowError(apiErrorMessage(err, t));
+      }
     } finally {
       setBorrowSaving(false);
     }
@@ -315,7 +304,7 @@ function MaterialDetail({
     try {
       await returnLoan(loanId);
     } catch (err) {
-      setReturnError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setReturnError(apiErrorMessage(err, t));
     } finally {
       setReturningLoanId(null);
     }
@@ -327,34 +316,8 @@ function MaterialDetail({
       await setDamageReportStatus(itemId, reportId, status);
       await refetch();
     } catch (err) {
-      setTriageError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setTriageError(apiErrorMessage(err, t));
     }
-  };
-
-  const handlePickPhoto = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) return;
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 });
-    if (result.canceled || !result.assets[0]) return;
-    const asset = result.assets[0];
-
-    const token = ++uploadTokenRef.current;
-    setPhotoUploading(true);
-    setDamageError(null);
-    const uploadResult = await uploadMedia(clubId, {
-      uri: asset.uri,
-      name: asset.fileName ?? 'photo.jpg',
-      type: asset.mimeType ?? 'image/jpeg',
-    });
-    // Stale resolve: the form was reset/resubmitted while this was in flight.
-    if (token !== uploadTokenRef.current) return;
-    setPhotoUploading(false);
-
-    if ('error' in uploadResult) {
-      setDamageError(t('alert.general-error-description'));
-      return;
-    }
-    setPhotoKey(uploadResult.key);
   };
 
   const handleSubmitDamage = async () => {
@@ -364,12 +327,23 @@ function MaterialDetail({
     setDamageError(null);
     try {
       await reportDamage(description.trim(), photoKey ?? undefined);
-      uploadTokenRef.current++;
+      lostResponse.current = false;
       setDescription('');
       setPhotoKey(null);
       setShowDamageForm(false);
     } catch (err) {
-      setDamageError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      if (photoKey && isNetworkFailure(err)) lostResponse.current = true;
+      if (photoKey && lostResponse.current && isUnknownMediaKey(err)) {
+        // The earlier attempt most likely went through: reload and tell the user instead of "invalid".
+        lostResponse.current = false;
+        setDescription('');
+        setPhotoKey(null);
+        setShowDamageForm(false);
+        void refetch();
+        Alert.alert(t('media.maybe-saved'));
+      } else {
+        setDamageError(apiErrorMessage(err, t));
+      }
     } finally {
       setDamageSaving(false);
     }
@@ -407,7 +381,7 @@ function MaterialDetail({
 
   return (
     <>
-      <TouchableOpacity onPress={onBack} className="mb-3 self-start">
+      <TouchableOpacity accessibilityRole="button" onPress={onBack} className="mb-3 self-start">
         <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('material.back')}</Text>
       </TouchableOpacity>
 
@@ -450,11 +424,11 @@ function MaterialDetail({
           loans.map((l, i) => <LoanRow key={l.id} loan={l} isLast={i === loans.length - 1} />)
         )}
 
-        {borrowError ? <Text className="text-destructive text-sm mt-3">{borrowError}</Text> : null}
-        {returnError ? <Text className="text-destructive text-sm mt-3">{returnError}</Text> : null}
+        {borrowError && !selfLoansOff ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-3">{borrowError}</Text> : null}
+        {returnError ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-3">{returnError}</Text> : null}
 
         {ownOpenLoan ? (
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${returningLoanId ? 'opacity-70' : ''}`}
             onPress={() => void handleReturn(ownOpenLoan.id)}
             disabled={!!returningLoanId}
@@ -467,8 +441,10 @@ function MaterialDetail({
               </Text>
             )}
           </TouchableOpacity>
+        ) : !hasOpenLoan && selfLoansOff ? (
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-3">{t('material.loans.self-disabled')}</Text>
         ) : !hasOpenLoan ? (
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${borrowSaving ? 'opacity-70' : ''}`}
             onPress={() => void handleBorrow()}
             disabled={borrowSaving}
@@ -493,14 +469,14 @@ function MaterialDetail({
           damageReports.map((r, i) => (
             <DamageReportRow
               key={r.id}
-              clubId={clubId}
               report={r}
+              onPhotoExpired={onPhotoExpired}
               isLast={i === damageReports.length - 1}
               onStatusChange={canWrite ? (s) => void handleTriage(r.id, s) : undefined}
             />
           ))
         )}
-        {triageError ? <Text className="text-destructive text-sm mt-2">{triageError}</Text> : null}
+        {triageError ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-2">{triageError}</Text> : null}
 
         {showDamageForm ? (
           <View className="mt-3 pt-3 border-t border-border dark:border-border-dark">
@@ -515,10 +491,10 @@ function MaterialDetail({
             />
 
             <View className="flex-row items-center mb-3" style={{ gap: 10 }}>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 className={`flex-row items-center bg-muted dark:bg-muted-dark rounded-lg py-2 px-3 ${photoUploading ? 'opacity-70' : ''}`}
                 style={{ gap: 6 }}
-                onPress={() => void handlePickPhoto()}
+                onPress={upload.choose}
                 disabled={photoUploading}
               >
                 <Camera size={14} color={themeColors.foreground} />
@@ -534,15 +510,20 @@ function MaterialDetail({
                   </Text>
                 </View>
               ) : photoKey ? (
-                <Text className="text-success dark:text-success-dark text-xs font-semibold">
-                  {t('material.damage-reports.photo-attached')}
-                </Text>
+                <>
+                  <Text className="text-success dark:text-success-dark text-xs font-semibold">
+                    {t('material.damage-reports.photo-attached')}
+                  </Text>
+                  <TouchableOpacity onPress={() => setPhotoKey(null)} accessibilityRole="button" hitSlop={8}>
+                    <Text className="text-destructive dark:text-destructive-dark text-xs font-semibold">{t('material.damage-reports.photo-remove')}</Text>
+                  </TouchableOpacity>
+                </>
               ) : null}
             </View>
 
-            {damageError ? <Text className="text-destructive text-sm mb-3">{damageError}</Text> : null}
+            {damageError ?? upload.error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{damageError ?? upload.error}</Text> : null}
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${damageSaving || photoUploading ? 'opacity-70' : ''}`}
               onPress={() => void handleSubmitDamage()}
               disabled={damageSaving || photoUploading}
@@ -557,7 +538,7 @@ function MaterialDetail({
             </TouchableOpacity>
           </View>
         ) : (
-          <TouchableOpacity className="self-start mt-2" onPress={() => setShowDamageForm(true)}>
+          <TouchableOpacity accessibilityRole="button" className="self-start mt-2" onPress={() => setShowDamageForm(true)}>
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('material.damage-reports.create')}</Text>
           </TouchableOpacity>
         )}
@@ -601,7 +582,7 @@ export default function MaterialTab({ clubId }: { clubId: string }) {
         <MaterialDetail
           clubId={clubId}
           itemId={selectedItemId}
-          membershipId={membership?.id ?? null}
+          membershipId={membership?.memberId ?? null}
           canWrite={canWrite}
           locations={locations}
           categories={categories}

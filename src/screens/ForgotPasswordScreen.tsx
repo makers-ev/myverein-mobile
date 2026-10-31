@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import Logo from '@/components/Logo';
@@ -27,7 +28,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
       if (result.success) {
         setSent(true);
       } else {
-        setError(result.error ?? t('forgot-password.error'));
+        setError(mapApiError(result, t, 'forgot-password.error'));
       }
     } finally {
       setIsSubmitting(false);
@@ -59,7 +60,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
             <Text className="text-primary dark:text-primary-dark text-sm mb-3 text-center">
               {t('forgot-password.sent')}
             </Text>
-            <TouchableOpacity className="mt-4 items-center" onPress={onBackToLogin}>
+            <TouchableOpacity accessibilityRole="button" className="mt-4 items-center" onPress={onBackToLogin}>
               <Text className="text-primary dark:text-primary-dark text-sm font-semibold">
                 {t('forgot-password.back-to-login')}
               </Text>
@@ -77,13 +78,16 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="email-address"
+              autoComplete="email"
+              textContentType="emailAddress"
+              accessibilityLabel={t('login.username')}
               value={email}
               onChangeText={setEmail}
             />
 
-            {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
+            {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{error}</Text> : null}
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-1 ${isSubmitting ? 'opacity-70' : ''}`}
               onPress={handleSubmit}
               disabled={isSubmitting || !email}
@@ -97,7 +101,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity className="mt-4 items-center" onPress={onBackToLogin}>
+            <TouchableOpacity accessibilityRole="button" className="mt-4 items-center" onPress={onBackToLogin}>
               <Text className="text-primary dark:text-primary-dark text-sm font-semibold">
                 {t('forgot-password.back-to-login')}
               </Text>

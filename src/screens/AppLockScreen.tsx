@@ -73,7 +73,7 @@ export default function AppLockScreen({ pin, onUnlock }: AppLockScreenProps) {
           autoFocus
         />
 
-        <Text className={`mt-3 text-xs ${isLocked ? 'text-destructive font-semibold' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}>
+        <Text className={`mt-3 text-xs ${isLocked ? 'text-destructive dark:text-destructive-dark font-semibold' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}>
           {isLocked ? lockoutMessage : attemptsMessage}
         </Text>
       </View>

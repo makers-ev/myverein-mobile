@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 
@@ -27,7 +28,7 @@ export default function EmailVerificationScreen({ email, onResend, onBackToLogin
       if (result.success) {
         setSent(true);
       } else {
-        setError(result.error ?? t('email-verification.resend-error'));
+        setError(mapApiError(result, t, 'email-verification.resend-error'));
       }
     } finally {
       setIsSubmitting(false);
@@ -54,9 +55,9 @@ export default function EmailVerificationScreen({ email, onResend, onBackToLogin
               {t('email-verification.resent')}
             </Text>
           ) : null}
-          {error ? <Text className="text-destructive text-sm mb-3 text-center">{error}</Text> : null}
+          {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{error}</Text> : null}
 
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-1 ${isSubmitting ? 'opacity-70' : ''}`}
             onPress={handleResend}
             disabled={isSubmitting}
@@ -70,7 +71,7 @@ export default function EmailVerificationScreen({ email, onResend, onBackToLogin
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity className="mt-4 items-center" onPress={onBackToLogin}>
+          <TouchableOpacity accessibilityRole="button" className="mt-4 items-center" onPress={onBackToLogin}>
             <Text className="text-primary dark:text-primary-dark text-sm font-semibold">
               {t('email-verification.back-to-login')}
             </Text>

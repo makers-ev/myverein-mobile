@@ -3,6 +3,8 @@ import { ActivityIndicator, Linking, Text, TouchableOpacity, View } from 'react-
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
+import DocsLink from '@/components/ui/DocsLink';
+import { DOCS_PATHS } from '@/lib/docsUrl';
 import { withScheme } from '@/lib/withScheme';
 
 export type ConnectionStatus = 'checking' | 'online' | 'offline';
@@ -46,7 +48,7 @@ export default function ConnectionErrorScreen({ status, onRetry }: ConnectionErr
         {t('connection.offline-description')}
       </Text>
 
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         className="bg-primary dark:bg-primary-dark rounded-lg py-3 px-6 items-center"
         onPress={onRetry}
         disabled={status === 'checking'}
@@ -61,7 +63,7 @@ export default function ConnectionErrorScreen({ status, onRetry }: ConnectionErr
       </TouchableOpacity>
 
       {STATUS_PAGE_URL ? (
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button"
           className="mt-5"
           onPress={() => Linking.openURL(STATUS_PAGE_URL).catch((err) => console.error('Error opening URL:', err))}
         >
@@ -70,13 +72,16 @@ export default function ConnectionErrorScreen({ status, onRetry }: ConnectionErr
       ) : null}
 
       {ERROR_REPORT_URL ? (
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button"
           className="mt-3"
           onPress={() => Linking.openURL(ERROR_REPORT_URL).catch((err) => console.error('Error opening URL:', err))}
         >
           <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('connection.report-error-link')}</Text>
         </TouchableOpacity>
       ) : null}
+      <View className="mt-3">
+        <DocsLink path={DOCS_PATHS.faq} />
+      </View>
     </View>
   );
 }

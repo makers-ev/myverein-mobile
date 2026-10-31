@@ -1,37 +1,22 @@
 import { buildWifiQrPayload } from './wifiQr';
 
 describe('buildWifiQrPayload', () => {
-  it('builds the standard WIFI: payload for plain ssid/password', () => {
-    expect(buildWifiQrPayload('MyNetwork', 'secret123')).toBe('WIFI:S:MyNetwork;T:WPA;P:secret123;;');
+  it('builds the backend-identical payload for plain ssid/password', () => {
+    expect(buildWifiQrPayload('MyNetwork', 'secret123')).toBe('WIFI:T:WPA;S:MyNetwork;P:secret123;;');
   });
-
-  it('escapes semicolons in the ssid and password', () => {
-    expect(buildWifiQrPayload('a;b', 'c;d')).toBe('WIFI:S:a\\;b;T:WPA;P:c\\;d;;');
+  it('maps security types', () => {
+    expect(buildWifiQrPayload('n', 'secret1', 'wep')).toBe('WIFI:T:WEP;S:n;P:secret1;;');
+    expect(buildWifiQrPayload('n', 'secret1', 'wpa3')).toBe('WIFI:T:SAE;S:n;P:secret1;;');
+    expect(buildWifiQrPayload('n', 'secret1', 'wpa')).toBe('WIFI:T:WPA;S:n;P:secret1;;');
   });
-
-  it('escapes commas', () => {
-    expect(buildWifiQrPayload('a,b', 'c,d')).toBe('WIFI:S:a\\,b;T:WPA;P:c\\,d;;');
+  it('escapes special characters without double-escaping', () => {
+    expect(buildWifiQrPayload('Guest;Net,"1"', 'p\\a;s,s"w:x')).toBe('WIFI:T:WPA;S:Guest\\;Net\\,\\"1\\";P:p\\\\a\\;s\\,s\\"w\\:x;;');
   });
-
-  it('escapes double quotes', () => {
-    expect(buildWifiQrPayload('a"b', 'c"d')).toBe('WIFI:S:a\\"b;T:WPA;P:c\\"d;;');
+  it('quotes all-hex values like the backend', () => {
+    expect(buildWifiQrPayload('abcdef', '12345678')).toBe('WIFI:T:WPA;S:"abcdef";P:"12345678";;');
   });
-
-  it('escapes backslashes', () => {
-    expect(buildWifiQrPayload('a\\b', 'c\\d')).toBe('WIFI:S:a\\\\b;T:WPA;P:c\\\\d;;');
-  });
-
-  it('escapes a mix of special characters without double-escaping', () => {
-    expect(buildWifiQrPayload('Guest;Net,"1"', 'p\\a;s,s"w')).toBe(
-      'WIFI:S:Guest\\;Net\\,\\"1\\";T:WPA;P:p\\\\a\\;s\\,s\\"w;;',
-    );
-  });
-
-  it('escapes colons', () => {
-    expect(buildWifiQrPayload('a:b', 'c:d')).toBe('WIFI:S:a\\:b;T:WPA;P:c\\:d;;');
-  });
-
-  it('emits an open network without P: when the password is empty', () => {
-    expect(buildWifiQrPayload('Open;Net', '')).toBe('WIFI:S:Open\\;Net;T:nopass;;');
+  it('emits an open network without P: (explicit or empty password)', () => {
+    expect(buildWifiQrPayload('Open;Net', '')).toBe('WIFI:T:nopass;S:Open\\;Net;;');
+    expect(buildWifiQrPayload('x', 'ignored', 'open')).toBe('WIFI:T:nopass;S:x;;');
   });
 });

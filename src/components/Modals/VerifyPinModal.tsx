@@ -107,7 +107,7 @@ export default function VerifyPinModal({
           </View>
 
           <View className="flex-row justify-between">
-            <TouchableOpacity onPress={onClose} className="flex-1 py-3">
+            <TouchableOpacity accessibilityRole="button" onPress={onClose} className="flex-1 py-3">
               <Text className="text-center text-gray-500 font-semibold">
                 {t('settings.cancel')}
               </Text>

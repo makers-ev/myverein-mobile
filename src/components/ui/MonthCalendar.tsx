@@ -45,16 +45,16 @@ export default function MonthCalendar({ month, onMonthChange, selectedDay, onSel
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3">
       <View className="flex-row items-center justify-between mb-2">
-        <TouchableOpacity onPress={() => shift(-1)} className="p-2" accessibilityLabel={t('ui.prev-month')}>
+        <TouchableOpacity accessibilityRole="button" onPress={() => shift(-1)} className="p-2" accessibilityLabel={t('ui.prev-month')}>
           <ChevronLeft size={20} color={themeColors.foreground} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => onMonthChange(new Date())}>
+        <TouchableOpacity accessibilityRole="button" onPress={() => onMonthChange(new Date())}>
           <Text className="text-foreground dark:text-foreground-dark font-bold text-base">
             {month.toLocaleDateString(language, { month: 'long', year: 'numeric' })}
           </Text>
           <Text className="text-primary dark:text-primary-dark text-xs text-center">{t('ui.today')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => shift(1)} className="p-2" accessibilityLabel={t('ui.next-month')}>
+        <TouchableOpacity accessibilityRole="button" onPress={() => shift(1)} className="p-2" accessibilityLabel={t('ui.next-month')}>
           <ChevronRight size={20} color={themeColors.foreground} />
         </TouchableOpacity>
       </View>
@@ -76,7 +76,7 @@ export default function MonthCalendar({ month, onMonthChange, selectedDay, onSel
             const isToday = key === todayKey;
             const dots = markers[key] ?? [];
             return (
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 key={key}
                 onPress={() => onSelectDay(key, day)}
                 className="flex-1 items-center py-1"

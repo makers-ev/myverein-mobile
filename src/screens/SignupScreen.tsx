@@ -1,30 +1,25 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
-import { Mail, Phone, MapPin, Calendar, Lock } from 'lucide-react-native';
+import { Mail, Lock } from 'lucide-react-native';
+import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import Logo from '@/components/Logo';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 
 // Type declarations for lucide-react-native icons
-const IconCalendar = Calendar as any;
-const IconPhone = Phone as any;
 const IconMail = Mail as any;
-const IconMapPin = MapPin as any;
 const IconLock = Lock as any;
 
 interface SignupFormData {
   firstName?: string;
   lastName?: string;
-  birthDate?: string;
-  phone?: string;
   email?: string;
   password?: string;
-  address?: string;
 }
 
 interface SignupScreenProps {
-  onSubmit?: (formData: SignupFormData) => Promise<{ success: boolean; error?: string }>;
+  onSubmit?: (formData: SignupFormData) => Promise<{ success: boolean; error?: string; code?: string; status?: number }>;
   onNavigateToLogin?: () => void;
 }
 
@@ -34,11 +29,8 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
   const [formData, setFormData] = useState<SignupFormData>({
     firstName: '',
     lastName: '',
-    birthDate: '',
-    phone: '',
     email: '',
     password: '',
-    address: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,11 +49,11 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
     try {
       const result = await onSubmit(formData);
       if (!result.success) {
-        setError(result.error ?? t('alert.general-error-description'));
+        setError(mapApiError(result, t, 'alert.general-error-description'));
       }
     } catch (err) {
       // A network-level failure throws instead of resolving with { error }.
-      setError(err instanceof Error ? err.message : t('alert.general-error-description'));
+      setError(mapApiError(err, t));
     } finally {
       setIsSubmitting(false);
     }
@@ -89,10 +81,13 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
             <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4">
 
               <View className="mb-4">
-                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">First Name</Text>
+                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">{t('signup.first-name')}</Text>
                 <TextInput
                   className="bg-muted dark:bg-muted-dark p-3 rounded-xl text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
-                  placeholder="Your first name"
+                  placeholder={t('signup.first-name.placeholder')}
+                  accessibilityLabel={t('signup.first-name')}
+                  autoComplete="given-name"
+                  textContentType="givenName"
                   placeholderTextColor={themeColors.mutedForeground}
                   value={formData.firstName}
                   onChangeText={(value) => handleInputChange('firstName', value)}
@@ -100,28 +95,17 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
               </View>
 
               <View className="mb-4">
-                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">Last Name</Text>
+                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">{t('signup.last-name')}</Text>
                 <TextInput
                   className="bg-muted dark:bg-muted-dark p-3 rounded-xl text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
-                  placeholder="Your last name"
+                  placeholder={t('signup.last-name.placeholder')}
+                  accessibilityLabel={t('signup.last-name')}
+                  autoComplete="family-name"
+                  textContentType="familyName"
                   placeholderTextColor={themeColors.mutedForeground}
                   value={formData.lastName}
                   onChangeText={(value) => handleInputChange('lastName', value)}
                 />
-              </View>
-
-              <View>
-                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">Birth Date</Text>
-                <View className="flex-row items-center bg-muted dark:bg-muted-dark p-3 rounded-xl border border-border dark:border-border-dark">
-                  <IconCalendar size={18} color={themeColors.mutedForeground} />
-                  <TextInput
-                    className="flex-1 text-foreground dark:text-foreground-dark"
-                    placeholder="DD.MM.YYYY"
-                    placeholderTextColor={themeColors.mutedForeground}
-                    value={formData.birthDate}
-                    onChangeText={(value) => handleInputChange('birthDate', value)}
-                  />
-                </View>
               </View>
 
             </View>
@@ -130,28 +114,13 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
           {/* Contact Section */}
           <View className="mb-8">
             <Text className="text-lg font-bold text-foreground dark:text-foreground-dark mb-3 ml-1">
-              Contact
+              {t('signup.contact')}
             </Text>
 
             <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4">
 
               <View className="mb-4">
-                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">Phone</Text>
-                <View className="flex-row items-center bg-muted dark:bg-muted-dark p-3 rounded-xl border border-border dark:border-border-dark">
-                  <IconPhone size={18} color={themeColors.mutedForeground} />
-                  <TextInput
-                    className="flex-1 text-foreground dark:text-foreground-dark"
-                    placeholder="+49 ..."
-                    placeholderTextColor={themeColors.mutedForeground}
-                    keyboardType="phone-pad"
-                    value={formData.phone}
-                    onChangeText={(value) => handleInputChange('phone', value)}
-                  />
-                </View>
-              </View>
-
-              <View className="mb-4">
-                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">Email</Text>
+                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">{t('signup.email')}</Text>
                 <View className="flex-row items-center bg-muted dark:bg-muted-dark p-3 rounded-xl border border-border dark:border-border-dark">
                   <IconMail size={18} color={themeColors.mutedForeground} />
                   <TextInput
@@ -160,6 +129,9 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
                     placeholderTextColor={themeColors.mutedForeground}
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    autoComplete="email"
+                    textContentType="emailAddress"
+                    accessibilityLabel={t('signup.email')}
                     value={formData.email}
                     onChangeText={(value) => handleInputChange('email', value)}
                   />
@@ -175,25 +147,11 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
                     placeholder="********"
                     placeholderTextColor={themeColors.mutedForeground}
                     secureTextEntry
+                    autoComplete="new-password"
+                    textContentType="newPassword"
+                    accessibilityLabel={t('signup.password')}
                     value={formData.password}
                     onChangeText={(value) => handleInputChange('password', value)}
-                  />
-                </View>
-              </View>
-
-              <View>
-                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">Address</Text>
-                <View className="flex-row items-start bg-muted dark:bg-muted-dark p-3 rounded-xl border border-border dark:border-border-dark">
-                  <IconMapPin size={18} color={themeColors.mutedForeground} />
-                  <TextInput
-                    className="flex-1 text-foreground dark:text-foreground-dark pt-0"
-                    placeholder="Street, ZIP, City"
-                    placeholderTextColor={themeColors.mutedForeground}
-                    multiline
-                    numberOfLines={2}
-                    value={formData.address}
-                    onChangeText={(value) => handleInputChange('address', value)}
-                    style={{ textAlignVertical: 'top' }}
                   />
                 </View>
               </View>
@@ -202,10 +160,10 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
           </View>
 
           {error ? (
-            <Text className="text-destructive text-sm text-center mb-2">{error}</Text>
+            <Text className="text-destructive dark:text-destructive-dark text-sm text-center mb-2">{error}</Text>
           ) : null}
 
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className="mt-8 bg-primary dark:bg-primary-dark rounded-xl py-4 active:opacity-80"
             onPress={handleSubmit}
             disabled={isSubmitting}
@@ -217,7 +175,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             className="mt-4"
             onPress={onNavigateToLogin}
           >

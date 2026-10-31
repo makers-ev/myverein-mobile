@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-import appJson from '../../../app.json';
+import appConfig from '../../../app.config';
 import { getStoredLanguage, setStoredLanguage } from './languagePreferenceStorage';
 import { detectSystemLanguage } from './systemLanguage';
 import { supportedLanguageIds, type Language } from './supportedLanguages';
@@ -17,11 +17,18 @@ import KalenderTranslation from './KalenderTranslation';
 import VerfuegbarkeitTranslation from './VerfuegbarkeitTranslation';
 import TreffenTranslation from './TreffenTranslation';
 import StandorteTranslation from './StandorteTranslation';
+import FormsTranslation from './FormsTranslation';
+import MitteilungenTranslation from './MitteilungenTranslation';
+import PrivacyTranslation from './PrivacyTranslation';
+import AssemblyTranslation from './AssemblyTranslation';
+import EventsTranslation from './EventsTranslation';
+import DocumentsTranslation from './DocumentsTranslation';
+import NavigationTranslation from './NavigationTranslation';
 
-// app.json's `expo.name`/`expo.extra` is this app's canonical identity file
+// app.config.ts's `expo.name`/`expo.extra` is this app's canonical identity file
 // (Expo's build tooling already reads `expo.name`/`icon` for the store
 // listing) -- no separate project.config.json here, see ADR-010.
-const { name: appName, extra } = appJson.expo;
+const { name: appName, extra } = appConfig;
 const defaultLanguage = extra.defaultLanguage as Language;
 
 interface LanguageContextType {
@@ -47,6 +54,13 @@ const translationModules = [
   VerfuegbarkeitTranslation,
   TreffenTranslation,
   StandorteTranslation,
+  FormsTranslation,
+  MitteilungenTranslation,
+  PrivacyTranslation,
+  AssemblyTranslation,
+  EventsTranslation,
+  DocumentsTranslation,
+  NavigationTranslation,
 ];
 
 const translations = Object.fromEntries(
@@ -78,7 +92,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     void setStoredLanguage(lang);
   };
 
-  // `{{paramName}}` interpolation. `appName` from app.json's `expo.name` is
+  // `{{paramName}}` interpolation. `appName` from app.config.ts's `expo.name` is
   // always available this way (e.g. LegalTranslation.ts's `{{appName}}`
   // occurrences) -- an explicit `params.appName` (NotificationsScreen.tsx's
   // `useNotificationText` passes the backend's own `paramsJson` here,

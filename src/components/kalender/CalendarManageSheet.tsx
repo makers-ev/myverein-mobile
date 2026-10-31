@@ -5,6 +5,8 @@ import { ChevronDown, ChevronRight, X } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
+import { isLockedDefaultCalendar } from './calendars';
 import { useCalendarAdmin, type Calendar, type CalendarVisibility } from '@/hooks/useCalendars';
 import type { Department } from '@/hooks/useClubInfo';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
@@ -52,7 +54,7 @@ export default function CalendarManageSheet({ visible, onClose, clubId, calendar
       setName('');
       setDepartmentId(null);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      setError(apiErrorMessage(err, t));
     } finally {
       setCreating(false);
     }
@@ -67,6 +69,7 @@ export default function CalendarManageSheet({ visible, onClose, clubId, calendar
           calendar={cal}
           color={colorFor(cal.id)}
           departments={departments}
+          locked={isLockedDefaultCalendar(cal, calendars)}
           expanded={expandedId === cal.id}
           onToggle={() => setExpandedId((prev) => (prev === cal.id ? null : cal.id))}
           onChanged={onChanged}
@@ -90,7 +93,7 @@ export default function CalendarManageSheet({ visible, onClose, clubId, calendar
             <DepartmentPicker departments={departments} value={departmentId} onChange={setDepartmentId} />
           </Field>
         ) : null}
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button"
           className={`bg-primary dark:bg-primary-dark rounded-xl py-3 items-center ${!name.trim() || creating ? 'opacity-50' : ''}`}
           onPress={() => void handleCreate()}
           disabled={!name.trim() || creating}
@@ -133,6 +136,7 @@ function CalendarCard({
   calendar,
   color,
   departments,
+  locked,
   expanded,
   onToggle,
   onChanged,
@@ -142,6 +146,7 @@ function CalendarCard({
   calendar: Calendar;
   color: string;
   departments: Department[];
+  locked: boolean;
   expanded: boolean;
   onToggle: () => void;
   onChanged: () => void;
@@ -163,7 +168,7 @@ function CalendarCard({
       .then(setGrants)
       .catch((err) => {
         setGrants([]);
-        onError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+        onError(apiErrorMessage(err, t));
       });
   }, [expanded, grants, calendar.id, listVisibility, onError, t]);
 
@@ -175,7 +180,7 @@ function CalendarCard({
     try {
       await action();
     } catch (err) {
-      onError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+      onError(apiErrorMessage(err, t));
     } finally {
       busyRef.current = false;
       setBusy(false);
@@ -198,7 +203,7 @@ function CalendarCard({
 
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl mb-3 overflow-hidden">
-      <TouchableOpacity onPress={onToggle} className="flex-row items-center p-3" style={{ gap: 10 }}>
+      <TouchableOpacity accessibilityRole="button" onPress={onToggle} className="flex-row items-center p-3" style={{ gap: 10 }}>
         <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: color }} />
         <View className="flex-1">
           <Text className="text-foreground dark:text-foreground-dark font-bold text-sm">{calendar.name}</Text>
@@ -225,7 +230,7 @@ function CalendarCard({
                 maxLength={200}
                 placeholderTextColor={themeColors.mutedForeground}
               />
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 onPress={() => void run(() => updateCalendar(calendar.id, { name: name.trim() }))}
                 disabled={busy || !name.trim() || name.trim() === calendar.name}
                 className={`bg-primary dark:bg-primary-dark rounded-xl px-3 py-2.5 ${busy || !name.trim() || name.trim() === calendar.name ? 'opacity-50' : ''}`}
@@ -235,7 +240,7 @@ function CalendarCard({
             </View>
           </Field>
 
-          {departments.length > 0 ? (
+          {departments.length > 0 && !locked ? (
             <Field label={t('kalender.manage.department')}>
               <DepartmentPicker
                 departments={departments}
@@ -256,7 +261,7 @@ function CalendarCard({
                 </Text>
                 <View className="flex-row flex-wrap mb-3" style={{ gap: 6 }}>
                   {grants.map((g) => (
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button"
                       key={g.id}
                       disabled={busy}
                       onPress={() =>
@@ -324,9 +329,13 @@ function CalendarCard({
             )}
           </Field>
 
-          <TouchableOpacity onPress={confirmDelete} disabled={busy} className="self-start py-1">
-            <Text className="text-destructive text-sm font-semibold">{t('kalender.manage.delete')}</Text>
-          </TouchableOpacity>
+          {locked ? (
+            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('kalender.manage.default.locked')}</Text>
+          ) : (
+            <TouchableOpacity accessibilityRole="button" onPress={confirmDelete} disabled={busy} className="self-start py-1">
+              <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('kalender.manage.delete')}</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : null}
     </View>

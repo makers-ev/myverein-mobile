@@ -28,7 +28,7 @@ export default function LegalDocumentLayout({ keyPrefix, sectionCount = 4 }: { k
     return (
         <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
             <View className="flex-row items-center px-4 pt-2 pb-4">
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                     onPress={() => navigation.goBack()}
                     accessibilityLabel="Back"
                     className="p-2 -ml-2"

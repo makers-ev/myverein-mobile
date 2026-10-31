@@ -5,12 +5,12 @@ type Translation = Record<Language, Record<string, string>>;
 // 'notification.welcome.*' render the system welcome notification's
 // `translationKey` (see _template_better-auth-backend's databaseHooks.user.create
 // hook) -- `{{appName}}` is filled in by `t()` itself (LanguageContext.tsx),
-// merging its own app.json default with the notification's `paramsJson`.
+// merging its own app.config.ts default with the notification's `paramsJson`.
 // fr/es/pt/it/nl/pl/ru/ja/zh-Hans are first-pass AI translation (ADR-009),
 // pending native-speaker review.
 const NotificationTranslation: Translation = {
   en: {
-    'nav.notifications': 'Notifications',
+    'nav.notifications': 'Platform',
 
     'notification.welcome.title': 'Welcome to {{appName}}!',
     'notification.welcome.body': "Glad you're here. Take a look around and set up your account in Settings.",
@@ -28,7 +28,7 @@ const NotificationTranslation: Translation = {
     'notifications.delete-confirm-message': 'This cannot be undone.',
   },
   de: {
-    'nav.notifications': 'Benachrichtigungen',
+    'nav.notifications': 'Plattform',
 
     'notification.welcome.title': 'Willkommen bei {{appName}}!',
     'notification.welcome.body': 'Schön, dass du da bist. Schau dich in Ruhe um und richte deinen Account in den Einstellungen ein.',
@@ -46,7 +46,7 @@ const NotificationTranslation: Translation = {
     'notifications.delete-confirm-message': 'Das kann nicht rückgängig gemacht werden.',
   },
   fr: {
-    'nav.notifications': 'Notifications',
+    'nav.notifications': 'Platform',
 
     'notification.welcome.title': 'Bienvenue sur {{appName}} !',
     'notification.welcome.body': 'Ravi de vous compter parmi nous. Jetez un œil et configurez votre compte dans les paramètres.',

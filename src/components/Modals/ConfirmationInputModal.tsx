@@ -60,7 +60,7 @@ export default function ConfirmationInputModal({
 
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={handleClose}>
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         className="flex-1 justify-center items-center bg-black bg-opacity-50"
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
         onPress={handleClose}
@@ -87,7 +87,7 @@ export default function ConfirmationInputModal({
           )}
 
           {bottomInfoText && bottomInfoLinkHypertext && (
-            <TouchableOpacity onPress={() => openURL(bottomInfoLinkTarget || '')}>
+            <TouchableOpacity accessibilityRole="button" onPress={() => openURL(bottomInfoLinkTarget || '')}>
               <Text className="text-xs text-center mb-4 text-gray-500">
                 {bottomInfoText}
                 <Text className="text-blue-600 underline">{` ${bottomInfoLinkHypertext}`}</Text>
@@ -96,7 +96,7 @@ export default function ConfirmationInputModal({
           )}
 
           <View className="flex-row justify-around">
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               className={`py-2 px-4 rounded-md ${isValid ? 'bg-red-600' : 'bg-red-200'}`}
               onPress={handleConfirm}
               disabled={!isValid}
@@ -104,7 +104,7 @@ export default function ConfirmationInputModal({
               <Text className="text-white font-bold text-center">{confirmText}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity className="py-2 px-4 rounded-md bg-green-600" onPress={handleClose}>
+            <TouchableOpacity accessibilityRole="button" className="py-2 px-4 rounded-md bg-green-600" onPress={handleClose}>
               <Text className="text-white font-bold text-center">{cancelText}</Text>
             </TouchableOpacity>
           </View>

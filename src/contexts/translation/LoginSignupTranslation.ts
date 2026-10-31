@@ -8,7 +8,7 @@ const LoginSignupTranslation: Translation = {
   en: {
     'login.title': 'Login',
     'login.description': 'Login or sign in to continue',
-    'login.username': 'Username',
+    'login.username': 'Email',
     'login.password': 'Password',
     'login.button': 'Login ➜',
     'login.create.account': 'Create account',
@@ -19,7 +19,7 @@ const LoginSignupTranslation: Translation = {
 
     'signup.title': 'Create Account',
     'signup.description': 'Create your account',
-    'signup.username': 'Username',
+    'signup.username': 'Your name',
     'signup.email': 'Email',
     'signup.password': 'Password',
     'signup.confirm-password': 'Re-enter password',
@@ -55,7 +55,7 @@ const LoginSignupTranslation: Translation = {
   de: {
     'login.title': 'Login',
     'login.description': 'Anmelden oder registrieren zum fortfahren',
-    'login.username': 'Benutzername',
+    'login.username': 'E-Mail',
     'login.password': 'Passwort',
     'login.button': 'Login ➜',
     'login.create.account': 'Account erstellen',
@@ -66,7 +66,7 @@ const LoginSignupTranslation: Translation = {
 
     'signup.title': 'Account erstellen',
     'signup.description': 'Erstelle deinen Account',
-    'signup.username': 'Benutzername',
+    'signup.username': 'Dein Name',
     'signup.email': 'E-Mail',
     'signup.password': 'Passwort',
     'signup.confirm-password': 'Passwort erneut eingeben',
@@ -102,7 +102,7 @@ const LoginSignupTranslation: Translation = {
   fr: {
     'login.title': 'Connexion',
     'login.description': 'Connectez-vous ou inscrivez-vous pour continuer',
-    'login.username': "Nom d'utilisateur",
+    'login.username': 'Email',
     'login.password': 'Mot de passe',
     'login.button': 'Connexion ➜',
     'login.create.account': 'Créer un compte',
@@ -149,7 +149,7 @@ const LoginSignupTranslation: Translation = {
   es: {
     'login.title': 'Iniciar sesión',
     'login.description': 'Inicia sesión o regístrate para continuar',
-    'login.username': 'Usuario',
+    'login.username': 'Correo electrónico',
     'login.password': 'Contraseña',
     'login.button': 'Iniciar sesión ➜',
     'login.create.account': 'Crear cuenta',
@@ -196,7 +196,7 @@ const LoginSignupTranslation: Translation = {
   pt: {
     'login.title': 'Entrar',
     'login.description': 'Entre ou cadastre-se para continuar',
-    'login.username': 'Usuário',
+    'login.username': 'E-mail',
     'login.password': 'Senha',
     'login.button': 'Entrar ➜',
     'login.create.account': 'Criar conta',
@@ -243,7 +243,7 @@ const LoginSignupTranslation: Translation = {
   it: {
     'login.title': 'Accedi',
     'login.description': 'Accedi o registrati per continuare',
-    'login.username': 'Nome utente',
+    'login.username': 'Email',
     'login.password': 'Password',
     'login.button': 'Accedi ➜',
     'login.create.account': 'Crea account',
@@ -290,7 +290,7 @@ const LoginSignupTranslation: Translation = {
   nl: {
     'login.title': 'Inloggen',
     'login.description': 'Log in of registreer om door te gaan',
-    'login.username': 'Gebruikersnaam',
+    'login.username': 'E-mail',
     'login.password': 'Wachtwoord',
     'login.button': 'Inloggen ➜',
     'login.create.account': 'Account aanmaken',
@@ -337,7 +337,7 @@ const LoginSignupTranslation: Translation = {
   pl: {
     'login.title': 'Logowanie',
     'login.description': 'Zaloguj się lub zarejestruj, aby kontynuować',
-    'login.username': 'Nazwa użytkownika',
+    'login.username': 'E-mail',
     'login.password': 'Hasło',
     'login.button': 'Zaloguj ➜',
     'login.create.account': 'Utwórz konto',
@@ -384,7 +384,7 @@ const LoginSignupTranslation: Translation = {
   ru: {
     'login.title': 'Вход',
     'login.description': 'Войдите или зарегистрируйтесь, чтобы продолжить',
-    'login.username': 'Имя пользователя',
+    'login.username': 'Электронная почта',
     'login.password': 'Пароль',
     'login.button': 'Войти ➜',
     'login.create.account': 'Создать аккаунт',
@@ -431,7 +431,7 @@ const LoginSignupTranslation: Translation = {
   ja: {
     'login.title': 'ログイン',
     'login.description': '続けるにはログインまたは登録してください',
-    'login.username': 'ユーザー名',
+    'login.username': 'メールアドレス',
     'login.password': 'パスワード',
     'login.button': 'ログイン ➜',
     'login.create.account': 'アカウントを作成',
@@ -478,7 +478,7 @@ const LoginSignupTranslation: Translation = {
   'zh-Hans': {
     'login.title': '登录',
     'login.description': '登录或注册以继续',
-    'login.username': '用户名',
+    'login.username': '邮箱',
     'login.password': '密码',
     'login.button': '登录 ➜',
     'login.create.account': '创建账户',

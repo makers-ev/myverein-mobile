@@ -1,0 +1,4 @@
+{
+  "NSPhotoLibraryUsageDescription": "MyVerein braucht Zugriff auf deine Fotos, damit du ein Profilfoto auswählen kannst. Ebenso für Fotos bei Schadensmeldungen, im Mitgliedsantrag (Profilfoto, angehängte Fotos) und für Nachweise bei der Vereinsgründung.",
+  "NSCameraUsageDescription": "MyVerein braucht Zugriff auf die Kamera, damit du ein Foto für dein Profil oder einen Mitgliedsantrag aufnehmen und QR-Codes von Mitgliedsausweisen scannen kannst."
+}

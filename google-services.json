@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "761169164667",
+    "project_id": "myverein-6ec46",
+    "storage_bucket": "myverein-6ec46.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:761169164667:android:42912579abb310f1b725de",
+        "android_client_info": {
+          "package_name": "com.myverein.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxfMPJbJ9I1_8LMHL-w-NeV2hnYkdSwpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

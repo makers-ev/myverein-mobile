@@ -5,6 +5,8 @@ import { Pencil, Plus } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrorMessage';
+import DocsLink from '@/components/ui/DocsLink';
 
 export function SectionCard({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -22,9 +24,9 @@ export type Tone = 'success' | 'warning' | 'destructive' | 'primary' | 'muted';
 
 // Full literal class names so NativeWind's content scan picks them up.
 const TONE_CLASSES: Record<Tone, { bg: string; text: string }> = {
-  success: { bg: 'bg-success/15 dark:bg-success-dark/15', text: 'text-success dark:text-success-dark' },
-  warning: { bg: 'bg-warning/15 dark:bg-warning-dark/15', text: 'text-warning dark:text-warning-dark' },
-  destructive: { bg: 'bg-destructive/15 dark:bg-destructive-dark/15', text: 'text-destructive dark:text-destructive-dark' },
+  success: { bg: 'bg-success/10 dark:bg-success-dark/10', text: 'text-success dark:text-success-dark' },
+  warning: { bg: 'bg-warning/10 dark:bg-warning-dark/10', text: 'text-warning dark:text-warning-dark' },
+  destructive: { bg: 'bg-destructive/10 dark:bg-destructive-dark/10', text: 'text-destructive dark:text-destructive-dark' },
   primary: { bg: 'bg-primary/10 dark:bg-primary-dark/10', text: 'text-primary dark:text-primary-dark' },
   muted: { bg: 'bg-muted dark:bg-muted-dark', text: 'text-muted-foreground dark:text-muted-foreground-dark' },
 };
@@ -60,7 +62,7 @@ export function ChipPicker<T extends string>({
   const chips = options.map((o) => {
     const active = o.value === value;
     return (
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         key={o.value}
         onPress={() => onChange(o.value)}
         className={`px-3 py-1.5 rounded-full border ${
@@ -89,7 +91,7 @@ export function ChipPicker<T extends string>({
 export function IconButton({ kind, onPress, label }: { kind: 'add' | 'edit'; onPress: () => void; label: string }) {
   const themeColors = useThemeColors();
   return kind === 'add' ? (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       accessibilityLabel={label}
       className="w-9 h-9 rounded-full bg-primary dark:bg-primary-dark items-center justify-center"
@@ -97,7 +99,7 @@ export function IconButton({ kind, onPress, label }: { kind: 'add' | 'edit'; onP
       <Plus size={18} color={themeColors.primaryForeground} />
     </TouchableOpacity>
   ) : (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       accessibilityLabel={label}
       hitSlop={8}
@@ -108,11 +110,12 @@ export function IconButton({ kind, onPress, label }: { kind: 'add' | 'edit'; onP
   );
 }
 
-export function EmptyState({ icon, text }: { icon: React.ReactNode; text: string }) {
+export function EmptyState({ icon, text, docsPath }: { icon: React.ReactNode; text: string; docsPath?: string }) {
   return (
     <View className="items-center py-10 px-6 border border-dashed border-border dark:border-border-dark rounded-2xl">
       <View className="w-14 h-14 rounded-full items-center justify-center bg-primary/10 dark:bg-primary-dark/10 mb-3">{icon}</View>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm text-center">{text}</Text>
+      {docsPath ? <DocsLink path={docsPath} /> : null}
     </View>
   );
 }
@@ -148,7 +151,7 @@ export function useSubmit() {
       try {
         await action();
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : t('alert.general-error-description'));
+        setError(apiErrorMessage(err, t));
       } finally {
         setSaving(false);
       }

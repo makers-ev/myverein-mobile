@@ -1,0 +1,64 @@
+import { ApiError } from './api';
+import { imageUploadFailureKey, isNetworkFailure, isUnknownMediaKey, isMinorBirthDate, photoFailureKey } from './memberPhoto';
+import { initialsOf } from '@/components/verein/MemberAvatar';
+
+jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
+
+describe('isMinorBirthDate', () => {
+  const today = new Date(2026, 9, 11); // 2026-10-11
+
+  it('treats unknown or invalid dates as adult', () => {
+    expect(isMinorBirthDate(null, today)).toBe(false);
+    expect(isMinorBirthDate(undefined, today)).toBe(false);
+    expect(isMinorBirthDate('garbage', today)).toBe(false);
+  });
+
+  it('is a minor until the 18th birthday', () => {
+    expect(isMinorBirthDate('2008-10-12', today)).toBe(true);
+    expect(isMinorBirthDate('2008-10-11', today)).toBe(false);
+    expect(isMinorBirthDate('2015-01-01', today)).toBe(true);
+    expect(isMinorBirthDate('1980-05-05', today)).toBe(false);
+  });
+});
+
+describe('initialsOf', () => {
+  it('uses first and last word', () => {
+    expect(initialsOf('Anna Maria Müller')).toBe('AM');
+    expect(initialsOf('  anna ')).toBe('A');
+    expect(initialsOf(null)).toBe('?');
+    expect(initialsOf('')).toBe('?');
+  });
+});
+
+describe('photoFailureKey', () => {
+  it('maps quota before the generic 422', () => {
+    expect(photoFailureKey(new ApiError(422, 'QUOTA_EXCEEDED', 'x'), true)).toBe('api.error.quota');
+    expect(photoFailureKey(new ApiError(422, 'VALIDATION_ERROR', 'x'), true)).toBe('member-photo.error.invalid');
+  });
+  it('explains 403 only for the own photo', () => {
+    expect(photoFailureKey(new ApiError(403, 'FORBIDDEN', 'x'), true)).toBe('member-photo.error.minor');
+    expect(photoFailureKey(new ApiError(403, 'FORBIDDEN', 'x'), false)).toBe('api.error.forbidden');
+  });
+});
+
+describe('imageUploadFailureKey', () => {
+  it('maps invalid uploads, quota and others', () => {
+    expect(imageUploadFailureKey(new ApiError(422, 'VALIDATION_ERROR', 'x'))).toBe('media.error.invalid');
+    expect(imageUploadFailureKey(new ApiError(422, 'QUOTA_EXCEEDED', 'x'))).toBe('api.error.quota');
+    expect(imageUploadFailureKey(new ApiError(413, 'QUOTA_EXCEEDED', 'x'))).toBe('api.error.quota');
+    expect(imageUploadFailureKey(new ApiError(429, 'TOO_MANY_REQUESTS', 'x'))).toBe('api.error.rate-limit');
+  });
+  it('tells the per-user unattached cap from the club quota', () => {
+    expect(imageUploadFailureKey(new ApiError(413, 'QUOTA_EXCEEDED', 'x', { code: 'unattached_cap' }))).toBe('media.error.unattached-cap');
+    expect(imageUploadFailureKey(new ApiError(413, 'QUOTA_EXCEEDED', 'x', { code: 'club_quota' }))).toBe('api.error.quota');
+  });
+});
+
+describe('lost-response detection', () => {
+  it('recognises network failures and unknown media keys', () => {
+    expect(isNetworkFailure(new Error('timeout'))).toBe(true);
+    expect(isNetworkFailure(new ApiError(500, 'X', 'x'))).toBe(false);
+    expect(isUnknownMediaKey(new ApiError(422, 'VALIDATION_ERROR', 'Unknown media key: upload the image'))).toBe(true);
+    expect(isUnknownMediaKey(new ApiError(422, 'VALIDATION_ERROR', 'Invalid'))).toBe(false);
+  });
+});

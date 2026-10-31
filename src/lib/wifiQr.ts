@@ -1,11 +1,21 @@
-// Standard WiFi QR payload: `WIFI:S:<ssid>;T:WPA;P:<password>;;`.
+export type WifiQrSecurity = 'open' | 'wpa' | 'wep' | 'wpa3';
+
 // `;`, `,`, `"`, `:` and `\` are backslash-escaped so they can't terminate a field early.
+// An all-hex value would be read as a raw hex SSID/key by scanners, so it is quoted (same as the backend).
 function escapeWifiField(value: string): string {
-  return value.replace(/([\\;,":])/g, '\\$1');
+  const escaped = value.replace(/([\\;,":])/g, '\\$1');
+  return /^[0-9a-fA-F]+$/.test(value) ? `"${escaped}"` : escaped;
 }
 
-/** Builds a scannable WiFi QR payload; an empty password yields an open (`T:nopass`) network. */
-export function buildWifiQrPayload(ssid: string, password: string): string {
-  if (!password) return `WIFI:S:${escapeWifiField(ssid)};T:nopass;;`;
-  return `WIFI:S:${escapeWifiField(ssid)};T:WPA;P:${escapeWifiField(password)};;`;
+/**
+ * Local fallback for the backend's `qrPayload` (identical format):
+ * `WIFI:T:<WPA|WEP|SAE|nopass>;S:<ssid>;P:<password>;;`. WPA3 is `SAE`; an open network carries no password.
+ * Without an explicit `security` it is derived from the password (empty = open, else WPA).
+ */
+export function buildWifiQrPayload(ssid: string, password: string, security?: WifiQrSecurity): string {
+  const sec = security ?? (password ? 'wpa' : 'open');
+  const s = escapeWifiField(ssid);
+  if (sec === 'open') return `WIFI:T:nopass;S:${s};;`;
+  const type = sec === 'wep' ? 'WEP' : sec === 'wpa3' ? 'SAE' : 'WPA';
+  return `WIFI:T:${type};S:${s};P:${escapeWifiField(password)};;`;
 }
