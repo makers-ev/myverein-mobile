@@ -47,6 +47,9 @@ describe('time tracking helpers', () => {
     expect(timeErrorKey(e(409, 'entry_exists'))).toBe('time.err.exists');
     expect(timeErrorKey(e(403, 'no_rate'))).toBe('time.err.no-rate');
     expect(apiErrorKey(e(403, 'no_rate'))).toBe('time.err.no-rate');
+    expect(timeErrorKey(e(422, 'report_too_large'))).toBe('time.err.report-too-large');
+    expect(apiErrorKey(e(422, 'report_too_large'))).toBe('time.err.report-too-large');
+    expect(timeErrorKey(e(422, 'too_long'))).toBe('time.err.too-long');
     expect(timeErrorKey(e(403))).toBe('time.err.not-allowed');
     expect(timeErrorKey(e(500))).toBe('api.error.server');
   });

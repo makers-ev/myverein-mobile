@@ -100,6 +100,7 @@ const DETAIL_KEYS: Record<string, string> = {
   too_old: 'time.err.too-old',
   invalid_time: 'time.err.invalid',
   no_rate: 'time.err.no-rate',
+  report_too_large: 'time.err.report-too-large',
 };
 
 export function timeErrorKey(err: unknown): string {

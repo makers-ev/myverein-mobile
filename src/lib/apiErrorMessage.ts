@@ -78,6 +78,8 @@ export function apiErrorKey(err: unknown, fallbackKey = 'alert.general-error-des
   const detailsCode = (err.details as { code?: unknown } | undefined)?.code;
   if (detailsCode === 'default_calendar_required') return 'kalender.error.default-required';
   if (detailsCode === 'no_rate') return 'time.err.no-rate';
+  if (detailsCode === 'report_too_large') return 'time.err.report-too-large';
+  if (detailsCode === 'too_long') return 'time.err.too-long';
   const erasure = erasureBlockerKey(err.code);
   if (erasure) return erasure;
   if (CODE_KEYS[err.code]) return CODE_KEYS[err.code]!;
