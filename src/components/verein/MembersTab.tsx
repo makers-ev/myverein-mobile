@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import DocsLink from '@/components/ui/DocsLink';
+import { DOCS_PATHS } from '@/lib/docsUrl';
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View, ScrollView } from 'react-native';
 
 import OfflineNotice from '@/components/ui/OfflineNotice';
@@ -302,6 +304,7 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">
             {filtersActive ? t('verein.members.empty.filtered') : t('verein.members.empty')}
           </Text>
+          {!filtersActive ? <DocsLink path={DOCS_PATHS.members} /> : null}
           {filtersActive ? (
             <TouchableOpacity
               onPress={resetFilters}

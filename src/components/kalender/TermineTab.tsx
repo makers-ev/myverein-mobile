@@ -27,6 +27,8 @@ import TimeSheet from './TimeSheet';
 import { canOnEvent, canTrackTime } from '@/lib/eventRights';
 import EventParticipation from './EventParticipation';
 import { ApiError } from '@/lib/api';
+import DocsLink from '@/components/ui/DocsLink';
+import { DOCS_PATHS } from '@/lib/docsUrl';
 
 interface Props {
   clubId: string;
@@ -334,7 +336,10 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
       {error || loadError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error ?? apiErrorMessage(loadError, t)}</Text> : null}
 
       {!loading && dayEvents.length === 0 ? (
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('termine.day-empty')}</Text>
+        <>
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('termine.day-empty')}</Text>
+          <DocsLink path={DOCS_PATHS.calendar} />
+        </>
       ) : (
         dayEvents.map((event) => (
           <EventRow

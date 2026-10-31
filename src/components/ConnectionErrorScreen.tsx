@@ -3,6 +3,8 @@ import { ActivityIndicator, Linking, Text, TouchableOpacity, View } from 'react-
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
+import DocsLink from '@/components/ui/DocsLink';
+import { DOCS_PATHS } from '@/lib/docsUrl';
 import { withScheme } from '@/lib/withScheme';
 
 export type ConnectionStatus = 'checking' | 'online' | 'offline';
@@ -77,6 +79,9 @@ export default function ConnectionErrorScreen({ status, onRetry }: ConnectionErr
           <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('connection.report-error-link')}</Text>
         </TouchableOpacity>
       ) : null}
+      <View className="mt-3">
+        <DocsLink path={DOCS_PATHS.faq} />
+      </View>
     </View>
   );
 }

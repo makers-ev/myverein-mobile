@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { AlertTriangle, Camera, MapPin, Package, Wrench } from 'lucide-react-native';
+import { DOCS_PATHS } from '@/lib/docsUrl';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -143,7 +144,7 @@ function MaterialList({
       )}
 
       {visible.length === 0 ? (
-        <EmptyState icon={<Package size={26} color={themeColors.primary} />} text={t('material.list.empty')} />
+        <EmptyState icon={<Package size={26} color={themeColors.primary} />} text={t('material.list.empty')} docsPath={DOCS_PATHS.places} />
       ) : (
         visible.map((i) => <ItemCard key={i.id} item={i} locationName={locationName(i.locationId)} onPress={() => onSelect(i.id)} />)
       )}

@@ -4,6 +4,8 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { navigate } from '@/navigation/navigationRef';
 import { SETUP_STEPS, setupStepTarget, type TodaySetup } from '@/lib/today';
+import DocsLink from '@/components/ui/DocsLink';
+import { DOCS_PATHS } from '@/lib/docsUrl';
 import BentoTile from '@/components/ui/BentoTile';
 
 /**
@@ -45,6 +47,7 @@ export default function SetupChecklist({ setup }: { setup: TodaySetup }) {
           </TouchableOpacity>
         );
       })}
+      <DocsLink path={DOCS_PATHS.setup} />
     </BentoTile>
   );
 }
