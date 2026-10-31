@@ -1,7 +1,8 @@
 jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://test' }));
 
 import { ApiError } from './api';
-import { canDeleteEntry, elapsedMinutes, formatDuration, monthBounds, timeErrorKey, totalMinutes } from './timeTracking';
+import { apiErrorKey } from './apiErrorMessage';
+import { canDeleteEntry, elapsedMinutes, formatDuration, monthBounds, shiftMonth, timeErrorKey, totalMinutes } from './timeTracking';
 
 describe('time tracking helpers', () => {
   it('formats durations as h:mm', () => {
@@ -44,7 +45,14 @@ describe('time tracking helpers', () => {
     expect(timeErrorKey(e(409, 'already_running'))).toBe('time.err.running');
     expect(timeErrorKey(e(409, 'none_running'))).toBe('time.err.none-running');
     expect(timeErrorKey(e(409, 'entry_exists'))).toBe('time.err.exists');
+    expect(timeErrorKey(e(403, 'no_rate'))).toBe('time.err.no-rate');
+    expect(apiErrorKey(e(403, 'no_rate'))).toBe('time.err.no-rate');
     expect(timeErrorKey(e(403))).toBe('time.err.not-allowed');
     expect(timeErrorKey(e(500))).toBe('api.error.server');
+  });
+
+  it('shifts months across year ends', () => {
+    expect(shiftMonth(new Date(2026, 0, 15), -1)).toEqual(new Date(2025, 11, 1));
+    expect(shiftMonth(new Date(2026, 11, 3), 1)).toEqual(new Date(2027, 0, 1));
   });
 });

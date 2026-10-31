@@ -77,6 +77,7 @@ export function apiErrorKey(err: unknown, fallbackKey = 'alert.general-error-des
   // Machine-readable conflicts carry `details.code`; it wins over the generic status text.
   const detailsCode = (err.details as { code?: unknown } | undefined)?.code;
   if (detailsCode === 'default_calendar_required') return 'kalender.error.default-required';
+  if (detailsCode === 'no_rate') return 'time.err.no-rate';
   const erasure = erasureBlockerKey(err.code);
   if (erasure) return erasure;
   if (CODE_KEYS[err.code]) return CODE_KEYS[err.code]!;

@@ -1,4 +1,4 @@
-import { canOnEvent, canTrackTime, inEventScope } from './eventRights';
+import { canOnEvent, canSeeTeamHours, canTrackTime, inEventScope } from './eventRights';
 
 const role = (roleType: string, departmentId: string | null = null, termEndsAt: string | null = null) => ({ id: 'r', roleType, departmentId, termEndsAt });
 const NOW = new Date('2026-06-01T10:00:00Z');
@@ -53,5 +53,22 @@ describe('canTrackTime', () => {
     expect(canTrackTime({ roles: [role('trainer', 'd1')], permissions: [] }, NOW)).toBe(true);
     expect(canTrackTime({ roles: [], permissions: ['time:write'] }, NOW)).toBe(true);
     expect(canTrackTime({ roles: [role('trainer', 'd1', '2026-01-01')], permissions: [] }, NOW)).toBe(false);
+  });
+});
+
+describe('canTrackTime with canTrack from the server', () => {
+  it('follows canTrack when delivered', () => {
+    expect(canTrackTime({ roles: [role('mitglied')], permissions: [], canTrack: true }, NOW)).toBe(true);
+    expect(canTrackTime({ roles: [role('trainer', 'd1')], permissions: ['time:write'], canTrack: false }, NOW)).toBe(false);
+    expect(canTrackTime({ roles: [], permissions: [], canTrack: false }, NOW)).toBe(false);
+  });
+});
+
+describe('canSeeTeamHours', () => {
+  it('needs time:write or time:read_rates', () => {
+    expect(canSeeTeamHours(null)).toBe(false);
+    expect(canSeeTeamHours({ permissions: [] })).toBe(false);
+    expect(canSeeTeamHours({ permissions: ['time:write'] })).toBe(true);
+    expect(canSeeTeamHours({ permissions: ['time:read_rates'] })).toBe(true);
   });
 });

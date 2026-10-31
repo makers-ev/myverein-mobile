@@ -24,7 +24,9 @@ import AttendanceSheet from './AttendanceSheet';
 import HelpersSheet from './HelpersSheet';
 import RidesSheet from './RidesSheet';
 import TimeSheet from './TimeSheet';
-import { canOnEvent, canTrackTime } from '@/lib/eventRights';
+import MyHoursSheet from './MyHoursSheet';
+import TeamHoursSheet from './TeamHoursSheet';
+import { canOnEvent, canSeeTeamHours, canTrackTime } from '@/lib/eventRights';
 import EventParticipation from './EventParticipation';
 import { ApiError } from '@/lib/api';
 import DocsLink from '@/components/ui/DocsLink';
@@ -141,6 +143,10 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
   const [feedsOpen, setFeedsOpen] = useState(false);
   const [timeOpen, setTimeOpen] = useState(false);
   const trackTime = canTrackTime(membership);
+  const [myHoursOpen, setMyHoursOpen] = useState(false);
+  const [teamHoursOpen, setTeamHoursOpen] = useState(false);
+  const myHours = trackTime || membership?.hasRate === true;
+  const teamHours = canSeeTeamHours(membership);
   // The event fetched for a tapped push: shown even when it is not in the loaded month list.
   const [fetchedEvent, setFetchedEvent] = useState<CalendarEvent | null>(null);
   // Attendance / helper sheets replace the event sheet (no modal-to-modal stacking) and bring it back when closed.
@@ -324,6 +330,30 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         </TouchableOpacity>
       ) : null}
 
+      {myHours ? (
+        <TouchableOpacity
+          onPress={() => setMyHoursOpen(true)}
+          accessibilityRole="button"
+          className="flex-row items-center justify-center border border-border dark:border-border-dark rounded-xl mb-3"
+          style={{ gap: 6, minHeight: 44 }}
+        >
+          <Timer size={16} color={themeColors.foreground} />
+          <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('time.my.open')}</Text>
+        </TouchableOpacity>
+      ) : null}
+
+      {teamHours ? (
+        <TouchableOpacity
+          onPress={() => setTeamHoursOpen(true)}
+          accessibilityRole="button"
+          className="flex-row items-center justify-center border border-border dark:border-border-dark rounded-xl mb-3"
+          style={{ gap: 6, minHeight: 44 }}
+        >
+          <Timer size={16} color={themeColors.foreground} />
+          <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('time.team.open')}</Text>
+        </TouchableOpacity>
+      ) : null}
+
       <MonthCalendar month={month} onMonthChange={handleMonthChange} selectedDay={selectedDay} onSelectDay={handleSelectDay} markers={markers} />
 
       <View className="flex-row items-center justify-between mt-4 mb-2">
@@ -386,6 +416,8 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
       />
 
       {trackTime ? <TimeSheet visible={timeOpen} onClose={() => setTimeOpen(false)} clubId={clubId} /> : null}
+      {myHours ? <MyHoursSheet visible={myHoursOpen} onClose={() => setMyHoursOpen(false)} clubId={clubId} /> : null}
+      {teamHours ? <TeamHoursSheet visible={teamHoursOpen} onClose={() => setTeamHoursOpen(false)} clubId={clubId} /> : null}
       {sub?.kind === 'time' ? <TimeSheet visible onClose={closeSub} clubId={clubId} eventId={sub.event.id} eventTitle={sub.event.title} /> : null}
       {sub?.kind === 'rides' ? <RidesSheet visible onClose={closeSub} clubId={clubId} event={sub.event} /> : null}
       {sub?.kind === 'helpers' ? <HelpersSheet visible onClose={closeSub} clubId={clubId} event={sub.event} /> : null}
