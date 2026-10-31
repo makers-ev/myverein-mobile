@@ -52,6 +52,33 @@ export function monthBounds(now: Date): { from: string; to: string } {
   return { from: dayKey(new Date(now.getFullYear(), now.getMonth(), 1)), to: dayKey(new Date(now.getFullYear(), now.getMonth() + 1, 0)) };
 }
 
+/** First day of the month `delta` months away from `base` (local time). */
+export function shiftMonth(base: Date, delta: number): Date {
+  return new Date(base.getFullYear(), base.getMonth() + delta, 1);
+}
+
+/** One person of `GET /time-report` (confirmed entries only). `amountCents` is `null`/absent without `time:read_rates`. */
+export interface TeamHoursPerson {
+  clubMemberId: string;
+  displayName: string;
+  entries: number;
+  minutes: number;
+  hours: number;
+  amountCents?: number | null;
+  rateMissing?: boolean;
+}
+
+export interface TeamHoursReport {
+  includesRates?: boolean;
+  people: TeamHoursPerson[];
+  totals: { minutes: number; hours: number; amountCents?: number | null };
+}
+
+/** Cents as a localised EUR amount. */
+export function formatEuro(cents: number, language: string): string {
+  return (cents / 100).toLocaleString(language, { style: 'currency', currency: 'EUR' });
+}
+
 export function totalMinutes(entries: readonly Pick<TimeEntry, 'minutes' | 'status'>[]): number {
   return entries.reduce((sum, e) => (e.status === 'abgelehnt' ? sum : sum + (e.minutes ?? 0)), 0);
 }
@@ -72,6 +99,8 @@ const DETAIL_KEYS: Record<string, string> = {
   too_long: 'time.err.too-long',
   too_old: 'time.err.too-old',
   invalid_time: 'time.err.invalid',
+  no_rate: 'time.err.no-rate',
+  report_too_large: 'time.err.report-too-large',
 };
 
 export function timeErrorKey(err: unknown): string {

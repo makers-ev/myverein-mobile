@@ -5,7 +5,7 @@ import { monthBounds, type TimeEntry, type TimeSuggestion } from '@/lib/timeTrac
 import { useScopedResource } from './useScopedResource';
 
 /**
- * Own time stamp (`/time-entries*`, Wave 12 P2, trainers / Abteilungsleitung / `time:write` only -- others get 403). Report
+ * Own time stamp (`/time-entries*`, Wave 12 P2, only for members with `canTrack` (an applicable hourly rate, trainer, Abteilungsleitung, `time:write`); others get 403 `no_rate`). Report
  * only: no payout state. The running entry, this month's own entries and the proposals from attendance lists are loaded
  * while `enabled` (the sheet is open); every action re-reads all three. Nothing is persisted on the device.
  */

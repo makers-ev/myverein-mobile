@@ -81,6 +81,10 @@ export interface ClubMember {
   // Only on GET /club-members/me: the caller's ClubPermission list and own club_members.id.
   permissions?: string[];
   clubMemberId?: string;
+  /** Only on GET /club-members/me: may stamp / enter time (an applicable hourly rate today, or trainer / Abteilungsleitung / time:write). */
+  canTrack?: boolean;
+  /** Only on GET /club-members/me: an hourly rate applies today (the rate itself is never delivered here). */
+  hasRate?: boolean;
 }
 
 interface MemberPage {

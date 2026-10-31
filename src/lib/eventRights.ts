@@ -52,9 +52,19 @@ export function canOnEvent(
   return !!member?.permissions?.includes(permission) && inEventScope(member, permission, calendarDepartmentId, now);
 }
 
-/** Time tracking is offered to trainers, Abteilungsleitung and `time:write` holders only (others get 403). */
-export function canTrackTime(member: Pick<ClubMember, 'roles' | 'permissions'> | null | undefined, now = new Date()): boolean {
+/**
+ * Time tracking (stamp, manual entry, from-event) is offered when the server says `canTrack` on `/club-members/me`
+ * (club member with an applicable hourly rate, trainer, Abteilungsleitung or `time:write`). Deny by default: a missing
+ * membership never offers it. Only an older backend that does not deliver the field yet falls back to the former role rule.
+ */
+export function canTrackTime(member: Pick<ClubMember, 'roles' | 'permissions' | 'canTrack'> | null | undefined, now = new Date()): boolean {
   if (!member) return false;
+  if (typeof member.canTrack === 'boolean') return member.canTrack;
   if (member.permissions?.includes('time:write')) return true;
   return effectiveRoles(member, now).some((r) => DEPARTMENT_ROLES.includes(r.roleType));
+}
+
+/** The team overview (`GET /time-report`) is offered to `time:write` and `time:read_rates` holders; the server scopes it. */
+export function canSeeTeamHours(member: Pick<ClubMember, 'permissions'> | null | undefined): boolean {
+  return !!member?.permissions?.some((p) => p === 'time:write' || p === 'time:read_rates');
 }
