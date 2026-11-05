@@ -37,7 +37,7 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
   return (
     <KeyboardAwareScreen
       className="bg-muted dark:bg-muted-dark"
-      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 25 }}
+      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
     >
         <View className="items-center mb-6">
           <Logo />

@@ -37,7 +37,7 @@ export default function EmailVerificationScreen({ email, onResend, onBackToLogin
 
   return (
     <SafeAreaView className="flex-1 bg-muted dark:bg-muted-dark">
-      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 25 }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }} keyboardShouldPersistTaps="handled">
         <Text className="text-2xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
           {t('email-verification.title')}
         </Text>

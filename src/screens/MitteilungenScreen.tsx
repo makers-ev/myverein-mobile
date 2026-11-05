@@ -27,27 +27,27 @@ function MessageCard({ message, onPress }: { message: InboxMessage; onPress: () 
       accessibilityRole="button"
       accessibilityLabel={`${unread ? `${t('mitteilungen.unread')}: ` : ''}${message.urgent ? `${t('mitteilungen.urgent')}: ` : ''}${message.title}`}
       className={`flex-row bg-card dark:bg-card-dark border rounded-2xl mb-3 overflow-hidden ${
-        message.urgent ? 'border-destructive' : 'border-border dark:border-border-dark'
+        message.urgent ? 'border-destructive/60' : 'border-border dark:border-border-dark'
       }`}
     >
       <View style={{ width: 4, backgroundColor: unread ? themeColors.primary : 'transparent' }} />
       <View className="flex-1 p-3">
         <View className="flex-row items-center flex-wrap" style={{ gap: 6 }}>
           {message.urgent ? (
-            <View className="flex-row items-center bg-destructive px-2 py-0.5 rounded-full" style={{ gap: 4 }}>
-              <AlertTriangle size={12} color="#ffffff" />
-              <Text className="text-xs font-semibold text-white">{t('mitteilungen.urgent')}</Text>
+            <View className="flex-row items-center bg-destructive/10 dark:bg-destructive-dark/10 px-2 py-1 rounded-md" style={{ gap: 4 }}>
+              <AlertTriangle size={12} strokeWidth={1.75} color={themeColors.destructive} />
+              <Text className="text-xs font-medium text-destructive dark:text-destructive-dark">{t('mitteilungen.urgent')}</Text>
             </View>
           ) : null}
           {message.pinned ? (
-            <View className="flex-row items-center bg-muted dark:bg-muted-dark px-2 py-0.5 rounded-full" style={{ gap: 4 }}>
-              <Pin size={12} color={themeColors.mutedForeground} />
-              <Text className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground-dark">{t('mitteilungen.pinned')}</Text>
+            <View className="flex-row items-center bg-muted dark:bg-muted-dark px-2 py-1 rounded-md" style={{ gap: 4 }}>
+              <Pin size={12} strokeWidth={1.75} color={themeColors.mutedForeground} />
+              <Text className="text-xs font-medium text-muted-foreground dark:text-muted-foreground-dark">{t('mitteilungen.pinned')}</Text>
             </View>
           ) : null}
           {unread ? (
-            <View className="bg-primary dark:bg-primary-dark px-2 py-0.5 rounded-full">
-              <Text className="text-xs font-semibold text-primary-foreground dark:text-primary-foreground-dark">{t('mitteilungen.unread')}</Text>
+            <View className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-1 rounded-md">
+              <Text className="text-xs font-medium text-primary dark:text-primary-dark">{t('mitteilungen.unread')}</Text>
             </View>
           ) : null}
         </View>
@@ -55,7 +55,7 @@ function MessageCard({ message, onPress }: { message: InboxMessage; onPress: () 
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mt-1" numberOfLines={2}>
           {message.body}
         </Text>
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-right mt-1.5" style={{ fontSize: 11 }}>
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-right mt-1.5" style={{ fontSize: 12 }}>
           {[message.authorName, message.sentAt ? new Date(message.sentAt).toLocaleDateString(language) : null].filter(Boolean).join(' - ')}
         </Text>
       </View>
@@ -193,13 +193,13 @@ export default function MitteilungenScreen() {
           <View>
             <View className="flex-row items-center flex-wrap mb-3" style={{ gap: 6 }}>
               {open.urgent ? (
-                <View className="bg-destructive px-2 py-0.5 rounded-full">
+                <View className="bg-destructive px-2 py-1 rounded-md">
                   <Text className="text-xs font-semibold text-white">{t('mitteilungen.urgent')}</Text>
                 </View>
               ) : null}
               {open.pinned ? (
-                <View className="bg-muted dark:bg-muted-dark px-2 py-0.5 rounded-full">
-                  <Text className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground-dark">{t('mitteilungen.pinned')}</Text>
+                <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
+                  <Text className="text-xs font-medium text-muted-foreground dark:text-muted-foreground-dark">{t('mitteilungen.pinned')}</Text>
                 </View>
               ) : null}
             </View>

@@ -398,6 +398,7 @@ Shared building blocks (Wave 14 DS1). The names and props match the website's `s
 | `ui/TabChips` | `tabs`, `active`, `onChange` | In-screen tab switcher (Kalender, Standorte, Verein): `tablist`, 44pt chips |
 | `ui/SectionLabel` | children | Heading above a group of rows or cards: 13pt medium, muted, sentence case, 24pt above / 8pt below (Mehr, Suche) |
 | `ui/DateBlock` | `iso`, `language` | Calendar leaf (month over day number), decorative: next event on Heute |
+| `ui/PressScale` | `Pressable` props, `scale?` | The one press feedback (2% scale while pressed), used by `Button`, `ListRow`, `BentoTile` and the tab bar; takes a plain `style` so NativeWind classes keep working |
 | `ui/OfflineNotice` | `savedAt` | "You are offline, copy from ..." line above a read-only offline copy |
 | `ui/DocsLink` | `path`, `labelKey?` | Contextual "Anleitung ansehen" link (role link, 44pt) to a docs page: Heute setup checklist (`verein-aufsetzen`), empty Kalender day / members list / Orte / Material (`handbuch/...`), `OfflineNotice` and `ConnectionErrorScreen` (`faq-und-fehlerbehebung`) |
 | `ui/BentoTile` | `onPress?`, `emphasis?`, `minHeight?`, `accessibilityLabel?` | Card on the Heute and Mehr screens; pressable tiles are 44pt+ buttons |

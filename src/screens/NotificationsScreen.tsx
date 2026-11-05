@@ -105,7 +105,7 @@ export default function NotificationsScreen() {
             <TouchableOpacity accessibilityRole="button"
               key={value}
               onPress={() => setTab(value)}
-              className={`px-4 py-2 rounded-full ${
+              className={`px-4 py-2 rounded-[10px] ${
                 tab === value ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'
               }`}
             >

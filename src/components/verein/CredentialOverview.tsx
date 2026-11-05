@@ -29,7 +29,7 @@ function Chip({ label, selected, disabled, onPress, locked }: { label: string; s
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      className={`px-4 rounded-full justify-center flex-row items-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'} ${disabled ? 'opacity-40' : ''}`}
+      className={`px-4 rounded-[10px] justify-center flex-row items-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'} ${disabled ? 'opacity-40' : ''}`}
       style={{ minHeight: 44, gap: 5 }}
       accessibilityRole="button"
       accessibilityState={{ selected, disabled }}

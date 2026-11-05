@@ -102,7 +102,7 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
   return (
     <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
-      className={`px-3 py-1.5 rounded-full ${active ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark'}`}
+      className={`px-3 py-1.5 rounded-[10px] ${active ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark'}`}
     >
       <Text
         className={`text-xs font-semibold ${active ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}
@@ -294,7 +294,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
   return (
     <KeyboardAwareScreen
       className="bg-muted dark:bg-muted-dark"
-      contentContainerStyle={{ flexGrow: 1, padding: 25, paddingBottom: 60 }}
+      contentContainerStyle={{ flexGrow: 1, padding: 24, paddingBottom: 64 }}
     >
       <Text className="text-3xl font-semibold text-center mb-1 text-foreground dark:text-foreground-dark">
         {t('create-club.title')}
@@ -574,7 +574,7 @@ function StatusView({
   return (
     <KeyboardAwareScreen
       className="bg-muted dark:bg-muted-dark"
-      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 25 }}
+      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
     >
       <View className="bg-card dark:bg-card-dark p-6 rounded-2xl">
         {notice ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{notice}</Text> : null}

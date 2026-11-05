@@ -82,7 +82,7 @@ export default function WardEventsSection({ ward, events }: { ward: Ward; events
                       </Text>
                     </View>
                     {cancelled ? (
-                      <View className="bg-destructive rounded-full px-2 py-0.5">
+                      <View className="bg-destructive rounded-md px-2 py-0.5">
                         <Text className="text-xs font-semibold text-white">{t('heute.events.cancelled')}</Text>
                       </View>
                     ) : null}

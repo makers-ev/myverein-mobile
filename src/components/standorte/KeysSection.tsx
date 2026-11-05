@@ -283,7 +283,7 @@ export default function KeysSection({
                   accessibilityRole="button"
                   hitSlop={8}
                   accessibilityLabel={t('standorte.keys.return')}
-                  className="flex-row items-center px-3 py-1.5 rounded-full border border-border dark:border-border-dark"
+                  className="flex-row items-center px-3 py-1.5 rounded-[10px] border border-border dark:border-border-dark"
                   style={{ gap: 4 }}
                 >
                   <Undo2 size={14} color={themeColors.foreground} />

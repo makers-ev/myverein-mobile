@@ -121,7 +121,7 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
             style={{ minHeight: 48, gap: 8 }}
           >
             <Text className="flex-1 text-foreground dark:text-foreground-dark text-sm font-semibold">{c.name}</Text>
-            <View className={`rounded-full px-2 py-0.5 ${c.open || c.outdated ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}>
+            <View className={`rounded-md px-2 py-0.5 ${c.open || c.outdated ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}>
               <Text className={`text-xs font-semibold ${c.open || c.outdated ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}>
                 {t(consentBadgeKey(c))}
               </Text>

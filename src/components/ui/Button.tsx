@@ -1,5 +1,7 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, Text } from 'react-native';
+import { ActivityIndicator, Text } from 'react-native';
+
+import PressScale from './PressScale';
 
 interface Props {
   label: string;
@@ -23,18 +25,18 @@ export default function Button({ label, onPress, variant = 'primary', disabled, 
   const s = STYLES[variant];
   const blocked = disabled || loading;
   return (
-    <Pressable
+    <PressScale
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: !!blocked, busy: !!loading }}
       disabled={blocked}
       onPress={onPress}
-      style={({ pressed }) => ({ minHeight: 44, opacity: blocked ? 0.5 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] })}
+      style={{ minHeight: 44, opacity: blocked ? 0.5 : 1 }}
       className={`rounded-[10px] px-5 justify-center items-center flex-row ${s.box}`}
     >
       {loading ? <ActivityIndicator size="small" className="mr-2" /> : null}
       <Text className={`font-semibold text-[15px] ${s.text}`}>{label}</Text>
-    </Pressable>
+    </PressScale>
   );
 }

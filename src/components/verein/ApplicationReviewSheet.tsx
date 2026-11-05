@@ -310,18 +310,18 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
             <View>
               <View className="flex-row flex-wrap mt-2" style={{ gap: 8 }}>
                 {child ? (
-                  <View className="flex-row items-center rounded-full bg-primary/10 dark:bg-primary-dark/10 px-2.5 py-0.5" style={{ gap: 4 }}>
+                  <View className="flex-row items-center rounded-md bg-primary/10 dark:bg-primary-dark/10 px-2.5 py-0.5" style={{ gap: 4 }}>
                     <Baby size={14} color={themeColors.primary} />
                     <Text className="text-xs font-semibold text-primary dark:text-primary-dark">{t('forms.review.badge.child')}</Text>
                   </View>
                 ) : null}
                 {review.application.legacy ? (
-                  <View className="rounded-full bg-muted dark:bg-muted-dark px-2.5 py-0.5">
+                  <View className="rounded-md bg-muted dark:bg-muted-dark px-2.5 py-0.5">
                     <Text className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground-dark">{t('forms.review.badge.legacy')}</Text>
                   </View>
                 ) : null}
                 {review.application.status !== 'pending' ? (
-                  <View className="rounded-full bg-muted dark:bg-muted-dark px-2.5 py-0.5">
+                  <View className="rounded-md bg-muted dark:bg-muted-dark px-2.5 py-0.5">
                     <Text className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground-dark">
                       {t(`forms.review.status.${review.application.status}`)}
                     </Text>

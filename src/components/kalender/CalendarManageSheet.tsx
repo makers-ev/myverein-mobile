@@ -212,7 +212,7 @@ function CalendarCard({
           ) : null}
         </View>
         {calendar.isDefault ? (
-          <View className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-0.5 rounded-full">
+          <View className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-1 rounded-md">
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('kalender.manage.default')}</Text>
           </View>
         ) : null}

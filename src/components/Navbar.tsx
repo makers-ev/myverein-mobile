@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CalendarCheck, Calendar, Ellipsis, Megaphone, Users, type LucideIcon } from 'lucide-react-native';
 
+import PressScale from '@/components/ui/PressScale';
 import { useAuth } from '@/auth/AuthProvider';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -83,6 +84,14 @@ export default function Navbar() {
     );
 }
 
+/** Height of the docked bar above the bottom safe-area inset (8 padding + 48 item + 1 hairline), so modals can clear it. */
+export const TAB_BAR_HEIGHT = 57;
+
+/** Space a bottom-anchored card has to leave free so it does not cover the tab bar (bar + safe area + 12 gap). */
+export function tabBarClearance(bottomInset: number): number {
+    return TAB_BAR_HEIGHT + Math.max(bottomInset, 8) + 12;
+}
+
 export interface TabBarItem {
     key: string;
     label: string;
@@ -122,14 +131,15 @@ export function TabBar({ items, activeKey, showTitles, bottomInset, iconColors, 
                     const isActive = activeKey === item.key;
                     const { Icon, badge } = item;
                     return (
-                        <Pressable
+                        <PressScale
                             key={item.key}
                             onPress={() => onSelect(item.key)}
                             accessibilityRole="tab"
                             accessibilityLabel={item.accessibilityLabel}
                             accessibilityState={{ selected: isActive }}
                             className="flex-1 items-center justify-center"
-                            style={({ pressed }) => ({ minHeight: 48, opacity: pressed ? 0.7 : 1 })}
+                            style={{ minHeight: 48 }}
+                            scale={0.96}
                         >
                             <View
                                 className={`items-center justify-center rounded-[10px] ${isActive ? 'bg-muted dark:bg-muted-dark' : ''}`}
@@ -137,7 +147,7 @@ export function TabBar({ items, activeKey, showTitles, bottomInset, iconColors, 
                             >
                                 <Icon size={20} color={isActive ? iconColors.active : iconColors.inactive} strokeWidth={1.75} />
                                 {badge > 0 && (
-                                    <View className="absolute right-1 -top-1 min-w-[16px] h-[16px] rounded-full items-center justify-center bg-destructive px-1 border-2 border-card dark:border-card-dark">
+                                    <View className="absolute right-1 -top-1 min-w-[16px] h-[16px] rounded-[10px] items-center justify-center bg-destructive px-1 border-2 border-card dark:border-card-dark">
                                         <Text className="text-[10px] font-semibold text-white">{badge > 9 ? '9+' : badge}</Text>
                                     </View>
                                 )}
@@ -151,7 +161,7 @@ export function TabBar({ items, activeKey, showTitles, bottomInset, iconColors, 
                                     {item.label}
                                 </Text>
                             )}
-                        </Pressable>
+                        </PressScale>
                     );
                 })}
             </View>

@@ -207,7 +207,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
                   <Text className="text-foreground dark:text-foreground-dark text-sm font-medium">
                     {fromDateString(exc.date)?.toLocaleDateString(language, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
                   </Text>
-                  <View className={`px-2 py-0.5 rounded-full ${exc.isAvailable ? 'bg-success/10' : 'bg-destructive/10'}`}>
+                  <View className={`px-2 py-1 rounded-md ${exc.isAvailable ? 'bg-success/10' : 'bg-destructive/10'}`}>
                     <Text className={`text-xs font-semibold ${exc.isAvailable ? 'text-success dark:text-success-dark' : 'text-destructive dark:text-destructive-dark'}`}>
                       {t(exc.isAvailable ? 'verfuegbarkeit.exceptions.available' : 'verfuegbarkeit.exceptions.unavailable')}
                     </Text>

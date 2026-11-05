@@ -68,7 +68,7 @@ export default function MeetingManageSection({ meeting, onUpdate, onDelete }: Pr
               key={s}
               onPress={() => changeStatus(s)}
               disabled={busy !== null}
-              className={`px-3 rounded-full justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'} ${busy === 'status' && !selected ? 'opacity-50' : ''}`}
+              className={`px-3 rounded-[10px] justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'} ${busy === 'status' && !selected ? 'opacity-50' : ''}`}
               style={{ minHeight: 44 }}
               accessibilityRole="button"
               accessibilityState={{ selected, disabled: busy !== null }}

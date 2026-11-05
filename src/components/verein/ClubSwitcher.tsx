@@ -22,7 +22,7 @@ export default function ClubSwitcher({ onBeforeSwitch }: { onBeforeSwitch?: (pro
         accessibilityRole="button"
         accessibilityLabel={`${t('club-switcher.open')}: ${activeClub.clubName ?? t('club-switcher.unnamed')}`}
         onPress={() => setOpen(true)}
-        className="flex-row items-center self-start bg-muted dark:bg-muted-dark rounded-full px-3 py-1.5 min-h-[44px]"
+        className="flex-row items-center self-start bg-muted dark:bg-muted-dark rounded-[10px] px-3 py-1.5 min-h-[44px]"
         style={{ gap: 6, maxWidth: '100%' }}
       >
         <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold flex-shrink" numberOfLines={1}>

@@ -1,5 +1,7 @@
 import React, { type ReactNode } from 'react';
-import { Pressable, View, type ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
+
+import PressScale from './PressScale';
 
 interface Props {
   children: ReactNode;
@@ -25,14 +27,14 @@ export default function BentoTile({ children, onPress, accessibilityLabel, minHe
     );
   }
   return (
-    <Pressable
+    <PressScale
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       className={cls}
-      style={({ pressed }) => [{ minHeight, transform: [{ scale: pressed ? 0.98 : 1 }] }, style]}
+      style={[{ minHeight }, style]}
     >
       {children}
-    </Pressable>
+    </PressScale>
   );
 }

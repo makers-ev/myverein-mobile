@@ -58,7 +58,7 @@ export default function TwoFactorScreen({ onVerify, onCancel }: TwoFactorScreenP
   return (
     <KeyboardAwareScreen
       className="bg-muted dark:bg-muted-dark"
-      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 25 }}
+      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
     >
         <Text className="text-2xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
           {t('twofactor.title')}

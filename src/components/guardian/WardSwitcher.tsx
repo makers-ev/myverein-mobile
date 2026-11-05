@@ -42,7 +42,7 @@ export default function WardSwitcher({ wards, selected, onSelect }: Props) {
               </Text>
             ) : null}
             {open ? (
-              <View className="self-start mt-0.5 rounded-full bg-destructive px-1.5">
+              <View className="self-start mt-0.5 rounded-[10px] bg-destructive px-1.5">
                 <Text className="text-[10px] font-semibold text-white">{open}</Text>
               </View>
             ) : null}

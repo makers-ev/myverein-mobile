@@ -130,7 +130,7 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
   return (
     <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
-      className={`px-3 py-1.5 rounded-full border ${
+      className={`px-3 py-1.5 rounded-[10px] border ${
         active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'border-border dark:border-border-dark'
       }`}
     >

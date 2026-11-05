@@ -71,7 +71,7 @@ function StatusButtons({
 
 function Badge({ label, tone = 'muted' }: { label: string; tone?: 'muted' | 'warning' }) {
   return (
-    <View className={`px-2 py-0.5 rounded-full ${tone === 'warning' ? 'bg-warning/15 dark:bg-warning-dark/20' : 'bg-muted dark:bg-muted-dark'}`}>
+    <View className={`px-2 py-1 rounded-md ${tone === 'warning' ? 'bg-warning/15 dark:bg-warning-dark/20' : 'bg-muted dark:bg-muted-dark'}`}>
       <Text
         className={`text-xs font-semibold ${
           tone === 'warning' ? 'text-warning dark:text-warning-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'

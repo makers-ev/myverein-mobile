@@ -18,7 +18,7 @@ function Chip({ label, tone = 'muted', locked }: { label: string; tone?: 'muted'
   const colors = useThemeColors();
   return (
     <View
-      className={`flex-row items-center px-2 py-0.5 rounded-full ${tone === 'primary' ? 'bg-primary/10 dark:bg-primary-dark/10' : 'bg-muted dark:bg-muted-dark'}`}
+      className={`flex-row items-center px-2 py-1 rounded-md ${tone === 'primary' ? 'bg-primary/10 dark:bg-primary-dark/10' : 'bg-muted dark:bg-muted-dark'}`}
       style={{ gap: 4 }}
     >
       {locked ? <Lock size={11} color={colors.mutedForeground} /> : null}

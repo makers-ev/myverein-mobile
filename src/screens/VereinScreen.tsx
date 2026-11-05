@@ -43,7 +43,7 @@ function BoardRow({ member, isLast }: { member: BoardMember; isLast: boolean }) 
   return (
     <View className={`flex-row items-center justify-between py-2 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`}>
       <Text className="text-foreground dark:text-foreground-dark text-sm font-medium">{member.name ?? '—'}</Text>
-      <View className="bg-primary/10 dark:bg-primary-dark/10 px-2.5 py-1 rounded-full">
+      <View className="bg-primary/10 dark:bg-primary-dark/10 px-2.5 py-1 rounded-md">
         <Text className="text-primary dark:text-primary-dark text-xs font-semibold">
           {t(`verein.role.${member.roleType}`)}
         </Text>

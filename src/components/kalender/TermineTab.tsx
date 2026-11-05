@@ -65,7 +65,7 @@ function EventRow({ event, color, rsvp, onPress, onAttendance }: { event: Calend
         <ParticipationLine event={event} />
 
         {event.cancelled ? (
-          <View className="mt-2 self-start bg-destructive px-2 py-0.5 rounded-full">
+          <View className="mt-2 self-start bg-destructive px-2 py-1 rounded-md">
             <Text className="text-xs font-semibold text-white">{t('termine.cancelled')}</Text>
           </View>
         ) : null}
@@ -76,7 +76,7 @@ function EventRow({ event, color, rsvp, onPress, onAttendance }: { event: Calend
         {event.category || event.capacity != null ? (
           <View className="flex-row items-center flex-wrap mt-2" style={{ gap: 6 }}>
             {event.category ? (
-              <View className="bg-muted dark:bg-muted-dark px-2 py-0.5 rounded-full">
+              <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
                 <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{event.category}</Text>
               </View>
             ) : null}

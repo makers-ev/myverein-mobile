@@ -38,12 +38,12 @@ function ApplicationCard({ application, onOpen }: { application: ClubApplication
           ) : null}
         </View>
         {child ? (
-          <View className="flex-row items-center bg-primary/10 dark:bg-primary-dark/10 px-2 py-0.5 rounded-full" style={{ gap: 4 }}>
+          <View className="flex-row items-center bg-primary/10 dark:bg-primary-dark/10 px-2 py-1 rounded-md" style={{ gap: 4 }}>
             <Baby size={12} color={themeColors.primary} />
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('forms.review.badge.child')}</Text>
           </View>
         ) : application.legacy ? (
-          <View className="bg-muted dark:bg-muted-dark px-2 py-0.5 rounded-full">
+          <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{t('forms.review.badge.legacy')}</Text>
           </View>
         ) : null}

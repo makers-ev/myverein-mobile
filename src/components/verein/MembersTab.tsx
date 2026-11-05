@@ -29,7 +29,7 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`px-4 rounded-full justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}
+      className={`px-4 rounded-[10px] justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}
       style={{ minHeight: 44 }}
       accessibilityRole="button"
       accessibilityState={{ selected }}
@@ -68,7 +68,7 @@ function MemberRow({
         <MemberAvatar name={member.name} photoUrl={member.photoUrl} size={40} onExpired={onPhotoExpired} />
         <Text className="flex-1 text-foreground dark:text-foreground-dark font-semibold text-sm">{member.name ?? '—'}</Text>
         {category ? (
-          <View className="bg-muted dark:bg-muted-dark px-2 py-0.5 rounded-full">
+          <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{category}</Text>
           </View>
         ) : null}
@@ -76,12 +76,12 @@ function MemberRow({
       {showStatus || !member.hasAccount ? (
         <View className="flex-row flex-wrap mt-2" style={{ gap: 6 }}>
           {showStatus ? (
-            <View className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-0.5 rounded-full">
+            <View className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-1 rounded-md">
               <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t(`verein.status.${member.effectiveStatus}`)}</Text>
             </View>
           ) : null}
           {showStatus && !member.hasAccount ? (
-            <View className="bg-muted dark:bg-muted-dark px-2 py-0.5 rounded-full">
+            <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{t('verein.members.account.no')}</Text>
             </View>
           ) : null}
@@ -93,7 +93,7 @@ function MemberRow({
       {member.roles.length > 0 ? (
         <View className="flex-row flex-wrap mt-2" style={{ gap: 6 }}>
           {member.roles.map((r) => (
-            <View key={r.id} className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-0.5 rounded-full">
+            <View key={r.id} className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-1 rounded-md">
               <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t(`verein.role.${r.roleType}`)}</Text>
             </View>
           ))}

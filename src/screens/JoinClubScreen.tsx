@@ -182,7 +182,7 @@ export default function JoinClubScreen({ navigation }: Props) {
     return (
       <KeyboardAwareScreen
         className="bg-muted dark:bg-muted-dark"
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 25 }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
       >
         <View className="bg-card dark:bg-card-dark p-6 rounded-2xl items-center" accessibilityLiveRegion="polite">
           <Text className="text-xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
@@ -211,7 +211,7 @@ export default function JoinClubScreen({ navigation }: Props) {
     <KeyboardAwareScreen
       scrollRef={scrollRef}
       className="bg-muted dark:bg-muted-dark"
-      contentContainerStyle={{ flexGrow: 1, padding: 20, paddingBottom: 40, justifyContent: ready ? 'flex-start' : 'center' }}
+      contentContainerStyle={{ flexGrow: 1, padding: 24, paddingBottom: 40, justifyContent: ready ? 'flex-start' : 'center' }}
     >
       <Text className="text-3xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark" accessibilityRole="header">
         {t('join-club.title')}
@@ -382,7 +382,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                             onPress={() => void changeMode(m)}
                             accessibilityRole="radio"
                             accessibilityState={{ checked: active }}
-                            className={`px-4 rounded-full items-center justify-center ${
+                            className={`px-4 rounded-[10px] items-center justify-center ${
                               active ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark'
                             }`}
                             style={{ minHeight: 44 }}

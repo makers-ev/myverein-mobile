@@ -416,7 +416,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
       {event.category || event.capacity != null ? (
         <View className="flex-row items-center flex-wrap" style={{ gap: 8 }}>
           {event.category ? (
-            <View className="bg-muted dark:bg-muted-dark px-2 py-0.5 rounded-full">
+            <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{event.category}</Text>
             </View>
           ) : null}
