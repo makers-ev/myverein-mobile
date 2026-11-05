@@ -9,7 +9,7 @@ import SignedImage from '@/components/ui/SignedImage';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { formatDocumentDate } from '@/lib/documents';
 import { type CardState, canShowQr, effectiveCardState, formatCardStand, localDay } from '@/lib/memberCard';
-import { blend } from '@/theme/contrast';
+import { blend, luminance } from '@/theme/contrast';
 import { useThemeColors } from '@/theme/colors';
 import type { MemberCardView as View_ } from '@/hooks/useMemberCard';
 
@@ -62,9 +62,12 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
   const customBand = !!card.club.primaryColor && HEX.test(card.club.primaryColor);
   const band = customBand ? (card.club.primaryColor as string) : colors.primary;
   const bandText = customBand ? '#FFFFFF' : colors.primaryForeground;
-  // A small tone shift inside the same hue (towards the text colour, so contrast only grows) and a tint for ornaments.
-  const bandEnd = blend(bandText, band, 0.16);
-  const tint = blend(bandText, band, 0.2);
+  // Tone shifts inside the same hue, always AWAY from the text colour so the text contrast never drops below the
+  // band's own: darker for light text, lighter for dark text. `ring` is the decorative line colour (towards the text).
+  const away = luminance(bandText) > luminance(band) ? '#000000' : '#FFFFFF';
+  const bandEnd = blend(away, band, 0.18);
+  const tint = blend(away, band, 0.14);
+  const ring = blend(bandText, band, 0.2);
   const stateColor = state === 'gueltig' ? colors.success : state === 'abgelaufen' ? colors.warning : colors.destructive;
   const StateIcon = state === 'gueltig' ? CheckCircle2 : state === 'abgelaufen' ? AlertTriangle : XCircle;
   const stand = formatCardStand(view.checkedAt);
@@ -87,7 +90,7 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
             </Defs>
             <Rect x="0" y="0" width="100%" height="100%" fill="url(#face)" />
             {[56, 80, 104, 128, 152, 176, 200, 224, 248, 272, 296].map((r) => (
-              <Circle key={r} cx="100%" cy="0" r={r} fill="none" stroke={tint} strokeWidth={1} opacity={0.55} />
+              <Circle key={r} cx="100%" cy="0" r={r} fill="none" stroke={ring} strokeWidth={1} opacity={0.6} />
             ))}
           </Svg>
 
