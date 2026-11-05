@@ -43,8 +43,8 @@ export default function SickNoteCard({ clubId }: { clubId: string }) {
           setOpen(true);
         }}
       >
-        <Text className="text-primary dark:text-primary-dark text-xs font-bold uppercase tracking-wider mb-2">{t('absence.title')}</Text>
-        <Text className="text-foreground dark:text-foreground-dark text-lg font-bold">{t('absence.button')}</Text>
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] font-medium mb-2">{t('absence.title')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark text-lg font-semibold">{t('absence.button')}</Text>
         {notice ? (
           <Text className="text-success dark:text-success-dark text-sm mt-2" accessibilityLiveRegion="polite">
             {notice}

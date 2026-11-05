@@ -47,7 +47,7 @@ export default function FormSheet({
             <View className="w-10 h-1 rounded-full bg-border dark:bg-border-dark" />
           </View>
           <View className="flex-row items-center justify-between px-5 pt-3 pb-2">
-            <Text className="text-foreground dark:text-foreground-dark text-lg font-bold flex-1">{title}</Text>
+            <Text className="text-foreground dark:text-foreground-dark text-lg font-semibold flex-1">{title}</Text>
             {onDelete ? (
               <TouchableOpacity
                 onPress={onDelete}
@@ -89,7 +89,7 @@ export default function FormSheet({
                 {saving ? (
                   <ActivityIndicator color={themeColors.primaryForeground} size="small" />
                 ) : (
-                  <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold">{submitLabel ?? t('ui.save')}</Text>
+                  <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{submitLabel ?? t('ui.save')}</Text>
                 )}
               </TouchableOpacity>
             ) : null}

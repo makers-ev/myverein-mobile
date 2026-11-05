@@ -52,7 +52,7 @@ export default function IntroModal({ visible, onClose }: IntroModalProps) {
           className="bg-card dark:bg-card-dark rounded-3xl px-6 pt-6 pb-6"
           style={{ marginHorizontal: 16, marginBottom: navbarClearance, maxHeight: maxCardHeight }}
         >
-          <Text accessibilityRole="header" className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">
+          <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
             {t('onboarding.intro.title')}
           </Text>
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-4">
@@ -64,7 +64,7 @@ export default function IntroModal({ visible, onClose }: IntroModalProps) {
               <Icon size={22} color={themeColors.primary} />
             </View>
             <View className="flex-1">
-              <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t(`onboarding.intro.${step.key}.title`)}</Text>
+              <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{t(`onboarding.intro.${step.key}.title`)}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm leading-relaxed">{t(`onboarding.intro.${step.key}.text`)}</Text>
             </View>
           </View>

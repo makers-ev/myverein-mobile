@@ -289,7 +289,7 @@ function SelectField({
         <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
           <Pressable className="flex-1" onPress={() => setOpen(false)} accessibilityLabel={t('forms.select.close')} />
           <View className="bg-background dark:bg-background-dark rounded-t-3xl px-5 pt-4 pb-6" style={{ maxHeight: '75%' }}>
-            <Text className="text-foreground dark:text-foreground-dark text-lg font-bold mb-2">{field.label}</Text>
+            <Text className="text-foreground dark:text-foreground-dark text-lg font-semibold mb-2">{field.label}</Text>
             <ScrollView keyboardShouldPersistTaps="handled">
               {options.map((o) => (
                 <OptionRow
@@ -322,7 +322,7 @@ function SelectField({
                 className="flex-1 bg-primary dark:bg-primary-dark rounded-xl py-3 items-center"
                 accessibilityRole="button"
               >
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold">{t('forms.select.close')}</Text>
+                <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('forms.select.close')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -445,7 +445,7 @@ function PrivacyBlock({ text, title }: { text: string; title?: string }) {
     >
       <View className="flex-row items-center" style={{ gap: 8 }}>
         <ShieldCheck size={20} color={themeColors.primary} />
-        <Text className="flex-1 text-sm font-bold text-foreground dark:text-foreground-dark" accessibilityRole="header">
+        <Text className="flex-1 text-sm font-semibold text-foreground dark:text-foreground-dark" accessibilityRole="header">
           {title || t('forms.privacy.title')}
         </Text>
       </View>

@@ -53,7 +53,7 @@ export default function AppLockScreen({ pin, onUnlock }: AppLockScreenProps) {
   return (
     <SafeAreaView className="flex-1 bg-muted dark:bg-muted-dark">
       <View className="flex-1 justify-center items-center p-6">
-        <Text className="text-2xl font-extrabold mb-2 text-foreground dark:text-foreground-dark">
+        <Text className="text-2xl font-semibold mb-2 text-foreground dark:text-foreground-dark">
           {t('app-lock.title')}
         </Text>
         <Text className="text-sm mb-8 text-muted-foreground dark:text-muted-foreground-dark text-center">

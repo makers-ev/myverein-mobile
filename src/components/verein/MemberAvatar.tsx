@@ -66,7 +66,7 @@ export default function MemberAvatar({ name, photoUrl, size = 40, onExpired }: P
           }}
         />
       ) : (
-        <Text className="text-primary dark:text-primary-dark font-bold" style={{ fontSize: size * 0.38 }} importantForAccessibility="no">
+        <Text className="text-primary dark:text-primary-dark font-semibold" style={{ fontSize: size * 0.38 }} importantForAccessibility="no">
           {initialsOf(name)}
         </Text>
       )}

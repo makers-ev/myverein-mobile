@@ -47,7 +47,7 @@ interface Props {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View className="mt-5">
-      <Text className="text-sm font-bold text-foreground dark:text-foreground-dark" accessibilityRole="header">
+      <Text className="text-sm font-semibold text-foreground dark:text-foreground-dark" accessibilityRole="header">
         {title}
       </Text>
       <View className="mt-2">{children}</View>
@@ -226,7 +226,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
             className={`flex-1 bg-destructive rounded-xl items-center justify-center ${busy ? 'opacity-60' : ''}`}
             style={{ minHeight: 48 }}
           >
-            {busy ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold">{t('forms.review.reject.confirm')}</Text>}
+            {busy ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-semibold">{t('forms.review.reject.confirm')}</Text>}
           </TouchableOpacity>
         </View>
       ) : (
@@ -238,7 +238,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
             className={`flex-1 border border-border dark:border-border-dark rounded-xl items-center justify-center ${busy ? 'opacity-60' : ''}`}
             style={{ minHeight: 48 }}
           >
-            <Text className="text-destructive dark:text-destructive-dark font-bold">{t('verein.applications.reject')}</Text>
+            <Text className="text-destructive dark:text-destructive-dark font-semibold">{t('verein.applications.reject')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => void decide('approve')}
@@ -250,7 +250,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
             {busy ? (
               <ActivityIndicator color={themeColors.primaryForeground} />
             ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold">{t('verein.applications.approve')}</Text>
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('verein.applications.approve')}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -270,7 +270,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
     <Modal visible animationType="slide" onRequestClose={busy ? () => undefined : onClose}>
       <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
         <View className="flex-row items-center px-5 pt-3 pb-2" style={{ gap: 8 }}>
-          <Text className="flex-1 text-lg font-bold text-foreground dark:text-foreground-dark" numberOfLines={2} accessibilityRole="header">
+          <Text className="flex-1 text-lg font-semibold text-foreground dark:text-foreground-dark" numberOfLines={2} accessibilityRole="header">
             {t('forms.review.title', { name: subjectName })}
           </Text>
           <TouchableOpacity
@@ -298,7 +298,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
                 className="bg-primary dark:bg-primary-dark rounded-lg px-5 self-start items-center justify-center"
                 style={{ minHeight: 44 }}
               >
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('forms.review.retry')}</Text>
+                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('forms.review.retry')}</Text>
               </TouchableOpacity>
             </View>
           ) : !review || loading ? (

@@ -10,6 +10,7 @@ import { useWards } from '@/hooks/useWards';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import ListRow from '@/components/ui/ListRow';
+import SectionLabel from '@/components/ui/SectionLabel';
 import { MyCardEntry, MyDocumentsEntry } from '@/components/documents/DocumentsEntry';
 import { openDocs } from '@/lib/docsUrl';
 import { goToTab } from '@/navigation/navigationRef';
@@ -19,10 +20,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Mehr'>;
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <View className="mb-2">
-      <Text accessibilityRole="header" className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-bold uppercase tracking-wider mb-2 mt-3">
-        {title}
-      </Text>
+    <View>
+      <SectionLabel>{title}</SectionLabel>
       {children}
     </View>
   );
@@ -46,7 +45,7 @@ export default function MehrScreen({ navigation }: Props) {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 140 }}>
-        <Text accessibilityRole="header" className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">
+        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-4">
           {t('mehr.title')}
         </Text>
 

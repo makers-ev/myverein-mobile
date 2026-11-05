@@ -38,7 +38,7 @@ export default function EmailVerificationScreen({ email, onResend, onBackToLogin
   return (
     <SafeAreaView className="flex-1 bg-muted dark:bg-muted-dark">
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 25 }} keyboardShouldPersistTaps="handled">
-        <Text className="text-2xl font-extrabold text-center mb-2 text-foreground dark:text-foreground-dark">
+        <Text className="text-2xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
           {t('email-verification.title')}
         </Text>
         <Text className="text-sm text-center mb-8 text-muted-foreground dark:text-muted-foreground-dark">
@@ -46,7 +46,7 @@ export default function EmailVerificationScreen({ email, onResend, onBackToLogin
         </Text>
 
         <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
-          <Text className="text-base font-bold text-center mb-4 text-foreground dark:text-foreground-dark">
+          <Text className="text-base font-semibold text-center mb-4 text-foreground dark:text-foreground-dark">
             {email}
           </Text>
 
@@ -65,7 +65,7 @@ export default function EmailVerificationScreen({ email, onResend, onBackToLogin
             {isSubmitting ? (
               <ActivityIndicator color={themeColors.primaryForeground} />
             ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">
                 {t('email-verification.resend')}
               </Text>
             )}

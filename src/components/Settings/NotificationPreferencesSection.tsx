@@ -28,7 +28,7 @@ export default function NotificationPreferencesSection({ clubId }: { clubId?: st
 
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-      <Text className="text-base font-bold text-foreground dark:text-foreground-dark">{t('settings.section-notifications')}</Text>
+      <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">{t('settings.section-notifications')}</Text>
       <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mt-0.5 mb-1">{t('settings.notifications.description')}</Text>
       <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1" testID="notification-scope-note">
         {preferences?.scope === 'club' ? t('settings.notifications.scope.club') : t('settings.notifications.scope.account')}
@@ -48,7 +48,7 @@ export default function NotificationPreferencesSection({ clubId }: { clubId?: st
           <>
             {preferences.categories.map((entry) => (
               <View key={entry.category} className="mb-3">
-                <Text className="text-foreground dark:text-foreground-dark text-sm font-bold mb-1">
+                <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mb-1">
                   {t(`settings.notifications.category.${entry.category}`)}
                 </Text>
                 {entry.channels.map((ch) => (
@@ -78,7 +78,7 @@ export default function NotificationPreferencesSection({ clubId }: { clubId?: st
             <NotificationCatalogInfo />
 
             <View className="bg-muted dark:bg-muted-dark rounded-xl p-3">
-              <Text className="text-foreground dark:text-foreground-dark text-sm font-bold mb-0.5">{t('settings.notifications.mandatory.title')}</Text>
+              <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mb-0.5">{t('settings.notifications.mandatory.title')}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('settings.notifications.mandatory.body')}</Text>
             </View>
           </>

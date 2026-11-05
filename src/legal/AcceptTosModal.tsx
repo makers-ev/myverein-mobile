@@ -50,7 +50,7 @@ export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProp
                     className="bg-card dark:bg-card-dark rounded-3xl px-6 pt-6 pb-8"
                     style={{ marginHorizontal: 16, marginBottom: navbarClearance, maxHeight: maxCardHeight }}
                 >
-                    <Text className="text-2xl font-black text-foreground dark:text-foreground-dark mb-4">
+                    <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark mb-4">
                         {t('legal.tos.title')}
                     </Text>
 
@@ -60,7 +60,7 @@ export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProp
                     >
                         {Array.from({ length: SECTION_COUNT }, (_, i) => i + 1).map((num) => (
                             <View key={num} className="mb-4">
-                                <Text className="font-bold text-foreground dark:text-foreground-dark mb-1">
+                                <Text className="font-semibold text-foreground dark:text-foreground-dark mb-1">
                                     {t(`legal.tos.section${num}.title`)}
                                 </Text>
                                 <Text className="text-sm text-muted-foreground dark:text-muted-foreground-dark leading-relaxed">
@@ -83,7 +83,7 @@ export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProp
                             }`}
                         >
                             {isChecked && (
-                                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-black">
+                                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">
                                     ✓
                                 </Text>
                             )}
@@ -101,7 +101,7 @@ export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProp
                         }`}
                     >
                         <Text
-                            className={`font-bold text-base ${
+                            className={`font-semibold text-base ${
                                 isChecked
                                     ? 'text-primary-foreground dark:text-primary-foreground-dark'
                                     : 'text-muted-foreground dark:text-muted-foreground-dark'

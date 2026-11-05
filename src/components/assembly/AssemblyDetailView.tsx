@@ -82,7 +82,7 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
       <TouchableOpacity accessibilityRole="button" onPress={onBack} className="min-h-[44px] justify-center self-start mb-2">
         <Text className="text-primary dark:text-primary-dark font-semibold">{t('assembly.back')}</Text>
       </TouchableOpacity>
-      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-xl font-extrabold mb-1">
+      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-xl font-semibold mb-1">
         {m.title}
       </Text>
       <Body muted>{m.scheduledAt ? new Date(m.scheduledAt).toLocaleString(language, { dateStyle: 'full', timeStyle: 'short' }) : t('treffen.scheduled-at.pending')}</Body>
@@ -102,7 +102,7 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
         ) : (
           <Body muted>{t('assembly.invitation.none')}</Body>
         )}
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-sm mb-1">{t('assembly.agenda')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-1">{t('assembly.agenda')}</Text>
         {agenda.length === 0 ? <Body muted>{content?.agendaText || t('assembly.agenda.empty')}</Body> : agenda.map((i) => <Body key={i.key}>{`${i.position}. ${i.title}${i.description ? ` – ${i.description}` : ''}`}</Body>)}
       </Card>
 

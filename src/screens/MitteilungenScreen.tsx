@@ -36,7 +36,7 @@ function MessageCard({ message, onPress }: { message: InboxMessage; onPress: () 
           {message.urgent ? (
             <View className="flex-row items-center bg-destructive px-2 py-0.5 rounded-full" style={{ gap: 4 }}>
               <AlertTriangle size={12} color="#ffffff" />
-              <Text className="text-xs font-bold text-white">{t('mitteilungen.urgent')}</Text>
+              <Text className="text-xs font-semibold text-white">{t('mitteilungen.urgent')}</Text>
             </View>
           ) : null}
           {message.pinned ? (
@@ -47,11 +47,11 @@ function MessageCard({ message, onPress }: { message: InboxMessage; onPress: () 
           ) : null}
           {unread ? (
             <View className="bg-primary dark:bg-primary-dark px-2 py-0.5 rounded-full">
-              <Text className="text-xs font-bold text-primary-foreground dark:text-primary-foreground-dark">{t('mitteilungen.unread')}</Text>
+              <Text className="text-xs font-semibold text-primary-foreground dark:text-primary-foreground-dark">{t('mitteilungen.unread')}</Text>
             </View>
           ) : null}
         </View>
-        <Text className={`text-foreground dark:text-foreground-dark text-sm mt-1 ${unread ? 'font-bold' : 'font-medium'}`}>{message.title}</Text>
+        <Text className={`text-foreground dark:text-foreground-dark text-sm mt-1 ${unread ? 'font-semibold' : 'font-medium'}`}>{message.title}</Text>
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mt-1" numberOfLines={2}>
           {message.body}
         </Text>
@@ -133,7 +133,7 @@ export default function MitteilungenScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="px-6 pt-4">
-        <Text className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">{t('mitteilungen.title')}</Text>
+        <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark mb-1">{t('mitteilungen.title')}</Text>
         {activeClub ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-2" numberOfLines={1}>
             {activeClub.clubName}
@@ -151,7 +151,7 @@ export default function MitteilungenScreen() {
         <ClubsLoadError />
       ) : !activeClub ? (
         <View className="px-6 pt-6">
-          <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t('verein.no-club.title')}</Text>
+          <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{t('verein.no-club.title')}</Text>
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.no-club.body')}</Text>
         </View>
       ) : (
@@ -174,7 +174,7 @@ export default function MitteilungenScreen() {
             </View>
           ) : messages.length === 0 ? (
             <View className="items-center py-10">
-              <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t('mitteilungen.empty.title')}</Text>
+              <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{t('mitteilungen.empty.title')}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm text-center">{t('mitteilungen.empty.body')}</Text>
             </View>
           ) : (
@@ -194,7 +194,7 @@ export default function MitteilungenScreen() {
             <View className="flex-row items-center flex-wrap mb-3" style={{ gap: 6 }}>
               {open.urgent ? (
                 <View className="bg-destructive px-2 py-0.5 rounded-full">
-                  <Text className="text-xs font-bold text-white">{t('mitteilungen.urgent')}</Text>
+                  <Text className="text-xs font-semibold text-white">{t('mitteilungen.urgent')}</Text>
                 </View>
               ) : null}
               {open.pinned ? (

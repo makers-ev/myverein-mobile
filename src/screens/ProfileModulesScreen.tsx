@@ -55,7 +55,7 @@ function ModuleCard({ module: m, name, description, helpText, allowed, reason, b
   const actionLabel = active ? t('forms.pm.action.deactivate') : m.state === 'archived' ? t('forms.pm.action.reactivate') : t('forms.pm.action.activate');
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3">
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-sm">{name}</Text>
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">{name}</Text>
       {description ? <Text className={`${mutedClass} mt-0.5`}>{description}</Text> : null}
       {helpText && helpText !== description ? <Text className={`${mutedClass} mt-0.5`}>{helpText}</Text> : null}
       <View className="flex-row flex-wrap mt-2" style={{ gap: 6 }}>
@@ -77,7 +77,7 @@ function ModuleCard({ module: m, name, description, helpText, allowed, reason, b
         {busy ? (
           <ActivityIndicator color={active ? colors.primary : colors.primaryForeground} />
         ) : (
-          <Text className={`text-sm font-bold ${active ? 'text-destructive dark:text-destructive-dark' : 'text-primary-foreground dark:text-primary-foreground-dark'}`}>{actionLabel}</Text>
+          <Text className={`text-sm font-semibold ${active ? 'text-destructive dark:text-destructive-dark' : 'text-primary-foreground dark:text-primary-foreground-dark'}`}>{actionLabel}</Text>
         )}
       </TouchableOpacity>
     </View>
@@ -139,14 +139,14 @@ export default function ProfileModulesScreen() {
       style={{ minHeight: 44 }}
       accessibilityRole="button"
     >
-      <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
+      <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.retry')}</Text>
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="px-6 pt-4 pb-3">
-        <Text className="text-2xl font-black text-foreground dark:text-foreground-dark" accessibilityRole="header">
+        <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark" accessibilityRole="header">
           {t('forms.pm.title')}
         </Text>
         {data ? <Text className={`${mutedClass} mt-1`}>{t('forms.pm.limit', { used: data.limit.used, max: data.limit.max })}</Text> : null}
@@ -206,7 +206,7 @@ export default function ProfileModulesScreen() {
               return (
                 <View key={group.id} className="mt-4">
                   <View className="flex-row items-baseline justify-between mb-2" style={{ gap: 8 }}>
-                    <Text className="flex-1 text-foreground dark:text-foreground-dark font-bold text-base" accessibilityRole="header">
+                    <Text className="flex-1 text-foreground dark:text-foreground-dark font-semibold text-base" accessibilityRole="header">
                       {group.translations?.[lang]?.label ?? group.label}
                     </Text>
                     <Text className={mutedClass}>{t('forms.pm.group.count', { active: activeCount, total: modules.length })}</Text>

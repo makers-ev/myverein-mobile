@@ -60,7 +60,7 @@ export default function TwoFactorScreen({ onVerify, onCancel }: TwoFactorScreenP
       className="bg-muted dark:bg-muted-dark"
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 25 }}
     >
-        <Text className="text-2xl font-extrabold text-center mb-2 text-foreground dark:text-foreground-dark">
+        <Text className="text-2xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
           {t('twofactor.title')}
         </Text>
         <Text className="text-sm text-center mb-8 text-muted-foreground dark:text-muted-foreground-dark">
@@ -96,7 +96,7 @@ export default function TwoFactorScreen({ onVerify, onCancel }: TwoFactorScreenP
             {isSubmitting ? (
               <ActivityIndicator color={themeColors.primaryForeground} />
             ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">
                 {t('twofactor.button')}
               </Text>
             )}

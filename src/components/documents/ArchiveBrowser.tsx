@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ChevronRight } from 'lucide-react-native';
+import { useThemeColors } from '@/theme/colors';
 
 import { Body, Button, Card, ErrorRetry, Loading } from '@/components/assembly/ui';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
@@ -24,6 +26,7 @@ interface Props {
  */
 export default function ArchiveBrowser({ clubId, folderId, onFolderChange }: Props) {
   const { t } = useLanguage();
+  const colors = useThemeColors();
   const folders = useArchiveFolders(clubId);
   const [draft, setDraft] = useState('');
   const [query, setQuery] = useState('');
@@ -69,7 +72,7 @@ export default function ArchiveBrowser({ clubId, folderId, onFolderChange }: Pro
             accessibilityLabel={t('archive.search.clear')}
             style={{ minHeight: 48, minWidth: 48, justifyContent: 'center', alignItems: 'center' }}
           >
-            <Text className="text-primary dark:text-primary-dark text-lg font-bold">×</Text>
+            <Text className="text-primary dark:text-primary-dark text-lg font-semibold">×</Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -100,7 +103,7 @@ export default function ArchiveBrowser({ clubId, folderId, onFolderChange }: Pro
               <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold flex-1" numberOfLines={2}>
                 {f.name}
               </Text>
-              <Text className="text-primary dark:text-primary-dark font-bold text-sm">›</Text>
+              <ChevronRight size={18} strokeWidth={1.5} color={colors.mutedForeground} />
             </TouchableOpacity>
           ))}
         </Card>

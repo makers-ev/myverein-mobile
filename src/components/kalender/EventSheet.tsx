@@ -87,7 +87,7 @@ export function RsvpControl({ state, pending, onRsvp, onCancel }: RsvpProps) {
       {pending ? (
         <ActivityIndicator color={themeColors.primaryForeground} size="small" />
       ) : (
-        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">{t('termine.rsvp')}</Text>
+        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">{t('termine.rsvp')}</Text>
       )}
     </TouchableOpacity>
   );
@@ -429,7 +429,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
       ) : null}
       {detailExtras}
       {event?.cancelled ? (
-        <Text className="text-destructive dark:text-destructive-dark text-sm font-bold">
+        <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">
           {event.cancelReason ? `${t('termine.cancelled')} - ${t('termine.cancelled-reason', { reason: event.cancelReason })}` : t('termine.cancelled')}
         </Text>
       ) : participation ? (

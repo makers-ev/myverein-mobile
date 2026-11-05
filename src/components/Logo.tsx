@@ -24,7 +24,7 @@ export default function Logo({ size = 40, hideWordmark = false }: LogoProps) {
         accessibilityLabel="MyVerein"
       />
       {!hideWordmark && (
-        <Text className="text-xl font-bold tracking-tight text-foreground dark:text-foreground-dark">
+        <Text className="text-xl font-semibold tracking-tight text-foreground dark:text-foreground-dark">
           MyVerein
         </Text>
       )}

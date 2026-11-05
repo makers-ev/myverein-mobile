@@ -159,7 +159,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
           style={{ minHeight: 44 }}
           accessibilityRole="button"
         >
-          <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
+          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.retry')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -169,7 +169,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
     if (!manageHint || target !== 'me') return null;
     return (
       <View className={wrapper}>
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1" accessibilityRole="header">
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1" accessibilityRole="header">
           {t('forms.pm.hint.title')}
         </Text>
         <Text className={`${mutedClass} mb-3`}>{t('forms.pm.hint.text')}</Text>
@@ -180,7 +180,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
           accessibilityRole="link"
           accessibilityLabel={t('forms.pm.hint.link')}
         >
-          <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('forms.pm.hint.link')}</Text>
+          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('forms.pm.hint.link')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -197,7 +197,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
 
   return (
     <View className={wrapper}>
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1" accessibilityRole="header">
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1" accessibilityRole="header">
         {title}
       </Text>
       <Text className={`${mutedClass} mb-3`}>{guardianOfName !== undefined ? t('forms.cf.values.hintChild') : own ? t('forms.cf.values.hintOwn') : t('forms.cf.values.hint')}</Text>
@@ -279,7 +279,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
             {busy ? (
               <ActivityIndicator color={themeColors.primaryForeground} />
             ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('forms.cf.values.save')}</Text>
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('forms.cf.values.save')}</Text>
             )}
           </TouchableOpacity>
         </View>

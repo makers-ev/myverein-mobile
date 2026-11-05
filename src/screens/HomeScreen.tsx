@@ -40,7 +40,7 @@ export default function HomeScreen({ navigation }: Props) {
           <View className="bg-primary/10 dark:bg-primary-dark/10 rounded-xl p-2.5 self-start mb-3">
             <Icon size={22} color={colors.primary} />
           </View>
-          <Text className="text-foreground dark:text-foreground-dark font-bold">{t(`home.feature.${key}.title`)}</Text>
+          <Text className="text-foreground dark:text-foreground-dark font-semibold">{t(`home.feature.${key}.title`)}</Text>
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mt-1">{t(`home.feature.${key}.body`)}</Text>
         </BentoTile>
       </FadeIn>
@@ -53,7 +53,7 @@ export default function HomeScreen({ navigation }: Props) {
         <View className="p-6" style={{ gap: 12 }}>
           <View className="mb-2">
             <Logo size={40} />
-            <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-2xl font-extrabold mt-4">
+            <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-2xl font-semibold mt-4">
               {t('home.hero-title')}
             </Text>
             <Text className="text-muted-foreground dark:text-muted-foreground-dark mt-1">{t('home.hero-subtitle')}</Text>
@@ -63,7 +63,7 @@ export default function HomeScreen({ navigation }: Props) {
             <SignedInCard onOpenSettings={() => navigation.navigate('Settings')} />
           ) : (
             <BentoTile emphasis minHeight={140}>
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-lg font-bold mb-1">
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-lg font-semibold mb-1">
                 {t('home.guest-heading')}
               </Text>
               <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm mb-4 opacity-90">
@@ -77,7 +77,7 @@ export default function HomeScreen({ navigation }: Props) {
                   className="flex-1 min-h-[44px] justify-center bg-card dark:bg-card-dark rounded-xl"
                   onPress={() => navigation.navigate('Signup')}
                 >
-                  <Text className="text-primary dark:text-primary-dark text-center font-bold">{t('home.signup-cta')}</Text>
+                  <Text className="text-primary dark:text-primary-dark text-center font-semibold">{t('home.signup-cta')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   accessibilityRole="button"
@@ -86,7 +86,7 @@ export default function HomeScreen({ navigation }: Props) {
                   className="flex-1 min-h-[44px] justify-center border border-primary-foreground dark:border-primary-foreground-dark rounded-xl"
                   onPress={() => navigation.navigate('Login', {})}
                 >
-                  <Text className="text-primary-foreground dark:text-primary-foreground-dark text-center font-bold">
+                  <Text className="text-primary-foreground dark:text-primary-foreground-dark text-center font-semibold">
                     {t('home.login-cta')}
                   </Text>
                 </TouchableOpacity>

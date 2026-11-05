@@ -57,7 +57,7 @@ function Button({
         : 'border border-border dark:border-border-dark';
   const text =
     variant === 'primary'
-      ? 'text-primary-foreground dark:text-primary-foreground-dark font-bold'
+      ? 'text-primary-foreground dark:text-primary-foreground-dark font-semibold'
       : variant === 'danger'
         ? 'text-destructive dark:text-destructive-dark font-semibold'
         : 'text-foreground dark:text-foreground-dark font-semibold';
@@ -94,7 +94,7 @@ function PartySizeStepper({ value, max, onChange, disabled }: { value: number; m
         >
           <Minus size={18} color={themeColors.foreground} />
         </TouchableOpacity>
-        <Text className="text-foreground dark:text-foreground-dark text-lg font-bold" accessibilityLiveRegion="polite" accessibilityLabel={t('reg.party.count', { count: value })}>
+        <Text className="text-foreground dark:text-foreground-dark text-lg font-semibold" accessibilityLiveRegion="polite" accessibilityLabel={t('reg.party.count', { count: value })}>
           {value}
         </Text>
         <TouchableOpacity
@@ -380,7 +380,7 @@ function GuestLinkCard({ clubId, event, info, onChanged }: { clubId: string; eve
   if (!info.allowGuests) {
     return (
       <View className="border border-border dark:border-border-dark rounded-xl p-3">
-        <Text className="text-foreground dark:text-foreground-dark text-sm font-bold">{t('reg.guest.title')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('reg.guest.title')}</Text>
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">{t('reg.guest.not-allowed')}</Text>
       </View>
     );
@@ -388,7 +388,7 @@ function GuestLinkCard({ clubId, event, info, onChanged }: { clubId: string; eve
 
   return (
     <View className="border border-border dark:border-border-dark rounded-xl p-3" style={{ gap: 6 }}>
-      <Text className="text-foreground dark:text-foreground-dark text-sm font-bold">{t('reg.guest.title')}</Text>
+      <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('reg.guest.title')}</Text>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('reg.guest.warning')}</Text>
       {fresh ? (
         <View accessibilityLiveRegion="polite">
@@ -501,7 +501,7 @@ export default function EventParticipation({ clubId, event, fallback, onChanged 
 
   return (
     <View style={{ gap: 10 }}>
-      <Text className="text-foreground dark:text-foreground-dark text-sm font-bold">{t('reg.title')}</Text>
+      <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('reg.title')}</Text>
       {cost || info.costNote ? (
         <View>
           <Text className="text-foreground dark:text-foreground-dark text-sm">

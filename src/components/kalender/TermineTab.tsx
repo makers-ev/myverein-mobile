@@ -54,7 +54,7 @@ function EventRow({ event, color, rsvp, onPress, onAttendance }: { event: Calend
       <View className="flex-1 p-3">
         <View className="flex-row items-center" style={{ gap: 6 }}>
           <Text
-            className="text-foreground dark:text-foreground-dark font-bold text-sm flex-shrink"
+            className="text-foreground dark:text-foreground-dark font-semibold text-sm flex-shrink"
             style={event.cancelled ? { textDecorationLine: 'line-through', opacity: 0.6 } : undefined}
           >
             {event.title}
@@ -66,7 +66,7 @@ function EventRow({ event, color, rsvp, onPress, onAttendance }: { event: Calend
 
         {event.cancelled ? (
           <View className="mt-2 self-start bg-destructive px-2 py-0.5 rounded-full">
-            <Text className="text-xs font-bold text-white">{t('termine.cancelled')}</Text>
+            <Text className="text-xs font-semibold text-white">{t('termine.cancelled')}</Text>
           </View>
         ) : null}
         {event.cancelled && event.cancelReason ? (
@@ -303,7 +303,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
             style={{ gap: 6 }}
           >
             <Plus size={16} color={themeColors.primaryForeground} />
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('termine.new')}</Text>
+            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('termine.new')}</Text>
           </TouchableOpacity>
         </View>
       ) : null}
@@ -357,7 +357,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
       <MonthCalendar month={month} onMonthChange={handleMonthChange} selectedDay={selectedDay} onSelectDay={handleSelectDay} markers={markers} />
 
       <View className="flex-row items-center justify-between mt-4 mb-2">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-sm">
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">
           {selectedDate.toLocaleDateString(language, { weekday: 'long', day: 'numeric', month: 'long' })}
         </Text>
         {loading ? <ActivityIndicator size="small" color={themeColors.primary} /> : null}

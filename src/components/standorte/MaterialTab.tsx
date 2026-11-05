@@ -73,7 +73,7 @@ function ItemCard({ item, locationName, onPress }: { item: InventoryItem; locati
       </View>
       <View className="flex-1">
         <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
-          <Text className="flex-1 text-foreground dark:text-foreground-dark font-bold text-sm">{item.name}</Text>
+          <Text className="flex-1 text-foreground dark:text-foreground-dark font-semibold text-sm">{item.name}</Text>
           <ConditionChip condition={item.condition} />
         </View>
         {!!(item.category || locationName) && (
@@ -126,7 +126,7 @@ function MaterialList({
   return (
     <>
       <View className="flex-row items-center justify-between mb-3">
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold uppercase">
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] font-medium">
           {t('material.list.count', { count: visible.length })}
         </Text>
         {canWrite && <IconButton kind="add" label={t('material.add')} onPress={onAdd} />}
@@ -391,7 +391,7 @@ function MaterialDetail({
             <Package size={24} color={themeColors.primary} />
           </View>
           <View className="flex-1">
-            <Text className="text-xl font-black text-foreground dark:text-foreground-dark">{item.name}</Text>
+            <Text className="text-xl font-semibold text-foreground dark:text-foreground-dark">{item.name}</Text>
             {!!item.category && <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{item.category}</Text>}
           </View>
           {canWrite && <IconButton kind="edit" label={t('material.edit')} onPress={() => setEditing(true)} />}
@@ -436,7 +436,7 @@ function MaterialDetail({
             {returningLoanId ? (
               <ActivityIndicator color={themeColors.primaryForeground} size="small" />
             ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">
                 {t('material.loans.return')}
               </Text>
             )}
@@ -452,7 +452,7 @@ function MaterialDetail({
             {borrowSaving ? (
               <ActivityIndicator color={themeColors.primaryForeground} size="small" />
             ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">
                 {t('material.loans.borrow')}
               </Text>
             )}
@@ -531,7 +531,7 @@ function MaterialDetail({
               {damageSaving ? (
                 <ActivityIndicator color={themeColors.primaryForeground} size="small" />
               ) : (
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
+                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">
                   {t('material.damage-reports.submit')}
                 </Text>
               )}

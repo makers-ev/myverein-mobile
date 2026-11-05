@@ -12,7 +12,7 @@ export function SectionCard({ title, action, children }: { title: string; action
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
       <View className="flex-row items-center justify-between mb-3">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-base">{title}</Text>
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base">{title}</Text>
         {action}
       </View>
       {children}
@@ -70,7 +70,7 @@ export function ChipPicker<T extends string>({
         }`}
       >
         <Text
-          className={`text-sm ${active ? 'text-primary-foreground dark:text-primary-foreground-dark font-bold' : 'text-foreground dark:text-foreground-dark'}`}
+          className={`text-sm ${active ? 'text-primary-foreground dark:text-primary-foreground-dark font-semibold' : 'text-foreground dark:text-foreground-dark'}`}
         >
           {o.label}
         </Text>

@@ -126,7 +126,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
         accessibilityState={{ expanded }}
         accessibilityLabel={`${t('forms.cred.overview.title')}. ${t('forms.cred.overview.toggle')}`}
       >
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-base" accessibilityRole="header">
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base" accessibilityRole="header">
           {t('forms.cred.overview.title')}
         </Text>
         {expanded ? <ChevronUp size={20} color={colors.mutedForeground} /> : <ChevronDown size={20} color={colors.mutedForeground} />}
@@ -190,7 +190,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
                   style={{ minHeight: 44 }}
                   accessibilityRole="button"
                 >
-                  <Text className="text-primary dark:text-primary-dark text-sm font-bold">{failure === 'notFound' ? t('forms.cred.overview.reset') : t('verein.retry')}</Text>
+                  <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{failure === 'notFound' ? t('forms.cred.overview.reset') : t('verein.retry')}</Text>
                 </TouchableOpacity>
               </View>
             ) : response && response.data.length === 0 ? (
@@ -205,7 +205,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
                     style={{ minHeight: 44 }}
                     accessibilityRole="button"
                   >
-                    <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('forms.cred.overview.reset')}</Text>
+                    <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('forms.cred.overview.reset')}</Text>
                   </TouchableOpacity>
                 ) : null}
               </View>
@@ -239,7 +239,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
                       accessibilityLabel={`${t('forms.cred.overview.open', { name, field: fieldLabel })}${row.sensitive ? `, ${t('forms.cf.sensitive')}` : ''}`}
                     >
                       <View className="flex-row items-center justify-between" style={{ gap: 8 }}>
-                        <Text className="flex-1 text-foreground dark:text-foreground-dark font-bold text-sm">{name}</Text>
+                        <Text className="flex-1 text-foreground dark:text-foreground-dark font-semibold text-sm">{name}</Text>
                         {opening === row.clubMemberId ? <ActivityIndicator color={colors.primary} accessibilityLabel={t('forms.cred.overview.opening')} /> : null}
                       </View>
                       <View className="flex-row items-center flex-wrap mt-0.5" style={{ gap: 6 }}>

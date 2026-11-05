@@ -38,7 +38,7 @@ export function ColorChip({
         />
       ) : null}
       <Text
-        className={`text-sm ${active ? 'text-primary-foreground dark:text-primary-foreground-dark font-bold' : 'text-foreground dark:text-foreground-dark'}`}
+        className={`text-sm ${active ? 'text-primary-foreground dark:text-primary-foreground-dark font-semibold' : 'text-foreground dark:text-foreground-dark'}`}
       >
         {label}
       </Text>

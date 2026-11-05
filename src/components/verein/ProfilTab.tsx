@@ -235,7 +235,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
   return (
     <View>
       <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('member-photo.title')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('member-photo.title')}</Text>
         <MemberPhotoEditor
           clubId={clubId}
           target="me"
@@ -249,7 +249,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
       </View>
 
       <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t('profil.section.name')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{t('profil.section.name')}</Text>
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('profil.name.hint')}</Text>
         {textInput(
           'firstName',
@@ -281,21 +281,21 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
       </View>
 
       <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('profil.section.personal')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('profil.section.personal')}</Text>
         <Field label={t('profil.birth-date')}>
           <DateTimeField mode="date" value={draft.birthDate} onChange={(d) => update('birthDate', d)} clearable />
         </Field>
       </View>
 
       <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('profil.section.address')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('profil.section.address')}</Text>
         {textInput('street', t('profil.street'), { maxLength: 200, autoComplete: 'street-address', textContentType: 'streetAddressLine1' })}
         {textInput('postalCode', t('profil.postal-code'), { maxLength: 12, autoComplete: 'postal-code', textContentType: 'postalCode' }, visibleErrors.postalCode)}
         {textInput('city', t('profil.city'), { maxLength: 120, textContentType: 'addressCity' })}
       </View>
 
       <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t('profil.section.contact')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{t('profil.section.contact')}</Text>
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('profil.contact.hint')}</Text>
         {textInput('phone', t('profil.phone'), { keyboardType: 'phone-pad', maxLength: 50, textContentType: 'telephoneNumber' })}
         {textInput(
@@ -307,7 +307,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
       </View>
 
       <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('profil.section.emergency')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('profil.section.emergency')}</Text>
         {textInput('emergencyContactName', t('profil.emergency-contact-name'), { maxLength: 200 })}
         {textInput('emergencyContactPhone', t('profil.emergency-contact-phone'), { keyboardType: 'phone-pad', maxLength: 50 })}
       </View>
@@ -336,7 +336,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
         {isSaving ? (
           <ActivityIndicator color={themeColors.primaryForeground} />
         ) : (
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('profil.save')}</Text>
+          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('profil.save')}</Text>
         )}
       </TouchableOpacity>
 

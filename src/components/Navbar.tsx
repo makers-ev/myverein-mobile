@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CalendarCheck, Calendar, Ellipsis, Megaphone, Users, type LucideIcon } from 'lucide-react-native';
 
@@ -23,7 +23,7 @@ const TAB_META: Record<TabKey, { labelKey: string; Icon: LucideIcon }> = {
 };
 
 /**
- * Bottom tab bar (Wave 14 N1): Heute | Kalender | Mitteilungen | Verein | Mehr -- the same five for every role, only
+ * Bottom tab bar (Wave 14 N1, docked and quiet since the UI polish): Heute | Kalender | Mitteilungen | Verein | Mehr -- the same five for every role, only
  * the content behind them differs (administration is a permission-gated section inside Verein, see
  * `components/verein/VerwaltungTab.tsx`). A guardian-only account has no club and sees Heute and Mehr. Which stack
  * routes belong to which tab is defined in `navigation/tabs.ts`, so a sub-screen keeps its parent tab highlighted.
@@ -63,42 +63,82 @@ export default function Navbar() {
         return unsubscribe;
     }, []);
 
-    const bottomOffset = Math.max(insets.bottom + 12, 24);
+    const items: TabBarItem[] = tabs.map((tab) => {
+        const { labelKey, Icon } = TAB_META[tab];
+        // Messages: club inbox. More: platform notices live there.
+        const badge = tab === 'mitteilungen' ? inboxUnreadCount : tab === 'mehr' ? platformUnread : 0;
+        const label = t(labelKey);
+        return { key: tab, label, Icon, badge, accessibilityLabel: badge > 0 ? t('nav.badge-label', { label, count: badge }) : label };
+    });
 
+    return (
+        <TabBar
+            items={items}
+            activeKey={activeTab}
+            showTitles={showTitles}
+            bottomInset={insets.bottom}
+            iconColors={{ active: themeColors.primary, inactive: themeColors.mutedForeground }}
+            onSelect={(key) => goToTab(tabTarget(key as TabKey, { isAuthenticated, hasWards, guardianOnly }))}
+        />
+    );
+}
+
+export interface TabBarItem {
+    key: string;
+    label: string;
+    Icon: LucideIcon;
+    badge: number;
+    accessibilityLabel: string;
+}
+
+interface TabBarProps {
+    items: TabBarItem[];
+    activeKey: string | null | undefined;
+    showTitles: boolean;
+    bottomInset: number;
+    iconColors: { active: string; inactive: string };
+    onSelect: (key: string) => void;
+}
+
+/**
+ * The bar itself, docked to the bottom edge: card surface with a hairline on top, no shadow, no coloured fill. The
+ * active tab gets a small surface step behind its icon plus the primary colour on the icon; the label switches to the
+ * foreground colour (no underline, no heavier stroke), so the bar stays quiet next to the content.
+ */
+export function TabBar({ items, activeKey, showTitles, bottomInset, iconColors, onSelect }: TabBarProps) {
     return (
         <View
             pointerEvents="box-none"
             // zIndex is required: Navbar renders before RootStack.Navigator as a JSX sibling and each screen's
-            // opaque background would otherwise paint over this floating pill on web and Android.
-            style={{ position: 'absolute', left: 0, right: 0, bottom: bottomOffset, alignItems: 'center', zIndex: 50, elevation: 50 }}
+            // opaque background would otherwise paint over this bar on web and Android.
+            style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 50, elevation: 50 }}
         >
             <View
                 accessibilityRole="tablist"
-                className="flex-row w-[92%] h-16 rounded-full items-center justify-around bg-primary dark:bg-primary-dark px-2 shadow-xl"
-                style={{ elevation: 10 }}
+                className="flex-row bg-card dark:bg-card-dark border-t border-border dark:border-border-dark px-2 pt-2"
+                style={{ paddingBottom: Math.max(bottomInset, 8) }}
             >
-                {tabs.map((tab) => {
-                    const { labelKey, Icon } = TAB_META[tab];
-                    const isActive = activeTab === tab;
-                    // Messages: club inbox. More: platform notices live there.
-                    const badge = tab === 'mitteilungen' ? inboxUnreadCount : tab === 'mehr' ? platformUnread : 0;
-                    const label = t(labelKey);
+                {items.map((item) => {
+                    const isActive = activeKey === item.key;
+                    const { Icon, badge } = item;
                     return (
-                        <TouchableOpacity
-                            key={tab}
-                            onPress={() => goToTab(tabTarget(tab, { isAuthenticated, hasWards, guardianOnly }))}
-                            activeOpacity={0.7}
+                        <Pressable
+                            key={item.key}
+                            onPress={() => onSelect(item.key)}
                             accessibilityRole="tab"
-                            accessibilityLabel={badge > 0 ? t('nav.badge-label', { label, count: badge }) : label}
+                            accessibilityLabel={item.accessibilityLabel}
                             accessibilityState={{ selected: isActive }}
                             className="flex-1 items-center justify-center"
-                            style={{ minHeight: 48 }}
+                            style={({ pressed }) => ({ minHeight: 48, opacity: pressed ? 0.7 : 1 })}
                         >
-                            <View>
-                                <Icon size={22} color={themeColors.primaryForeground} strokeWidth={isActive ? 2.75 : 2} />
+                            <View
+                                className={`items-center justify-center rounded-[10px] ${isActive ? 'bg-muted dark:bg-muted-dark' : ''}`}
+                                style={{ width: 56, height: 28 }}
+                            >
+                                <Icon size={20} color={isActive ? iconColors.active : iconColors.inactive} strokeWidth={1.75} />
                                 {badge > 0 && (
-                                    <View className="absolute -right-2 -top-1 min-w-[16px] h-[16px] rounded-full items-center justify-center bg-destructive px-0.5">
-                                        <Text className="text-[10px] font-bold text-white">{badge > 9 ? '9+' : badge}</Text>
+                                    <View className="absolute right-1 -top-1 min-w-[16px] h-[16px] rounded-full items-center justify-center bg-destructive px-1 border-2 border-card dark:border-card-dark">
+                                        <Text className="text-[10px] font-semibold text-white">{badge > 9 ? '9+' : badge}</Text>
                                     </View>
                                 )}
                             </View>
@@ -106,13 +146,12 @@ export default function Navbar() {
                                 <Text
                                     numberOfLines={1}
                                     maxFontSizeMultiplier={1.3}
-                                    className={`text-[11px] mt-0.5 ${isActive ? 'font-bold underline' : 'font-medium'}`}
-                                    style={{ color: themeColors.primaryForeground }}
+                                    className={`text-[11px] mt-1 ${isActive ? 'font-semibold text-foreground dark:text-foreground-dark' : 'font-medium text-muted-foreground dark:text-muted-foreground-dark'}`}
                                 >
-                                    {label}
+                                    {item.label}
                                 </Text>
                             )}
-                        </TouchableOpacity>
+                        </Pressable>
                     );
                 })}
             </View>

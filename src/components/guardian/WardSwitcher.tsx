@@ -33,7 +33,7 @@ export default function WardSwitcher({ wards, selected, onSelect }: Props) {
             }`}
             style={{ minHeight: 48 }}
           >
-            <Text className={`text-sm font-bold ${active ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-foreground dark:text-foreground-dark'}`} numberOfLines={1}>
+            <Text className={`text-sm font-semibold ${active ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-foreground dark:text-foreground-dark'}`} numberOfLines={1}>
               {w.firstName ?? w.name}
             </Text>
             {multiClub ? (
@@ -43,7 +43,7 @@ export default function WardSwitcher({ wards, selected, onSelect }: Props) {
             ) : null}
             {open ? (
               <View className="self-start mt-0.5 rounded-full bg-destructive px-1.5">
-                <Text className="text-[10px] font-bold text-white">{open}</Text>
+                <Text className="text-[10px] font-semibold text-white">{open}</Text>
               </View>
             ) : null}
           </TouchableOpacity>

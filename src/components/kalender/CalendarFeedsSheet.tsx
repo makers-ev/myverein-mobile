@@ -60,7 +60,7 @@ function NewLinkCard({ link, onDone }: { link: NewCalendarFeed; onDone: () => vo
 
   return (
     <View className="border border-primary dark:border-primary-dark rounded-xl p-3 mb-4" accessibilityLiveRegion="polite">
-      <Text className="text-foreground dark:text-foreground-dark text-sm font-bold mb-1">{t('feeds.new.title')}</Text>
+      <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mb-1">{t('feeds.new.title')}</Text>
       <Text className="text-destructive dark:text-destructive-dark text-xs mb-2">{t('feeds.warning')}</Text>
       <Text selectable className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">
         {url}
@@ -162,11 +162,11 @@ export default function CalendarFeedsSheet({ visible, onClose, clubId, calendars
         {busy === 'create' ? (
           <ActivityIndicator color={themeColors.primaryForeground} size="small" />
         ) : (
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold">{t('feeds.create')}</Text>
+          <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('feeds.create')}</Text>
         )}
       </TouchableOpacity>
 
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-sm mb-2">{t('feeds.list.title')}</Text>
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-2">{t('feeds.list.title')}</Text>
       {loading && feeds.length === 0 ? (
         <ActivityIndicator color={themeColors.primary} />
       ) : error && feeds.length === 0 ? (

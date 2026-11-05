@@ -86,9 +86,9 @@ function TableView({ block, keyPrefix }: { block: Extract<Block, { type: 'table'
 }
 
 const HEADING_CLASS = {
-  1: 'text-xl font-black mt-2 mb-2',
-  2: 'text-lg font-bold mt-2 mb-1.5',
-  3: 'text-base font-bold mt-1 mb-1',
+  1: 'text-xl font-semibold mt-2 mb-2',
+  2: 'text-lg font-semibold mt-2 mb-1.5',
+  3: 'text-base font-semibold mt-1 mb-1',
 } as const;
 
 function BlockView({ block, index }: { block: Block; index: number }) {

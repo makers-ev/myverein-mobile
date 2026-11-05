@@ -29,7 +29,7 @@ type Tab = 'info' | 'mitglieder' | 'profil' | 'verwaltung';
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{title}</Text>
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{title}</Text>
       {children}
     </View>
   );
@@ -153,10 +153,10 @@ function NoClubState() {
 
       {registration ? (
         <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mt-6">
-          <Text className="text-xs font-semibold uppercase mb-1 text-muted-foreground dark:text-muted-foreground-dark">
+          <Text className="text-[13px] font-medium mb-1 text-muted-foreground dark:text-muted-foreground-dark">
             {registration.clubName}
           </Text>
-          <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">
+          <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">
             {t(`create-club.status.${registration.status}.title`)}
           </Text>
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">
@@ -166,7 +166,7 @@ function NoClubState() {
             className="bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center self-start px-5"
             onPress={() => navigate('CreateClub')}
           >
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">
+            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">
               {t(registration.status === 'draft' ? 'verein.no-club.registration.continue' : 'verein.no-club.registration.view')}
             </Text>
           </TouchableOpacity>
@@ -245,7 +245,7 @@ export default function VereinScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="px-6 pt-4">
-        <Text className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">
+        <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark mb-1">
           {activeClub?.clubName ?? t('nav.verein')}
         </Text>
         <ClubSwitcher onBeforeSwitch={guardClubSwitch} />

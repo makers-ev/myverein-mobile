@@ -26,6 +26,7 @@ import BoardSection from '@/components/today/BoardSection';
 import SetupChecklist from '@/components/today/SetupChecklist';
 import BentoTile from '@/components/ui/BentoTile';
 import FadeIn from '@/components/ui/FadeIn';
+import DateBlock from '@/components/ui/DateBlock';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
@@ -110,14 +111,17 @@ export default function DashboardScreen({ navigation }: Props) {
   } else {
     const start = new Date(event.startsAt);
     eventBody = (
-      <View>
-        <Text className="text-foreground dark:text-foreground-dark text-lg font-bold" numberOfLines={2}>
-          {event.title}
-        </Text>
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mt-1">
-          {start.toLocaleDateString(language, { weekday: 'long', day: 'numeric', month: 'long' })},{' '}
-          {start.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}
-        </Text>
+      <View className="flex-row items-center" style={{ gap: 12 }}>
+        <DateBlock iso={event.startsAt} language={language} />
+        <View className="flex-1">
+          <Text className="text-foreground dark:text-foreground-dark text-lg font-medium" numberOfLines={2}>
+            {event.title}
+          </Text>
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mt-0.5">
+            {start.toLocaleDateString(language, { weekday: 'long', day: 'numeric', month: 'long' })},{' '}
+            {start.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}
+          </Text>
+        </View>
       </View>
     );
   }
@@ -146,7 +150,7 @@ export default function DashboardScreen({ navigation }: Props) {
         ) : null}
         {today && !isTodayEmpty(today) ? (
           <FadeIn>
-            <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-lg font-extrabold mb-2">
+            <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-base font-semibold mb-1">
               {t('today.section.todo')}
             </Text>
             <TodoSection today={today} />
@@ -156,9 +160,9 @@ export default function DashboardScreen({ navigation }: Props) {
         <FadeIn delay={25}>
           <BentoTile minHeight={120} onPress={canOpenCalendar ? () => navigation.navigate('Kalender') : undefined} accessibilityLabel={eventLabel}>
             <View className="flex-row items-center mb-3" style={{ gap: 8 }}>
-              <CalendarDays size={18} color={colors.primary} />
-              <Text className="flex-1 text-primary dark:text-primary-dark text-xs font-bold uppercase tracking-wider">{eventLabel}</Text>
-              {canOpenCalendar ? <ChevronRight size={18} color={colors.mutedForeground} /> : null}
+              <CalendarDays size={16} strokeWidth={1.5} color={colors.mutedForeground} />
+              <Text className="flex-1 text-muted-foreground dark:text-muted-foreground-dark text-[13px] font-medium">{eventLabel}</Text>
+              {canOpenCalendar ? <ChevronRight size={18} strokeWidth={1.5} color={colors.mutedForeground} /> : null}
             </View>
             {eventBody}
           </BentoTile>
@@ -196,7 +200,7 @@ export default function DashboardScreen({ navigation }: Props) {
           <View className="mb-1">
             <View className="flex-row items-start justify-between">
               <View className="flex-1 pr-3">
-                <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-2xl font-extrabold">
+                <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-2xl font-semibold">
                   {t('today.title')}
                 </Text>
                 {activeClub ? (
@@ -210,10 +214,10 @@ export default function DashboardScreen({ navigation }: Props) {
                   accessibilityRole="button"
                   accessibilityLabel={t('search.open')}
                   onPress={() => navigation.navigate('Suche')}
-                  className="items-center justify-center rounded-full bg-muted dark:bg-muted-dark"
+                  className="items-center justify-center rounded-xl bg-card dark:bg-card-dark border border-border dark:border-border-dark"
                   style={{ width: 48, height: 48 }}
                 >
-                  <Search size={20} color={colors.primary} />
+                  <Search size={20} strokeWidth={1.5} color={colors.foreground} />
                 </TouchableOpacity>
               ) : null}
             </View>
@@ -222,7 +226,7 @@ export default function DashboardScreen({ navigation }: Props) {
 
           {hasWards ? (
             <BentoTile minHeight={72} onPress={() => navigation.navigate('Heute')} accessibilityLabel={`${t('today.wards')}. ${t('today.wards.hint')}`}>
-              <Text className="text-foreground dark:text-foreground-dark font-bold">{t('today.wards')}</Text>
+              <Text className="text-foreground dark:text-foreground-dark font-semibold">{t('today.wards')}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mt-0.5">{t('today.wards.hint')}</Text>
             </BentoTile>
           ) : null}

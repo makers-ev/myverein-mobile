@@ -61,7 +61,7 @@ function StatusButtons({
             } ${disabled ? 'opacity-60' : ''}`}
             style={{ minHeight: 48 }}
           >
-            <Text className={`text-xs font-bold ${selected ? style.text : 'text-foreground dark:text-foreground-dark'}`}>{t(`att.status.${status}`)}</Text>
+            <Text className={`text-xs font-semibold ${selected ? style.text : 'text-foreground dark:text-foreground-dark'}`}>{t(`att.status.${status}`)}</Text>
           </TouchableOpacity>
         );
       })}
@@ -234,7 +234,7 @@ export default function AttendanceSheet({ visible, onClose, clubId, event }: Pro
               style={{ gap: 8, minHeight: 52 }}
             >
               <CheckCheck size={18} color={themeColors.primaryForeground} />
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold">{t('att.all-present')}</Text>
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('att.all-present')}</Text>
             </TouchableOpacity>
           )}
 
@@ -286,7 +286,7 @@ export default function AttendanceSheet({ visible, onClose, clubId, event }: Pro
           ) : null}
 
           <View className="mb-4">
-            <Text className="text-foreground dark:text-foreground-dark text-sm font-bold mb-1">{t('att.supervisors.title')}</Text>
+            <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mb-1">{t('att.supervisors.title')}</Text>
             {pickingSupervisors ? (
               <View>
                 {supervisorCandidates(view).length === 0 ? (
@@ -355,7 +355,7 @@ export default function AttendanceSheet({ visible, onClose, clubId, event }: Pro
                 ) : null}
                 <View className="flex-row" style={{ gap: 12 }}>
                   <TouchableOpacity onPress={() => void close()} disabled={att.busy} accessibilityRole="button" className="justify-center" style={{ minHeight: 44 }}>
-                    <Text className="text-primary dark:text-primary-dark font-bold">{t('att.close.confirm')}</Text>
+                    <Text className="text-primary dark:text-primary-dark font-semibold">{t('att.close.confirm')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => setConfirmClose(false)} accessibilityRole="button" className="justify-center" style={{ minHeight: 44 }}>
                     <Text className="text-muted-foreground dark:text-muted-foreground-dark font-semibold">{t('ui.cancel')}</Text>

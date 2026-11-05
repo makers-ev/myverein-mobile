@@ -30,7 +30,7 @@ export default function CardCheckResult({ phase, onNext, onRetry, canRetry }: Pr
   if (phase.kind === 'checking') {
     return (
       <View className="flex-1 items-center justify-center p-6" accessibilityLiveRegion="polite">
-        <Text className="text-foreground dark:text-foreground-dark text-xl font-bold">{t('check.checking')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark text-xl font-semibold">{t('check.checking')}</Text>
       </View>
     );
   }
@@ -39,7 +39,7 @@ export default function CardCheckResult({ phase, onNext, onRetry, canRetry }: Pr
     const message = phase.reason === 'offline' ? t('check.offline') : phase.reason === 'rate' ? t('check.error.rate') : phase.reason === 'forbidden' ? t('check.error.forbidden') : t('check.error.generic');
     return (
       <View className="flex-1 justify-center p-6">
-        <Text accessibilityRole="alert" accessibilityLiveRegion="assertive" className="text-foreground dark:text-foreground-dark text-2xl font-black mb-6 text-center">
+        <Text accessibilityRole="alert" accessibilityLiveRegion="assertive" className="text-foreground dark:text-foreground-dark text-2xl font-semibold mb-6 text-center">
           {message}
         </Text>
         {canRetry ? <Button label={t('check.retry')} onPress={onRetry} /> : null}
@@ -57,7 +57,7 @@ export default function CardCheckResult({ phase, onNext, onRetry, canRetry }: Pr
     <View className="flex-1" style={{ backgroundColor: bg }}>
       <View className="flex-1 items-center justify-center p-6" accessible accessibilityRole="alert" accessibilityLiveRegion="assertive" accessibilityLabel={member ? [word, member.displayName, member.category].filter(Boolean).join('. ') : notACard ? `${word}. ${t('check.result.not-card')}` : word}>
         <Icon size={96} color="#FFFFFF" />
-        <Text className="font-black text-center mt-4" style={{ color: '#FFFFFF', fontSize: 40, lineHeight: 46 }}>
+        <Text className="font-semibold text-center mt-4" style={{ color: '#FFFFFF', fontSize: 40, lineHeight: 46 }}>
           {word}
         </Text>
         {notACard ? (
@@ -72,7 +72,7 @@ export default function CardCheckResult({ phase, onNext, onRetry, canRetry }: Pr
             ) : (
               <NoPhoto text={member.initials} />
             )}
-            <Text className="font-black text-center mt-4" style={{ color: '#FFFFFF', fontSize: 28 }}>
+            <Text className="font-semibold text-center mt-4" style={{ color: '#FFFFFF', fontSize: 28 }}>
               {member.displayName}
             </Text>
             {member.category ? (

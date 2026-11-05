@@ -68,13 +68,13 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
 
           <View className="items-center py-8 mb-4">
             <Logo size={56} />
-            <Text className="text-xl font-bold text-foreground dark:text-foreground-dark mt-4">{t('signup.title')}</Text>
+            <Text className="text-xl font-semibold text-foreground dark:text-foreground-dark mt-4">{t('signup.title')}</Text>
             <Text className="text-muted-foreground dark:text-muted-foreground-dark">{t('signup.description')}</Text>
           </View>
 
           {/* Personal Info Section */}
           <View className="mb-8">
-            <Text className="text-lg font-bold text-foreground dark:text-foreground-dark mb-3 ml-1">
+            <Text className="text-lg font-semibold text-foreground dark:text-foreground-dark mb-3 ml-1">
               {t('signup.username')}
             </Text>
 
@@ -113,7 +113,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
 
           {/* Contact Section */}
           <View className="mb-8">
-            <Text className="text-lg font-bold text-foreground dark:text-foreground-dark mb-3 ml-1">
+            <Text className="text-lg font-semibold text-foreground dark:text-foreground-dark mb-3 ml-1">
               {t('signup.contact')}
             </Text>
 
@@ -171,7 +171,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
             {isSubmitting ? (
               <ActivityIndicator color={themeColors.primaryForeground} />
             ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-center font-bold text-lg">{t('signup.button')}</Text>
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-center font-semibold text-lg">{t('signup.button')}</Text>
             )}
           </TouchableOpacity>
 

@@ -44,7 +44,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
         <Logo />
       </View>
 
-      <Text className="text-3xl font-extrabold text-center mb-2 text-foreground dark:text-foreground-dark">
+      <Text className="text-3xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
         {t('forgot-password.title')}
       </Text>
       <Text className="text-sm text-center mb-8 text-muted-foreground dark:text-muted-foreground-dark">
@@ -54,7 +54,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
       <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
         {sent ? (
           <>
-            <Text className="text-base font-bold text-center mb-4 text-foreground dark:text-foreground-dark">
+            <Text className="text-base font-semibold text-center mb-4 text-foreground dark:text-foreground-dark">
               {email}
             </Text>
             <Text className="text-primary dark:text-primary-dark text-sm mb-3 text-center">
@@ -68,7 +68,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
           </>
         ) : (
           <>
-            <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
+            <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
               {t('login.username')}
             </Text>
             <TextInput
@@ -95,7 +95,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
               {isSubmitting ? (
                 <ActivityIndicator color={themeColors.primaryForeground} />
               ) : (
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">
+                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">
                   {t('forgot-password.button')}
                 </Text>
               )}

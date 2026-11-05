@@ -73,7 +73,7 @@ export default function ClubDocumentReader({ clubId, slug, title, onClose }: Pro
     <Modal visible={!!slug} animationType="slide" onRequestClose={onClose}>
       <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
         <View className="flex-row items-center px-5 pt-3 pb-2" style={{ gap: 12 }}>
-          <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-xl font-black flex-1">
+          <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-xl font-semibold flex-1">
             {title}
           </Text>
           <TouchableOpacity onPress={onClose} accessibilityRole="button" accessibilityLabel={t('docs.reader.close')} style={{ minHeight: 44, minWidth: 44, justifyContent: 'center', alignItems: 'flex-end' }}>

@@ -28,7 +28,7 @@ export default function BoardSection({ board }: { board: TodayBoard }) {
   if (rows.length === 0) return null;
   return (
     <View>
-      <Text accessibilityRole="header" className="text-primary dark:text-primary-dark text-xs font-bold uppercase tracking-wider mb-2 mt-1">
+      <Text accessibilityRole="header" className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] font-medium mb-2 mt-1">
         {t('today.board.title')}
       </Text>
       {rows}

@@ -18,7 +18,7 @@ export default function WhoIsAbsentCard({ clubId }: { clubId: string }) {
 
   return (
     <BentoTile minHeight={88}>
-      <Text accessibilityRole="header" className="text-primary dark:text-primary-dark text-xs font-bold uppercase tracking-wider mb-3">
+      <Text accessibilityRole="header" className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] font-medium mb-3">
         {t('absence.today.title')}
       </Text>
       {loading && absences.length === 0 && !error ? (

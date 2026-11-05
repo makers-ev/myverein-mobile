@@ -10,7 +10,7 @@ const TOP_CATEGORIES = 5;
 function Figure({ value, label }: { value: number; label: string }) {
   return (
     <View className="flex-1 items-center" accessible accessibilityLabel={`${label}: ${value}`}>
-      <Text className="text-foreground dark:text-foreground-dark text-2xl font-black">{value}</Text>
+      <Text className="text-foreground dark:text-foreground-dark text-2xl font-semibold">{value}</Text>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs text-center">{label}</Text>
     </View>
   );
@@ -30,7 +30,7 @@ export default function MemberStatsCard({ clubId }: { clubId: string }) {
 
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3" accessibilityRole="header">
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3" accessibilityRole="header">
         {t('verein.stats.title')}
       </Text>
 
@@ -49,7 +49,7 @@ export default function MemberStatsCard({ clubId }: { clubId: string }) {
             style={{ minHeight: 44 }}
             accessibilityRole="button"
           >
-            <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
+            <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.retry')}</Text>
           </TouchableOpacity>
         </View>
       ) : stats ? (

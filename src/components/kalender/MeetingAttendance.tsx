@@ -85,7 +85,7 @@ export default function MeetingAttendance({ invitees, attendance, directory, nam
 
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('treffen.attendance.title')}</Text>
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('treffen.attendance.title')}</Text>
       {memberIds.length === 0 ? (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.attendance.empty')}</Text>
       ) : (
@@ -145,7 +145,7 @@ export default function MeetingAttendance({ invitees, attendance, directory, nam
                         accessibilityState={{ selected: row.proxyForMemberId === m.memberId }}
                       >
                         <Text
-                          className={`text-sm ${row.proxyForMemberId === m.memberId ? 'text-primary dark:text-primary-dark font-bold' : 'text-foreground dark:text-foreground-dark'}`}
+                          className={`text-sm ${row.proxyForMemberId === m.memberId ? 'text-primary dark:text-primary-dark font-semibold' : 'text-foreground dark:text-foreground-dark'}`}
                         >
                           {m.name ?? '—'}
                         </Text>
@@ -178,7 +178,7 @@ export default function MeetingAttendance({ invitees, attendance, directory, nam
           {saving ? (
             <ActivityIndicator color={themeColors.primaryForeground} size="small" />
           ) : (
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">{t('treffen.attendance.save')}</Text>
+            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">{t('treffen.attendance.save')}</Text>
           )}
         </TouchableOpacity>
       ) : null}

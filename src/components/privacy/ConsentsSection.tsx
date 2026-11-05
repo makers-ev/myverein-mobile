@@ -88,7 +88,7 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
 
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">
+      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">
         {t('consent.title')}
       </Text>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{wardName ? t('consent.intro-ward', { name: wardName }) : t('consent.intro')}</Text>
@@ -122,7 +122,7 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
           >
             <Text className="flex-1 text-foreground dark:text-foreground-dark text-sm font-semibold">{c.name}</Text>
             <View className={`rounded-full px-2 py-0.5 ${c.open || c.outdated ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}>
-              <Text className={`text-xs font-bold ${c.open || c.outdated ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}>
+              <Text className={`text-xs font-semibold ${c.open || c.outdated ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}>
                 {t(consentBadgeKey(c))}
               </Text>
             </View>
@@ -165,7 +165,7 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
                     {saving ? (
                       <ActivityIndicator color={themeColors.primaryForeground} />
                     ) : (
-                      <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold text-sm">{t(actions.grant)}</Text>
+                      <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold text-sm">{t(actions.grant)}</Text>
                     )}
                   </TouchableOpacity>
                 ) : null}

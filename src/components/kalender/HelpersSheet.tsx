@@ -187,11 +187,11 @@ export default function HelpersSheet({ visible, onClose, clubId, event }: Props)
         </View>
       ) : plan ? (
         <View>
-          {plan.cancelled ? <Text className="text-destructive dark:text-destructive-dark text-sm font-bold mb-3">{t('termine.cancelled')}</Text> : null}
+          {plan.cancelled ? <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold mb-3">{t('termine.cancelled')}</Text> : null}
 
           {plan.mine.length > 0 ? (
             <View className="border border-primary dark:border-primary-dark rounded-xl p-3 mb-3" accessibilityLiveRegion="polite">
-              <Text className="text-foreground dark:text-foreground-dark text-sm font-bold mb-1">{t('help.mine')}</Text>
+              <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mb-1">{t('help.mine')}</Text>
               {plan.mine.map((m) => (
                 <Text key={m.signupId} className="text-foreground dark:text-foreground-dark text-sm">
                   {m.stationName} · {timeRange(m, language)}
@@ -211,7 +211,7 @@ export default function HelpersSheet({ visible, onClose, clubId, event }: Props)
               .filter((s) => s.shifts.length > 0)
               .map((station) => (
                 <View key={station.id} className="mb-2">
-                  <Text className="text-foreground dark:text-foreground-dark text-base font-bold">{station.name}</Text>
+                  <Text className="text-foreground dark:text-foreground-dark text-base font-semibold">{station.name}</Text>
                   {station.description ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-1">{station.description}</Text> : null}
                   <View className="mt-1">{station.shifts.map((shift) => renderShift(station.name, shift))}</View>
                 </View>

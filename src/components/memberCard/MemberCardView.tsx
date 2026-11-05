@@ -55,7 +55,7 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
   return (
     <View className="rounded-2xl overflow-hidden border border-border dark:border-border-dark bg-card dark:bg-card-dark mb-4">
       <View style={{ backgroundColor: band }} className="px-4 py-3">
-        <Text className="font-black text-base" style={{ color: bandText }} numberOfLines={2}>
+        <Text className="font-semibold text-base" style={{ color: bandText }} numberOfLines={2}>
           {card.club.name}
         </Text>
         <Text className="text-xs" style={{ color: bandText }}>
@@ -74,7 +74,7 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
           <Initials text={card.member.initials} />
         )}
         <View className="flex-1">
-          <Text className="text-foreground dark:text-foreground-dark text-xl font-black" accessibilityRole="header">
+          <Text className="text-foreground dark:text-foreground-dark text-xl font-semibold" accessibilityRole="header">
             {card.member.displayName}
           </Text>
           {card.member.memberNumber ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mt-1">{t('card.number', { number: card.member.memberNumber })}</Text> : null}
@@ -85,7 +85,7 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
 
       <View className="px-4 pb-3 flex-row items-center" style={{ gap: 8 }} accessible accessibilityRole="text" accessibilityLabel={t(STATE_KEY[state])}>
         <StateIcon size={22} color={stateColor} />
-        <Text className="text-base font-bold" style={{ color: stateColor }}>
+        <Text className="text-base font-semibold" style={{ color: stateColor }}>
           {t(STATE_KEY[state])}
         </Text>
       </View>
@@ -110,7 +110,7 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
 function Initials({ text }: { text: string }) {
   return (
     <View className="bg-muted dark:bg-muted-dark items-center justify-center" style={{ width: 88, height: 110, borderRadius: 8 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <Text className="text-foreground dark:text-foreground-dark text-3xl font-black">{text}</Text>
+      <Text className="text-foreground dark:text-foreground-dark text-3xl font-semibold">{text}</Text>
     </View>
   );
 }

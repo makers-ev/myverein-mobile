@@ -67,7 +67,7 @@ export default function ConfirmationInputModal({
         activeOpacity={1}
       >
         <View className="bg-white rounded-lg p-5 max-w-xs" onStartShouldSetResponder={() => true}>
-          <Text className={`text-lg font-bold text-center mb-4 ${titleColor}`}>{title}</Text>
+          <Text className={`text-lg font-semibold text-center mb-4 ${titleColor}`}>{title}</Text>
           {message && <Text className={`text-sm text-center mb-4 ${messageColor}`}>{message}</Text>}
 
           <TextInput
@@ -101,11 +101,11 @@ export default function ConfirmationInputModal({
               onPress={handleConfirm}
               disabled={!isValid}
             >
-              <Text className="text-white font-bold text-center">{confirmText}</Text>
+              <Text className="text-white font-semibold text-center">{confirmText}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity accessibilityRole="button" className="py-2 px-4 rounded-md bg-green-600" onPress={handleClose}>
-              <Text className="text-white font-bold text-center">{cancelText}</Text>
+              <Text className="text-white font-semibold text-center">{cancelText}</Text>
             </TouchableOpacity>
           </View>
         </View>

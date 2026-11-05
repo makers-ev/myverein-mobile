@@ -191,7 +191,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
       </View>
 
       <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('verfuegbarkeit.exceptions.title')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('verfuegbarkeit.exceptions.title')}</Text>
 
         {exceptions.length === 0 ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">{t('verfuegbarkeit.exceptions.empty')}</Text>
@@ -225,7 +225,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
         )}
 
         <View className="mt-4 pt-4 border-t border-border dark:border-border-dark">
-          <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
+          <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('verfuegbarkeit.exceptions.date')}
           </Text>
           <View className="mb-3">
@@ -245,7 +245,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
             />
           </View>
 
-          <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
+          <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('verfuegbarkeit.exceptions.note')}
           </Text>
           <TextInput
@@ -265,7 +265,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
             {excSaving ? (
               <ActivityIndicator color={themeColors.primaryForeground} />
             ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">
                 {t('verfuegbarkeit.exceptions.add')}
               </Text>
             )}

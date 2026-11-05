@@ -49,7 +49,7 @@ export default function MonthCalendar({ month, onMonthChange, selectedDay, onSel
           <ChevronLeft size={20} color={themeColors.foreground} />
         </TouchableOpacity>
         <TouchableOpacity accessibilityRole="button" onPress={() => onMonthChange(new Date())}>
-          <Text className="text-foreground dark:text-foreground-dark font-bold text-base">
+          <Text className="text-foreground dark:text-foreground-dark font-semibold text-base">
             {month.toLocaleDateString(language, { month: 'long', year: 'numeric' })}
           </Text>
           <Text className="text-primary dark:text-primary-dark text-xs text-center">{t('ui.today')}</Text>
@@ -90,7 +90,7 @@ export default function MonthCalendar({ month, onMonthChange, selectedDay, onSel
                   <Text
                     className={`text-sm ${
                       selected
-                        ? 'text-primary-foreground dark:text-primary-foreground-dark font-bold'
+                        ? 'text-primary-foreground dark:text-primary-foreground-dark font-semibold'
                         : inMonth
                           ? 'text-foreground dark:text-foreground-dark'
                           : 'text-muted-foreground dark:text-muted-foreground-dark opacity-50'

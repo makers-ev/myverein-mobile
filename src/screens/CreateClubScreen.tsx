@@ -38,7 +38,7 @@ type Translate = (key: string, params?: Record<string, string | number>) => stri
 // photo library, so only the image types are accepted here.
 const ALLOWED_MIME = ['image/jpeg', 'image/png'];
 
-const LABEL_CLASS = 'text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark';
+const LABEL_CLASS = 'text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark';
 const INPUT_CLASS =
   'bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-4';
 
@@ -296,7 +296,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
       className="bg-muted dark:bg-muted-dark"
       contentContainerStyle={{ flexGrow: 1, padding: 25, paddingBottom: 60 }}
     >
-      <Text className="text-3xl font-extrabold text-center mb-1 text-foreground dark:text-foreground-dark">
+      <Text className="text-3xl font-semibold text-center mb-1 text-foreground dark:text-foreground-dark">
         {t('create-club.title')}
       </Text>
       <Text className="text-sm text-center mb-6 text-muted-foreground dark:text-muted-foreground-dark">
@@ -305,7 +305,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
 
       {registration?.status === 'needs_info' && registration.reviewNote ? (
         <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-          <Text className="text-xs font-semibold uppercase mb-1 text-muted-foreground dark:text-muted-foreground-dark">
+          <Text className="text-[13px] font-medium mb-1 text-muted-foreground dark:text-muted-foreground-dark">
             {t('create-club.status.review-note')}
           </Text>
           <Text className="text-sm text-foreground dark:text-foreground-dark">{registration.reviewNote}</Text>
@@ -473,7 +473,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
               onPress={() => void handlePickDocument()}
             >
               <Camera size={18} color={themeColors.primary} />
-              <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('create-club.docs.pick')}</Text>
+              <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('create-club.docs.pick')}</Text>
             </TouchableOpacity>
             <Text className="text-xs mb-4 text-muted-foreground dark:text-muted-foreground-dark">
               {t('create-club.docs.pdf-hint')}
@@ -578,10 +578,10 @@ function StatusView({
     >
       <View className="bg-card dark:bg-card-dark p-6 rounded-2xl">
         {notice ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{notice}</Text> : null}
-        <Text className="text-xs font-semibold uppercase text-center mb-1 text-muted-foreground dark:text-muted-foreground-dark">
+        <Text className="text-[13px] font-medium text-center mb-1 text-muted-foreground dark:text-muted-foreground-dark">
           {registration.clubName}
         </Text>
-        <Text className="text-xl font-extrabold text-center mb-2 text-foreground dark:text-foreground-dark">
+        <Text className="text-xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
           {t(`create-club.status.${status}.title`)}
         </Text>
         <Text className="text-sm text-center mb-4 text-muted-foreground dark:text-muted-foreground-dark">
@@ -590,7 +590,7 @@ function StatusView({
 
         {(status === 'needs_info' || status === 'rejected') && registration.reviewNote ? (
           <View className="bg-muted dark:bg-muted-dark rounded-lg p-3 mb-4">
-            <Text className="text-xs font-semibold uppercase mb-1 text-muted-foreground dark:text-muted-foreground-dark">
+            <Text className="text-[13px] font-medium mb-1 text-muted-foreground dark:text-muted-foreground-dark">
               {t(status === 'rejected' ? 'create-club.status.reject-reason' : 'create-club.status.review-note')}
             </Text>
             <Text className="text-sm text-foreground dark:text-foreground-dark">{registration.reviewNote}</Text>
@@ -599,10 +599,10 @@ function StatusView({
 
         {status === 'approved' && registration.clubSlug ? (
           <View className="bg-muted dark:bg-muted-dark rounded-lg p-3 mb-4">
-            <Text className="text-xs font-semibold uppercase mb-1 text-muted-foreground dark:text-muted-foreground-dark">
+            <Text className="text-[13px] font-medium mb-1 text-muted-foreground dark:text-muted-foreground-dark">
               {t('create-club.status.slug')}
             </Text>
-            <Text className="text-base font-bold text-foreground dark:text-foreground-dark">{registration.clubSlug}</Text>
+            <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">{registration.clubSlug}</Text>
             <Text className="text-xs mt-1 text-muted-foreground dark:text-muted-foreground-dark">
               {t('create-club.status.slug-hint')}
             </Text>
@@ -654,7 +654,7 @@ export default function CreateClubScreen({ navigation }: Props) {
           {t('create-club.error.load')}
         </Text>
         <TouchableOpacity accessibilityRole="button" className="bg-primary dark:bg-primary-dark rounded-lg py-3 px-6" onPress={() => void refetch()}>
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">
+          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">
             {t('verein.applications.retry')}
           </Text>
         </TouchableOpacity>

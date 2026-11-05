@@ -32,7 +32,7 @@ export default function PrivacyCenterScreen({ navigation }: Props) {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="px-6 pt-4">
-        <Text accessibilityRole="header" className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">
+        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
           {t('datenschutz.title')}
         </Text>
         {activeClub?.clubName ? (
@@ -55,7 +55,7 @@ export default function PrivacyCenterScreen({ navigation }: Props) {
         </View>
       ) : !clubId || !membership ? (
         <View className="px-6 pt-4">
-          <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t('datenschutz.empty.title')}</Text>
+          <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{t('datenschutz.empty.title')}</Text>
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">{t('datenschutz.empty.body')}</Text>
           {clubId ? (
             <TouchableOpacity accessibilityRole="button" onPress={() => void refetchMembership()} className="min-h-[44px] justify-center self-start">

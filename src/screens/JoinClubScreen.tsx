@@ -185,7 +185,7 @@ export default function JoinClubScreen({ navigation }: Props) {
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 25 }}
       >
         <View className="bg-card dark:bg-card-dark p-6 rounded-2xl items-center" accessibilityLiveRegion="polite">
-          <Text className="text-xl font-extrabold text-center mb-2 text-foreground dark:text-foreground-dark">
+          <Text className="text-xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
             {t(`join-club.result.${key}.title`)}
           </Text>
           <Text className="text-sm text-center mb-5 text-muted-foreground dark:text-muted-foreground-dark">
@@ -198,7 +198,7 @@ export default function JoinClubScreen({ navigation }: Props) {
             accessibilityRole="button"
             accessibilityLabel={t('join-club.pending.back')}
           >
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">{t('join-club.pending.back')}</Text>
+            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">{t('join-club.pending.back')}</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAwareScreen>
@@ -213,7 +213,7 @@ export default function JoinClubScreen({ navigation }: Props) {
       className="bg-muted dark:bg-muted-dark"
       contentContainerStyle={{ flexGrow: 1, padding: 20, paddingBottom: 40, justifyContent: ready ? 'flex-start' : 'center' }}
     >
-      <Text className="text-3xl font-extrabold text-center mb-2 text-foreground dark:text-foreground-dark" accessibilityRole="header">
+      <Text className="text-3xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark" accessibilityRole="header">
         {t('join-club.title')}
       </Text>
       <Text className="text-sm text-center mb-6 text-muted-foreground dark:text-muted-foreground-dark">{t('join-club.description')}</Text>
@@ -221,7 +221,7 @@ export default function JoinClubScreen({ navigation }: Props) {
       <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
         {!ready ? (
           <>
-            <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
+            <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
               {t('join-club.slug.label')}
             </Text>
             <TextInput
@@ -259,7 +259,7 @@ export default function JoinClubScreen({ navigation }: Props) {
               {phase === 'loading' ? (
                 <ActivityIndicator color={themeColors.primaryForeground} />
               ) : (
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">{t('forms.apply.load')}</Text>
+                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">{t('forms.apply.load')}</Text>
               )}
             </TouchableOpacity>
             <MyApplicationsStatus
@@ -331,7 +331,7 @@ export default function JoinClubScreen({ navigation }: Props) {
 
             {club.submitted.length > 0 ? (
               <View className="mt-4">
-                <Text className="text-sm font-bold text-foreground dark:text-foreground-dark" accessibilityRole="header">
+                <Text className="text-sm font-semibold text-foreground dark:text-foreground-dark" accessibilityRole="header">
                   {t('forms.apply.open.title')}
                 </Text>
                 {club.submitted.map((s) => (
@@ -434,7 +434,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                         className="bg-primary dark:bg-primary-dark rounded-lg px-4 items-center justify-center"
                         style={{ minHeight: 44 }}
                       >
-                        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('forms.apply.unverified.resend')}</Text>
+                        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('forms.apply.unverified.resend')}</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() => void recheckVerification()}

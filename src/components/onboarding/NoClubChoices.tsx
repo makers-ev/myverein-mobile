@@ -19,7 +19,7 @@ export default function NoClubChoices({ hideCreate }: Props) {
   return (
     <View className="py-2" style={{ gap: 12 }}>
       <View>
-        <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-bold text-lg mb-1">
+        <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-lg mb-1">
           {t('onboarding.choice.title')}
         </Text>
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('onboarding.choice.body')}</Text>

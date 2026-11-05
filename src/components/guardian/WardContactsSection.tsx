@@ -28,7 +28,7 @@ export default function WardContactsSection({ contacts }: { contacts: ReturnType
 
   return (
     <View className="mb-4">
-      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-bold text-base mb-2">
+      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-base mb-2">
         {t('heute.contacts.title')}
       </Text>
       {loading && rows.length === 0 && !error ? (
@@ -45,7 +45,7 @@ export default function WardContactsSection({ contacts }: { contacts: ReturnType
       ) : (
         rows.map((c, i) => (
           <View key={`${c.clubMemberId}-${c.department.id}-${i}`} className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-2">
-            <Text className="text-foreground dark:text-foreground-dark text-base font-bold">{c.name}</Text>
+            <Text className="text-foreground dark:text-foreground-dark text-base font-semibold">{c.name}</Text>
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">
               {[t(`heute.role.${c.roleType}`), c.department.name].join(' - ')}
             </Text>

@@ -78,7 +78,7 @@ export default function CalendarManageSheet({ visible, onClose, clubId, calendar
       ))}
 
       <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mt-2">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('kalender.manage.create')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('kalender.manage.create')}</Text>
         <Field label={t('kalender.manage.name')}>
           <TextInput
             className={inputClassName}
@@ -101,7 +101,7 @@ export default function CalendarManageSheet({ visible, onClose, clubId, calendar
           {creating ? (
             <ActivityIndicator color={themeColors.primaryForeground} size="small" />
           ) : (
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold text-sm">{t('kalender.manage.create')}</Text>
+            <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold text-sm">{t('kalender.manage.create')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -206,7 +206,7 @@ function CalendarCard({
       <TouchableOpacity accessibilityRole="button" onPress={onToggle} className="flex-row items-center p-3" style={{ gap: 10 }}>
         <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: color }} />
         <View className="flex-1">
-          <Text className="text-foreground dark:text-foreground-dark font-bold text-sm">{calendar.name}</Text>
+          <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">{calendar.name}</Text>
           {calendar.departmentId ? (
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{departmentName(calendar.departmentId)}</Text>
           ) : null}
@@ -235,7 +235,7 @@ function CalendarCard({
                 disabled={busy || !name.trim() || name.trim() === calendar.name}
                 className={`bg-primary dark:bg-primary-dark rounded-xl px-3 py-2.5 ${busy || !name.trim() || name.trim() === calendar.name ? 'opacity-50' : ''}`}
               >
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold text-sm">{t('ui.save')}</Text>
+                <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold text-sm">{t('ui.save')}</Text>
               </TouchableOpacity>
             </View>
           </Field>

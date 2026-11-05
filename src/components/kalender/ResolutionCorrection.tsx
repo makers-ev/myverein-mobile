@@ -104,7 +104,7 @@ export default function ResolutionCorrection({
           {saving ? (
             <ActivityIndicator color={themeColors.primaryForeground} size="small" />
           ) : (
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">{t('treffen.resolutions.correct.submit')}</Text>
+            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">{t('treffen.resolutions.correct.submit')}</Text>
           )}
         </TouchableOpacity>
         <TouchableOpacity onPress={onClose} disabled={saving} accessibilityRole="button" style={{ minHeight: 44, justifyContent: 'center' }}>

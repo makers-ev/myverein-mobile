@@ -52,7 +52,7 @@ flowchart TD
     App["App.tsx\nErrorBoundary > SafeAreaProvider > KeyboardProvider > PaletteProvider > LanguageProvider > AuthProvider > ActiveClubProvider"]
     Lock["AppLockGate\nwraps everything"]
     Nav["AppNavigator\none stack, always mounted"]
-    Bar["Navbar\nfive tabs: Heute, Kalender, Mitteilungen, Verein, Mehr\nfloating bottom pill, Navigator sibling"]
+    Bar["Navbar\nfive tabs: Heute, Kalender, Mitteilungen, Verein, Mehr\ndocked bottom bar, Navigator sibling"]
     Home["HomeScreen (public)\ninitial route for guests"]
     Dash["DashboardScreen (public)\ninitial route for signed-in users"]
     Notif["NotificationsScreen\ngated: RequireAuth"]
@@ -390,12 +390,14 @@ Shared building blocks (Wave 14 DS1). The names and props match the website's `s
 | Component | Props | Use it for |
 |---|---|---|
 | `ui/Button` | `label`, `onPress`, `variant` (`primary` / `secondary` / `danger`), `disabled`, `loading`, `accessibilityHint` | Every tappable action. At least 44pt high; one `primary` per screen; `loading` blocks double taps while saving |
-| `ui/EmptyState` | `title`, `hint?`, `action?` | A list or section with nothing in it: say what is missing and offer the next step as `action` |
+| `ui/EmptyState` | `title`, `hint?`, `action?`, `icon?` | A list or section with nothing in it: say what is missing and offer the next step as `action` |
 | `ui/Skeleton` | `lines?` | Loading placeholder for lists and cards (instead of a lone spinner); hidden from screen readers |
 | `ui/ErrorState` | `error?`, `onRetry?`, `fallbackKey?` | A failed load: localised text via `mapApiError`, retry button, announced as an alert |
-| `ui/Badge` | `tone` (`neutral` / `primary` / `danger`), children | Role, status or count chips |
+| `ui/Badge` | `tone` (`neutral` / `primary` / `danger`), children | Role, status or count tags (6px radius, not a pill) |
 | `ui/ListRow` | `title`, `hint?`, `badge?`, `onPress` | Navigation row with chevron and optional count (Mehr, Verwaltung, Heute, Suche) |
 | `ui/TabChips` | `tabs`, `active`, `onChange` | In-screen tab switcher (Kalender, Standorte, Verein): `tablist`, 44pt chips |
+| `ui/SectionLabel` | children | Heading above a group of rows or cards: 13pt medium, muted, sentence case, 24pt above / 8pt below (Mehr, Suche) |
+| `ui/DateBlock` | `iso`, `language` | Calendar leaf (month over day number), decorative: next event on Heute |
 | `ui/OfflineNotice` | `savedAt` | "You are offline, copy from ..." line above a read-only offline copy |
 | `ui/DocsLink` | `path`, `labelKey?` | Contextual "Anleitung ansehen" link (role link, 44pt) to a docs page: Heute setup checklist (`verein-aufsetzen`), empty Kalender day / members list / Orte / Material (`handbuch/...`), `OfflineNotice` and `ConnectionErrorScreen` (`faq-und-fehlerbehebung`) |
 | `ui/BentoTile` | `onPress?`, `emphasis?`, `minHeight?`, `accessibilityLabel?` | Card on the Heute and Mehr screens; pressable tiles are 44pt+ buttons |
@@ -403,6 +405,8 @@ Shared building blocks (Wave 14 DS1). The names and props match the website's `s
 | `hooks/useConfirm` | `confirm({ title, message?, confirmLabel?, destructive? }) => Promise<boolean>` | Confirm destructive or irreversible actions (native alert; website: dialog) |
 | `hooks/useUnsavedChangesGuard` | `(dirty: boolean)` | Ask "discard draft?" on back, Android back and swipe when a form has unsaved input |
 | `lib/mapApiError` | `(err, t, fallbackKey?) => string` | Any caught error shown to a person; never print `err.message` |
+
+**Design language.** Quiet chrome, one accent, one bright element per screen. Surfaces and text come from the palette tokens only (no gradients, glows or coloured shadows); borders are the 1px `border` hairline; spacing sits on the 4pt grid (8 between rows, 16 card padding, 24 page edge); radii are 10 for controls, 12 for rows, 16 for cards; type is the system font at weights 400 to 600 (no 700+), sentence case everywhere (no uppercase labels), numbers with tabular figures; icons are lucide at 1.5 stroke in a text-role colour (no emoji or text glyphs as icons). The tab bar (`components/Navbar.tsx`, presentational `TabBar`) is docked, card-coloured with a hairline on top; the active tab gets a surface step behind its icon. The bright element is the membership card (`components/memberCard/MemberCardView.tsx`). Motion is a press scale of 2% and the one `FadeIn` entrance, skipped with reduce motion.
 
 Tokens come from `theme/colors.ts` / `tailwind.config.js` (Tailwind classes with `dark:` variants, palettes from `PaletteProvider`). `components/Modals/ConfirmationModal` and `ConfirmationInputModal` remain for the two Settings flows that need a typed confirmation; new confirmations use `useConfirm`.
 

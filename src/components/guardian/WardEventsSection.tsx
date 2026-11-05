@@ -50,7 +50,7 @@ export default function WardEventsSection({ ward, events }: { ward: Ward; events
 
   return (
     <View className="mb-4">
-      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-bold text-base mb-2">
+      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-base mb-2">
         {t('heute.events.title')}
       </Text>
       {loading && rows.length === 0 && !error ? (
@@ -67,7 +67,7 @@ export default function WardEventsSection({ ward, events }: { ward: Ward; events
       ) : (
         groupByDay(rows).map((group) => (
           <View key={group.day} className="mb-3">
-            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-bold uppercase tracking-wider mb-1.5">{dayLabel(group.day)}</Text>
+            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] font-medium mb-1.5">{dayLabel(group.day)}</Text>
             {group.events.map((event) => {
               const start = new Date(event.startsAt);
               const cancelled = !!event.cancelledAt;
@@ -76,14 +76,14 @@ export default function WardEventsSection({ ward, events }: { ward: Ward; events
                 <View key={event.id} className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-2">
                   <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
                     <View className="flex-1">
-                      <Text className={`text-foreground dark:text-foreground-dark text-base font-bold ${cancelled ? 'line-through' : ''}`}>{event.title}</Text>
+                      <Text className={`text-foreground dark:text-foreground-dark text-base font-semibold ${cancelled ? 'line-through' : ''}`}>{event.title}</Text>
                       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">
                         {[start.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' }), event.locationName, event.calendarName].filter(Boolean).join(' - ')}
                       </Text>
                     </View>
                     {cancelled ? (
                       <View className="bg-destructive rounded-full px-2 py-0.5">
-                        <Text className="text-xs font-bold text-white">{t('heute.events.cancelled')}</Text>
+                        <Text className="text-xs font-semibold text-white">{t('heute.events.cancelled')}</Text>
                       </View>
                     ) : null}
                   </View>

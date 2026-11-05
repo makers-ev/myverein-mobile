@@ -55,14 +55,14 @@ export default function MyApplicationsStatus({ open, decided, phase, errorKey, d
 
   return (
     <View className="mt-5">
-      <Text className="text-base font-bold text-foreground dark:text-foreground-dark" accessibilityRole="header">
+      <Text className="text-base font-semibold text-foreground dark:text-foreground-dark" accessibilityRole="header">
         {t('forms.apply.status.title')}
       </Text>
       {error}
 
       {open.length > 0 ? (
         <View className="mt-2">
-          <Text className="text-xs font-semibold uppercase text-muted-foreground dark:text-muted-foreground-dark">{t('forms.apply.status.openTitle')}</Text>
+          <Text className="text-[13px] font-medium text-muted-foreground dark:text-muted-foreground-dark">{t('forms.apply.status.openTitle')}</Text>
           {open.map((a) => (
             <View key={a.id} className="mt-2 rounded-lg border border-border dark:border-border-dark p-3">
               <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">{clubLabel(a.club)}</Text>
@@ -81,7 +81,7 @@ export default function MyApplicationsStatus({ open, decided, phase, errorKey, d
                 className={`self-start mt-2 rounded-lg bg-primary dark:bg-primary-dark px-4 items-center justify-center ${disabled ? 'opacity-60' : ''}`}
                 style={{ minHeight: 44 }}
               >
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('forms.apply.status.resume')}</Text>
+                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('forms.apply.status.resume')}</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -90,7 +90,7 @@ export default function MyApplicationsStatus({ open, decided, phase, errorKey, d
 
       {decided.length > 0 ? (
         <View className="mt-4">
-          <Text className="text-xs font-semibold uppercase text-muted-foreground dark:text-muted-foreground-dark">{t('forms.apply.status.decidedTitle')}</Text>
+          <Text className="text-[13px] font-medium text-muted-foreground dark:text-muted-foreground-dark">{t('forms.apply.status.decidedTitle')}</Text>
           {decided.map((d) => {
             const Icon = d.status === 'accepted' ? CheckCircle2 : d.status === 'rejected' ? XCircle : Clock;
             const tone = d.status === 'accepted' ? colors.success : d.status === 'rejected' ? colors.destructive : colors.mutedForeground;
