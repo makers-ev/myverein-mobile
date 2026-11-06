@@ -22,7 +22,7 @@ interface Props {
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{title}</Text>
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{title}</Text>
       {children}
     </View>
   );
@@ -31,7 +31,7 @@ function SectionCard({ title, children }: { title: string; children: React.React
 function StatusBadge({ status }: { status: MeetingStatus }) {
   const { t } = useLanguage();
   return (
-    <View className="bg-primary/10 dark:bg-primary-dark/10 px-2.5 py-1 rounded-full self-start">
+    <View className="bg-primary/10 dark:bg-primary-dark/10 px-2.5 py-1 rounded-md self-start">
       <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t(`treffen.status.${status}`)}</Text>
     </View>
   );
@@ -56,7 +56,7 @@ function ErrorRetry({ message, onRetry }: { message: string; onRetry: () => void
         style={{ minHeight: 44 }}
         accessibilityRole="button"
       >
-        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('verein.retry')}</Text>
+        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('verein.retry')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -70,7 +70,7 @@ function MeetingListRow({ meeting, onPress }: { meeting: Meeting; onPress: () =>
       onPress={onPress}
       className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3"
     >
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-sm mb-1">{meeting.title}</Text>
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-1">{meeting.title}</Text>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{typeLabel(meeting.type)}</Text>
       <View className="flex-row items-center justify-between">
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
@@ -132,7 +132,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
 
       {!canWrite ? null : showCreate ? (
         <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4">
-          <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
+          <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.title')}
           </Text>
           <TextInput
@@ -141,7 +141,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
             value={title}
             onChangeText={setTitle}
           />
-          <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
+          <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.type')}
           </Text>
           <View className="flex-row flex-wrap mb-3" style={{ gap: 8 }}>
@@ -151,7 +151,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
                 <TouchableOpacity
                   key={value}
                   onPress={() => setType(value)}
-                  className={`px-3 rounded-full justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark'}`}
+                  className={`px-3 rounded-[10px] justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark'}`}
                   style={{ minHeight: 44 }}
                   accessibilityRole="button"
                   accessibilityState={{ selected }}
@@ -166,7 +166,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
               );
             })}
           </View>
-          <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
+          <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.scheduled-at')}
           </Text>
           <View className="mb-3">
@@ -181,7 +181,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
             {saving ? (
               <ActivityIndicator color={themeColors.primaryForeground} />
             ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('treffen.submit')}</Text>
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('treffen.submit')}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -190,7 +190,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
           className="bg-primary dark:bg-primary-dark rounded-lg py-3 items-center self-start px-5"
           onPress={() => setShowCreate(true)}
         >
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('treffen.create')}</Text>
+          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('treffen.create')}</Text>
         </TouchableOpacity>
       )}
     </>
@@ -236,7 +236,7 @@ function AgendaMinutes({
         <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">
           {meeting.agenda || t('treffen.agenda.empty')}
         </Text>
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-sm mb-1">{t('treffen.minutes')}</Text>
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-1">{t('treffen.minutes')}</Text>
         <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">{meeting.minutes || t('treffen.minutes.empty')}</Text>
         {saved ? <Text className="text-success dark:text-success-dark text-xs mb-2">{t('treffen.agenda-minutes.saved')}</Text> : null}
         {canWrite ? (
@@ -258,7 +258,7 @@ function AgendaMinutes({
         multiline
         numberOfLines={3}
       />
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-sm mb-1">{t('treffen.minutes')}</Text>
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-1">{t('treffen.minutes')}</Text>
       <TextInput
         className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
         placeholderTextColor={themeColors.mutedForeground}
@@ -276,7 +276,7 @@ function AgendaMinutes({
         {saving ? (
           <ActivityIndicator color={themeColors.primaryForeground} size="small" />
         ) : (
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
+          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">
             {t('treffen.agenda-minutes.save')}
           </Text>
         )}
@@ -418,7 +418,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
       </TouchableOpacity>
 
       <View className="mb-4">
-        <Text className="text-xl font-black text-foreground dark:text-foreground-dark mb-1">{meeting.title}</Text>
+        <Text className="text-xl font-semibold text-foreground dark:text-foreground-dark mb-1">{meeting.title}</Text>
         <View className="flex-row items-center" style={{ gap: 8 }}>
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{typeLabel(meeting.type)}</Text>
           <StatusBadge status={meeting.status} />
@@ -452,7 +452,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
               onPress={() => void handleRespond('zugesagt')}
               disabled={rsvpSaving}
             >
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">
                 {t('treffen.rsvp.accept')}
               </Text>
             </TouchableOpacity>
@@ -461,7 +461,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
               onPress={() => void handleRespond('abgesagt')}
               disabled={rsvpSaving}
             >
-              <Text className="text-foreground dark:text-foreground-dark text-xs font-bold">{t('treffen.rsvp.decline')}</Text>
+              <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold">{t('treffen.rsvp.decline')}</Text>
             </TouchableOpacity>
           </View>
         </SectionCard>
@@ -483,7 +483,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
               <DateTimeField value={candidateInput} onChange={setCandidateInput} placeholder={t('treffen.overlap.candidate-placeholder')} />
             </View>
             <TouchableOpacity accessibilityRole="button" className="bg-muted dark:bg-muted-dark rounded-lg py-2.5 px-3" onPress={handleAddCandidate}>
-              <Text className="text-foreground dark:text-foreground-dark text-xs font-bold">{t('treffen.overlap.add-candidate')}</Text>
+              <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold">{t('treffen.overlap.add-candidate')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -497,7 +497,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
             {overlapChecking ? (
               <ActivityIndicator color={themeColors.primaryForeground} size="small" />
             ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">
                 {t('treffen.overlap.check')}
               </Text>
             )}
@@ -556,7 +556,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
                 <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
                   {r.votesFor}/{r.votesAgainst}/{r.votesAbstain}
                 </Text>
-                <View className="bg-muted dark:bg-muted-dark px-2 py-0.5 rounded-full">
+                <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
                   <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{r.result}</Text>
                 </View>
               </View>
@@ -650,7 +650,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
               {resSaving ? (
                 <ActivityIndicator color={themeColors.primaryForeground} size="small" />
               ) : (
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
+                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">
                   {t('treffen.resolutions.submit')}
                 </Text>
               )}

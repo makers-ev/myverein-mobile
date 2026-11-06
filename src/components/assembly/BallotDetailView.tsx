@@ -149,7 +149,7 @@ export default function BallotDetailView({ clubId, ballotId, onBack }: Props) {
       <TouchableOpacity accessibilityRole="button" onPress={onBack} className="min-h-[44px] justify-center self-start mb-2">
         <Text className="text-primary dark:text-primary-dark font-semibold">{t('assembly.back')}</Text>
       </TouchableOpacity>
-      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-xl font-extrabold mb-2">
+      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-xl font-semibold mb-2">
         {ballot.title}
       </Text>
       <Badge symbol={PHASE_SYMBOL[ballot.phase] ?? '•'} label={labelOr(t, `assembly.phase.${ballot.phase}`, 'assembly.phase.other')} />

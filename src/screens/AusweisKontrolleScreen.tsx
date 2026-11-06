@@ -95,7 +95,7 @@ export default function AusweisKontrolleScreen() {
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={fullBleed ? ['bottom'] : undefined}>
       {fullBleed ? null : (
         <View className="px-6 pt-4">
-          <Text accessibilityRole="header" className="text-2xl font-black text-foreground dark:text-foreground-dark mb-2">
+          <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-2">
             {t('check.title')}
           </Text>
         </View>

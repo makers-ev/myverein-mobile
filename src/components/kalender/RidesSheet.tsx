@@ -118,7 +118,7 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
     const key = ride.id;
     return (
       <View key={ride.id} className="border border-border dark:border-border-dark rounded-xl p-3 mb-2">
-        <Text className="text-foreground dark:text-foreground-dark text-sm font-bold">
+        <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">
           {ride.mine ? t('ride.mine') : (ride.driver.displayName ?? t('ride.driver-unknown'))}
         </Text>
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">
@@ -209,7 +209,7 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
                   <TouchableOpacity onPress={() => stepper(-1)} accessibilityRole="button" accessibilityLabel={t('reg.party.less')} className="border border-border dark:border-border-dark rounded-xl items-center justify-center" style={{ width: 48, height: 48 }}>
                     <Minus size={18} color={themeColors.foreground} />
                   </TouchableOpacity>
-                  <Text className="text-foreground dark:text-foreground-dark text-lg font-bold">{draft.seats}</Text>
+                  <Text className="text-foreground dark:text-foreground-dark text-lg font-semibold">{draft.seats}</Text>
                   <TouchableOpacity onPress={() => stepper(1)} accessibilityRole="button" accessibilityLabel={t('reg.party.more')} className="border border-border dark:border-border-dark rounded-xl items-center justify-center" style={{ width: 48, height: 48 }}>
                     <Plus size={18} color={themeColors.foreground} />
                   </TouchableOpacity>
@@ -257,7 +257,7 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
                 className="bg-primary dark:bg-primary-dark rounded-xl items-center justify-center mt-2"
                 style={{ minHeight: 48 }}
               >
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold">{t('ride.offer')}</Text>
+                <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('ride.offer')}</Text>
               </TouchableOpacity>
             </View>
           )}

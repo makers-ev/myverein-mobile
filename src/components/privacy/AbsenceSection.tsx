@@ -70,7 +70,7 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
 
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-bold text-base mb-2">
+      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-base mb-2">
         {t('absence.title')}
       </Text>
       {canReport ? (
@@ -85,7 +85,7 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
           className="bg-primary dark:bg-primary-dark rounded-xl items-center justify-center"
           style={{ minHeight: 48 }}
         >
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold text-sm">
+          <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold text-sm">
             {wardName ? t('absence.button-ward', { name: wardName }) : t('absence.button')}
           </Text>
         </TouchableOpacity>

@@ -22,7 +22,7 @@ export default function ClubSwitcher({ onBeforeSwitch }: { onBeforeSwitch?: (pro
         accessibilityRole="button"
         accessibilityLabel={`${t('club-switcher.open')}: ${activeClub.clubName ?? t('club-switcher.unnamed')}`}
         onPress={() => setOpen(true)}
-        className="flex-row items-center self-start bg-muted dark:bg-muted-dark rounded-full px-3 py-1.5 min-h-[44px]"
+        className="flex-row items-center self-start bg-muted dark:bg-muted-dark rounded-[10px] px-3 py-1.5 min-h-[44px]"
         style={{ gap: 6, maxWidth: '100%' }}
       >
         <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold flex-shrink" numberOfLines={1}>
@@ -38,7 +38,7 @@ export default function ClubSwitcher({ onBeforeSwitch }: { onBeforeSwitch?: (pro
             <View className="items-center pt-2">
               <View className="w-10 h-1 rounded-full bg-border dark:bg-border-dark" />
             </View>
-            <Text className="text-foreground dark:text-foreground-dark text-lg font-bold px-5 pt-3 pb-2">{t('club-switcher.title')}</Text>
+            <Text className="text-foreground dark:text-foreground-dark text-lg font-semibold px-5 pt-3 pb-2">{t('club-switcher.title')}</Text>
             <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 16 }}>
               {clubs.map((club) => {
                 const selected = club.clubId === activeClub.clubId;

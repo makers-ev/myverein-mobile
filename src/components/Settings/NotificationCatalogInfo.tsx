@@ -33,7 +33,7 @@ export default function NotificationCatalogInfo() {
         <View className="bg-muted dark:bg-muted-dark rounded-xl p-3" style={{ gap: 8 }}>
           {NOTIFICATION_INFO_GROUPS.map((group) => (
             <View key={group}>
-              <Text className="text-foreground dark:text-foreground-dark text-sm font-bold">{t(`settings.notifications.info.${group}.title`)}</Text>
+              <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t(`settings.notifications.info.${group}.title`)}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t(`settings.notifications.info.${group}.body`)}</Text>
             </View>
           ))}

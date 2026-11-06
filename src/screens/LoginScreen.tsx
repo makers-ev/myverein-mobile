@@ -37,13 +37,13 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
   return (
     <KeyboardAwareScreen
       className="bg-muted dark:bg-muted-dark"
-      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 25 }}
+      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
     >
         <View className="items-center mb-6">
           <Logo />
         </View>
 
-        <Text className="text-3xl font-extrabold text-center mb-2 text-foreground dark:text-foreground-dark">
+        <Text className="text-3xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
           {t('login.title')}
         </Text>
         <Text className="text-sm text-center mb-8 text-muted-foreground dark:text-muted-foreground-dark">
@@ -51,7 +51,7 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
         </Text>
 
         <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
-          <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
+          <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('login.username')}
           </Text>
           <TextInput
@@ -68,7 +68,7 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
             onChangeText={setEmail}
           />
 
-          <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
+          <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('login.password')}
           </Text>
           <TextInput
@@ -96,7 +96,7 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
             {isSubmitting ? (
               <ActivityIndicator color={themeColors.primaryForeground} />
             ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">
                 {t('login.button')}
               </Text>
             )}

@@ -12,7 +12,7 @@ export function SectionCard({ title, action, children }: { title: string; action
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
       <View className="flex-row items-center justify-between mb-3">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-base">{title}</Text>
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base">{title}</Text>
         {action}
       </View>
       {children}
@@ -34,7 +34,7 @@ const TONE_CLASSES: Record<Tone, { bg: string; text: string }> = {
 export function StatusChip({ label, tone, icon }: { label: string; tone: Tone; icon?: React.ReactNode }) {
   const c = TONE_CLASSES[tone];
   return (
-    <View className={`flex-row items-center px-2.5 py-1 rounded-full self-start ${c.bg}`} style={{ gap: 4 }}>
+    <View className={`flex-row items-center px-2.5 py-1 rounded-md self-start ${c.bg}`} style={{ gap: 4 }}>
       {icon}
       <Text className={`text-xs font-semibold ${c.text}`}>{label}</Text>
     </View>
@@ -65,12 +65,12 @@ export function ChipPicker<T extends string>({
       <TouchableOpacity accessibilityRole="button"
         key={o.value}
         onPress={() => onChange(o.value)}
-        className={`px-3 py-1.5 rounded-full border ${
+        className={`px-3 py-1.5 rounded-[10px] border ${
           active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'border-border dark:border-border-dark'
         }`}
       >
         <Text
-          className={`text-sm ${active ? 'text-primary-foreground dark:text-primary-foreground-dark font-bold' : 'text-foreground dark:text-foreground-dark'}`}
+          className={`text-sm ${active ? 'text-primary-foreground dark:text-primary-foreground-dark font-semibold' : 'text-foreground dark:text-foreground-dark'}`}
         >
           {o.label}
         </Text>

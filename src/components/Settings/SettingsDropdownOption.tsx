@@ -80,7 +80,7 @@ export function SettingsDropdownOption({
                     <Text
                       className={`text-sm ${
                         selectedValue === item.value
-                          ? "font-bold text-foreground dark:text-foreground-dark"
+                          ? "font-semibold text-foreground dark:text-foreground-dark"
                           : "text-muted-foreground dark:text-muted-foreground-dark"
                       }`}
                     >

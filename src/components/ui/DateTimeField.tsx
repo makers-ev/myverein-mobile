@@ -72,7 +72,7 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
                 {[-10, -1].map((d) => (
                   <Chip key={d} label={String(d)} active={false} onPress={() => setMonth(new Date(month.getFullYear() + d, month.getMonth(), 1))} />
                 ))}
-                <Text className="text-foreground dark:text-foreground-dark font-bold text-base px-2">{month.getFullYear()}</Text>
+                <Text className="text-foreground dark:text-foreground-dark font-semibold text-base px-2">{month.getFullYear()}</Text>
                 {[1, 10].map((d) => (
                   <Chip key={d} label={`+${d}`} active={false} onPress={() => setMonth(new Date(month.getFullYear() + d, month.getMonth(), 1))} />
                 ))}
@@ -116,7 +116,7 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
                 }}
                 className="flex-1 bg-primary dark:bg-primary-dark rounded-xl py-3 items-center"
               >
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold">{t('ui.done')}</Text>
+                <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('ui.done')}</Text>
               </TouchableOpacity>
             </View>
           </Pressable>
@@ -130,11 +130,11 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
   return (
     <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
-      className={`px-3 py-1.5 rounded-full border ${
+      className={`px-3 py-1.5 rounded-[10px] border ${
         active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'border-border dark:border-border-dark'
       }`}
     >
-      <Text className={`text-sm ${active ? 'text-primary-foreground dark:text-primary-foreground-dark font-bold' : 'text-foreground dark:text-foreground-dark'}`}>
+      <Text className={`text-sm ${active ? 'text-primary-foreground dark:text-primary-foreground-dark font-semibold' : 'text-foreground dark:text-foreground-dark'}`}>
         {label}
       </Text>
     </TouchableOpacity>

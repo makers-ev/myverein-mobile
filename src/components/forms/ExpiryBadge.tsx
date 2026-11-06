@@ -25,7 +25,7 @@ export default function ExpiryBadge({ expiry }: { expiry: CredentialExpiry }) {
   const Icon = expiry.status === 'expired' ? AlertTriangle : expiry.status === 'expiring' ? Clock : expiry.status === 'valid' ? CheckCircle2 : MinusCircle;
   return (
     <View
-      className="self-start flex-row items-center rounded-full border px-2 py-1"
+      className="self-start flex-row items-center rounded-md border px-2 py-1"
       style={{ gap: 5, borderColor: tone }}
       accessible
       accessibilityLabel={text}

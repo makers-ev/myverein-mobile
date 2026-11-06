@@ -191,7 +191,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
   };
 
   const cardClass = 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4';
-  const titleClass = 'text-foreground dark:text-foreground-dark font-bold text-base mb-2';
+  const titleClass = 'text-foreground dark:text-foreground-dark font-semibold text-base mb-2';
   const mutedClass = 'text-muted-foreground dark:text-muted-foreground-dark text-sm';
 
   // A failed refetch keeps the old data visible but must not look current.
@@ -202,7 +202,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
           {t('exit.refresh-error')}
         </Text>
         <TouchableOpacity onPress={() => void refetch()} style={{ minHeight: 44, justifyContent: 'center' }} accessibilityRole="button">
-          <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
+          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.retry')}</Text>
         </TouchableOpacity>
       </View>
     ) : null;
@@ -222,7 +222,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
           style={{ minHeight: 44 }}
           accessibilityRole="button"
         >
-          <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
+          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.retry')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -248,7 +248,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
           accessibilityLabel={t('exit.withdraw')}
           accessibilityState={{ disabled: withdrawing, busy: withdrawing }}
         >
-          {withdrawing ? <ActivityIndicator color={themeColors.primary} /> : <Text className="text-destructive dark:text-destructive-dark text-sm font-bold">{t('exit.withdraw')}</Text>}
+          {withdrawing ? <ActivityIndicator color={themeColors.primary} /> : <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('exit.withdraw')}</Text>}
         </TouchableOpacity>
       </View>
     );
@@ -268,7 +268,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
           accessibilityRole="button"
           accessibilityLabel={t('exit.start')}
         >
-          <Text className="text-destructive dark:text-destructive-dark text-sm font-bold">{t('exit.start')}</Text>
+          <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('exit.start')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -366,7 +366,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
               style={{ minHeight: 44 }}
               accessibilityRole="button"
             >
-              <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
+              <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.retry')}</Text>
             </TouchableOpacity>
             {formRetries >= 1 ? (
               <TouchableOpacity
@@ -375,7 +375,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
                 style={{ minHeight: 44 }}
                 accessibilityRole="button"
               >
-                <Text className="text-destructive dark:text-destructive-dark text-sm font-bold">{t('forms.exit.skipForm')}</Text>
+                <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('forms.exit.skipForm')}</Text>
               </TouchableOpacity>
             ) : null}
           </View>

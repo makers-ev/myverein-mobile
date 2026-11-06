@@ -41,7 +41,7 @@ export default function ConnectionErrorScreen({ status, onRetry }: ConnectionErr
         <Text className="text-sm font-semibold text-muted-foreground dark:text-muted-foreground-dark">{statusLabel}</Text>
       </View>
 
-      <Text className="text-lg font-bold text-center mb-2 text-foreground dark:text-foreground-dark">
+      <Text className="text-lg font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
         {t('connection.offline-title')}
       </Text>
       <Text className="text-sm text-center mb-6 text-muted-foreground dark:text-muted-foreground-dark">
@@ -56,7 +56,7 @@ export default function ConnectionErrorScreen({ status, onRetry }: ConnectionErr
         {status === 'checking' ? (
           <ActivityIndicator color={themeColors.primaryForeground} />
         ) : (
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">
+          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">
             {t('connection.retry')}
           </Text>
         )}

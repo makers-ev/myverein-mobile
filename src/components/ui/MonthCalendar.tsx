@@ -45,23 +45,23 @@ export default function MonthCalendar({ month, onMonthChange, selectedDay, onSel
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3">
       <View className="flex-row items-center justify-between mb-2">
-        <TouchableOpacity accessibilityRole="button" onPress={() => shift(-1)} className="p-2" accessibilityLabel={t('ui.prev-month')}>
-          <ChevronLeft size={20} color={themeColors.foreground} />
+        <TouchableOpacity accessibilityRole="button" onPress={() => shift(-1)} className="items-center justify-center" style={{ width: 44, height: 44 }} accessibilityLabel={t('ui.prev-month')}>
+          <ChevronLeft size={20} strokeWidth={1.5} color={themeColors.foreground} />
         </TouchableOpacity>
         <TouchableOpacity accessibilityRole="button" onPress={() => onMonthChange(new Date())}>
-          <Text className="text-foreground dark:text-foreground-dark font-bold text-base">
+          <Text className="text-foreground dark:text-foreground-dark font-semibold text-base">
             {month.toLocaleDateString(language, { month: 'long', year: 'numeric' })}
           </Text>
           <Text className="text-primary dark:text-primary-dark text-xs text-center">{t('ui.today')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity accessibilityRole="button" onPress={() => shift(1)} className="p-2" accessibilityLabel={t('ui.next-month')}>
-          <ChevronRight size={20} color={themeColors.foreground} />
+        <TouchableOpacity accessibilityRole="button" onPress={() => shift(1)} className="items-center justify-center" style={{ width: 44, height: 44 }} accessibilityLabel={t('ui.next-month')}>
+          <ChevronRight size={20} strokeWidth={1.5} color={themeColors.foreground} />
         </TouchableOpacity>
       </View>
 
       <View className="flex-row">
         {weekdayLabels.map((label, i) => (
-          <Text key={i} className="flex-1 text-center text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold mb-1">
+          <Text key={i} className="flex-1 text-center text-muted-foreground dark:text-muted-foreground-dark text-xs font-medium mb-1">
             {label}
           </Text>
         ))}
@@ -90,7 +90,7 @@ export default function MonthCalendar({ month, onMonthChange, selectedDay, onSel
                   <Text
                     className={`text-sm ${
                       selected
-                        ? 'text-primary-foreground dark:text-primary-foreground-dark font-bold'
+                        ? 'text-primary-foreground dark:text-primary-foreground-dark font-semibold'
                         : inMonth
                           ? 'text-foreground dark:text-foreground-dark'
                           : 'text-muted-foreground dark:text-muted-foreground-dark opacity-50'

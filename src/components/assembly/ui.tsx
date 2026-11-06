@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { Check, CircleAlert, CircleHelp, Clock, Ellipsis, X, type LucideIcon } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -8,7 +9,7 @@ export function Card({ title, children }: { title?: string; children: React.Reac
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
       {title ? (
-        <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-bold text-base mb-2">
+        <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-base mb-2">
           {title}
         </Text>
       ) : null}
@@ -33,12 +34,12 @@ export function Button({ label, onPress, busy, disabled, secondary, accessibilit
       accessibilityState={{ disabled: !!off, busy: !!busy }}
       disabled={off}
       onPress={onPress}
-      className={`min-h-[48px] rounded-xl px-5 items-center justify-center mb-2 ${secondary ? 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark' : 'bg-primary dark:bg-primary-dark'} ${off ? 'opacity-50' : ''}`}
+      className={`min-h-[48px] rounded-[10px] px-5 items-center justify-center mb-2 ${secondary ? 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark' : 'bg-primary dark:bg-primary-dark'} ${off ? 'opacity-50' : ''}`}
     >
       {busy ? (
         <ActivityIndicator color={secondary ? colors.primary : colors.primaryForeground} />
       ) : (
-        <Text className={`font-bold text-sm ${secondary ? 'text-foreground dark:text-foreground-dark' : 'text-primary-foreground dark:text-primary-foreground-dark'}`}>{label}</Text>
+        <Text className={`font-semibold text-sm ${secondary ? 'text-foreground dark:text-foreground-dark' : 'text-primary-foreground dark:text-primary-foreground-dark'}`}>{label}</Text>
       )}
     </TouchableOpacity>
   );
@@ -67,11 +68,17 @@ export function Loading() {
   );
 }
 
-/** Status text with a leading symbol, so state is never conveyed by colour alone. */
+/** Status symbols the assembly screens pass in, drawn as line icons (never emoji). Unknown symbols show the label alone. */
+const SYMBOL_ICON: Record<string, LucideIcon> = { '✓': Check, '✕': X, '!': CircleAlert, '?': CircleHelp, '⏳': Clock, '…': Ellipsis };
+
+/** Status label with a leading line icon, so state is never conveyed by colour alone. */
 export function Badge({ label, symbol }: { label: string; symbol: string }) {
+  const colors = useThemeColors();
+  const Icon = SYMBOL_ICON[symbol];
   return (
-    <View className="self-start rounded-full px-3 py-1 bg-muted dark:bg-muted-dark border border-border dark:border-border-dark mb-2">
-      <Text className="text-xs font-semibold text-foreground dark:text-foreground-dark">{`${symbol} ${label}`}</Text>
+    <View className="self-start flex-row items-center rounded-md px-2 py-1 bg-muted dark:bg-muted-dark mb-2" style={{ gap: 6 }}>
+      {Icon ? <Icon size={14} strokeWidth={1.75} color={colors.mutedForeground} /> : symbol === '●' ? <View className="rounded-full bg-primary dark:bg-primary-dark" style={{ width: 8, height: 8 }} /> : null}
+      <Text className="text-xs font-medium text-foreground dark:text-foreground-dark">{label}</Text>
     </View>
   );
 }

@@ -73,7 +73,7 @@ export default function VerifyPinModal({
         className="flex-1 justify-center items-center bg-black/50"
       >
         <View className="bg-white w-80 p-6 rounded-2xl shadow-xl">
-          <Text className="text-xl font-bold text-center mb-2 text-gray-800">
+          <Text className="text-xl font-semibold text-center mb-2 text-gray-800">
             {t('remove-pin-modal.title')}
           </Text>
           <Text className="text-sm text-gray-500 text-center mb-6">
@@ -82,7 +82,7 @@ export default function VerifyPinModal({
 
           <View className="mb-2">
             <TextInput
-              className={`bg-gray-100 p-3 rounded-lg text-center text-2xl tracking-widest font-bold ${
+              className={`bg-gray-100 p-3 rounded-lg text-center text-2xl tracking-widest font-semibold ${
                 isLocked ? 'opacity-50' : ''
               }`}
               keyboardType="numeric"

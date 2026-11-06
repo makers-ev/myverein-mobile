@@ -13,6 +13,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import Skeleton from '@/components/ui/Skeleton';
 import ListRow from '@/components/ui/ListRow';
+import SectionLabel from '@/components/ui/SectionLabel';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 /**
@@ -37,7 +38,7 @@ export default function SucheScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="px-6 pt-4 pb-2">
-        <Text accessibilityRole="header" className="text-2xl font-black text-foreground dark:text-foreground-dark mb-3">
+        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-3">
           {t('search.title')}
         </Text>
         <View className="flex-row items-center bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-xl px-3" style={{ minHeight: 48 }}>
@@ -111,10 +112,8 @@ export default function SucheScreen() {
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <View className="mb-2">
-      <Text accessibilityRole="header" className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-bold uppercase tracking-wider mb-2 mt-3">
-        {title}
-      </Text>
+    <View>
+      <SectionLabel>{title}</SectionLabel>
       {children}
     </View>
   );

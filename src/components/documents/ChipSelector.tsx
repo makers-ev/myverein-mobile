@@ -24,7 +24,7 @@ export default function ChipSelector({ chips, selectedKey, onSelect }: { chips: 
             className={`rounded-2xl px-4 justify-center border ${active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'bg-card dark:bg-card-dark border-border dark:border-border-dark'}`}
             style={{ minHeight: 48 }}
           >
-            <Text className={`text-sm font-bold ${active ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-foreground dark:text-foreground-dark'}`} numberOfLines={1}>
+            <Text className={`text-sm font-semibold ${active ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-foreground dark:text-foreground-dark'}`} numberOfLines={1}>
               {s.label}
             </Text>
             <Text className={`text-xs ${active ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`} numberOfLines={1}>

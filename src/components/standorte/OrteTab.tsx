@@ -47,7 +47,7 @@ function LocationCard({ location, onPress, onPhotoExpired }: { location: Locatio
         <LocationPhotoPlaceholder className="w-full h-36" />
       )}
       <View className="p-4">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{location.name}</Text>
+        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{location.name}</Text>
         {!!location.address && (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm" numberOfLines={1}>
             {location.address}
@@ -76,7 +76,7 @@ function LocationList({ clubId, canWrite, onSelect }: { clubId: string; canWrite
   return (
     <>
       <View className="flex-row items-center justify-between mb-3">
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold uppercase">
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] font-medium">
           {t('standorte.list.count', { count: locations.length })}
         </Text>
         {canWrite && <IconButton kind="add" label={t('standorte.add')} onPress={() => setCreating(true)} />}
@@ -256,7 +256,7 @@ function LocationDetail({
       )}
 
       <View className="flex-row items-center mb-4" style={{ gap: 8 }}>
-        <Text className="flex-1 text-xl font-black text-foreground dark:text-foreground-dark">{location.name}</Text>
+        <Text className="flex-1 text-xl font-semibold text-foreground dark:text-foreground-dark">{location.name}</Text>
         {canWrite && <IconButton kind="edit" label={t('standorte.edit')} onPress={() => setSheet({ kind: 'location' })} />}
       </View>
 
@@ -269,7 +269,7 @@ function LocationDetail({
             style={{ gap: 6 }}
           >
             <MapPin size={14} color={themeColors.primaryForeground} />
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-bold">
+            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">
               {t('standorte.detail.directions')}
             </Text>
           </TouchableOpacity>

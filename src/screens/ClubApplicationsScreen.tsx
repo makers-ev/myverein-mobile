@@ -28,7 +28,7 @@ function ApplicationCard({ application, onOpen }: { application: ClubApplication
     >
       <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
         <View className="flex-1">
-          <Text className="text-foreground dark:text-foreground-dark font-bold text-sm">{title}</Text>
+          <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">{title}</Text>
           {child ? (
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">
               {t('forms.review.list.forChild', { name: application.name ?? application.email ?? '—' })}
@@ -38,12 +38,12 @@ function ApplicationCard({ application, onOpen }: { application: ClubApplication
           ) : null}
         </View>
         {child ? (
-          <View className="flex-row items-center bg-primary/10 dark:bg-primary-dark/10 px-2 py-0.5 rounded-full" style={{ gap: 4 }}>
+          <View className="flex-row items-center bg-primary/10 dark:bg-primary-dark/10 px-2 py-1 rounded-md" style={{ gap: 4 }}>
             <Baby size={12} color={themeColors.primary} />
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('forms.review.badge.child')}</Text>
           </View>
         ) : application.legacy ? (
-          <View className="bg-muted dark:bg-muted-dark px-2 py-0.5 rounded-full">
+          <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{t('forms.review.badge.legacy')}</Text>
           </View>
         ) : null}
@@ -88,7 +88,7 @@ function ApplicationCard({ application, onOpen }: { application: ClubApplication
         style={{ minHeight: 44 }}
         accessible={false}
       >
-        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('forms.review.open')}</Text>
+        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('forms.review.open')}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -133,7 +133,7 @@ export default function ClubApplicationsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="px-6 pt-4 pb-3">
-        <Text className="text-2xl font-black text-foreground dark:text-foreground-dark" accessibilityRole="header">
+        <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark" accessibilityRole="header">
           {t('verein.applications.title')}
         </Text>
         {can('members:write') && total > 0 ? (
@@ -194,7 +194,7 @@ export default function ClubApplicationsScreen() {
                 onPress={() => void refetch()}
                 accessibilityRole="button"
               >
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('verein.applications.retry')}</Text>
+                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('verein.applications.retry')}</Text>
               </TouchableOpacity>
             </View>
           ) : null}

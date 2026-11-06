@@ -193,7 +193,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
           {t('admin.exits.refresh-error')}
         </Text>
         <TouchableOpacity onPress={() => void refetch()} style={{ minHeight: 44, justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('verein.retry')}>
-          <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
+          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.retry')}</Text>
         </TouchableOpacity>
       </View>
     ) : null;
@@ -214,7 +214,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
           accessibilityRole="button"
           accessibilityLabel={t('verein.retry')}
         >
-          <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.retry')}</Text>
+          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.retry')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -245,7 +245,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
               accessibilityLabel={`${t('admin.exits.approve')}: ${r.memberName ?? ''}`}
               accessibilityState={{ disabled: own }}
             >
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('admin.exits.approve')}</Text>
+              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('admin.exits.approve')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               className="flex-1 rounded-lg items-center justify-center border border-border dark:border-border-dark"
@@ -254,7 +254,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
               accessibilityRole="button"
               accessibilityLabel={`${t('admin.exits.reject')}: ${r.memberName ?? ''}`}
             >
-              <Text className="text-destructive dark:text-destructive-dark text-sm font-bold">{t('admin.exits.reject')}</Text>
+              <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('admin.exits.reject')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -264,7 +264,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
 
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-2" accessibilityRole="header">
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-2" accessibilityRole="header">
         {t('admin.exits.title')}
       </Text>
       {listError ? (

@@ -51,7 +51,7 @@ const openURL = (url: string) => {
 function SectionCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
     return (
         <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-            <Text className="text-base font-bold text-foreground dark:text-foreground-dark">{title}</Text>
+            <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">{title}</Text>
             {subtitle && (
                 <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mt-0.5 mb-1">{subtitle}</Text>
             )}
@@ -273,7 +273,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
             />
 
                 <View className="items-center mb-6">
-                    <Text className="text-2xl font-bold text-foreground dark:text-foreground-dark">{t('settings.title')}</Text>
+                    <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark">{t('settings.title')}</Text>
                 </View>
 
                 {isAuthenticated ? (
@@ -312,7 +312,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                                 className="flex-1 bg-primary dark:bg-primary-dark rounded-xl py-3"
                                 onPress={() => navigation.navigate('Signup')}
                             >
-                                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-center font-bold">
+                                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-center font-semibold">
                                     {t('home.signup-cta')}
                                 </Text>
                             </TouchableOpacity>
@@ -320,7 +320,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                                 className="flex-1 border border-border dark:border-border-dark rounded-xl py-3"
                                 onPress={() => navigation.navigate('Login', {})}
                             >
-                                <Text className="text-foreground dark:text-foreground-dark text-center font-bold">
+                                <Text className="text-foreground dark:text-foreground-dark text-center font-semibold">
                                     {t('home.login-cta')}
                                 </Text>
                             </TouchableOpacity>
@@ -407,7 +407,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                             className="bg-primary dark:bg-primary-dark py-2.5 px-4 rounded-lg"
                             accessibilityRole="button"
                             onPress={() => navigation.navigate('PrivacyCenter')}>
-                            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold text-center">
+                            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold text-center">
                                 {t('datenschutz.open')}
                             </Text>
                         </TouchableOpacity>
@@ -418,7 +418,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                     <TouchableOpacity accessibilityRole="button"
                         className={`${appLockActive ? 'bg-destructive' : 'bg-primary dark:bg-primary-dark'} py-2.5 px-4 rounded-lg`}
                         onPress={handlePinButtonPress}>
-                        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold text-center">
+                        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold text-center">
                             {appLockButtonTitle}
                         </Text>
                     </TouchableOpacity>
@@ -427,14 +427,14 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                 {isAuthenticated && (
                 <View className="items-center justify-center mb-5">
                     <View className="w-full border-2 border-destructive p-4 rounded-md bg-card dark:bg-card-dark">
-                        <Text className="text-lg font-bold text-destructive dark:text-destructive-dark mb-2 text-center">
+                        <Text className="text-lg font-semibold text-destructive dark:text-destructive-dark mb-2 text-center">
                             {t('settings.danger-zone')}
                         </Text>
 
                         <TouchableOpacity accessibilityRole="button"
                             className="bg-destructive py-2 px-4 rounded-md my-1"
                             onPress={() => setLogoutPopup(true)}>
-                            <Text className="text-primary-foreground text-base font-bold text-center">
+                            <Text className="text-primary-foreground text-base font-semibold text-center">
                                 {t('settings.logout')}
                             </Text>
                         </TouchableOpacity>
@@ -442,7 +442,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                         <TouchableOpacity accessibilityRole="button"
                             className="bg-destructive py-2 px-4 rounded-md my-1"
                             onPress={() => setDeleteAccountPopup(true)}>
-                            <Text className="text-primary-foreground text-base font-bold text-center">
+                            <Text className="text-primary-foreground text-base font-semibold text-center">
                                 {t('settings.delete-account')}
                             </Text>
                         </TouchableOpacity>

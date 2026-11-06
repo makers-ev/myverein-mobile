@@ -5,6 +5,7 @@ import { ActivityIndicator, Text, TextInput, TouchableOpacity, View, ScrollView 
 
 import OfflineNotice from '@/components/ui/OfflineNotice';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
+import { ChevronRight } from 'lucide-react-native';
 import { useThemeColors } from '@/theme/colors';
 import { navigate } from '@/navigation/navigationRef';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
@@ -28,7 +29,7 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`px-4 rounded-full justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}
+      className={`px-4 rounded-[10px] justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}
       style={{ minHeight: 44 }}
       accessibilityRole="button"
       accessibilityState={{ selected }}
@@ -65,9 +66,9 @@ function MemberRow({
     <>
       <View className="flex-row items-center justify-between" style={{ gap: 10 }}>
         <MemberAvatar name={member.name} photoUrl={member.photoUrl} size={40} onExpired={onPhotoExpired} />
-        <Text className="flex-1 text-foreground dark:text-foreground-dark font-bold text-sm">{member.name ?? '—'}</Text>
+        <Text className="flex-1 text-foreground dark:text-foreground-dark font-semibold text-sm">{member.name ?? '—'}</Text>
         {category ? (
-          <View className="bg-muted dark:bg-muted-dark px-2 py-0.5 rounded-full">
+          <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{category}</Text>
           </View>
         ) : null}
@@ -75,12 +76,12 @@ function MemberRow({
       {showStatus || !member.hasAccount ? (
         <View className="flex-row flex-wrap mt-2" style={{ gap: 6 }}>
           {showStatus ? (
-            <View className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-0.5 rounded-full">
+            <View className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-1 rounded-md">
               <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t(`verein.status.${member.effectiveStatus}`)}</Text>
             </View>
           ) : null}
           {showStatus && !member.hasAccount ? (
-            <View className="bg-muted dark:bg-muted-dark px-2 py-0.5 rounded-full">
+            <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{t('verein.members.account.no')}</Text>
             </View>
           ) : null}
@@ -92,7 +93,7 @@ function MemberRow({
       {member.roles.length > 0 ? (
         <View className="flex-row flex-wrap mt-2" style={{ gap: 6 }}>
           {member.roles.map((r) => (
-            <View key={r.id} className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-0.5 rounded-full">
+            <View key={r.id} className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-1 rounded-md">
               <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t(`verein.role.${r.roleType}`)}</Text>
             </View>
           ))}
@@ -221,14 +222,14 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
 
   const applicationsEntry = can('members:write') ? (
     <TouchableOpacity
-      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3 flex-row items-center justify-between"
+      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-xl px-4 py-3 mb-3 flex-row items-center justify-between"
       style={{ minHeight: 48 }}
       onPress={() => navigate('ClubApplications')}
       accessibilityRole="button"
       accessibilityLabel={t('verein.applications.open')}
     >
-      <Text className="text-primary dark:text-primary-dark font-bold text-sm">{t('verein.applications.open')}</Text>
-      <Text className="text-primary dark:text-primary-dark font-bold text-sm">›</Text>
+      <Text className="text-foreground dark:text-foreground-dark font-medium text-[15px]">{t('verein.applications.open')}</Text>
+      <ChevronRight size={18} strokeWidth={1.5} color={themeColors.mutedForeground} />
     </TouchableOpacity>
   ) : null;
 
@@ -296,7 +297,7 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
             accessibilityRole="button"
             accessibilityLabel={t('verein.retry')}
           >
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('verein.retry')}</Text>
+            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('verein.retry')}</Text>
           </TouchableOpacity>
         </View>
       ) : members.length === 0 ? (
@@ -313,7 +314,7 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
               accessibilityRole="button"
               accessibilityLabel={t('verein.members.filter.reset')}
             >
-              <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.members.filter.reset')}</Text>
+              <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.members.filter.reset')}</Text>
             </TouchableOpacity>
           ) : null}
         </View>
@@ -349,7 +350,7 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
               {loadingMore ? (
                 <ActivityIndicator color={themeColors.primary} />
               ) : (
-                <Text className="text-primary dark:text-primary-dark text-sm font-bold">{t('verein.members.load-more')}</Text>
+                <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.members.load-more')}</Text>
               )}
             </TouchableOpacity>
           ) : null}

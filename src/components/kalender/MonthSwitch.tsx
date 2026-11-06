@@ -28,7 +28,7 @@ export default function MonthSwitch({ month, onChange }: Props) {
       >
         <ChevronLeft size={20} color={colors.foreground} />
       </TouchableOpacity>
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-sm" accessibilityLiveRegion="polite">
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm" accessibilityLiveRegion="polite">
         {month.toLocaleDateString(language, { month: 'long', year: 'numeric' })}
       </Text>
       <TouchableOpacity

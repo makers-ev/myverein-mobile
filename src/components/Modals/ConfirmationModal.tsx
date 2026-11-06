@@ -40,7 +40,7 @@ export default function ConfirmationModal({
         activeOpacity={1}
       >
         <View className="bg-white rounded-lg p-5 max-w-xs">
-          <Text className={`text-lg font-bold text-center mb-4 ${titleColor}`}>
+          <Text className={`text-lg font-semibold text-center mb-4 ${titleColor}`}>
             {title}
           </Text>
           {message && (
@@ -56,7 +56,7 @@ export default function ConfirmationModal({
                   className={`py-2 px-4 rounded-md ${button.color}`}
                   onPress={button.onPress}
                 >
-                  <Text className="text-white font-bold text-center">
+                  <Text className="text-white font-semibold text-center">
                     {button.text}
                   </Text>
                 </TouchableOpacity>

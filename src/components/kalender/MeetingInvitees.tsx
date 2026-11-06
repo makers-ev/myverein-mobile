@@ -53,7 +53,7 @@ export default function MeetingInvitees({ invitees, directory, nameFor, onAdd, o
 
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('treffen.invitees.title')}</Text>
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('treffen.invitees.title')}</Text>
 
       {invitees.length === 0 ? (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.invitees.empty')}</Text>
@@ -117,7 +117,7 @@ export default function MeetingInvitees({ invitees, directory, nameFor, onAdd, o
                 {busyId === m.memberId ? (
                   <ActivityIndicator color={themeColors.primary} size="small" />
                 ) : (
-                  <Text className="text-primary dark:text-primary-dark text-xs font-bold">{t('treffen.invitees.invite')}</Text>
+                  <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('treffen.invitees.invite')}</Text>
                 )}
               </TouchableOpacity>
             ))

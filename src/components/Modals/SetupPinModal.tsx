@@ -35,13 +35,13 @@ export default function SetupPinModal({ visible, onClose, onConfirm }: SetupPinM
                 className="flex-1 justify-center items-center bg-black/50"
             >
                 <View className="bg-white w-80 p-6 rounded-2xl shadow-xl">
-                    <Text className="text-xl font-bold text-center mb-2 text-gray-800">{t('setup-pin-modal.title')}</Text>
+                    <Text className="text-xl font-semibold text-center mb-2 text-gray-800">{t('setup-pin-modal.title')}</Text>
                     <Text className="text-sm text-gray-500 text-center mb-6">{t('setup-pin-modal.message')}</Text>
 
                     <View className="mb-4">
-                        <Text className="text-xs font-bold text-gray-400 mb-1 uppercase">{t('setup-pin-modal.label-new')}</Text>
+                        <Text className="text-[13px] font-medium text-gray-400 mb-1">{t('setup-pin-modal.label-new')}</Text>
                         <TextInput
-                            className="bg-gray-100 p-3 rounded-lg text-center text-2xl tracking-widest font-bold"
+                            className="bg-gray-100 p-3 rounded-lg text-center text-2xl tracking-widest font-semibold"
                             keyboardType="numeric"
                             maxLength={4}
                             secureTextEntry
@@ -52,9 +52,9 @@ export default function SetupPinModal({ visible, onClose, onConfirm }: SetupPinM
                     </View>
 
                     <View className="mb-2">
-                        <Text className="text-xs font-bold text-gray-400 mb-1 uppercase">{t('setup-pin-modal.label-repeat')}</Text>
+                        <Text className="text-[13px] font-medium text-gray-400 mb-1">{t('setup-pin-modal.label-repeat')}</Text>
                         <TextInput
-                            className={`bg-gray-100 p-3 rounded-lg text-center text-2xl tracking-widest font-bold ${
+                            className={`bg-gray-100 p-3 rounded-lg text-center text-2xl tracking-widest font-semibold ${
                                 error ? 'border-2 border-red-500' : ''
                             }`}
                             keyboardType="numeric"
@@ -80,7 +80,7 @@ export default function SetupPinModal({ visible, onClose, onConfirm }: SetupPinM
                             disabled={!isMatch}
                             className={`flex-1 py-3 rounded-xl ${isMatch ? 'bg-blue-600' : 'bg-gray-300'}`}
                         >
-                            <Text className="text-center text-white font-bold">{t('setup-pin-modal.button-save')}</Text>
+                            <Text className="text-center text-white font-semibold">{t('setup-pin-modal.button-save')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

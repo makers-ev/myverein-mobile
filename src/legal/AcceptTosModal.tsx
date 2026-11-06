@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Check } from 'lucide-react-native';
+import { useThemeColors } from '@/theme/colors';
+import { tabBarClearance } from '@/components/Navbar';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 
 const SECTION_COUNT = 8;
@@ -30,10 +33,11 @@ interface AcceptTosModalProps {
  */
 export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProps) {
     const { t } = useLanguage();
+    const themeColors = useThemeColors();
     const [isChecked, setIsChecked] = useState(false);
     const insets = useSafeAreaInsets();
     const { height: windowHeight } = useWindowDimensions();
-    const navbarClearance = Math.max(insets.bottom + 12, 24) + 64 + 12;
+    const navbarClearance = tabBarClearance(insets.bottom);
     const topClearance = insets.top + 12;
     const maxCardHeight = Math.min(windowHeight * 0.85, windowHeight - topClearance - navbarClearance);
 
@@ -47,10 +51,10 @@ export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProp
         <Modal animationType="slide" transparent visible={visible} onRequestClose={() => {}}>
             <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
                 <View
-                    className="bg-card dark:bg-card-dark rounded-3xl px-6 pt-6 pb-8"
+                    className="bg-card dark:bg-card-dark rounded-[20px] px-6 pt-6 pb-8"
                     style={{ marginHorizontal: 16, marginBottom: navbarClearance, maxHeight: maxCardHeight }}
                 >
-                    <Text className="text-2xl font-black text-foreground dark:text-foreground-dark mb-4">
+                    <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark mb-4">
                         {t('legal.tos.title')}
                     </Text>
 
@@ -60,7 +64,7 @@ export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProp
                     >
                         {Array.from({ length: SECTION_COUNT }, (_, i) => i + 1).map((num) => (
                             <View key={num} className="mb-4">
-                                <Text className="font-bold text-foreground dark:text-foreground-dark mb-1">
+                                <Text className="font-semibold text-foreground dark:text-foreground-dark mb-1">
                                     {t(`legal.tos.section${num}.title`)}
                                 </Text>
                                 <Text className="text-sm text-muted-foreground dark:text-muted-foreground-dark leading-relaxed">
@@ -83,9 +87,7 @@ export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProp
                             }`}
                         >
                             {isChecked && (
-                                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-black">
-                                    ✓
-                                </Text>
+                                <Check size={14} strokeWidth={2.5} color={themeColors.primaryForeground} />
                             )}
                         </View>
                         <Text className="flex-1 text-sm text-foreground dark:text-foreground-dark">
@@ -101,7 +103,7 @@ export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProp
                         }`}
                     >
                         <Text
-                            className={`font-bold text-base ${
+                            className={`font-semibold text-base ${
                                 isChecked
                                     ? 'text-primary-foreground dark:text-primary-foreground-dark'
                                     : 'text-muted-foreground dark:text-muted-foreground-dark'

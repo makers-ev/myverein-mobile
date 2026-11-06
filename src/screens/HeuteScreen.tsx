@@ -55,7 +55,7 @@ export default function HeuteScreen({ navigation }: Props) {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="px-6 pt-4">
-        <Text accessibilityRole="header" className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">
+        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
           {t('heute.title')}
         </Text>
         {selected ? (
@@ -85,7 +85,7 @@ export default function HeuteScreen({ navigation }: Props) {
           ) : (
             <>
               {goneNotice ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">{t('heute.gone')}</Text> : null}
-              <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t('heute.empty.title')}</Text>
+              <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{t('heute.empty.title')}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">{t('heute.empty.body')}</Text>
               <TouchableOpacity accessibilityRole="button" onPress={() => goToTab('Dashboard')} className="min-h-[44px] justify-center self-start">
                 <Text className="text-primary dark:text-primary-dark font-semibold">{t('heute.empty.dashboard')}</Text>

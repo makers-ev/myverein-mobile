@@ -8,7 +8,7 @@ import type { Today } from '@/lib/today';
 
 function Heading({ children }: { children: string }) {
   return (
-    <Text accessibilityRole="header" className="text-primary dark:text-primary-dark text-xs font-bold uppercase tracking-wider mb-2 mt-1">
+    <Text accessibilityRole="header" className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] font-medium mb-2 mt-4">
       {children}
     </Text>
   );

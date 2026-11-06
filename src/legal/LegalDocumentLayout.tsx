@@ -35,7 +35,7 @@ export default function LegalDocumentLayout({ keyPrefix, sectionCount = 4 }: { k
                 >
                     <ChevronLeft size={24} color={themeColors.foreground} />
                 </TouchableOpacity>
-                <Text className="flex-1 text-center text-lg font-bold text-foreground dark:text-foreground-dark mr-8">
+                <Text className="flex-1 text-center text-lg font-semibold text-foreground dark:text-foreground-dark mr-8">
                     {t(`${keyPrefix}.title`)}
                 </Text>
             </View>
@@ -54,7 +54,7 @@ export default function LegalDocumentLayout({ keyPrefix, sectionCount = 4 }: { k
 
                 {Array.from({ length: sectionCount }, (_, i) => i + 1).map((num) => (
                     <View key={num} className="mb-5">
-                        <Text className="text-base font-bold text-foreground dark:text-foreground-dark mb-1">
+                        <Text className="text-base font-semibold text-foreground dark:text-foreground-dark mb-1">
                             {t(`${keyPrefix}.section${num}.title`)}
                         </Text>
                         <Text className="text-sm text-muted-foreground dark:text-muted-foreground-dark leading-relaxed">

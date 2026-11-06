@@ -88,7 +88,7 @@ export default function VersammlungScreen({ route, navigation }: Props) {
               onPress={() => setMeetingId(m.id)}
               className="min-h-[64px] bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-3"
             >
-              <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{m.title}</Text>
+              <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{m.title}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{m.scheduledAt ? new Date(m.scheduledAt).toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' }) : t('treffen.scheduled-at.pending')}</Text>
             </TouchableOpacity>
           ))
@@ -102,7 +102,7 @@ export default function VersammlungScreen({ route, navigation }: Props) {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 140 }}>
-        <Text accessibilityRole="header" className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">
+        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
           {t('assembly.title')}
         </Text>
         {activeClub?.clubName ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-4">{activeClub.clubName}</Text> : <View className="mb-4" />}

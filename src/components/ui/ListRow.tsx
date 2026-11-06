@@ -1,5 +1,9 @@
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { ChevronRight } from 'lucide-react-native';
+
+import { useThemeColors } from '@/theme/colors';
+import PressScale from './PressScale';
 
 interface Props {
   title: string;
@@ -9,27 +13,29 @@ interface Props {
   badge?: number;
 }
 
-/** Navigation row (title, optional hint, chevron, optional count): the standard entry of Mehr and Verwaltung lists. */
+/** Navigation row (title, optional hint, chevron, optional count): the standard entry of Mehr and Verwaltung lists. 56pt high, 8pt apart. */
 export default function ListRow({ title, hint, onPress, badge = 0 }: Props) {
+  const colors = useThemeColors();
   const label = [title, hint, badge > 0 ? String(badge) : null].filter(Boolean).join('. ');
   return (
-    <TouchableOpacity
-      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3 flex-row items-center justify-between"
+    <PressScale
+      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-xl px-4 py-3 mb-2 flex-row items-center justify-between"
       style={{ minHeight: 56 }}
+      scale={0.99}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      <View className="flex-1 pr-2">
-        <Text className="text-foreground dark:text-foreground-dark font-bold text-sm">{title}</Text>
-        {hint ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">{hint}</Text> : null}
+      <View className="flex-1 pr-3">
+        <Text className="text-foreground dark:text-foreground-dark font-medium text-[15px]">{title}</Text>
+        {hint ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] mt-0.5">{hint}</Text> : null}
       </View>
       {badge > 0 ? (
-        <View className="min-w-[22px] h-[22px] rounded-full items-center justify-center bg-destructive px-1 mr-2">
-          <Text className="text-[11px] font-bold text-white">{badge > 99 ? '99+' : badge}</Text>
+        <View className="min-w-[22px] h-[22px] rounded-[10px] items-center justify-center bg-destructive px-1.5 mr-2">
+          <Text className="text-[11px] font-semibold text-white">{badge > 99 ? '99+' : badge}</Text>
         </View>
       ) : null}
-      <Text className="text-primary dark:text-primary-dark font-bold text-sm">›</Text>
-    </TouchableOpacity>
+      <ChevronRight size={18} strokeWidth={1.5} color={colors.mutedForeground} />
+    </PressScale>
   );
 }

@@ -39,7 +39,7 @@ export default function InfoModal({
             </TouchableOpacity>
           )}
 
-          <Text className={`text-lg font-bold text-center mb-4 ${titleColor}`}>{title}</Text>
+          <Text className={`text-lg font-semibold text-center mb-4 ${titleColor}`}>{title}</Text>
 
           {message && (
             <Text className={`text-sm text-center ${messageColor}`}>{message}</Text>

@@ -55,11 +55,11 @@ export default function MeetingManageSection({ meeting, onUpdate, onDelete }: Pr
 
   return (
     <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-3">{t('treffen.manage.title')}</Text>
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('treffen.manage.title')}</Text>
 
       <NotifySwitch label={t('treffen.notify')} hint={t('treffen.notify.hint-manage')} value={notify} onChange={setNotify} disabled={busy !== null} />
 
-      <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">{t('treffen.manage.status')}</Text>
+      <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">{t('treffen.manage.status')}</Text>
       <View className="flex-row flex-wrap mb-4" style={{ gap: 8 }}>
         {MEETING_STATUSES.map((s) => {
           const selected = s === meeting.status;
@@ -68,7 +68,7 @@ export default function MeetingManageSection({ meeting, onUpdate, onDelete }: Pr
               key={s}
               onPress={() => changeStatus(s)}
               disabled={busy !== null}
-              className={`px-3 rounded-full justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'} ${busy === 'status' && !selected ? 'opacity-50' : ''}`}
+              className={`px-3 rounded-[10px] justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'} ${busy === 'status' && !selected ? 'opacity-50' : ''}`}
               style={{ minHeight: 44 }}
               accessibilityRole="button"
               accessibilityState={{ selected, disabled: busy !== null }}
@@ -84,7 +84,7 @@ export default function MeetingManageSection({ meeting, onUpdate, onDelete }: Pr
         })}
       </View>
 
-      <Text className="text-xs font-semibold uppercase mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">{t('treffen.scheduled-at')}</Text>
+      <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">{t('treffen.scheduled-at')}</Text>
       <DateTimeField value={date} onChange={setDate} placeholder={t('treffen.scheduled-at.placeholder')} clearable />
       {dateDirty ? (
         <TouchableOpacity
@@ -97,7 +97,7 @@ export default function MeetingManageSection({ meeting, onUpdate, onDelete }: Pr
           {busy === 'date' ? (
             <ActivityIndicator color={themeColors.primaryForeground} size="small" />
           ) : (
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">{t('treffen.manage.save-date')}</Text>
+            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('treffen.manage.save-date')}</Text>
           )}
         </TouchableOpacity>
       ) : null}

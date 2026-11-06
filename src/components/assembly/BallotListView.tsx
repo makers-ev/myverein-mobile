@@ -20,7 +20,7 @@ function Row({ ballot, onPress }: { ballot: BallotSummary; onPress: () => void }
       onPress={onPress}
       className="min-h-[64px] bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-3"
     >
-      <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{ballot.title}</Text>
+      <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{ballot.title}</Text>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{`${SYMBOL[ballot.phase] ?? '•'} ${phase}${ballot.secret ? ` · ${t('assembly.secret')}` : ''}`}</Text>
       {until ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">{until}</Text> : null}
     </TouchableOpacity>
@@ -45,13 +45,13 @@ export default function BallotListView({ clubId, onSelect }: { clubId: string; o
   }
   return (
     <>
-      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-bold text-lg mb-2">
+      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-lg mb-2">
         {t('assembly.list.open')}
       </Text>
       {open.length === 0 ? <Body muted>{t('assembly.list.none-open')}</Body> : open.map((b) => <Row key={b.id} ballot={b} onPress={() => onSelect(b.id)} />)}
       {rest.length > 0 ? (
         <>
-          <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-bold text-lg mt-4 mb-2">
+          <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-lg mt-4 mb-2">
             {t('assembly.list.done')}
           </Text>
           {rest.map((b) => (

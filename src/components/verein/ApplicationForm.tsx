@@ -85,7 +85,7 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
 
   return (
     <View className="mt-4">
-      <Text className="text-base font-bold text-foreground dark:text-foreground-dark">{definition.name}</Text>
+      <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">{definition.name}</Text>
       <Text className="text-xs mt-1 text-muted-foreground dark:text-muted-foreground-dark">{t('forms.apply.requiredLegend')}</Text>
 
       {form.notice ? (
@@ -177,7 +177,7 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
         {form.submitting ? (
           <ActivityIndicator color={themeColors.primaryForeground} />
         ) : (
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-bold">{t('forms.apply.submit')}</Text>
+          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">{t('forms.apply.submit')}</Text>
         )}
       </TouchableOpacity>
       {form.hasDraft ? (

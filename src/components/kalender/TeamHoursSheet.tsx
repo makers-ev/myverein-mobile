@@ -53,7 +53,7 @@ export default function TeamHoursSheet({ visible, onClose, clubId }: Props) {
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('time.team.empty')}</Text>
       ) : (
         <View>
-          <Text className="text-foreground dark:text-foreground-dark text-sm font-bold mb-1">
+          <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mb-1">
             {t('time.total', { duration: formatDuration(report.totals.minutes) })}
             {withAmounts && typeof report.totals.amountCents === 'number' ? ` · ${formatEuro(report.totals.amountCents, language)}` : ''}
           </Text>

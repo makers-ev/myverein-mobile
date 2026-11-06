@@ -98,7 +98,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
           <View className="border border-border dark:border-border-dark rounded-xl p-3 mb-4" accessibilityLiveRegion="polite">
             {running ? (
               <>
-                <Text className="text-foreground dark:text-foreground-dark text-base font-bold">{t('time.running', { duration: formatDuration(elapsedMinutes(running.startedAt, now)) })}</Text>
+                <Text className="text-foreground dark:text-foreground-dark text-base font-semibold">{t('time.running', { duration: formatDuration(elapsedMinutes(running.startedAt, now)) })}</Text>
                 <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">
                   {running.eventTitle ? `${running.eventTitle} · ` : ''}
                   {t('time.since', { time: new Date(running.startedAt).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' }) })}
@@ -111,7 +111,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
                   style={{ gap: 8, minHeight: 52 }}
                 >
                   <Square size={18} color="#FFFFFF" />
-                  <Text className="text-white font-bold">{t('time.stop')}</Text>
+                  <Text className="text-white font-semibold">{t('time.stop')}</Text>
                 </TouchableOpacity>
               </>
             ) : (
@@ -125,7 +125,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
                   style={{ gap: 8, minHeight: 52 }}
                 >
                   <Play size={18} color={themeColors.primaryForeground} />
-                  <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold">{t('time.start')}</Text>
+                  <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('time.start')}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -133,7 +133,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
 
           {time.suggestions.length > 0 ? (
             <View className="mb-4">
-              <Text className="text-foreground dark:text-foreground-dark text-sm font-bold">{t('time.suggestions')}</Text>
+              <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('time.suggestions')}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-1">{t('time.suggestions.hint')}</Text>
               {time.suggestions.map((s) => (
                 <View key={s.eventId} className="flex-row items-center border-b border-border dark:border-border-dark">
@@ -150,7 +150,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
             </View>
           ) : null}
 
-          <Text className="text-foreground dark:text-foreground-dark text-sm font-bold">{t('time.month')}</Text>
+          <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('time.month')}</Text>
           {finished.length === 0 ? (
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mt-1">{t('time.empty')}</Text>
           ) : (

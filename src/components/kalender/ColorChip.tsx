@@ -22,7 +22,7 @@ export function ColorChip({
       accessibilityState={{ selected: active, disabled: !!disabled }}
       // Visually compact chip, 44pt touch area.
       hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
-      className={`flex-row items-center px-3 py-1.5 rounded-full border ${
+      className={`flex-row items-center px-3 py-1.5 rounded-[10px] border ${
         active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'border-border dark:border-border-dark'
       } ${disabled ? 'opacity-50' : ''}`}
       style={{ gap: 6 }}
@@ -38,7 +38,7 @@ export function ColorChip({
         />
       ) : null}
       <Text
-        className={`text-sm ${active ? 'text-primary-foreground dark:text-primary-foreground-dark font-bold' : 'text-foreground dark:text-foreground-dark'}`}
+        className={`text-sm ${active ? 'text-primary-foreground dark:text-primary-foreground-dark font-semibold' : 'text-foreground dark:text-foreground-dark'}`}
       >
         {label}
       </Text>

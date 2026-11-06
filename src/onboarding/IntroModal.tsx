@@ -3,6 +3,7 @@ import { Modal, Text, TouchableOpacity, useWindowDimensions, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CalendarCheck, Ellipsis, Users, type LucideIcon } from 'lucide-react-native';
 
+import { tabBarClearance } from '@/components/Navbar';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import Button from '@/components/ui/Button';
@@ -30,7 +31,7 @@ export default function IntroModal({ visible, onClose }: IntroModalProps) {
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const [index, setIndex] = useState(0);
-  const navbarClearance = Math.max(insets.bottom + 12, 24) + 64 + 12;
+  const navbarClearance = tabBarClearance(insets.bottom);
   const topClearance = insets.top + 12;
   const maxCardHeight = Math.min(windowHeight * 0.85, windowHeight - topClearance - navbarClearance);
 
@@ -49,10 +50,10 @@ export default function IntroModal({ visible, onClose }: IntroModalProps) {
         <TouchableOpacity accessibilityRole="button" className="flex-1" onPress={onClose} activeOpacity={1} accessibilityElementsHidden importantForAccessibility="no" />
         <View
           accessibilityViewIsModal
-          className="bg-card dark:bg-card-dark rounded-3xl px-6 pt-6 pb-6"
+          className="bg-card dark:bg-card-dark rounded-[20px] px-6 pt-6 pb-6"
           style={{ marginHorizontal: 16, marginBottom: navbarClearance, maxHeight: maxCardHeight }}
         >
-          <Text accessibilityRole="header" className="text-2xl font-black text-foreground dark:text-foreground-dark mb-1">
+          <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
             {t('onboarding.intro.title')}
           </Text>
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-4">
@@ -60,11 +61,11 @@ export default function IntroModal({ visible, onClose }: IntroModalProps) {
           </Text>
 
           <View className="flex-row mb-5" style={{ gap: 12 }}>
-            <View className="w-12 h-12 rounded-full items-center justify-center bg-primary/10 dark:bg-primary-dark/15">
+            <View className="w-12 h-12 rounded-xl items-center justify-center bg-primary/10 dark:bg-primary-dark/15">
               <Icon size={22} color={themeColors.primary} />
             </View>
             <View className="flex-1">
-              <Text className="text-foreground dark:text-foreground-dark font-bold text-base mb-1">{t(`onboarding.intro.${step.key}.title`)}</Text>
+              <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{t(`onboarding.intro.${step.key}.title`)}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm leading-relaxed">{t(`onboarding.intro.${step.key}.text`)}</Text>
             </View>
           </View>

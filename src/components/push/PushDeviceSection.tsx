@@ -17,7 +17,7 @@ export default function PushDeviceSection() {
 
   return (
     <View className="bg-muted dark:bg-muted-dark rounded-xl p-3 mb-3">
-      <Text className="text-foreground dark:text-foreground-dark text-sm font-bold mb-0.5">{t('push.status.title')}</Text>
+      <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mb-0.5">{t('push.status.title')}</Text>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t(`push.status.${status}`)}</Text>
       {status === 'registering' || busy ? <ActivityIndicator className="self-start mt-2" color={themeColors.primary} /> : null}
       {status === 'undetermined' ? (
@@ -27,7 +27,7 @@ export default function PushDeviceSection() {
           onPress={() => void enable()}
           className="bg-primary dark:bg-primary-dark rounded-xl min-h-[44px] items-center justify-center mt-2 px-4"
         >
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark font-bold">{t('push.enable')}</Text>
+          <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('push.enable')}</Text>
         </TouchableOpacity>
       ) : null}
       {status === 'error' ? (

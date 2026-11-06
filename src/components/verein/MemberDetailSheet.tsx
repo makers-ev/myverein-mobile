@@ -34,7 +34,7 @@ function Row({ label, value }: { label: string; value: string | null | undefined
 
 function Heading({ children }: { children: string }) {
   return (
-    <Text className="text-foreground dark:text-foreground-dark font-bold text-sm mt-4 mb-1" accessibilityRole="header">
+    <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mt-4 mb-1" accessibilityRole="header">
       {children}
     </Text>
   );

@@ -9,12 +9,12 @@ const TONES: Record<Tone, { box: string; text: string }> = {
   danger: { box: 'bg-destructive/10 dark:bg-destructive-dark/10', text: 'text-destructive dark:text-destructive-dark' },
 };
 
-/** Small status chip (role, state, count). Same name and `tone` values as the website's `Badge`. */
+/** Small status label (role, state, count): quiet 6px-radius tag, not a pill. Same name and `tone` values as the website's `Badge`. */
 export default function Badge({ children, tone = 'neutral' }: { children: ReactNode; tone?: Tone }) {
   const c = TONES[tone];
   return (
-    <View className={`self-start px-2.5 py-1 rounded-full ${c.box}`}>
-      <Text className={`text-xs font-semibold ${c.text}`}>{children}</Text>
+    <View className={`self-start px-2 py-1 rounded-md ${c.box}`}>
+      <Text className={`text-xs font-medium ${c.text}`}>{children}</Text>
     </View>
   );
 }

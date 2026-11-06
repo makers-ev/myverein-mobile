@@ -45,7 +45,7 @@ export default function MemberPhotoEditor({ clubId, target, name, photoUrl, hint
               {busy ? (
                 <ActivityIndicator color={themeColors.primaryForeground} />
               ) : (
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-bold">
+                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">
                   {photoUrl ? t('member-photo.change') : t('member-photo.add')}
                 </Text>
               )}
