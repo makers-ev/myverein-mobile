@@ -49,7 +49,7 @@ export default function VersammlungScreen({ route, navigation }: Props) {
     }
   }
 
-  const list = meetings.filter(isAssemblyMeeting).sort((a, b) => (b.scheduledAt ?? '').localeCompare(a.scheduledAt ?? ''));
+  const list = (Array.isArray(meetings) ? meetings : []).filter(isAssemblyMeeting).sort((a, b) => String(b.scheduledAt ?? '').localeCompare(String(a.scheduledAt ?? '')));
 
   useFocusEffect(
     React.useCallback(() => {

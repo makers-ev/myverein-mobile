@@ -10,7 +10,7 @@ import { useScopedResource } from './useScopedResource';
 export function useBallots(clubId: string | null) {
   const path = clubId ? `/ballots?clubId=${encodeURIComponent(clubId)}` : null;
   const { data, loading, error, reload } = useScopedResource<BallotSummary[]>(path);
-  return { ballots: data ?? [], loading, error, reload };
+  return { ballots: Array.isArray(data) ? data : [], loading, error, reload };
 }
 
 export type VoteOutcome = { ok: true; alreadyCounted: boolean } | { ok: false; failure: VoteFailure };
