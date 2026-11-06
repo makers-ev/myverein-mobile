@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiFetch } from '@/lib/api';
+import { unwrapList } from '@/lib/envelope';
 import { withNotifyQuery } from '@/lib/notifyOptions';
 
 export type MeetingStatus = 'terminfindung' | 'geplant' | 'abgehalten' | 'protokolliert';
@@ -69,8 +70,15 @@ export function useMeetings(clubId: string | null) {
     setLoading(true);
     setError(false);
     try {
-      const { data } = await apiFetch<{ data: Meeting[] }>(`/meetings?clubId=${encodeURIComponent(clubId)}`);
-      if (id === requestId.current) setStored({ clubId, meetings: data });
+      const payload = await apiFetch<unknown>(`/meetings?clubId=${encodeURIComponent(clubId)}`);
+      const list = unwrapList<Meeting>(payload);
+      if (id !== requestId.current) return;
+      if (list) setStored({ clubId, meetings: list });
+      else {
+        // Unexpected payload (no array): treat as a failed load, never hand a non-array to the screens. No payload is logged (PII).
+        console.warn('useMeetings: unexpected /meetings response shape');
+        setError(true);
+      }
     } catch {
       if (id === requestId.current) setError(true);
     } finally {
