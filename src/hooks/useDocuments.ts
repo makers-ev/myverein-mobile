@@ -135,6 +135,7 @@ export function useArchiveDocuments(clubId: string | null, folderId: string | nu
       try {
         const res = await apiFetch<ArchivePage>(`/documents?${params.toString()}`);
         if (id !== requestId.current) return;
+        if (!Array.isArray(res?.data)) throw new Error('unexpected /documents response shape');
         setStored((prev) => ({
           scope,
           items: append && prev && prev.scope === scope ? [...prev.items, ...res.data.filter((d) => !prev.items.some((p) => p.id === d.id))] : res.data,

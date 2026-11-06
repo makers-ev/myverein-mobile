@@ -44,6 +44,7 @@ export function useAcknowledgements(clubId: string | null) {
       try {
         const res = await apiFetch<AckPage>(`/acknowledgements/mine?${clubQuery(clubId)}&page=${page}&pageSize=${ACK_PAGE_SIZE}`);
         if (id !== requestId.current) return false;
+        if (!Array.isArray(res?.data)) throw new Error('unexpected /acknowledgements/mine response shape');
         setStored((prev) => ({
           clubId,
           items: append && prev && prev.clubId === clubId ? [...prev.items, ...res.data.filter((a) => !prev.items.some((p) => p.id === a.id))] : res.data,
