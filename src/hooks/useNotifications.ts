@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
-import { useAuth } from '@/auth/AuthProvider';
-import { apiFetch } from '@/lib/api';
+import { useAuth } from "@/auth/AuthProvider";
+import { apiFetch } from "@/lib/api";
 
 export interface NotificationItem {
   id: string;
-  kind: 'system' | 'admin';
+  kind: "system" | "admin";
   translationKey: string | null;
   paramsJson: Record<string, unknown> | null;
   translations: Record<string, { title: string; body: string }> | null;
@@ -15,7 +15,7 @@ export interface NotificationItem {
 }
 
 /** Fetch-shaped hook (see README.md's "Adding a new API request") for one filtered list. */
-export function useNotifications(filter: 'unread' | 'read') {
+export function useNotifications(filter: "unread" | "read") {
   const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(isAuthenticated);
@@ -28,7 +28,9 @@ export function useNotifications(filter: 'unread' | 'read') {
     }
     setLoading(true);
     try {
-      const { data } = await apiFetch<{ data: NotificationItem[] }>(`/notifications?filter=${filter}`);
+      const { data } = await apiFetch<{ data: NotificationItem[] }>(
+        `/notifications?filter=${filter}`,
+      );
       setNotifications(data);
     } finally {
       setLoading(false);
@@ -56,9 +58,11 @@ export function useUnreadNotificationCount() {
     }
     let cancelled = false;
     const refresh = () => {
-      void apiFetch<{ data: { count: number } }>('/notifications/unread-count').then(({ data }) => {
-        if (!cancelled) setCount(data.count);
-      });
+      void apiFetch<{ data: { count: number } }>("/notifications/unread-count")
+        .then(({ data }) => {
+          if (!cancelled) setCount(data.count);
+        })
+        .catch(() => undefined);
     };
     refresh();
     const interval = setInterval(refresh, UNREAD_COUNT_POLL_MS);
@@ -73,9 +77,21 @@ export function useUnreadNotificationCount() {
 
 /** Mutation-shaped hook (see README.md's "Adding a new API request") -- caller decides what to do with the result, e.g. calling `refetch()` from `useNotifications`. */
 export function useNotificationMutations() {
-  const markRead = useCallback((id: string) => apiFetch<void>(`/notifications/${id}/read`, { method: 'POST' }), []);
-  const markUnread = useCallback((id: string) => apiFetch<void>(`/notifications/${id}/unread`, { method: 'POST' }), []);
-  const deleteNotification = useCallback((id: string) => apiFetch<void>(`/notifications/${id}`, { method: 'DELETE' }), []);
+  const markRead = useCallback(
+    (id: string) =>
+      apiFetch<void>(`/notifications/${id}/read`, { method: "POST" }),
+    [],
+  );
+  const markUnread = useCallback(
+    (id: string) =>
+      apiFetch<void>(`/notifications/${id}/unread`, { method: "POST" }),
+    [],
+  );
+  const deleteNotification = useCallback(
+    (id: string) =>
+      apiFetch<void>(`/notifications/${id}`, { method: "DELETE" }),
+    [],
+  );
 
   return { markRead, markUnread, deleteNotification };
 }
