@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { LucideIcon } from 'lucide-react-native';
 
@@ -25,7 +25,8 @@ interface Props {
 
 /**
  * Bottom sheet with a short list of actions (Figma `Bottom sheet`): the overflow menu of a top bar ("..."). Card
- * surface, radius 20, scrim 48 %, Heading/M title, actions as list sections. Tapping an action closes the sheet first.
+ * surface, radius 20, scrim 48 %, Heading/M title, actions as list sections. Tapping an action closes the sheet first and
+ * then runs the action (after the slide-out on iOS, so an action that opens another sheet works).
  */
 export default function ActionSheet({ visible, title, onClose, groups }: Props) {
   const { t } = useLanguage();
@@ -54,7 +55,9 @@ export default function ActionSheet({ visible, title, onClose, groups }: Props) 
                       noChevron
                       onPress={() => {
                         onClose();
-                        it.onPress();
+                        // iOS cannot present the next modal (the sheet this action opens) while this one is still
+                        // sliding out, so wait for the dismissal animation there.
+                        setTimeout(it.onPress, Platform.OS === 'ios' ? 450 : 0);
                       }}
                     />
                   ))}
