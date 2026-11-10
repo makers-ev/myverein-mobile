@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Image, Text, View } from 'react-native';
+import { Image, Platform, Text, View } from 'react-native';
 import { useColorScheme } from 'nativewind';
-import Svg, { Circle, Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 
 import SignedImage from '@/components/ui/SignedImage';
+import Title from '@/components/ui/Title';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { formatDocumentDate } from '@/lib/documents';
 import { type CardState, canShowQr, effectiveCardState, formatCardStand, localDay } from '@/lib/memberCard';
@@ -45,8 +45,8 @@ interface Props {
 }
 
 /**
- * The card itself, the one bright element of the app: a club-coloured ID card (monogram, club name, photo or initials
- * without consent, name, number, category, validity) with fine concentric rings as its only ornament, a perforation, and
+ * The card itself, the one hero moment of the app: a flat club-coloured ID card (monogram, club name in the display
+ * serif, photo or initials without consent, name, number, category, validity), a 3pt Pokal-Gold stripe, a perforation, and
  * below it the ticket stub with the status as icon + word (never colour alone) and the QR on white. Without a network the
  * cached copy is shown with "Stand von ..." and the QR disappears as soon as the card ended or the token expired (device date).
  */
@@ -62,12 +62,10 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
   const customBand = !!card.club.primaryColor && HEX.test(card.club.primaryColor);
   const band = customBand ? (card.club.primaryColor as string) : colors.primary;
   const bandText = customBand ? '#FFFFFF' : colors.primaryForeground;
-  // Tone shifts inside the same hue, always AWAY from the text colour so the text contrast never drops below the
-  // band's own: darker for light text, lighter for dark text. `ring` is the decorative line colour (towards the text).
+  // The monogram/initials tile shifts inside the same hue, always AWAY from the text colour so the text contrast never
+  // drops below the band's own: darker for light text, lighter for dark text.
   const away = luminance(bandText) > luminance(band) ? '#000000' : '#FFFFFF';
-  const bandEnd = blend(away, band, 0.18);
   const tint = blend(away, band, 0.14);
-  const ring = blend(bandText, band, 0.2);
   const stateColor = state === 'gueltig' ? colors.success : state === 'abgelaufen' ? colors.warning : colors.destructive;
   const StateIcon = state === 'gueltig' ? CheckCircle2 : state === 'abgelaufen' ? AlertTriangle : XCircle;
   const stand = formatCardStand(view.checkedAt);
@@ -77,22 +75,10 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
   return (
     <View
       className="mb-6"
-      style={{ borderRadius: 20, shadowColor: '#000', shadowOpacity: isDark ? 0 : 0.1, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, elevation: isDark ? 0 : 4 }}
+      style={{ borderRadius: 20, shadowColor: '#000', shadowOpacity: isDark ? 0 : 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: isDark ? 0 : 2 }}
     >
       <View className="overflow-hidden border border-border dark:border-border-dark bg-card dark:bg-card-dark" style={{ borderRadius: 20 }}>
         <View style={{ backgroundColor: band, minHeight: 208 }} className="p-5 justify-between">
-          <Svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-            <Defs>
-              <LinearGradient id="face" x1="0" y1="0" x2="1" y2="1">
-                <Stop offset="0" stopColor={band} />
-                <Stop offset="1" stopColor={bandEnd} />
-              </LinearGradient>
-            </Defs>
-            <Rect x="0" y="0" width="100%" height="100%" fill="url(#face)" />
-            {[56, 80, 104, 128, 152, 176, 200, 224, 248, 272, 296].map((r) => (
-              <Circle key={r} cx="100%" cy="0" r={r} fill="none" stroke={ring} strokeWidth={1} opacity={0.6} />
-            ))}
-          </Svg>
 
           <View className="flex-row items-center" style={{ gap: 12 }}>
             <View className="items-center justify-center" style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: tint }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
@@ -101,10 +87,10 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
               </Text>
             </View>
             <View className="flex-1">
-              <Text className="text-base font-semibold" style={{ color: bandText }} numberOfLines={2}>
+              <Title size="M" header={false} numberOfLines={2} className="" style={{ color: bandText, fontSize: 24, lineHeight: 28 }}>
                 {card.club.name}
-              </Text>
-              <Text className="text-xs" style={{ color: bandText, opacity: 0.9 }}>
+              </Title>
+              <Text className="text-[13px] leading-[18px] font-medium mt-0.5" style={{ color: bandText }}>
                 {t('card.title')}
               </Text>
             </View>
@@ -121,21 +107,21 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
               <Initials text={card.member.initials} tint={tint} color={bandText} />
             )}
             <View className="flex-1">
-              <Text className="text-[22px] leading-7 font-medium" style={{ color: bandText }} accessibilityRole="header">
+              <Text className="text-[20px] leading-[26px] font-semibold" style={{ color: bandText }} accessibilityRole="header">
                 {card.member.displayName}
               </Text>
               {card.member.memberNumber ? (
-                <Text className="text-sm mt-1" style={{ color: bandText, fontVariant: ['tabular-nums'] }}>
+                <Text className="text-[15px] leading-5 mt-1" style={{ color: bandText, fontVariant: ['tabular-nums'], fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }) }}>
                   {t('card.number', { number: card.member.memberNumber })}
                 </Text>
               ) : null}
               {card.member.category ? (
-                <Text className="text-sm" style={{ color: bandText }}>
+                <Text className="text-[15px] leading-5" style={{ color: bandText }}>
                   {card.member.category}
                 </Text>
               ) : null}
               {card.validUntil ? (
-                <Text className="text-sm" style={{ color: bandText, fontVariant: ['tabular-nums'] }}>
+                <Text className="text-[15px] leading-5" style={{ color: bandText, fontVariant: ['tabular-nums'] }}>
                   {t('card.valid-until', { date: formatDocumentDate(card.validUntil) })}
                 </Text>
               ) : null}
@@ -143,16 +129,19 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
           </View>
         </View>
 
+        {/* Pokal-Gold stripe along the bottom edge of the card face (the club's own accent). */}
+        <View style={{ height: 3, backgroundColor: colors.accent }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
+
         {/* Perforation between the card and its stub: two notches in the page colour and a dashed line. */}
         <View style={{ height: 0 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-          <View style={{ position: 'absolute', left: -10, top: -10, width: 20, height: 20, borderRadius: 10, backgroundColor: colors.background }} />
-          <View style={{ position: 'absolute', right: -10, top: -10, width: 20, height: 20, borderRadius: 10, backgroundColor: colors.background }} />
+          <View style={{ position: 'absolute', left: -10, top: -10, width: 20, height: 20, borderRadius: 10, backgroundColor: colors.muted }} />
+          <View style={{ position: 'absolute', right: -10, top: -10, width: 20, height: 20, borderRadius: 10, backgroundColor: colors.muted }} />
         </View>
 
         <View className="px-5 pt-5 pb-4" style={{ gap: 16 }}>
           <View className="flex-row items-center" style={{ gap: 8 }} accessible accessibilityRole="text" accessibilityLabel={t(STATE_KEY[state])}>
-            <StateIcon size={20} strokeWidth={1.75} color={stateColor} />
-            <Text className="text-base font-medium" style={{ color: stateColor }}>
+            <StateIcon size={22} strokeWidth={1.75} color={stateColor} />
+            <Text className="text-[17px] leading-[22px] font-semibold" style={{ color: stateColor }}>
               {t(STATE_KEY[state])}
             </Text>
           </View>
@@ -162,7 +151,7 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
               <View style={{ backgroundColor: '#FFFFFF', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: colors.border }} accessible accessibilityLabel={t('card.qr-label')}>
                 <QRCode value={card.token} size={QR_SIZE} backgroundColor="#FFFFFF" color="#000000" ecl="M" quietZone={4} />
               </View>
-              <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-3 text-center">{t('card.qr-hint')}</Text>
+              <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-3 text-center">{t('card.qr-hint')}</Text>
             </View>
           ) : null}
 
@@ -188,7 +177,7 @@ function Initials({ text, tint, color }: { text: string; tint: string; color: st
 
 function Notice({ text, live }: { text: string; live?: boolean }) {
   return (
-    <Text accessibilityLiveRegion={live ? 'polite' : undefined} className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
+    <Text accessibilityLiveRegion={live ? 'polite' : undefined} className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px]">
       {text}
     </Text>
   );

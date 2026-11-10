@@ -1,15 +1,16 @@
 import React from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import { Check, CircleAlert, CircleHelp, Clock, Ellipsis, X, type LucideIcon } from 'lucide-react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { Check, CircleAlert, CircleHelp, Clock, CloudOff, Ellipsis, X, type LucideIcon } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
+import UiButton from '@/components/ui/Button';
 
 export function Card({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
       {title ? (
-        <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-base mb-2">
+        <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-2">
           {title}
         </Text>
       ) : null}
@@ -19,42 +20,36 @@ export function Card({ title, children }: { title?: string; children: React.Reac
 }
 
 export function Body({ children, muted }: { children: React.ReactNode; muted?: boolean }) {
-  return <Text className={`text-sm mb-2 ${muted ? 'text-muted-foreground dark:text-muted-foreground-dark' : 'text-foreground dark:text-foreground-dark'}`}>{children}</Text>;
+  return <Text className={`text-[15px] leading-[22px] mb-2 ${muted ? 'text-muted-foreground dark:text-muted-foreground-dark' : 'text-foreground dark:text-foreground-dark'}`}>{children}</Text>;
 }
 
-/** Large touch target (48pt), label always spoken; `secondary` for the non-committing choice. */
+/** Large touch target (48pt), label always spoken; `secondary` for the non-committing choice. Renders the shared `ui/Button`. */
 export function Button({ label, onPress, busy, disabled, secondary, accessibilityHint }: { label: string; onPress: () => void; busy?: boolean; disabled?: boolean; secondary?: boolean; accessibilityHint?: string }) {
-  const colors = useThemeColors();
-  const off = busy || disabled;
   return (
-    <TouchableOpacity
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityHint={accessibilityHint}
-      accessibilityState={{ disabled: !!off, busy: !!busy }}
-      disabled={off}
-      onPress={onPress}
-      className={`min-h-[48px] rounded-[10px] px-5 items-center justify-center mb-2 ${secondary ? 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark' : 'bg-primary dark:bg-primary-dark'} ${off ? 'opacity-50' : ''}`}
-    >
-      {busy ? (
-        <ActivityIndicator color={secondary ? colors.primaryText : colors.primaryForeground} />
-      ) : (
-        <Text className={`font-semibold text-sm ${secondary ? 'text-foreground dark:text-foreground-dark' : 'text-primary-foreground dark:text-primary-foreground-dark'}`}>{label}</Text>
-      )}
-    </TouchableOpacity>
+    <View className="mb-2">
+      <UiButton block variant={secondary ? 'secondary' : 'primary'} label={label} onPress={onPress} loading={busy} disabled={disabled} accessibilityHint={accessibilityHint} />
+    </View>
   );
 }
 
+/** Neutral load error with the reason, "Deine Daten sind sicher." and a secondary retry (same look as `ui/ErrorState`). */
 export function ErrorRetry({ message, onRetry }: { message: string; onRetry: () => void }) {
   const { t } = useLanguage();
+  const colors = useThemeColors();
   return (
-    <View className="py-4">
-      <Text accessibilityRole="alert" className="text-destructive dark:text-destructive-dark text-sm mb-2">
-        {message}
-      </Text>
-      <TouchableOpacity accessibilityRole="button" onPress={onRetry} className="min-h-[44px] justify-center self-start">
-        <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
-      </TouchableOpacity>
+    <View accessibilityRole="alert" className="py-4">
+      <View className="flex-row items-start" style={{ gap: 10 }}>
+        <View style={{ marginTop: 1 }}>
+          <CloudOff size={20} strokeWidth={1.75} color={colors.mutedForeground} />
+        </View>
+        <View className="flex-1">
+          <Text className="text-foreground dark:text-foreground-dark text-[15px] leading-[22px]">{message}</Text>
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-0.5">{t('ui.error.safe')}</Text>
+        </View>
+      </View>
+      <View className="self-start mt-3" style={{ marginLeft: 30 }}>
+        <UiButton variant="secondary" size="M" label={t('connection.retry')} onPress={onRetry} />
+      </View>
     </View>
   );
 }
@@ -78,7 +73,7 @@ export function Badge({ label, symbol }: { label: string; symbol: string }) {
   return (
     <View className="self-start flex-row items-center rounded-md px-2 py-1 bg-muted dark:bg-muted-dark mb-2" style={{ gap: 6 }}>
       {Icon ? <Icon size={14} strokeWidth={1.75} color={colors.mutedForeground} /> : symbol === '●' ? <View className="rounded-full bg-primary dark:bg-primary-dark" style={{ width: 8, height: 8 }} /> : null}
-      <Text className="text-xs font-medium text-foreground dark:text-foreground-dark">{label}</Text>
+      <Text className="text-[13px] leading-[18px] font-medium text-foreground dark:text-foreground-dark">{label}</Text>
     </View>
   );
 }

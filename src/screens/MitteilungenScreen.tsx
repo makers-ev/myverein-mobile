@@ -1,65 +1,89 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AlertTriangle, Pin } from 'lucide-react-native';
+import { AlertTriangle, Megaphone, Pin } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
-import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import { INBOX_PAGE_SIZE, useClubInbox, type InboxMessage } from '@/hooks/useClubInbox';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import FormSheet from '@/components/ui/FormSheet';
+import Avatar from '@/components/ui/Avatar';
+import Badge from '@/components/ui/Badge';
+import Banner from '@/components/ui/Banner';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import FilterChip from '@/components/ui/FilterChip';
+import PressScale from '@/components/ui/PressScale';
+import ScreenHeader from '@/components/ui/ScreenHeader';
+import Skeleton from '@/components/ui/Skeleton';
 import PushPrompt from '@/components/push/PushPrompt';
 import PushNotice from '@/components/push/PushNotice';
 import { usePushScreenTarget } from '@/notifications/usePushScreenTarget';
 import { lookupAnnouncement } from '@/notifications/pushLogic';
 
-function MessageCard({ message, onPress }: { message: InboxMessage; onPress: () => void }) {
+/** "09:12" today, "Gestern", else "Di., 3. Nov." -- short and tabular. */
+function when(iso: string | null, language: string, yesterday: string): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  if (d.getTime() >= startOfToday) return d.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' });
+  if (d.getTime() >= startOfToday - 86400000) return yesterday;
+  return d.toLocaleDateString(language, { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+function MessageRow({ message, divider, onPress }: { message: InboxMessage; divider: boolean; onPress: () => void }) {
   const { t, language } = useLanguage();
-  const themeColors = useThemeColors();
   const unread = !message.readAt;
+  const time = when(message.sentAt, language, t('mitteilungen.yesterday'));
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${unread ? `${t('mitteilungen.unread')}: ` : ''}${message.urgent ? `${t('mitteilungen.urgent')}: ` : ''}${message.title}`}
-      className={`flex-row bg-card dark:bg-card-dark border rounded-2xl mb-3 overflow-hidden ${
-        message.urgent ? 'border-destructive/60' : 'border-border dark:border-border-dark'
-      }`}
-    >
-      <View style={{ width: 4, backgroundColor: unread ? themeColors.primary : 'transparent' }} />
-      <View className="flex-1 p-3">
-        <View className="flex-row items-center flex-wrap" style={{ gap: 6 }}>
-          {message.urgent ? (
-            <View className="flex-row items-center bg-destructive/10 dark:bg-destructive-dark/10 px-2 py-1 rounded-md" style={{ gap: 4 }}>
-              <AlertTriangle size={12} strokeWidth={1.75} color={themeColors.destructive} />
-              <Text className="text-xs font-medium text-destructive dark:text-destructive-dark">{t('mitteilungen.urgent')}</Text>
-            </View>
-          ) : null}
-          {message.pinned ? (
-            <View className="flex-row items-center bg-muted dark:bg-muted-dark px-2 py-1 rounded-md" style={{ gap: 4 }}>
-              <Pin size={12} strokeWidth={1.75} color={themeColors.mutedForeground} />
-              <Text className="text-xs font-medium text-muted-foreground dark:text-muted-foreground-dark">{t('mitteilungen.pinned')}</Text>
-            </View>
-          ) : null}
+    <View>
+      {divider ? <View className="bg-border dark:bg-border-dark" style={{ height: 1, marginLeft: 60 }} /> : null}
+      <PressScale
+        onPress={onPress}
+        scale={0.99}
+        accessibilityRole="button"
+        accessibilityLabel={[unread ? t('mitteilungen.unread') : null, message.urgent ? t('mitteilungen.urgent') : null, message.title, message.authorName, time].filter(Boolean).join(', ')}
+        className="flex-row px-4 py-3"
+        style={{ gap: 12 }}
+      >
+        <View>
+          <Avatar name={message.authorName ?? '?'} size="S" />
+          {/* Unread: a primary dot on the avatar plus the semibold title (and the word for screen readers). */}
           {unread ? (
-            <View className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-1 rounded-md">
-              <Text className="text-xs font-medium text-primary dark:text-primary-dark">{t('mitteilungen.unread')}</Text>
-            </View>
+            <View className="absolute bg-primary dark:bg-primary-dark border-2 border-card dark:border-card-dark rounded-full" style={{ width: 12, height: 12, top: -2, left: -2 }} />
           ) : null}
         </View>
-        <Text className={`text-foreground dark:text-foreground-dark text-sm mt-1 ${unread ? 'font-semibold' : 'font-medium'}`}>{message.title}</Text>
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mt-1" numberOfLines={2}>
-          {message.body}
-        </Text>
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-right mt-1.5" style={{ fontSize: 12 }}>
-          {[message.authorName, message.sentAt ? new Date(message.sentAt).toLocaleDateString(language) : null].filter(Boolean).join(' - ')}
-        </Text>
-      </View>
-    </TouchableOpacity>
+        <View className="flex-1">
+          <View className="flex-row items-start" style={{ gap: 8 }}>
+            <Text className={`flex-1 text-foreground dark:text-foreground-dark text-[17px] leading-[22px] ${unread ? 'font-semibold' : ''}`}>{message.title}</Text>
+            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[22px]" style={{ fontVariant: ['tabular-nums'] }}>
+              {time}
+            </Text>
+          </View>
+          {message.urgent || message.pinned ? (
+            <View className="flex-row flex-wrap mt-1" style={{ gap: 6 }}>
+              {message.urgent ? (
+                <Badge tone="danger" icon={AlertTriangle}>
+                  {t('mitteilungen.urgent')}
+                </Badge>
+              ) : null}
+              {message.pinned ? (
+                <Badge icon={Pin}>{t('mitteilungen.pinned')}</Badge>
+              ) : null}
+            </View>
+          ) : null}
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] mt-1" numberOfLines={2}>
+            {message.body}
+          </Text>
+          {message.authorName ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-1">{message.authorName}</Text> : null}
+        </View>
+      </PressScale>
+    </View>
   );
 }
 
@@ -82,6 +106,8 @@ export default function MitteilungenScreen() {
   const [openId, setOpenId] = useState<string | null>(null);
   const open = messages.find((m) => m.id === openId) ?? null;
   const [noticeKey, setNoticeKey] = useState<string | null>(null);
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const shown = unreadOnly ? messages.filter((m) => !m.readAt) : messages;
   const { target, ready, unreachable, consume } = usePushScreenTarget('Mitteilungen');
 
   // Tapped push (M3): handled once; the target is consumed first so re-renders cannot repeat it.
@@ -131,15 +157,9 @@ export default function MitteilungenScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <View className="px-6 pt-4">
-        <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark mb-1">{t('mitteilungen.title')}</Text>
-        {activeClub ? (
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-2" numberOfLines={1}>
-            {activeClub.clubName}
-          </Text>
-        ) : null}
-        <ClubSwitcher />
+    <SafeAreaView edges={['top']} className="flex-1 bg-background dark:bg-background-dark">
+      <ScreenHeader title={t('nav.mitteilungen')} context={activeClub ? <ClubSwitcher /> : undefined} />
+      <View className="px-4">
         <PushNotice messageKey={noticeKey} onDismiss={() => setNoticeKey(null)} />
       </View>
 
@@ -150,39 +170,42 @@ export default function MitteilungenScreen() {
       ) : !activeClub && clubsError ? (
         <ClubsLoadError />
       ) : !activeClub ? (
-        <View className="px-6 pt-6">
-          <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{t('verein.no-club.title')}</Text>
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.no-club.body')}</Text>
+        <View className="px-4">
+          <EmptyState icon={Megaphone} title={t('verein.no-club.title')} hint={t('verein.no-club.body')} />
         </View>
       ) : (
         <ScrollView
           key={activeClub.clubId}
-          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 12, paddingBottom: 140, flexGrow: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: 120, flexGrow: 1 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void handleRefresh()} tintColor={themeColors.primaryText} />}
         >
           <PushPrompt />
           {loading && messages.length === 0 && !error ? (
-            <View className="items-center py-10">
-              <ActivityIndicator size="large" color={themeColors.primaryText} />
-            </View>
+            <Skeleton shape="rows" lines={4} />
           ) : error && messages.length === 0 ? (
-            <View>
-              <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{apiErrorMessage(error, t)}</Text>
-              <TouchableOpacity accessibilityRole="button" onPress={() => void refetch()} className="min-h-[44px] justify-center self-start">
-                <Text className="text-primary dark:text-primary-dark font-semibold">{t('connection.retry')}</Text>
-              </TouchableOpacity>
-            </View>
+            <ErrorState error={error} onRetry={() => void refetch()} />
           ) : messages.length === 0 ? (
-            <View className="items-center py-10">
-              <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{t('mitteilungen.empty.title')}</Text>
-              <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm text-center">{t('mitteilungen.empty.body')}</Text>
-            </View>
+            <EmptyState align="center" icon={Megaphone} title={t('mitteilungen.empty.title')} hint={t('mitteilungen.empty.body')} />
           ) : (
             <>
-              {error ? <Text className="text-destructive dark:text-destructive-dark text-xs mb-3">{t('mitteilungen.refresh-failed')}</Text> : null}
-              {messages.map((message) => (
-                <MessageCard key={message.id} message={message} onPress={() => handleOpen(message)} />
-              ))}
+              <View className="flex-row mb-3" style={{ gap: 8 }}>
+                <FilterChip label={t('mitteilungen.filter.all')} selected={!unreadOnly} onPress={() => setUnreadOnly(false)} />
+                <FilterChip label={t('mitteilungen.filter.unread')} selected={unreadOnly} onPress={() => setUnreadOnly(true)} />
+              </View>
+              {error ? (
+                <View className="mb-3">
+                  <Banner tone="warning" body={t('mitteilungen.refresh-failed')} action={{ label: t('connection.retry'), onPress: () => void refetch() }} />
+                </View>
+              ) : null}
+              {shown.length === 0 ? (
+                <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] px-1 py-2">{t('mitteilungen.filter.unread-empty')}</Text>
+              ) : (
+                <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] overflow-hidden">
+                  {shown.map((message, i) => (
+                    <MessageRow key={message.id} divider={i > 0} message={message} onPress={() => handleOpen(message)} />
+                  ))}
+                </View>
+              )}
             </>
           )}
         </ScrollView>
@@ -193,18 +216,14 @@ export default function MitteilungenScreen() {
           <View>
             <View className="flex-row items-center flex-wrap mb-3" style={{ gap: 6 }}>
               {open.urgent ? (
-                <View className="bg-destructive px-2 py-1 rounded-md">
-                  <Text className="text-xs font-semibold text-white">{t('mitteilungen.urgent')}</Text>
-                </View>
+                <Badge tone="danger" icon={AlertTriangle}>
+                  {t('mitteilungen.urgent')}
+                </Badge>
               ) : null}
-              {open.pinned ? (
-                <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
-                  <Text className="text-xs font-medium text-muted-foreground dark:text-muted-foreground-dark">{t('mitteilungen.pinned')}</Text>
-                </View>
-              ) : null}
+              {open.pinned ? <Badge icon={Pin}>{t('mitteilungen.pinned')}</Badge> : null}
             </View>
-            <Text className="text-foreground dark:text-foreground-dark text-base">{open.body}</Text>
-            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-4">
+            <Text selectable className="text-foreground dark:text-foreground-dark text-[17px] leading-6">{open.body}</Text>
+            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-4">
               {[open.authorName, open.sentAt ? new Date(open.sentAt).toLocaleString() : null].filter(Boolean).join(' - ')}
             </Text>
           </View>
