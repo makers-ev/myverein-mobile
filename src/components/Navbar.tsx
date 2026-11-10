@@ -10,7 +10,6 @@ import { useThemeColors } from '@/theme/colors';
 import { goToTab, navigationRef } from '@/navigation/navigationRef';
 import { tabForRoute, tabTarget, visibleTabs, type TabKey } from '@/navigation/tabs';
 import { getShowNavbarTitles } from '@/settings/appSettingsStorage';
-import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { useUnreadCount } from '@/hooks/useClubInbox';
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
 import { useWards } from '@/hooks/useWards';
@@ -40,7 +39,6 @@ export default function Navbar() {
     const { isAuthenticated } = useAuth();
     const [activeRoute, setActiveRoute] = useState<string | undefined>();
     const [showTitles, setShowTitles] = useState(true);
-    const platformUnread = useUnreadNotificationCount();
     const { activeClub } = useActiveClub();
     const inboxUnreadCount = useUnreadCount(activeClub?.clubId ?? null);
     const { hasWards, guardianOnly } = useWards();
@@ -66,8 +64,9 @@ export default function Navbar() {
 
     const items: TabBarItem[] = tabs.map((tab) => {
         const { labelKey, Icon } = TAB_META[tab];
-        // Messages: club inbox. More: platform notices live there.
-        const badge = tab === 'mitteilungen' ? inboxUnreadCount : tab === 'mehr' ? platformUnread : 0;
+        // Rule 4 (design handoff): a red count means "you must act" and sits on Mitteilungen only. Platform notices are
+        // counted on their own row inside Mehr, not on the Mehr tab (an unexplained red "1" there told people nothing).
+        const badge = tab === 'mitteilungen' ? inboxUnreadCount : 0;
         const label = t(labelKey);
         return { key: tab, label, Icon, badge, accessibilityLabel: badge > 0 ? t('nav.badge-label', { label, count: badge }) : label };
     });
@@ -78,7 +77,7 @@ export default function Navbar() {
             activeKey={activeTab}
             showTitles={showTitles}
             bottomInset={insets.bottom}
-            iconColors={{ active: themeColors.primary, inactive: themeColors.mutedForeground }}
+            iconColors={{ active: themeColors.primaryText, inactive: themeColors.mutedForeground }}
             onSelect={(key) => goToTab(tabTarget(key as TabKey, { isAuthenticated, hasWards, guardianOnly }))}
         />
     );
@@ -110,9 +109,10 @@ interface TabBarProps {
 }
 
 /**
- * The bar itself, docked to the bottom edge: card surface with a hairline on top, no shadow, no coloured fill. The
- * active tab gets a small surface step behind its icon plus the primary colour on the icon; the label switches to the
- * foreground colour (no underline, no heavier stroke), so the bar stays quiet next to the content.
+ * The bar itself (Figma `Bottom tab bar`), docked to the bottom edge: card surface with a hairline on top, no shadow.
+ * The active tab gets a primary-soft pill behind its 22pt icon, the icon in `primaryText` and a semibold label; inactive
+ * tabs are muted. Labels are Label/XS (capped at 130 % text size). The only count is the red unread count of
+ * Mitteilungen (rule 4).
  */
 export function TabBar({ items, activeKey, showTitles, bottomInset, iconColors, onSelect }: TabBarProps) {
     return (
@@ -142,13 +142,13 @@ export function TabBar({ items, activeKey, showTitles, bottomInset, iconColors, 
                             scale={0.96}
                         >
                             <View
-                                className={`items-center justify-center rounded-[10px] ${isActive ? 'bg-muted dark:bg-muted-dark' : ''}`}
-                                style={{ width: 56, height: 28 }}
+                                className={`items-center justify-center rounded-full ${isActive ? 'bg-primary-soft dark:bg-primary-soft-dark' : ''}`}
+                                style={{ width: 56, height: 30 }}
                             >
-                                <Icon size={20} color={isActive ? iconColors.active : iconColors.inactive} strokeWidth={1.75} />
+                                <Icon size={22} color={isActive ? iconColors.active : iconColors.inactive} strokeWidth={1.75} />
                                 {badge > 0 && (
-                                    <View className="absolute right-1 -top-1 min-w-[16px] h-[16px] rounded-[10px] items-center justify-center bg-destructive px-1 border-2 border-card dark:border-card-dark">
-                                        <Text className="text-[10px] font-semibold text-white">{badge > 9 ? '9+' : badge}</Text>
+                                    <View className="absolute -top-1 min-w-[18px] h-[18px] rounded-full items-center justify-center bg-destructive-fill dark:bg-destructive-fill-dark px-1 border-2 border-card dark:border-card-dark" style={{ left: 32 }}>
+                                        <Text maxFontSizeMultiplier={1.2} className="text-[11px] leading-[13px] font-semibold text-white" style={{ fontVariant: ['tabular-nums'] }}>{badge > 99 ? '99+' : badge}</Text>
                                     </View>
                                 )}
                             </View>
@@ -156,7 +156,7 @@ export function TabBar({ items, activeKey, showTitles, bottomInset, iconColors, 
                                 <Text
                                     numberOfLines={1}
                                     maxFontSizeMultiplier={1.3}
-                                    className={`text-[11px] mt-1 ${isActive ? 'font-semibold text-foreground dark:text-foreground-dark' : 'font-medium text-muted-foreground dark:text-muted-foreground-dark'}`}
+                                    className={`text-[11px] leading-[14px] mt-1 ${isActive ? 'font-semibold text-foreground dark:text-foreground-dark' : 'font-medium text-muted-foreground dark:text-muted-foreground-dark'}`}
                                 >
                                     {item.label}
                                 </Text>

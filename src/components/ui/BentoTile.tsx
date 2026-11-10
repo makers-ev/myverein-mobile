@@ -14,9 +14,9 @@ interface Props {
   style?: ViewStyle;
 }
 
-/** Card tile: hairline border, 16px radius, 16px padding, 44pt+ target and a 2% press scale when pressable. */
+/** Card tile (legacy name of `Card`): hairline border, 14px radius, 16px padding, 44pt+ target and a 2% press scale when pressable. Prefer `Card`, `HeroCard` or a `ListSection`. */
 export default function BentoTile({ children, onPress, accessibilityLabel, minHeight = 88, emphasis, style }: Props) {
-  const cls = `rounded-2xl p-4 ${
+  const cls = `rounded-[14px] p-4 ${
     emphasis ? 'bg-primary dark:bg-primary-dark' : 'bg-card dark:bg-card-dark border border-border dark:border-border-dark'
   }`;
   if (!onPress) {

@@ -11,8 +11,8 @@ export default function OfflineNotice({ savedAt }: { savedAt: string }) {
   const d = new Date(savedAt);
   const time = `${d.toLocaleDateString(language, { day: 'numeric', month: 'short' })}, ${d.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}`;
   return (
-    <View accessibilityRole="alert" className="bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-xl p-3 mb-4">
-      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('offline.stale', { time })}</Text>
+    <View accessibilityRole="alert" className="bg-muted dark:bg-muted-dark rounded-[14px] px-4 py-3 mb-4">
+      <Text className="text-foreground dark:text-foreground-dark text-[15px] leading-[22px]">{t('offline.stale', { time })}</Text>
       <DocsLink path={DOCS_PATHS.faq} />
     </View>
   );

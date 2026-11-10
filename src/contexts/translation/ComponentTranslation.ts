@@ -17,6 +17,9 @@ const ComponentTranslation: Translation = {
     'ui.clear': 'Clear',
     'ui.prev-month': 'Previous month',
     'ui.next-month': 'Next month',
+    'ui.back': 'Back',
+    'ui.more': 'More options',
+    'ui.error.safe': 'Your data is safe.',
   },
   de: {
     'confirmation-input-modal.input-placeholder': 'Bestätige deine Aktion...',
@@ -30,6 +33,9 @@ const ComponentTranslation: Translation = {
     'ui.clear': 'Leeren',
     'ui.prev-month': 'Vorheriger Monat',
     'ui.next-month': 'Nächster Monat',
+    'ui.back': 'Zurück',
+    'ui.more': 'Weitere Aktionen',
+    'ui.error.safe': 'Deine Daten sind sicher.',
   },
   fr: {
     'confirmation-input-modal.input-placeholder': 'Confirmez votre action...',

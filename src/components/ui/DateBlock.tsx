@@ -12,7 +12,7 @@ export default function DateBlock({ iso, language }: { iso: string; language: st
     <View
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      className="bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-xl items-center justify-center overflow-hidden"
+      className="bg-muted dark:bg-muted-dark rounded-[10px] items-center justify-center overflow-hidden"
       style={{ width: 52, height: 56 }}
     >
       <Text maxFontSizeMultiplier={1.2} className="text-primary dark:text-primary-dark text-[11px] font-semibold leading-4">
