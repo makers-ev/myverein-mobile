@@ -8,6 +8,8 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { supportedLanguages } from '@/contexts/translation/supportedLanguages';
 import { useThemeColors } from '@/theme/colors';
 import { useAuth } from '@/auth/AuthProvider';
+import Button from '@/components/ui/Button';
+import Title from '@/components/ui/Title';
 import Logo from '@/components/Logo';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 
@@ -272,8 +274,8 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                 showCloseIcon={true}
             />
 
-                <View className="items-center mb-6">
-                    <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark">{t('settings.title')}</Text>
+                <View className="mb-6">
+                    <Title>{t('settings.title')}</Title>
                 </View>
 
                 {isAuthenticated ? (
@@ -403,51 +405,24 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
 
                 {isAuthenticated && (
                     <SectionCard title={t('datenschutz.title')} subtitle={t('datenschutz.settings-hint')}>
-                        <TouchableOpacity
-                            className="bg-primary dark:bg-primary-dark py-2.5 px-4 rounded-lg"
-                            accessibilityRole="button"
-                            onPress={() => navigation.navigate('PrivacyCenter')}>
-                            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold text-center">
-                                {t('datenschutz.open')}
-                            </Text>
-                        </TouchableOpacity>
+                        <Button block variant="secondary" label={t('datenschutz.open')} onPress={() => navigation.navigate('PrivacyCenter')} />
                     </SectionCard>
                 )}
 
                 <SectionCard title={t('settings.section-app-lock')}>
-                    <TouchableOpacity accessibilityRole="button"
-                        className={`${appLockActive ? 'bg-destructive' : 'bg-primary dark:bg-primary-dark'} py-2.5 px-4 rounded-lg`}
-                        onPress={handlePinButtonPress}>
-                        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold text-center">
-                            {appLockButtonTitle}
-                        </Text>
-                    </TouchableOpacity>
+                    {/* Removing the PIN can be undone by setting a new one: neutral, not red. */}
+                    <Button block variant={appLockActive ? 'secondary' : 'primary'} label={appLockButtonTitle} onPress={handlePinButtonPress} />
                 </SectionCard>
 
                 {isAuthenticated && (
-                <View className="items-center justify-center mb-5">
-                    <View className="w-full border-2 border-destructive p-4 rounded-md bg-card dark:bg-card-dark">
-                        <Text className="text-lg font-semibold text-destructive dark:text-destructive-dark mb-2 text-center">
-                            {t('settings.danger-zone')}
-                        </Text>
-
-                        <TouchableOpacity accessibilityRole="button"
-                            className="bg-destructive py-2 px-4 rounded-md my-1"
-                            onPress={() => setLogoutPopup(true)}>
-                            <Text className="text-primary-foreground text-base font-semibold text-center">
-                                {t('settings.logout')}
-                            </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity accessibilityRole="button"
-                            className="bg-destructive py-2 px-4 rounded-md my-1"
-                            onPress={() => setDeleteAccountPopup(true)}>
-                            <Text className="text-primary-foreground text-base font-semibold text-center">
-                                {t('settings.delete-account')}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
+                    // Account: signing out is reversible (secondary); deleting the account is the one irreversible action
+                    // (solid red, behind its own typed confirmation).
+                    <SectionCard title={t('settings.danger-zone')}>
+                        <View style={{ gap: 10 }}>
+                            <Button block variant="secondary" label={t('settings.logout')} onPress={() => setLogoutPopup(true)} />
+                            <Button block variant="destructive" label={t('settings.delete-account')} onPress={() => setDeleteAccountPopup(true)} />
+                        </View>
+                    </SectionCard>
                 )}
 
                 {savedMessage && (

@@ -40,10 +40,10 @@ export function SettingsDropdownOption({
   };
 
   return (
-    <View className="items-center">
-      <View className="w-80 bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-xl">
+    <View>
+      <View className="self-stretch bg-muted dark:bg-muted-dark rounded-[10px]" style={{ minHeight: 52 }}>
         <TouchableOpacity accessibilityRole="button" onPress={handlePress}>
-          <Text className="p-4 text-lg text-center text-foreground dark:text-foreground-dark">
+          <Text className="px-4 py-3.5 text-[17px] leading-[22px] text-foreground dark:text-foreground-dark">
             {isDropdown && selectedValue && showSelectedValueInTitle
               ? `${infoField}: ${
                 dropdownOptions?.find((opt) => opt.value === selectedValue)?.label ||

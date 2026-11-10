@@ -22,9 +22,9 @@ export function SettingsSwitchOption({
   const themeColors = useThemeColors();
 
   return (
-    <View className="items-center">
-      <View className="flex-row items-center justify-between w-80 bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-xl">
-        <Text className={`flex-1 p-4 text-lg ${textColor} text-center`}>{infoField}</Text>
+    <View>
+      <View className="flex-row items-center justify-between self-stretch bg-muted dark:bg-muted-dark rounded-[10px]" style={{ minHeight: 52 }}>
+        <Text className={`flex-1 px-4 py-3 text-[17px] leading-[22px] ${textColor}`}>{infoField}</Text>
         <Switch
           trackColor={trackColor ?? { false: themeColors.borderControl, true: themeColors.primary }}
           thumbColor={thumbColor ?? themeColors.card}

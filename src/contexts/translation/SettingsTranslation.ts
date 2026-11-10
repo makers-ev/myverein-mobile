@@ -9,7 +9,7 @@ const SettingsTranslation: Translation = {
     // SettingsScreen translations
     'settings.title': 'Settings',
     'settings.choose-language': 'Choose Language',
-    'settings.danger-zone': 'Danger Zone',
+    'settings.danger-zone': 'Account',
     'settings.section-app-lock': 'App Lock',
     'settings.create-pin': 'Create App Lock',
     'settings.remove-pin': 'Remove App Lock',
@@ -91,7 +91,7 @@ const SettingsTranslation: Translation = {
     // SettingsScreen translations
     'settings.title': 'Einstellungen',
     'settings.choose-language': 'Sprache wählen',
-    'settings.danger-zone': 'Danger Zone',
+    'settings.danger-zone': 'Konto',
     'settings.section-app-lock': 'App-Sperre',
     'settings.create-pin': 'App Sperre einrichten',
     'settings.remove-pin': 'App Sperre entfernen',
