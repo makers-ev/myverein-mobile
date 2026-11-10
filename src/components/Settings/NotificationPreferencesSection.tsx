@@ -27,7 +27,7 @@ export default function NotificationPreferencesSection({ clubId }: { clubId?: st
   };
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
       <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">{t('settings.section-notifications')}</Text>
       <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mt-0.5 mb-1">{t('settings.notifications.description')}</Text>
       <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1" testID="notification-scope-note">

@@ -63,9 +63,9 @@ export interface FormRendererProps {
 const INLINE_OPTION_LIMIT = 6;
 
 const inputBase =
-  'bg-muted dark:bg-muted-dark rounded-lg px-3 py-3 text-base text-foreground dark:text-foreground-dark border';
+  'bg-card dark:bg-card-dark rounded-[10px] px-3 py-3 min-h-[48px] text-[17px] text-foreground dark:text-foreground-dark border';
 const inputClass = (error: boolean) =>
-  `${inputBase} ${error ? 'border-destructive' : 'border-border dark:border-border-dark'}`;
+  `${inputBase} ${error ? 'border-destructive dark:border-destructive-dark' : 'border-border-control dark:border-border-control-dark'}`;
 
 /** Label, help text, the control and the error line of one field. */
 function FieldShell({
@@ -182,7 +182,7 @@ function CheckBox({ checked, error }: { checked: boolean; error?: boolean }) {
   return (
     <View
       className={`w-6 h-6 rounded-md border-2 items-center justify-center ${
-        checked ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : error ? 'border-destructive' : 'border-border dark:border-border-dark'
+        checked ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : error ? 'border-destructive dark:border-destructive-dark' : 'border-border-control dark:border-border-control-dark'
       }`}
     >
       {checked ? <Check size={16} color={themeColors.primaryForeground} /> : null}
@@ -286,9 +286,9 @@ function SelectField({
         <ChevronDown size={18} color={themeColors.mutedForeground} />
       </TouchableOpacity>
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
-        <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
+        <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(11,12,15,0.48)' }}>
           <Pressable className="flex-1" onPress={() => setOpen(false)} accessibilityLabel={t('forms.select.close')} />
-          <View className="bg-background dark:bg-background-dark rounded-t-3xl px-5 pt-4 pb-6" style={{ maxHeight: '75%' }}>
+          <View className="bg-background dark:bg-background-dark rounded-t-[20px] px-5 pt-4 pb-6" style={{ maxHeight: '75%' }}>
             <Text className="text-foreground dark:text-foreground-dark text-lg font-semibold mb-2">{field.label}</Text>
             <ScrollView keyboardShouldPersistTaps="handled">
               {options.map((o) => (

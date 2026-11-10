@@ -117,7 +117,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
   const formatDate = (v: string) => formatCredentialDate(v, language);
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
       <TouchableOpacity
         onPress={() => setExpanded((e) => !e)}
         className="flex-row items-center justify-between"

@@ -24,7 +24,7 @@ function ApplicationCard({ application, onOpen }: { application: ClubApplication
       onPress={onOpen}
       accessibilityRole="button"
       accessibilityLabel={`${t('forms.review.open')}: ${title}`}
-      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3"
+      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-3 mb-3"
     >
       <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
         <View className="flex-1">

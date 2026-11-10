@@ -64,7 +64,7 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
       </TouchableOpacity>
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
-        <Pressable className="flex-1 justify-center px-4" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }} onPress={() => setOpen(false)}>
+        <Pressable className="flex-1 justify-center px-4" style={{ backgroundColor: 'rgba(11,12,15,0.48)' }} onPress={() => setOpen(false)}>
           <Pressable className="bg-background dark:bg-background-dark rounded-3xl p-3" onPress={() => undefined}>
             {mode === 'date' ? (
               // Year jumps so far-away dates (e.g. birth dates) don't need dozens of month taps.

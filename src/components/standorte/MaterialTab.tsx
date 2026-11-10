@@ -65,7 +65,7 @@ function ItemCard({ item, locationName, onPress }: { item: InventoryItem; locati
   return (
     <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
-      className="flex-row bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-3"
+      className="flex-row bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-3"
       style={{ gap: 12 }}
     >
       <View className="w-10 h-10 rounded-xl items-center justify-center bg-primary/10 dark:bg-primary-dark/10">
@@ -385,7 +385,7 @@ function MaterialDetail({
         <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('material.back')}</Text>
       </TouchableOpacity>
 
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
         <View className="flex-row items-start" style={{ gap: 12 }}>
           <View className="w-12 h-12 rounded-xl items-center justify-center bg-primary/10 dark:bg-primary-dark/10">
             <Package size={24} color={themeColors.primaryText} />

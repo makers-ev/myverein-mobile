@@ -190,7 +190,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
     ]);
   };
 
-  const cardClass = 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4';
+  const cardClass = 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4';
   const titleClass = 'text-foreground dark:text-foreground-dark font-semibold text-base mb-2';
   const mutedClass = 'text-muted-foreground dark:text-muted-foreground-dark text-sm';
 

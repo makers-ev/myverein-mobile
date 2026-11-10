@@ -34,7 +34,7 @@ function LocationCard({ location, onPress, onPhotoExpired }: { location: Locatio
   return (
     <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
-      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl mb-4 overflow-hidden shadow-sm"
+      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] mb-4 overflow-hidden shadow-sm"
     >
       {location.photoUrl ? (
         <SignedImage

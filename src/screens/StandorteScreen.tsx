@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -9,6 +9,7 @@ import { useThemeColors } from '@/theme/colors';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import NoClubChoices from '@/components/onboarding/NoClubChoices';
 import TabChips from '@/components/ui/TabChips';
+import ScreenHeader from '@/components/ui/ScreenHeader';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import OrteTab from '@/components/standorte/OrteTab';
@@ -32,13 +33,8 @@ export default function StandorteScreen() {
   const { activeClub, error: clubsError, loading: clubsLoading } = useMyClubs();
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <View className="px-6 pt-4">
-        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
-          {activeClub?.clubName ?? t('standorte.title')}
-        </Text>
-        <ClubSwitcher />
-      </View>
+    <SafeAreaView edges={['top']} className="flex-1 bg-background dark:bg-background-dark">
+      <ScreenHeader title={t('mehr.section.club')} context={activeClub ? <ClubSwitcher /> : undefined} />
 
       {clubsLoading ? (
         <View className="flex-1 items-center justify-center">
@@ -47,16 +43,14 @@ export default function StandorteScreen() {
       ) : !activeClub && clubsError ? (
         <ClubsLoadError />
       ) : !activeClub ? (
-        <View className="px-6 pt-6">
+        <View className="px-4 pt-6">
           <NoClubChoices />
         </View>
       ) : (
         <>
-          <View className="px-6 pt-3">
-            <TabChips tabs={(['orte', 'material'] as const).map((value) => ({ value, label: t(`standorte.tab.${value}`) }))} active={tab} onChange={setTab} />
-          </View>
+          <TabChips tabs={(['orte', 'material'] as const).map((value) => ({ value, label: t(`standorte.tab.${value}`) }))} active={tab} onChange={setTab} />
 
-          <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
+          <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 120 }}>
             {tab === 'orte' && <OrteTab clubId={activeClub.clubId} locationId={route.params?.locationId} />}
             {tab === 'material' && <MaterialTab clubId={activeClub.clubId} />}
           </ScrollView>

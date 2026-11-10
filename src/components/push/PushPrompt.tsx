@@ -14,7 +14,7 @@ export default function PushPrompt() {
   if (!promptVisible) return null;
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3">
+    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-3 mb-3">
       <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('push.prompt.title')}</Text>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">{t('push.prompt.body')}</Text>
       <View className="flex-row mt-2" style={{ gap: 8 }}>

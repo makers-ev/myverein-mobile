@@ -304,7 +304,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
       </Text>
 
       {registration?.status === 'needs_info' && registration.reviewNote ? (
-        <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+        <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
           <Text className="text-[13px] font-medium mb-1 text-muted-foreground dark:text-muted-foreground-dark">
             {t('create-club.status.review-note')}
           </Text>

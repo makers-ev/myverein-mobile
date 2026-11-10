@@ -127,7 +127,7 @@ function NoClubState() {
       <NoClubChoices hideCreate={!!registration} />
 
       {registration ? (
-        <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mt-6">
+        <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mt-6">
           <Text className="text-[13px] font-medium mb-1 text-muted-foreground dark:text-muted-foreground-dark">
             {registration.clubName}
           </Text>

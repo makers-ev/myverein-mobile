@@ -129,7 +129,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
 
   return (
     <>
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
         {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error}</Text> : null}
 
         {WEEKDAY_KEYS.map((key, day) => {
@@ -190,7 +190,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
         })}
       </View>
 
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4">
+      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
         <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('verfuegbarkeit.exceptions.title')}</Text>
 
         {exceptions.length === 0 ? (

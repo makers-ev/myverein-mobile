@@ -77,7 +77,7 @@ export default function CalendarManageSheet({ visible, onClose, clubId, calendar
         />
       ))}
 
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mt-2">
+      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mt-2">
         <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('kalender.manage.create')}</Text>
         <Field label={t('kalender.manage.name')}>
           <TextInput
@@ -202,7 +202,7 @@ function CalendarCard({
   const grantedDepartments = new Set(grants?.map((g) => g.departmentId));
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl mb-3 overflow-hidden">
+    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] mb-3 overflow-hidden">
       <TouchableOpacity accessibilityRole="button" onPress={onToggle} className="flex-row items-center p-3" style={{ gap: 10 }}>
         <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: color }} />
         <View className="flex-1">

@@ -48,7 +48,7 @@ function NotificationCard({ n, onChange }: { n: NotificationItem; onChange: () =
   };
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3">
+    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-3 mb-3">
       <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
         <Text className="flex-1 text-foreground dark:text-foreground-dark font-semibold text-sm">{title}</Text>
         <View className="flex-row items-center" style={{ gap: 4 }}>

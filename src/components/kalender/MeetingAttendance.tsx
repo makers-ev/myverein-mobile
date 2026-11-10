@@ -84,7 +84,7 @@ export default function MeetingAttendance({ invitees, attendance, directory, nam
   const proxyCandidates = (memberId: string) => directory.filter((m) => m.memberId && m.memberId !== memberId);
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('treffen.attendance.title')}</Text>
       {memberIds.length === 0 ? (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.attendance.empty')}</Text>

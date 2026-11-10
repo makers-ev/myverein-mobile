@@ -54,7 +54,7 @@ function ModuleCard({ module: m, name, description, helpText, allowed, reason, b
   const disabled = !allowed || anyBusy;
   const actionLabel = active ? t('forms.pm.action.deactivate') : m.state === 'archived' ? t('forms.pm.action.reactivate') : t('forms.pm.action.activate');
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3">
+    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-3 mb-3">
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">{name}</Text>
       {description ? <Text className={`${mutedClass} mt-0.5`}>{description}</Text> : null}
       {helpText && helpText !== description ? <Text className={`${mutedClass} mt-0.5`}>{helpText}</Text> : null}

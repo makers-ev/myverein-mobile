@@ -21,7 +21,7 @@ interface Props {
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{title}</Text>
       {children}
     </View>
@@ -68,7 +68,7 @@ function MeetingListRow({ meeting, onPress }: { meeting: Meeting; onPress: () =>
   return (
     <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
-      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3"
+      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-3 mb-3"
     >
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-1">{meeting.title}</Text>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{typeLabel(meeting.type)}</Text>
@@ -131,7 +131,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
       )}
 
       {!canWrite ? null : showCreate ? (
-        <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4">
+        <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
           <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.title')}
           </Text>

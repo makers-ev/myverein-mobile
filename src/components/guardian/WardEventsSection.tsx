@@ -73,7 +73,7 @@ export default function WardEventsSection({ ward, events }: { ward: Ward; events
               const cancelled = !!event.cancelledAt;
               const busy = pending === event.id;
               return (
-                <View key={event.id} className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-2">
+                <View key={event.id} className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-3 mb-2">
                   <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
                     <View className="flex-1">
                       <Text className={`text-foreground dark:text-foreground-dark text-base font-semibold ${cancelled ? 'line-through' : ''}`}>{event.title}</Text>

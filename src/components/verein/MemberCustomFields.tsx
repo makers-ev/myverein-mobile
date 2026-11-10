@@ -136,7 +136,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
   const own = target === 'me';
   const boardView = readOnlyView || (!own && guardianOfName === undefined);
   const showEntryHints = readOnlyView || !own;
-  const wrapper = card ? 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4' : 'mt-2';
+  const wrapper = card ? 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4' : 'mt-2';
   const title = guardianOfName !== undefined ? t('forms.cf.values.titleChild', { name: guardianOfName }) : own ? t('forms.cf.values.titleOwn') : t('forms.cf.values.title');
   const mutedClass = 'text-muted-foreground dark:text-muted-foreground-dark text-xs';
 

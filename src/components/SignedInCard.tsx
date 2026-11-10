@@ -9,7 +9,7 @@ export default function SignedInCard({ onOpenSettings }: { onOpenSettings: () =>
   const { t } = useLanguage();
   const { user } = useAuth();
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 flex-row items-center" style={{ gap: 12 }}>
+    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 flex-row items-center" style={{ gap: 12 }}>
       <Text className="flex-1 text-foreground dark:text-foreground-dark text-sm" numberOfLines={1}>
         {t('home.signed-in-as').replace('{email}', user?.email ?? '')}
       </Text>

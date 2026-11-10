@@ -50,7 +50,7 @@ const openURL = (url: string) => {
 /** Small reusable card wrapper so every settings section looks the same. */
 function SectionCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
     return (
-        <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+        <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
             <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">{title}</Text>
             {subtitle && (
                 <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mt-0.5 mb-1">{subtitle}</Text>
@@ -300,7 +300,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                     // legal apply to guests too. Only the account-specific
                     // sections above need a real session, so this replaces
                     // them rather than blocking the whole screen.
-                    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+                    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
                         <Text className="text-foreground dark:text-foreground-dark text-base font-semibold mb-1">
                             {t('home.guest-heading')}
                         </Text>

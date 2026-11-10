@@ -58,7 +58,7 @@ export default function PaletteCustomEditor({ customAnchors, onChange }: Palette
             <Modal visible={editing !== null} animationType="slide" transparent onRequestClose={() => setEditing(null)}>
                 <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
                     <TouchableOpacity accessibilityRole="button" className="flex-1" onPress={() => setEditing(null)} activeOpacity={1} />
-                    <View className="bg-card dark:bg-card-dark rounded-t-3xl p-6">
+                    <View className="bg-card dark:bg-card-dark rounded-t-[20px] p-6">
                         {editing && (
                             <ColorPicker value={customAnchors[editing.mode][editing.key]} onCompleteJS={commitColor}>
                                 <Preview style={{ marginBottom: 16, borderRadius: 8 }} />

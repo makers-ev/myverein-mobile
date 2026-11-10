@@ -44,7 +44,7 @@ export default function WardContactsSection({ contacts }: { contacts: ReturnType
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('heute.contacts.empty')}</Text>
       ) : (
         rows.map((c, i) => (
-          <View key={`${c.clubMemberId}-${c.department.id}-${i}`} className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-2">
+          <View key={`${c.clubMemberId}-${c.department.id}-${i}`} className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-3 mb-2">
             <Text className="text-foreground dark:text-foreground-dark text-base font-semibold">{c.name}</Text>
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">
               {[t(`heute.role.${c.roleType}`), c.department.name].join(' - ')}
