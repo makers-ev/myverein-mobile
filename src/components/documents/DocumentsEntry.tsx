@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { Archive, FileCheck2, FolderOpen, IdCard, QrCode } from 'lucide-react-native';
+
 import ListRow from '@/components/ui/ListRow';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { navigate } from '@/navigation/navigationRef';
@@ -11,7 +13,7 @@ import { canOpenArchive } from '@/lib/documents';
 /** Entry to the caller's personal storage (every member; children's storage is reached from the same screen). */
 export function MyDocumentsEntry() {
   const { t } = useLanguage();
-  return <ListRow title={t('mydocs.entry')} hint={t('mydocs.entry.hint')} onPress={() => navigate('MeineDokumente')} />;
+  return <ListRow icon={FolderOpen} title={t('mydocs.entry')} hint={t('mydocs.entry.hint')} onPress={() => navigate('MeineDokumente')} />;
 }
 
 /**
@@ -23,7 +25,7 @@ export function ArchiveEntry({ clubId }: { clubId: string }) {
   const { t } = useLanguage();
   const { answer } = useArchiveFolders(clubId);
   if (!canOpenArchive(answer)) return null;
-  return <ListRow title={t('archive.entry')} hint={t('archive.entry.hint')} onPress={() => navigate('Archiv')} />;
+  return <ListRow icon={Archive} title={t('archive.entry')} hint={t('archive.entry.hint')} onPress={() => navigate('Archiv')} />;
 }
 
 /**
@@ -35,13 +37,13 @@ export function AcknowledgementsEntry({ clubId }: { clubId: string }) {
   const { items, openCount, hasMore } = useAcknowledgements(clubId);
   if (!items || items.length === 0) return null;
   const hint = openCount > 0 ? t('ack.entry.open', { count: hasMore ? `${openCount}+` : openCount }) : t('ack.entry.hint');
-  return <ListRow title={t('ack.entry')} hint={hint} onPress={() => navigate('Bestaetigungen')} />;
+  return <ListRow icon={FileCheck2} title={t('ack.entry')} hint={hint} count={openCount} countTone="attention" onPress={() => navigate('Bestaetigungen')} />;
 }
 
 /** Entry to the digital membership card (own card; a guardian reaches the children's cards on the same screen). */
 export function MyCardEntry({ forChild }: { forChild?: boolean }) {
   const { t } = useLanguage();
-  return <ListRow title={forChild ? t('card.entry.child') : t('card.entry')} hint={t('card.entry.hint')} onPress={() => navigate('Mitgliedsausweis')} />;
+  return <ListRow icon={IdCard} title={forChild ? t('card.entry.child') : t('card.entry')} hint={t('card.entry.hint')} onPress={() => navigate('Mitgliedsausweis')} />;
 }
 
 /** Entry to the card check; shown only with `member_cards:verify` (deny by default while loading or on error). */
@@ -49,5 +51,5 @@ export function CardCheckEntry({ clubId }: { clubId: string }) {
   const { t } = useLanguage();
   const { can } = useOwnMembership(clubId);
   if (!can('member_cards:verify')) return null;
-  return <ListRow title={t('check.entry')} hint={t('check.entry.hint')} onPress={() => navigate('AusweisKontrolle')} />;
+  return <ListRow icon={QrCode} title={t('check.entry')} hint={t('check.entry.hint')} onPress={() => navigate('AusweisKontrolle')} />;
 }

@@ -5,7 +5,11 @@ const SIZES = { S: { box: 32, text: 'text-[13px]' }, M: { box: 40, text: 'text-[
 
 /** Initials of a display name ("Heike Brandt" -> "HB"). */
 export function initialsOf(name: string | null | undefined): string {
-  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean);
+  // Legal-form suffixes ("e.V.", "gGmbH") are not part of a club's initials.
+  const parts = (name ?? '')
+    .trim()
+    .split(/\s+/)
+    .filter((p) => p && !/^(e\.?\s?V\.?|eV|gGmbH|GmbH|e\.)$/i.test(p));
   if (parts.length === 0) return '?';
   return ((parts[0]?.[0] ?? '') + (parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : '')).toUpperCase();
 }

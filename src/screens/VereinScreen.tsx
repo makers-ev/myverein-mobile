@@ -9,7 +9,7 @@ import { useThemeColors } from '@/theme/colors';
 import { navigate } from '@/navigation/navigationRef';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import { useClubRegistration } from '@/hooks/useClubRegistration';
-import { useClubInfo, type BoardMember, type Department } from '@/hooks/useClubInfo';
+import { useClubInfo } from '@/hooks/useClubInfo';
 import { getDepartmentColor } from '@/theme/departmentColors';
 import ProfilTab from '@/components/verein/ProfilTab';
 import MembersTab from '@/components/verein/MembersTab';
@@ -22,110 +22,85 @@ import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import ClubDocumentReader from '@/components/documents/ClubDocumentReader';
 import ListRow from '@/components/ui/ListRow';
 import { AcknowledgementsEntry, ArchiveEntry } from '@/components/documents/DocumentsEntry';
-import { FileText } from 'lucide-react-native';
+import { FileText, Landmark, Vote } from 'lucide-react-native';
+import ListSection from '@/components/ui/ListSection';
+import ScreenHeader from '@/components/ui/ScreenHeader';
+import Avatar from '@/components/ui/Avatar';
+import Badge from '@/components/ui/Badge';
+import Skeleton from '@/components/ui/Skeleton';
+import Title from '@/components/ui/Title';
 
 type Tab = 'info' | 'mitglieder' | 'profil' | 'verwaltung';
 
-function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-      <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{title}</Text>
-      {children}
-    </View>
-  );
-}
-
-// `last:` isn't reliable in NativeWind/React Native (no real DOM for a
-// structural `:last-child` match) -- rows take an explicit `isLast` prop
-// instead of relying on a CSS pseudo-class.
-function BoardRow({ member, isLast }: { member: BoardMember; isLast: boolean }) {
+function VereinsinfoTab({ clubId, clubName }: { clubId: string; clubName: string }) {
   const { t } = useLanguage();
-  return (
-    <View className={`flex-row items-center justify-between py-2 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`}>
-      <Text className="text-foreground dark:text-foreground-dark text-sm font-medium">{member.name ?? '—'}</Text>
-      <View className="bg-primary/10 dark:bg-primary-dark/10 px-2.5 py-1 rounded-md">
-        <Text className="text-primary dark:text-primary-dark text-xs font-semibold">
-          {t(`verein.role.${member.roleType}`)}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
-function DepartmentRow({ department, colorIndex, isLast }: { department: Department; colorIndex: number; isLast: boolean }) {
-  const color = getDepartmentColor(colorIndex);
-  return (
-    <View className={`flex-row items-center py-2 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`} style={{ gap: 10 }}>
-      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color }} />
-      <Text className="text-foreground dark:text-foreground-dark text-sm">{department.name}</Text>
-    </View>
-  );
-}
-
-function VereinsinfoTab({ clubId }: { clubId: string }) {
-  const { t } = useLanguage();
-  const themeColors = useThemeColors();
   const { info, loading } = useClubInfo(clubId);
   // The document being read (slug + title from the list); the text itself is fetched by the reader per slug.
   const [reading, setReading] = useState<{ slug: string; title: string } | null>(null);
 
   if (loading || !info) {
-    return (
-      <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primaryText} />
-      </View>
-    );
+    return <Skeleton shape="rows" lines={4} />;
   }
 
   return (
     <>
-      <SectionCard title={t('verein.info.board')}>
-        {info.board.length === 0 ? (
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.info.board.empty')}</Text>
-        ) : (
-          info.board.map((m, i) => <BoardRow key={m.memberId} member={m} isLast={i === info.board.length - 1} />)
-        )}
-      </SectionCard>
+      {/* Club block: crest (accent soft) + serif name; the only hero moment of this tab. */}
+      <View className="flex-row items-center mb-6" style={{ gap: 16 }}>
+        <Avatar name={clubName} size="L" tone="accent" />
+        <View className="flex-1">
+          <Title size="M" header={false}>
+            {clubName}
+          </Title>
+          {info.departments.length > 0 ? (
+            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] mt-1">{t('verein.info.departments.count', { count: info.departments.length })}</Text>
+          ) : null}
+        </View>
+      </View>
 
-      <SectionCard title={t('verein.info.departments')}>
+      <ListSection title={t('verein.info.board')}>
+        {info.board.length === 0 ? (
+          <ListRow key="none" title={t('verein.info.board.empty')} />
+        ) : (
+          info.board.map((m) => <ListRow key={m.memberId} title={m.name ?? '—'} trailing={<Badge tone="accent">{t(`verein.role.${m.roleType}`)}</Badge>} />)
+        )}
+      </ListSection>
+
+      <ListSection title={t('verein.info.departments')} inset={40}>
         {info.departments.length === 0 ? (
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.info.departments.empty')}</Text>
+          <ListRow key="none" title={t('verein.info.departments.empty')} />
         ) : (
           info.departments.map((d, i) => (
-            <DepartmentRow key={d.id} department={d} colorIndex={i} isLast={i === info.departments.length - 1} />
+            <ListRow key={d.id} leading={<View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: getDepartmentColor(i) }} />} title={d.name} />
           ))
         )}
-      </SectionCard>
+      </ListSection>
 
-      <SectionCard title={t('verein.info.pages')}>
+      <ListSection title={t('verein.info.pages')} inset={60}>
         {info.pages.length === 0 ? (
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.info.pages.empty')}</Text>
+          <ListRow key="none" title={t('verein.info.pages.empty')} />
         ) : (
-          info.pages.map((p, i) => {
+          info.pages.map((p) => {
             const openable = p.hasContent || p.hasAttachment || !!p.externalUrl;
             return (
-              <TouchableOpacity
+              <ListRow
                 key={p.id}
-                disabled={!openable}
-                onPress={() => setReading({ slug: p.slug, title: p.title })}
-                accessibilityRole="button"
-                accessibilityLabel={p.title}
-                accessibilityHint={t('docs.reader.open-hint', { title: p.title })}
-                className={`flex-row items-center py-2 ${i === info.pages.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}
-                style={{ minHeight: 44, gap: 10 }}
-              >
-                <FileText size={18} color={themeColors.primaryText} />
-                <Text className="text-foreground dark:text-foreground-dark text-sm font-medium flex-1">{p.title}</Text>
-                {p.hasAttachment ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{t('docs.reader.has-pdf')}</Text> : null}
-              </TouchableOpacity>
+                icon={FileText}
+                title={p.title}
+                value={p.hasAttachment ? t('docs.reader.has-pdf') : undefined}
+                accessibilityHint={openable ? t('docs.reader.open-hint', { title: p.title }) : undefined}
+                onPress={openable ? () => setReading({ slug: p.slug, title: p.title }) : undefined}
+              />
             );
           })
         )}
-      </SectionCard>
-      <AcknowledgementsEntry clubId={clubId} />
-      <ArchiveEntry clubId={clubId} />
-      <ListRow title={t('assembly.dashboard.Abstimmungen')} onPress={() => navigate('Abstimmungen')} />
-      <ListRow title={t('assembly.dashboard.Versammlung')} onPress={() => navigate('Versammlung')} />
+      </ListSection>
+
+      <ListSection title={t('verein.section.take-part')} inset={60}>
+        <AcknowledgementsEntry key="ack" clubId={clubId} />
+        <ArchiveEntry key="archive" clubId={clubId} />
+        <ListRow key="ballots" icon={Vote} title={t('assembly.dashboard.Abstimmungen')} onPress={() => navigate('Abstimmungen')} />
+        <ListRow key="assembly" icon={Landmark} title={t('assembly.dashboard.Versammlung')} onPress={() => navigate('Versammlung')} />
+      </ListSection>
       <ClubDocumentReader clubId={clubId} slug={reading?.slug ?? null} title={reading?.title ?? ''} onClose={() => setReading(null)} />
     </>
   );
@@ -243,13 +218,8 @@ export default function VereinScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <View className="px-6 pt-4">
-        <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark mb-1">
-          {activeClub?.clubName ?? t('nav.verein')}
-        </Text>
-        <ClubSwitcher onBeforeSwitch={guardClubSwitch} />
-      </View>
+    <SafeAreaView edges={['top']} className="flex-1 bg-background dark:bg-background-dark">
+      <ScreenHeader title={t('nav.verein')} context={<ClubSwitcher onBeforeSwitch={guardClubSwitch} />} />
 
       {clubsLoading ? (
         <View className="flex-1 items-center justify-center">
@@ -261,12 +231,10 @@ export default function VereinScreen() {
         <NoClubState />
       ) : (
         <>
-          <View className="px-6 pt-3">
-            <TabChips tabs={tabs.map((value) => ({ value, label: t(`verein.tab.${value}`) }))} active={activeTab} onChange={selectTab} />
-          </View>
+          <TabChips tabs={tabs.map((value) => ({ value, label: t(`verein.tab.${value}`) }))} active={activeTab} onChange={selectTab} />
 
-          <ScrollView key={activeClub.clubId} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
-            {activeTab === 'info' && <VereinsinfoTab clubId={activeClub.clubId} />}
+          <ScrollView key={activeClub.clubId} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 120 }}>
+            {activeTab === 'info' && <VereinsinfoTab clubId={activeClub.clubId} clubName={activeClub.clubName ?? t('nav.verein')} />}
             {activeTab === 'mitglieder' && <MembersTab clubId={activeClub.clubId} memberId={route.params?.memberId} />}
             {activeTab === 'verwaltung' && <VerwaltungTab clubId={activeClub.clubId} onOpenMembers={() => selectTab('mitglieder')} />}
             {activeTab === 'profil' && <ProfilTab clubId={activeClub.clubId} onDirtyChange={setProfileDirty} />}

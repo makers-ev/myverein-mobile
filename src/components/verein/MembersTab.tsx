@@ -5,7 +5,12 @@ import { ActivityIndicator, Text, TextInput, TouchableOpacity, View, ScrollView 
 
 import OfflineNotice from '@/components/ui/OfflineNotice';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
-import { ChevronRight } from 'lucide-react-native';
+import { UserPlus } from 'lucide-react-native';
+import Badge from '@/components/ui/Badge';
+import Button from '@/components/ui/Button';
+import ErrorState from '@/components/ui/ErrorState';
+import FilterChip from '@/components/ui/FilterChip';
+import ListRow from '@/components/ui/ListRow';
 import { useThemeColors } from '@/theme/colors';
 import { navigate } from '@/navigation/navigationRef';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
@@ -25,35 +30,17 @@ import MemberDetailSheet, { categoryLabel, formatDay } from './MemberDetailSheet
 const SEARCH_DEBOUNCE_MS = 350;
 const PHOTO_REFRESH_MS = 10_000;
 
-function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      className={`px-4 rounded-[10px] justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'}`}
-      style={{ minHeight: 44 }}
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      accessibilityLabel={label}
-    >
-      <Text
-        className={`text-sm font-semibold ${
-          selected ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'
-        }`}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
-
 function MemberRow({
   member,
   showStatus,
+  divider,
   onPress,
   onPhotoExpired,
 }: {
   member: ClubMember;
   showStatus: boolean;
+  /** Hairline above the row (every row but the first in the grouped list). */
+  divider: boolean;
   onPress?: () => void;
   onPhotoExpired?: () => void;
 }) {
@@ -62,63 +49,54 @@ function MemberRow({
   const activeDepartments = member.departments.filter((d) => d.until === null).map((d) => d.name);
   const joined = formatDay(member.joinedAt, language);
 
+  const isBoard = member.roles.length > 0;
+  const meta = [activeDepartments.join(', ') || null, category].filter(Boolean).join(' · ');
   const content = (
-    <>
-      <View className="flex-row items-center justify-between" style={{ gap: 10 }}>
-        <MemberAvatar name={member.name} photoUrl={member.photoUrl} size={40} onExpired={onPhotoExpired} />
-        <Text className="flex-1 text-foreground dark:text-foreground-dark font-semibold text-sm">{member.name ?? '—'}</Text>
-        {category ? (
-          <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
-            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{category}</Text>
+    <View className="flex-row items-start px-4 py-3" style={{ gap: 12 }}>
+      <MemberAvatar name={member.name} photoUrl={member.photoUrl} size={40} onExpired={onPhotoExpired} />
+      <View className="flex-1">
+        <Text className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px]">{member.name ?? '—'}</Text>
+        {meta ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-0.5">{meta}</Text> : null}
+        {isBoard || showStatus || !member.hasAccount ? (
+          <View className="flex-row flex-wrap mt-1.5" style={{ gap: 6 }}>
+            {member.roles.map((r) => (
+              <Badge key={r.id} tone="accent">
+                {t(`verein.role.${r.roleType}`)}
+              </Badge>
+            ))}
+            {showStatus ? <Badge tone="primary">{t(`verein.status.${member.effectiveStatus}`)}</Badge> : null}
+            {!member.hasAccount && showStatus ? <Badge>{t('verein.members.account.no')}</Badge> : null}
           </View>
         ) : null}
+        {joined && showStatus ? (
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-1" style={{ fontVariant: ['tabular-nums'] }}>
+            {t('verein.members.joined')}: {joined}
+          </Text>
+        ) : null}
       </View>
-      {showStatus || !member.hasAccount ? (
-        <View className="flex-row flex-wrap mt-2" style={{ gap: 6 }}>
-          {showStatus ? (
-            <View className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-1 rounded-md">
-              <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t(`verein.status.${member.effectiveStatus}`)}</Text>
-            </View>
-          ) : null}
-          {showStatus && !member.hasAccount ? (
-            <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
-              <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{t('verein.members.account.no')}</Text>
-            </View>
-          ) : null}
-        </View>
-      ) : null}
-      {activeDepartments.length > 0 ? (
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-2">{activeDepartments.join(', ')}</Text>
-      ) : null}
-      {member.roles.length > 0 ? (
-        <View className="flex-row flex-wrap mt-2" style={{ gap: 6 }}>
-          {member.roles.map((r) => (
-            <View key={r.id} className="bg-primary/10 dark:bg-primary-dark/10 px-2 py-1 rounded-md">
-              <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t(`verein.role.${r.roleType}`)}</Text>
-            </View>
-          ))}
-        </View>
-      ) : null}
-      {joined ? (
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-2">
-          {t('verein.members.joined')}: {joined}
-        </Text>
-      ) : null}
-    </>
+    </View>
   );
 
-  const cardClass = 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3';
-  if (!onPress) return <View className={cardClass}>{content}</View>;
+  if (!onPress) {
+    return (
+      <View>
+        {divider ? <View className="bg-border dark:bg-border-dark" style={{ height: 1, marginLeft: 68 }} /> : null}
+        {content}
+      </View>
+    );
+  }
   return (
-    <TouchableOpacity
-      className={cardClass}
-      style={{ minHeight: 44 }}
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${member.name ?? '—'}. ${t('verein.members.open-detail')}`}
-    >
-      {content}
-    </TouchableOpacity>
+    <View>
+      {divider ? <View className="bg-border dark:bg-border-dark" style={{ height: 1, marginLeft: 68 }} /> : null}
+      <TouchableOpacity
+        style={{ minHeight: 44 }}
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={`${member.name ?? '—'}. ${t('verein.members.open-detail')}`}
+      >
+        {content}
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -221,16 +199,7 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
     setStatusFilter((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
 
   const applicationsEntry = can('members:write') ? (
-    <TouchableOpacity
-      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-xl px-4 py-3 mb-3 flex-row items-center justify-between"
-      style={{ minHeight: 48 }}
-      onPress={() => navigate('ClubApplications')}
-      accessibilityRole="button"
-      accessibilityLabel={t('verein.applications.open')}
-    >
-      <Text className="text-foreground dark:text-foreground-dark font-medium text-[15px]">{t('verein.applications.open')}</Text>
-      <ChevronRight size={18} strokeWidth={1.5} color={themeColors.mutedForeground} />
-    </TouchableOpacity>
+    <ListRow title={t('verein.applications.open')} icon={UserPlus} onPress={() => navigate('ClubApplications')} />
   ) : null;
 
   if (membershipLoading) {
@@ -251,8 +220,8 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
       {isManager ? (
         <View className="mb-3">
           <TextInput
-            className="border border-border dark:border-border-dark bg-card dark:bg-card-dark rounded-xl px-3 text-foreground dark:text-foreground-dark text-sm"
-            style={{ minHeight: 44 }}
+            className="border border-border-control dark:border-border-control-dark bg-card dark:bg-card-dark rounded-[10px] px-3 text-foreground dark:text-foreground-dark text-[17px]"
+            style={{ minHeight: 48 }}
             value={search}
             onChangeText={setSearch}
             placeholder={t('verein.members.search.placeholder')}
@@ -264,16 +233,16 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
             accessibilityLabel={t('verein.members.search.label')}
           />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2" contentContainerStyle={{ gap: 8 }} keyboardShouldPersistTaps="handled">
-            <Chip label={t('verein.members.filter.all')} selected={statusFilter.length === 0} onPress={() => setStatusFilter([])} />
+            <FilterChip label={t('verein.members.filter.all')} selected={statusFilter.length === 0} onPress={() => setStatusFilter([])} />
             {MEMBER_STATUSES.map((s) => (
-              <Chip key={s} label={t(`verein.status.${s}`)} selected={statusFilter.includes(s)} onPress={() => toggleStatus(s)} />
+              <FilterChip key={s} label={t(`verein.status.${s}`)} selected={statusFilter.includes(s)} onPress={() => toggleStatus(s)} />
             ))}
           </ScrollView>
           {categories.length > 1 ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2" contentContainerStyle={{ gap: 8 }} keyboardShouldPersistTaps="handled">
-              <Chip label={t('verein.members.filter.all-categories')} selected={categoryKey === null} onPress={() => setCategoryKey(null)} />
+              <FilterChip label={t('verein.members.filter.all-categories')} selected={categoryKey === null} onPress={() => setCategoryKey(null)} />
               {categories.map((c) => (
-                <Chip key={c.id} label={c.name} selected={categoryKey === c.key} onPress={() => setCategoryKey(categoryKey === c.key ? null : c.key)} />
+                <FilterChip key={c.id} label={c.name} selected={categoryKey === c.key} onPress={() => setCategoryKey(categoryKey === c.key ? null : c.key)} />
               ))}
             </ScrollView>
           ) : null}
@@ -286,52 +255,32 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
           <ActivityIndicator color={themeColors.primaryText} />
         </View>
       ) : error ? (
-        <View className="py-6">
-          <Text className="text-destructive dark:text-destructive-dark text-sm mb-3" accessibilityRole="alert">
-            {t('verein.members.error')}
-          </Text>
-          <TouchableOpacity
-            onPress={() => void refetch()}
-            className="self-start px-5 justify-center rounded-lg bg-primary dark:bg-primary-dark"
-            style={{ minHeight: 44 }}
-            accessibilityRole="button"
-            accessibilityLabel={t('verein.retry')}
-          >
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('verein.retry')}</Text>
-          </TouchableOpacity>
-        </View>
+        <ErrorState fallbackKey="verein.members.error" onRetry={() => void refetch()} />
       ) : members.length === 0 ? (
         <View className="py-4">
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] mb-3">
             {filtersActive ? t('verein.members.empty.filtered') : t('verein.members.empty')}
           </Text>
           {!filtersActive ? <DocsLink path={DOCS_PATHS.members} /> : null}
-          {filtersActive ? (
-            <TouchableOpacity
-              onPress={resetFilters}
-              className="self-start px-5 justify-center rounded-lg border border-border dark:border-border-dark"
-              style={{ minHeight: 44 }}
-              accessibilityRole="button"
-              accessibilityLabel={t('verein.members.filter.reset')}
-            >
-              <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.members.filter.reset')}</Text>
-            </TouchableOpacity>
-          ) : null}
+          {filtersActive ? <Button variant="secondary" size="M" label={t('verein.members.filter.reset')} onPress={resetFilters} /> : null}
         </View>
       ) : (
         <View style={{ opacity: loading ? 0.5 : 1 }}>
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2" accessibilityLiveRegion="polite">
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-2 px-1" accessibilityLiveRegion="polite" style={{ fontVariant: ['tabular-nums'] }}>
             {t('verein.members.count', { shown: members.length, total })}
           </Text>
-          {members.map((m) => (
-            <MemberRow
-              key={m.id}
-              member={m}
-              showStatus={isManager}
-              onPress={isManager ? () => setSelected(m) : undefined}
-              onPhotoExpired={refreshForPhotos}
-            />
-          ))}
+          <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] overflow-hidden mb-3">
+            {members.map((m, i) => (
+              <MemberRow
+                key={m.id}
+                divider={i > 0}
+                member={m}
+                showStatus={isManager}
+                onPress={isManager ? () => setSelected(m) : undefined}
+                onPhotoExpired={refreshForPhotos}
+              />
+            ))}
+          </View>
           {loadMoreError ? (
             <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
               {t('verein.members.load-more.error')}
@@ -341,7 +290,7 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
             <TouchableOpacity
               onPress={() => void loadMore()}
               disabled={loadingMore}
-              className="items-center justify-center rounded-xl border border-border dark:border-border-dark bg-card dark:bg-card-dark"
+              className="items-center justify-center rounded-[10px] border border-border-control dark:border-border-control-dark bg-card dark:bg-card-dark"
               style={{ minHeight: 48 }}
               accessibilityRole="button"
               accessibilityLabel={t('verein.members.load-more')}

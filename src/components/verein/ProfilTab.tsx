@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Text, TextInput, View } from 'react-native';
 
 import { navigate } from '@/navigation/navigationRef';
 
@@ -10,6 +10,9 @@ import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import DateTimeField, { fromDateString, toDateString } from '@/components/ui/DateTimeField';
 import { Field, inputClassName } from '@/components/ui/FormSheet';
+import Button from '@/components/ui/Button';
+import Banner from '@/components/ui/Banner';
+import ListSection from '@/components/ui/ListSection';
 import { isMinorBirthDate } from '@/lib/memberPhoto';
 import { type NameErrors, nameDraftFromMember, nameFieldErrorsFromApi, namePatch, validateName } from '@/lib/memberName';
 import AbsenceSection from '@/components/privacy/AbsenceSection';
@@ -211,7 +214,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
     );
   }
 
-  const textInput = (key: TextKey, label: string, extra: React.ComponentProps<typeof TextInput> = {}, fieldError?: string) => (
+  const textInput = (key: TextKey, label: string, extra: React.ComponentProps<typeof TextInput> = {}, fieldError?: string, helper?: string) => (
     <Field label={label}>
       <TextInput
         ref={(el) => {
@@ -219,14 +222,15 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
         }}
         blurOnSubmit={key !== 'displayName'}
         onSubmitEditing={() => focusNext(key)}
-        className={`${inputClassName} ${fieldError ? 'border-destructive' : ''}`}
+        className={`${inputClassName} ${fieldError ? 'border-destructive dark:border-destructive-dark' : ''}`}
         placeholderTextColor={themeColors.mutedForeground}
         value={draft[key]}
         onChangeText={(v) => update(key, v)}
         accessibilityLabel={label}
         {...extra}
       />
-      {fieldError ? <Text className="text-destructive dark:text-destructive-dark text-xs mt-1">{fieldError}</Text> : null}
+      {fieldError ? <Text className="text-destructive dark:text-destructive-dark text-[13px] leading-[18px] mt-1">{fieldError}</Text> : null}
+      {helper && !fieldError ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-1.5">{helper}</Text> : null}
     </Field>
   );
 
@@ -234,8 +238,8 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
 
   return (
     <View>
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('member-photo.title')}</Text>
+      <View className="mb-6">
+        <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('member-photo.title')}</Text>
         <MemberPhotoEditor
           clubId={clubId}
           target="me"
@@ -248,9 +252,8 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
         />
       </View>
 
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{t('profil.section.name')}</Text>
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('profil.name.hint')}</Text>
+      <View className="mb-6">
+        <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('profil.section.name')}</Text>
         {textInput(
           'firstName',
           t('profil.first-name'),
@@ -268,35 +271,31 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
           t('profil.display-name'),
           { maxLength: 200, textContentType: 'nickname', autoCapitalize: 'words', returnKeyType: 'done' },
           nameErrorText('displayName'),
+          // The explanation sits under the field it explains (helper text), not as a paragraph before the first input.
+          t('profil.name.hint'),
         )}
-        <TouchableOpacity
-          className="rounded-xl items-center justify-center border border-border dark:border-border-dark mt-1"
-          style={{ minHeight: 44 }}
-          onPress={() => navigate('Settings')}
-          accessibilityRole="button"
-          accessibilityLabel={t('profil.name.settings')}
-        >
-          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('profil.name.settings')}</Text>
-        </TouchableOpacity>
+        <View className="self-start" style={{ marginLeft: -12 }}>
+          <Button variant="tertiary" size="M" label={t('profil.name.settings')} onPress={() => navigate('Settings')} />
+        </View>
       </View>
 
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('profil.section.personal')}</Text>
+      <View className="mb-6">
+        <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('profil.section.personal')}</Text>
         <Field label={t('profil.birth-date')}>
           <DateTimeField mode="date" value={draft.birthDate} onChange={(d) => update('birthDate', d)} clearable />
         </Field>
       </View>
 
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('profil.section.address')}</Text>
+      <View className="mb-6">
+        <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('profil.section.address')}</Text>
         {textInput('street', t('profil.street'), { maxLength: 200, autoComplete: 'street-address', textContentType: 'streetAddressLine1' })}
         {textInput('postalCode', t('profil.postal-code'), { maxLength: 12, autoComplete: 'postal-code', textContentType: 'postalCode' }, visibleErrors.postalCode)}
         {textInput('city', t('profil.city'), { maxLength: 120, textContentType: 'addressCity' })}
       </View>
 
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{t('profil.section.contact')}</Text>
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('profil.contact.hint')}</Text>
+      <View className="mb-6">
+        <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-1">{t('profil.section.contact')}</Text>
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] mb-3">{t('profil.contact.hint')}</Text>
         {textInput('phone', t('profil.phone'), { keyboardType: 'phone-pad', maxLength: 50, textContentType: 'telephoneNumber' })}
         {textInput(
           'contactEmail',
@@ -306,54 +305,36 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
         )}
       </View>
 
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('profil.section.emergency')}</Text>
+      <View className="mb-6">
+        <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('profil.section.emergency')}</Text>
         {textInput('emergencyContactName', t('profil.emergency-contact-name'), { maxLength: 200 })}
         {textInput('emergencyContactPhone', t('profil.emergency-contact-phone'), { keyboardType: 'phone-pad', maxLength: 50 })}
       </View>
 
       {error ? (
-        <Text className="text-destructive dark:text-destructive-dark text-sm mb-3" accessibilityRole="alert">
-          {error}
-        </Text>
+        <View className="mb-3">
+          <Banner tone="danger" body={error} />
+        </View>
       ) : null}
       {saved && !error && !dirty ? (
-        <Text className="text-success dark:text-success-dark text-sm mb-3" accessibilityLiveRegion="polite">
+        <Text className="text-success dark:text-success-dark text-[15px] mb-3" accessibilityLiveRegion="polite">
           {t('profil.saved')}
         </Text>
       ) : null}
-      {dirty && !error ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('profil.unsaved')}</Text> : null}
+      {dirty && !error ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mb-3">{t('profil.unsaved')}</Text> : null}
 
-      <TouchableOpacity
-        className={`bg-primary dark:bg-primary-dark rounded-xl py-3 items-center justify-center ${isSaving || !dirty ? 'opacity-50' : ''}`}
-        style={{ minHeight: 48 }}
-        onPress={() => void handleSave()}
-        disabled={isSaving || !dirty}
-        accessibilityRole="button"
-        accessibilityLabel={t('profil.save')}
-        accessibilityState={{ disabled: isSaving || !dirty, busy: isSaving }}
-      >
-        {isSaving ? (
-          <ActivityIndicator color={themeColors.primaryForeground} />
-        ) : (
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('profil.save')}</Text>
-        )}
-      </TouchableOpacity>
+      <Button block label={t('profil.save')} onPress={() => void handleSave()} disabled={!dirty && !isSaving} loading={isSaving} />
 
       {dirty && !isSaving ? (
-        <TouchableOpacity
-          className="rounded-xl py-3 items-center justify-center mt-2"
-          style={{ minHeight: 48 }}
-          onPress={handleDiscard}
-          accessibilityRole="button"
-          accessibilityLabel={t('profil.discard')}
-        >
-          <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('profil.discard')}</Text>
-        </TouchableOpacity>
+        <View className="mt-2">
+          <Button block variant="tertiary" label={t('profil.discard')} onPress={handleDiscard} />
+        </View>
       ) : null}
 
-      <View className="mt-6">
-        <MyDocumentsEntry />
+      <View className="mt-8">
+        <ListSection inset={60}>
+          <MyDocumentsEntry />
+        </ListSection>
         <AbsenceSection subject={{ kind: 'self', clubId }} />
         {membership ? <ConsentsSection subject={{ kind: 'self', clubId, clubMemberId: membership.id }} /> : null}
         <MemberCustomFields clubId={clubId} target="me" card onDirtyChange={setCustomDirty} manageHint={can('forms:write')} />

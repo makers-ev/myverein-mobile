@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -15,6 +15,11 @@ import {
 import AnswerList from '@/components/forms/AnswerList';
 import DateTimeField, { fromDateString, toDateString } from '@/components/ui/DateTimeField';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
+import Badge from '@/components/ui/Badge';
+import Banner from '@/components/ui/Banner';
+import DecisionCard from '@/components/ui/DecisionCard';
+import ErrorState from '@/components/ui/ErrorState';
+import Skeleton from '@/components/ui/Skeleton';
 
 type Dialog = { kind: 'approve' | 'reject'; request: ExitRequest } | null;
 
@@ -75,8 +80,9 @@ function Checklist({ detail, loading, error }: { detail: ExitRequestDetail | nul
 }
 
 /**
- * Compact board queue of open exit requests (`members:write`): approve (with
- * optional date override / note) or reject (note required). The decision sheet
+ * Board queue of open exit requests (`members:write`) as decision cards (rule 2): facts first, then ONE primary that
+ * names the outcome ("Zum 31.03.2027 genehmigen", opens the sheet with the date override / note) and a neutral
+ * "Ablehnen" (note required). The own request shows a lock and an explanation instead of disabled buttons. The decision sheet
  * shows the member's return checklist. The caller renders it only with the
  * permission; the backend enforces it again.
  */
@@ -183,94 +189,66 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
     }
   };
 
-  const muted = 'text-muted-foreground dark:text-muted-foreground-dark text-xs';
+  const muted = 'text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px]';
 
   // A failed refetch keeps the old queue visible but must not look current.
   const staleBanner =
     loaded && error ? (
-      <View className="mb-2">
-        <Text className="text-destructive dark:text-destructive-dark text-sm mb-1" accessibilityRole="alert">
-          {t('admin.exits.refresh-error')}
-        </Text>
-        <TouchableOpacity onPress={() => void refetch()} style={{ minHeight: 44, justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('verein.retry')}>
-          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.retry')}</Text>
-        </TouchableOpacity>
+      <View className="mb-3">
+        <Banner tone="warning" body={t('admin.exits.refresh-error')} action={{ label: t('verein.retry'), onPress: () => void refetch() }} alert />
       </View>
     ) : null;
 
   let body: React.ReactNode;
   if (!loaded && loading) {
-    body = <ActivityIndicator color={themeColors.primaryText} />;
+    body = <Skeleton shape="rows" lines={2} />;
   } else if (!loaded && error) {
-    body = (
-      <View>
-        <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
-          {t('admin.exits.error')}
-        </Text>
-        <TouchableOpacity
-          onPress={() => void refetch()}
-          className="self-start px-4 justify-center rounded-lg border border-border dark:border-border-dark"
-          style={{ minHeight: 44 }}
-          accessibilityRole="button"
-          accessibilityLabel={t('verein.retry')}
-        >
-          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.retry')}</Text>
-        </TouchableOpacity>
-      </View>
-    );
+    body = <ErrorState fallbackKey="admin.exits.error" onRetry={() => void refetch()} />;
   } else if (requests.length === 0) {
-    body = <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('admin.exits.empty')}</Text>;
+    body = <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] px-1">{t('admin.exits.empty')}</Text>;
   } else {
-    body = requests.map((r, i) => {
+    body = requests.map((r) => {
       const own = ownMemberId !== null && r.requestedBy === ownMemberId;
+      const name = r.memberName ?? '—';
+      const facts = [
+        r.desiredEffectiveOn ? { label: t('admin.exits.fact.desired'), value: formatDay(r.desiredEffectiveOn) } : null,
+        r.proposedEffectiveOn ? { label: t('admin.exits.fact.proposed'), value: formatDay(r.proposedEffectiveOn) } : null,
+        r.reason ? { label: t('admin.exits.fact.reason'), value: r.reason } : null,
+      ].filter((f): f is { label: string; value: string } => f !== null);
       return (
-        <View key={r.id} className={`py-3 ${i === requests.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}>
-          <View className="flex-row items-center justify-between" style={{ gap: 8 }}>
-            <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm flex-1">{r.memberName ?? '—'}</Text>
-            {r.kind === 'exclusion' ? <Text className="text-destructive dark:text-destructive-dark text-xs font-semibold">{t('admin.exits.kind.exclusion')}</Text> : null}
-            {!r.hasAccount ? <Text className={muted}>{t('admin.exits.no-account')}</Text> : null}
-          </View>
-          <Text className={`${muted} mt-0.5`}>{t('admin.exits.requested', { date: formatDay(r.requestedOn) })}</Text>
-          {r.desiredEffectiveOn ? <Text className={muted}>{t('admin.exits.desired', { date: formatDay(r.desiredEffectiveOn) })}</Text> : null}
-          {r.proposedEffectiveOn ? <Text className={muted}>{t('admin.exits.proposed', { date: formatDay(r.proposedEffectiveOn) })}</Text> : null}
-          {r.reason ? <Text className={muted}>{t('admin.exits.reason', { reason: r.reason })}</Text> : null}
-          {own ? <Text className={`${muted} mt-1`}>{t('admin.exits.own-request')}</Text> : null}
-          <View className="flex-row mt-2" style={{ gap: 8 }}>
-            <TouchableOpacity
-              className={`flex-1 bg-primary dark:bg-primary-dark rounded-lg items-center justify-center ${own ? 'opacity-50' : ''}`}
-              style={{ minHeight: 44 }}
-              onPress={() => open('approve', r)}
-              disabled={own}
-              accessibilityRole="button"
-              accessibilityLabel={`${t('admin.exits.approve')}: ${r.memberName ?? ''}`}
-              accessibilityState={{ disabled: own }}
-            >
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('admin.exits.approve')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="flex-1 rounded-lg items-center justify-center border border-border dark:border-border-dark"
-              style={{ minHeight: 44 }}
-              onPress={() => open('reject', r)}
-              accessibilityRole="button"
-              accessibilityLabel={`${t('admin.exits.reject')}: ${r.memberName ?? ''}`}
-            >
-              <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('admin.exits.reject')}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <DecisionCard
+          key={r.id}
+          name={name}
+          meta={t(r.kind === 'exclusion' ? 'admin.exits.meta.exclusion' : 'admin.exits.meta.cancellation', { date: formatDay(r.requestedOn) })}
+          tags={
+            r.kind === 'exclusion' || !r.hasAccount ? (
+              <>
+                {r.kind === 'exclusion' ? <Badge tone="danger">{t('admin.exits.kind.exclusion')}</Badge> : null}
+                {!r.hasAccount ? <Badge>{t('admin.exits.no-account')}</Badge> : null}
+              </>
+            ) : undefined
+          }
+          facts={facts}
+          blockedReason={own ? t('admin.exits.own-request') : null}
+          primary={{
+            label: r.proposedEffectiveOn ? t('admin.exits.approve.on', { date: formatDay(r.proposedEffectiveOn) }) : t('admin.exits.approve'),
+            onPress: () => open('approve', r),
+          }}
+          secondary={{ label: t('admin.exits.reject'), onPress: () => open('reject', r) }}
+        />
       );
     });
   }
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-      <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-2" accessibilityRole="header">
+    <View className="mb-6">
+      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-2 px-1" accessibilityRole="header">
         {t('admin.exits.title')}
       </Text>
       {listError ? (
-        <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
-          {listError}
-        </Text>
+        <View className="mb-3">
+          <Banner tone="info" body={listError} alert />
+        </View>
       ) : null}
       {staleBanner}
       {body}
