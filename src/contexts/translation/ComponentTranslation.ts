@@ -20,6 +20,7 @@ const ComponentTranslation: Translation = {
     'ui.back': 'Back',
     'ui.more': 'More options',
     'ui.error.safe': 'Your data is safe.',
+    'ui.events-count': '{{count}} event(s)',
   },
   de: {
     'confirmation-input-modal.input-placeholder': 'Bestätige deine Aktion...',
@@ -36,6 +37,7 @@ const ComponentTranslation: Translation = {
     'ui.back': 'Zurück',
     'ui.more': 'Weitere Aktionen',
     'ui.error.safe': 'Deine Daten sind sicher.',
+    'ui.events-count': '{{count}} Termin(e)',
   },
   fr: {
     'confirmation-input-modal.input-placeholder': 'Confirmez votre action...',

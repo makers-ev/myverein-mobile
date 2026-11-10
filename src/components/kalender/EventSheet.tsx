@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Repeat } from 'lucide-react-native';
+import { Check, Clock, Repeat } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -13,6 +13,8 @@ import { CANCEL_REASON_MAX, cancelPreviewKind, type CancelPreview } from '@/lib/
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 import DateTimeField from '@/components/ui/DateTimeField';
 import NotifySwitch from '@/components/ui/NotifySwitch';
+import Badge from '@/components/ui/Badge';
+import Button from '@/components/ui/Button';
 import { allDayRange, formatEventRange } from '@/lib/eventDays';
 import {
   affectedSignups,
@@ -56,7 +58,7 @@ export function ParticipationLine({ event }: { event: CalendarEvent }) {
       ? t('termine.seats-taken', { count: event.attendeeCount, capacity: event.capacity })
       : t('termine.attendees', { count: event.attendeeCount });
   return (
-    <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
+    <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-0.5" style={{ fontVariant: ['tabular-nums'] }}>
       {waitlist > 0 ? `${seats} · ${t('termine.waitlist-count', { count: waitlist })}` : seats}
     </Text>
   );
@@ -64,33 +66,19 @@ export function ParticipationLine({ event }: { event: CalendarEvent }) {
 
 export function RsvpControl({ state, pending, onRsvp, onCancel }: RsvpProps) {
   const { t } = useLanguage();
-  const themeColors = useThemeColors();
 
   if (state) {
+    // Signed up: a status tag (icon + word, never colour alone) and a neutral "Abmelden" (reversible, not red).
     return (
-      <View className="flex-row items-center" style={{ gap: 10 }}>
-        <Text className="text-success dark:text-success-dark text-xs font-semibold">
+      <View className="flex-row items-center" style={{ gap: 4 }}>
+        <Badge tone={state === 'angemeldet' ? 'success' : 'warning'} icon={state === 'angemeldet' ? Check : Clock}>
           {state === 'angemeldet' ? t('termine.rsvp.confirmed') : t('termine.rsvp.waitlist')}
-        </Text>
-        <TouchableOpacity onPress={onCancel} disabled={pending} accessibilityRole="button" className="min-h-[44px] justify-center">
-          <Text className="text-destructive dark:text-destructive-dark text-xs font-semibold">{t('termine.cancel')}</Text>
-        </TouchableOpacity>
+        </Badge>
+        <Button variant="tertiary" size="M" label={t('termine.cancel')} onPress={onCancel} disabled={pending} loading={pending} />
       </View>
     );
   }
-  return (
-    <TouchableOpacity accessibilityRole="button"
-      className={`bg-primary dark:bg-primary-dark rounded-lg py-2 px-4 items-center self-start ${pending ? 'opacity-70' : ''}`}
-      onPress={onRsvp}
-      disabled={pending}
-    >
-      {pending ? (
-        <ActivityIndicator color={themeColors.primaryForeground} size="small" />
-      ) : (
-        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">{t('termine.rsvp')}</Text>
-      )}
-    </TouchableOpacity>
-  );
+  return <Button size="M" label={t('termine.rsvp')} onPress={onRsvp} loading={pending} />;
 }
 
 export { ColorChip };

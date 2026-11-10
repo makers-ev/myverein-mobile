@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { CalendarPlus, Clock, Ellipsis, Plus, Settings2, Timer, Users } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -15,17 +16,22 @@ import TabChips from '@/components/ui/TabChips';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import type { CalendarEvent } from '@/hooks/useEvents';
-import TermineTab, { type EventFocus } from '@/components/kalender/TermineTab';
+import TermineTab, { type EventFocus, type KalenderCommand } from '@/components/kalender/TermineTab';
+import ScreenHeader from '@/components/ui/ScreenHeader';
+import IconButton from '@/components/ui/IconButton';
+import ActionSheet from '@/components/ui/ActionSheet';
+import { useOwnMembership } from '@/hooks/useOwnMembership';
+import { canSeeTeamHours, canTrackTime } from '@/lib/eventRights';
 import VerfuegbarkeitTab from '@/components/kalender/VerfuegbarkeitTab';
 import TreffenTab from '@/components/kalender/TreffenTab';
 
 type Tab = 'termine' | 'verfuegbarkeit' | 'treffen';
 
 /**
- * Wave 2 (Kalender/Verfügbarkeit/Treffen) lives behind ONE new nav entry
- * with three tabs, not three separate nav entries -- the floating navbar
- * pill only has room for a few items (see Navbar.tsx), same reasoning that
- * merged Wave 1's Vereinsinfo/Mitglieder/Profil into VereinScreen's tabs.
+ * Kalender tab: Termine / Verfügbarkeit / Treffen as underline tabs directly under the top bar, the month grid right
+ * below (no buttons in between). Top bar: "+" (Termin anlegen, `calendars:write` only) and "..." with the hours tools
+ * (Zeiterfassung / Meine Stunden / Team-Stunden, each only for whom it applies, decision D3), "Kalender abonnieren"
+ * and "Kalender verwalten" (`calendars:write`). The chosen action is handed to the Termine tab, which owns the sheets.
  */
 export default function KalenderScreen() {
   const { t } = useLanguage();
@@ -84,16 +90,33 @@ export default function KalenderScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target, ready, unreachable]);
 
+  const { membership, can } = useOwnMembership(activeClub?.clubId ?? null);
+  const canWrite = can('calendars:write');
+  const trackTime = canTrackTime(membership);
+  const myHours = trackTime || membership?.hasRate === true;
+  const teamHours = canSeeTeamHours(membership);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [command, setCommand] = useState<{ kind: KalenderCommand; n: number } | null>(null);
+  const run = (kind: KalenderCommand) => {
+    setTab('termine');
+    setCommand((prev) => ({ kind, n: (prev?.n ?? 0) + 1 }));
+  };
+
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <View className="px-6 pt-4">
-        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">{t('nav.kalender')}</Text>
-        {activeClub ? (
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-2" numberOfLines={1}>
-            {activeClub.clubName}
-          </Text>
-        ) : null}
-        <ClubSwitcher />
+    <SafeAreaView edges={['top']} className="flex-1 bg-background dark:bg-background-dark">
+      <ScreenHeader
+        title={t('nav.kalender')}
+        context={activeClub ? <ClubSwitcher /> : undefined}
+        actions={
+          activeClub ? (
+            <>
+              {canWrite ? <IconButton icon={Plus} label={t('termine.new.label')} onPress={() => run('new')} /> : null}
+              <IconButton icon={Ellipsis} label={t('kalender.menu.open')} onPress={() => setMenuOpen(true)} />
+            </>
+          ) : undefined
+        }
+      />
+      <View className="px-4">
         <PushNotice messageKey={noticeKey} onDismiss={() => setNoticeKey(null)} />
       </View>
 
@@ -104,20 +127,41 @@ export default function KalenderScreen() {
       ) : !activeClub && clubsError ? (
         <ClubsLoadError />
       ) : !activeClub ? (
-        <View className="px-6 pt-6">
+        <View className="px-4 pt-6">
           <NoClubChoices />
         </View>
       ) : (
         <>
-          <View className="px-6 pt-3">
-            <TabChips tabs={(['termine', 'verfuegbarkeit', 'treffen'] as const).map((value) => ({ value, label: t(`kalender.tab.${value}`) }))} active={tab} onChange={setTab} />
-          </View>
+          <TabChips tabs={(['termine', 'verfuegbarkeit', 'treffen'] as const).map((value) => ({ value, label: t(`kalender.tab.${value}`) }))} active={tab} onChange={setTab} />
 
-          <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
-            {tab === 'termine' && <TermineTab clubId={activeClub.clubId} focus={focus} onFocusHandled={clearFocus} onEventGone={eventGone} />}
+          <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 120 }}>
+            {tab === 'termine' && <TermineTab clubId={activeClub.clubId} focus={focus} onFocusHandled={clearFocus} onEventGone={eventGone} command={command} />}
             {tab === 'verfuegbarkeit' && <VerfuegbarkeitTab clubId={activeClub.clubId} />}
             {tab === 'treffen' && <TreffenTab clubId={activeClub.clubId} />}
           </ScrollView>
+
+          <ActionSheet
+            visible={menuOpen}
+            title={t('ui.more')}
+            onClose={() => setMenuOpen(false)}
+            groups={[
+              {
+                title: t('kalender.menu.hours'),
+                items: [
+                  ...(trackTime ? [{ key: 'time', icon: Timer, label: t('time.open'), hint: t('time.open.hint'), onPress: () => run('time') }] : []),
+                  ...(myHours ? [{ key: 'my', icon: Clock, label: t('time.my.open'), hint: t('time.my.hint'), onPress: () => run('myHours') }] : []),
+                  ...(teamHours ? [{ key: 'team', icon: Users, label: t('time.team.open'), hint: t('time.team.hint'), onPress: () => run('teamHours') }] : []),
+                ],
+              },
+              {
+                title: t('kalender.menu.calendar'),
+                items: [
+                  { key: 'feeds', icon: CalendarPlus, label: t('feeds.open'), hint: t('feeds.hint'), onPress: () => run('feeds') },
+                  ...(canWrite ? [{ key: 'manage', icon: Settings2, label: t('kalender.manage.open'), onPress: () => run('manage') }] : []),
+                ],
+              },
+            ]}
+          />
         </>
       )}
     </SafeAreaView>
