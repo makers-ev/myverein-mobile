@@ -163,35 +163,6 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone,
     onFocusHandled?.();
   }, [focus, onFocusHandled]);
 
-  // Top-bar actions (decision D3: the hours and calendar tools live in the header, not as buttons above the grid).
-  const lastCommand = useRef(0);
-  useEffect(() => {
-    if (!command || command.n === lastCommand.current) return;
-    lastCommand.current = command.n;
-    switch (command.kind) {
-      case 'new':
-        if (canWrite) setSheetTarget({ day: selectedDate });
-        break;
-      case 'manage':
-        if (canWrite) setManageOpen(true);
-        break;
-      case 'feeds':
-        setFeedsOpen(true);
-        break;
-      case 'time':
-        if (trackTime) setTimeOpen(true);
-        break;
-      case 'myHours':
-        if (myHours) setMyHoursOpen(true);
-        break;
-      case 'teamHours':
-        if (teamHours) setTeamHoursOpen(true);
-        break;
-    }
-    // Only a new command (n) triggers; the rights and the selected day are read at that moment.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [command]);
-
   const fetchedEventOrListed = (eventId: string) => events.some((e) => e.id === eventId) || fetchedEvent?.id === eventId;
 
   const runRsvp = async (eventId: string, action: () => Promise<unknown>) => {
@@ -261,6 +232,35 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone,
     const [y, m, d] = selectedDay.split('-').map(Number);
     return new Date(y, m - 1, d);
   }, [selectedDay]);
+
+  // Top-bar actions (decision D3: the hours and calendar tools live in the header, not as buttons above the grid).
+  const lastCommand = useRef(0);
+  useEffect(() => {
+    if (!command || command.n === lastCommand.current) return;
+    lastCommand.current = command.n;
+    switch (command.kind) {
+      case 'new':
+        if (canWrite) setSheetTarget({ day: selectedDate });
+        break;
+      case 'manage':
+        if (canWrite) setManageOpen(true);
+        break;
+      case 'feeds':
+        setFeedsOpen(true);
+        break;
+      case 'time':
+        if (trackTime) setTimeOpen(true);
+        break;
+      case 'myHours':
+        if (myHours) setMyHoursOpen(true);
+        break;
+      case 'teamHours':
+        if (teamHours) setTeamHoursOpen(true);
+        break;
+    }
+    // Only a new command (n) triggers; the rights and the selected day are read at that moment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [command]);
 
   const handleMonthChange = (next: Date) => {
     setMonth(next);
