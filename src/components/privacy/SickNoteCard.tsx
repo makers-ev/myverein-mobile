@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
+import { Thermometer } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { privacyErrorKeyOr } from '@/lib/ward';
 import { useAbsences, type AbsenceInput } from '@/hooks/useAbsences';
-import BentoTile from '@/components/ui/BentoTile';
+import Card from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
 import AbsenceSheet from './AbsenceSheet';
 
 /**
- * Dashboard quick action "Krank melden" (Wave 10 M2): one tap opens the sheet, a second sends it. The caller shows it
+ * Dashboard action card "Krank melden" (Wave 10 M2): one tap on "Abwesenheit eintragen" opens the sheet, a second sends it. The caller shows it
  * only for a club member (own membership loaded). The saved report is listed in the Profil tab ("Zurückziehen").
  */
 export default function SickNoteCard({ clubId }: { clubId: string }) {
@@ -34,23 +36,24 @@ export default function SickNoteCard({ clubId }: { clubId: string }) {
 
   return (
     <>
-      <BentoTile
-        minHeight={88}
-        accessibilityLabel={t('absence.button')}
-        onPress={() => {
-          setNotice(null);
-          setError(null);
-          setOpen(true);
-        }}
-      >
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] font-medium mb-2">{t('absence.title')}</Text>
-        <Text className="text-foreground dark:text-foreground-dark text-lg font-semibold">{t('absence.button')}</Text>
+      <Card variant="action" icon={Thermometer} title={t('absence.button')} body={t('absence.card.body')}>
+        <View className="self-start">
+          <Button
+            variant="secondary"
+            label={t('absence.card.action')}
+            onPress={() => {
+              setNotice(null);
+              setError(null);
+              setOpen(true);
+            }}
+          />
+        </View>
         {notice ? (
-          <Text className="text-success dark:text-success-dark text-sm mt-2" accessibilityLiveRegion="polite">
+          <Text className="text-success dark:text-success-dark text-[15px] mt-3" accessibilityLiveRegion="polite">
             {notice}
           </Text>
         ) : null}
-      </BentoTile>
+      </Card>
       <AbsenceSheet visible={open} wardName={null} saving={saving} error={error} onClose={() => !saving && setOpen(false)} onSubmit={(i) => void submit(i)} />
     </>
   );
