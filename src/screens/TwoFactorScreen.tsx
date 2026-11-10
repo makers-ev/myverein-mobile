@@ -57,7 +57,7 @@ export default function TwoFactorScreen({ onVerify, onCancel }: TwoFactorScreenP
 
   return (
     <KeyboardAwareScreen
-      className="bg-muted dark:bg-muted-dark"
+      className="bg-background dark:bg-background-dark"
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
     >
         <Text className="text-2xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
@@ -69,7 +69,7 @@ export default function TwoFactorScreen({ onVerify, onCancel }: TwoFactorScreenP
 
         <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
           <TextInput
-            className="bg-muted dark:bg-muted-dark rounded-lg p-3.5 text-2xl tracking-[8px] text-center text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-4"
+            className="bg-card dark:bg-card-dark rounded-lg p-3.5 text-2xl tracking-[8px] text-center text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-4"
             placeholder={t('twofactor.placeholder')}
             placeholderTextColor={themeColors.mutedForeground}
             keyboardType="number-pad"

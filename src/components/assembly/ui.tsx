@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
-import { Check, CircleAlert, CircleHelp, Clock, CloudOff, Ellipsis, X, type LucideIcon } from 'lucide-react-native';
+import { Check, CircleAlert, CircleHelp, Clock, CloudOff, Ellipsis, Lock, X, type LucideIcon } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -64,7 +64,7 @@ export function Loading() {
 }
 
 /** Status symbols the assembly screens pass in, drawn as line icons (never emoji). Unknown symbols show the label alone. */
-const SYMBOL_ICON: Record<string, LucideIcon> = { '✓': Check, '✕': X, '!': CircleAlert, '?': CircleHelp, '⏳': Clock, '…': Ellipsis };
+const SYMBOL_ICON: Record<string, LucideIcon> = { '✓': Check, '✕': X, '!': CircleAlert, '?': CircleHelp, '⏳': Clock, '…': Ellipsis, lock: Lock };
 
 /** Status label with a leading line icon, so state is never conveyed by colour alone. */
 export function Badge({ label, symbol }: { label: string; symbol: string }) {

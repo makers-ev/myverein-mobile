@@ -8,6 +8,7 @@ import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import CheckInSection from './CheckInSection';
 import { Badge, Body, Button, Card, ErrorRetry, Loading, labelOr } from './ui';
+import Banner from '@/components/ui/Banner';
 
 interface Props {
   clubId: string;
@@ -148,7 +149,7 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
                 value={search}
                 onChangeText={setSearch}
                 autoCorrect={false}
-                className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-2 min-h-[48px]"
+                className="bg-card dark:bg-card-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-2 min-h-[48px]"
               />
               {holders.length === 0 ? <Body muted>{t('assembly.proxy.no-members')}</Body> : null}
               {holders.map((h) => (
@@ -172,10 +173,15 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
       ) : null}
 
       {a.quorum && !over ? (
-        <Card title={t('assembly.quorum.title')}>
-          <Badge symbol={a.quorum.result === 'beschlussfaehig' ? '✓' : '!'} label={t(`assembly.quorum.${a.quorum.result}`)} />
-          <Body muted>{t('assembly.quorum.counts', { present: a.quorum.represented, eligible: a.quorum.eligibleTotal })}</Body>
-        </Card>
+        // Quorum notice (handoff): a warning banner while it is missing, a success banner once reached; numbers in words.
+        <View className="mb-4">
+          <Banner
+            tone={a.quorum.result === 'beschlussfaehig' ? 'success' : 'warning'}
+            title={t(`assembly.quorum.${a.quorum.result}`)}
+            body={t('assembly.quorum.counts', { present: a.quorum.represented, eligible: a.quorum.eligibleTotal })}
+            alert={a.quorum.result !== 'beschlussfaehig'}
+          />
+        </View>
       ) : null}
 
       <Card title={t('assembly.ballots.title')}>

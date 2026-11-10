@@ -37,7 +37,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
 
   return (
     <KeyboardAwareScreen
-      className="bg-muted dark:bg-muted-dark"
+      className="bg-background dark:bg-background-dark"
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
     >
       <View className="items-center mb-6">
@@ -72,7 +72,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
               {t('login.username')}
             </Text>
             <TextInput
-              className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-4"
+              className="bg-card dark:bg-card-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-4"
               placeholder="user@example.com"
               placeholderTextColor={themeColors.mutedForeground}
               autoCapitalize="none"

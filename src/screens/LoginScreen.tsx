@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput } from 'react-native';
+import Button from '@/components/ui/Button';
+import Banner from '@/components/ui/Banner';
+import Title from '@/components/ui/Title';
+import { Field, inputClassName } from '@/components/ui/FormSheet';
 import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -36,26 +40,20 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
 
   return (
     <KeyboardAwareScreen
-      className="bg-muted dark:bg-muted-dark"
-      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
+      className="bg-background dark:bg-background-dark"
+      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 16 }}
     >
-        <View className="items-center mb-6">
+        <View className="mb-8">
           <Logo />
+          <View className="mt-6">
+            <Title>{t('login.title')}</Title>
+          </View>
+          <Text className="text-[17px] leading-6 mt-2 text-muted-foreground dark:text-muted-foreground-dark">{t('login.description')}</Text>
         </View>
 
-        <Text className="text-3xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
-          {t('login.title')}
-        </Text>
-        <Text className="text-sm text-center mb-8 text-muted-foreground dark:text-muted-foreground-dark">
-          {t('login.description')}
-        </Text>
-
-        <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
-          <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
-            {t('login.username')}
-          </Text>
+        <Field label={t('login.username')}>
           <TextInput
-            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-4"
+            className={inputClassName}
             placeholder="user@example.com"
             placeholderTextColor={themeColors.mutedForeground}
             autoCapitalize="none"
@@ -67,13 +65,11 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
             value={email}
             onChangeText={setEmail}
           />
+        </Field>
 
-          <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
-            {t('login.password')}
-          </Text>
+        <Field label={t('login.password')}>
           <TextInput
-            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-4"
-            placeholder="********"
+            className={inputClassName}
             placeholderTextColor={themeColors.mutedForeground}
             secureTextEntry
             autoComplete="current-password"
@@ -82,37 +78,18 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
             value={password}
             onChangeText={setPassword}
           />
+        </Field>
 
-          {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3 text-center">{error}</Text> : null}
+        {error ? (
+          <View className="mb-3">
+            <Banner tone="danger" body={error} />
+          </View>
+        ) : null}
 
-          <TouchableOpacity
-            className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-1 ${isSubmitting ? 'opacity-70' : ''}`}
-            onPress={handleLogin}
-            accessibilityRole="button"
-            accessibilityLabel={t('login.button')}
-            accessibilityState={{ disabled: isSubmitting || !email || !password, busy: isSubmitting }}
-            disabled={isSubmitting || !email || !password}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color={themeColors.primaryForeground} />
-            ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">
-                {t('login.button')}
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity accessibilityRole="button" className="mt-3 items-center" onPress={onForgotPassword}>
-            <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm font-semibold">
-              {t('login.forgot.password')}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity accessibilityRole="button" className="mt-4 items-center" onPress={onNavigateToSignup}>
-            <Text className="text-primary dark:text-primary-dark text-sm font-semibold">
-              {t('login.create.account')}
-            </Text>
-          </TouchableOpacity>
+        <View className="mt-2" style={{ gap: 10 }}>
+          <Button block label={t('login.button')} onPress={handleLogin} disabled={!email || !password} loading={isSubmitting} />
+          <Button block variant="secondary" label={t('login.create.account')} onPress={() => onNavigateToSignup?.()} />
+          <Button block variant="tertiary" label={t('login.forgot.password')} onPress={() => onForgotPassword?.()} />
         </View>
     </KeyboardAwareScreen>
   );

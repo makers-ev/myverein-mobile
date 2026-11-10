@@ -136,7 +136,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
             {t('treffen.title')}
           </Text>
           <TextInput
-            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
+            className="bg-card dark:bg-card-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
             placeholderTextColor={themeColors.mutedForeground}
             value={title}
             onChangeText={setTitle}
@@ -251,7 +251,7 @@ function AgendaMinutes({
   return (
     <SectionCard title={t('treffen.agenda')}>
       <TextInput
-        className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
+        className="bg-card dark:bg-card-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
         placeholderTextColor={themeColors.mutedForeground}
         value={agenda}
         onChangeText={setAgenda}
@@ -260,7 +260,7 @@ function AgendaMinutes({
       />
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-1">{t('treffen.minutes')}</Text>
       <TextInput
-        className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
+        className="bg-card dark:bg-card-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
         placeholderTextColor={themeColors.mutedForeground}
         value={minutes}
         onChangeText={setMinutes}
@@ -590,7 +590,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
         {!canWrite ? null : showResolutionForm ? (
           <View className="mt-3 pt-3 border-t border-border dark:border-border-dark">
             <TextInput
-              className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
+              className="bg-card dark:bg-card-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
               placeholder={t('treffen.resolutions.description')}
               placeholderTextColor={themeColors.mutedForeground}
               value={resDescription}
@@ -602,7 +602,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
                   {t('treffen.resolutions.votes-for')}
                 </Text>
                 <TextInput
-                  className="bg-muted dark:bg-muted-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
+                  className="bg-card dark:bg-card-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
                   keyboardType="number-pad"
                   value={resFor}
                   onChangeText={setResFor}
@@ -613,7 +613,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
                   {t('treffen.resolutions.votes-against')}
                 </Text>
                 <TextInput
-                  className="bg-muted dark:bg-muted-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
+                  className="bg-card dark:bg-card-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
                   keyboardType="number-pad"
                   value={resAgainst}
                   onChangeText={setResAgainst}
@@ -624,7 +624,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
                   {t('treffen.resolutions.votes-abstain')}
                 </Text>
                 <TextInput
-                  className="bg-muted dark:bg-muted-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
+                  className="bg-card dark:bg-card-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
                   keyboardType="number-pad"
                   value={resAbstain}
                   onChangeText={setResAbstain}
@@ -635,7 +635,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
               {t('treffen.resolutions.result')}
             </Text>
             <TextInput
-              className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
+              className="bg-card dark:bg-card-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
               placeholder={t('treffen.resolutions.result.placeholder')}
               placeholderTextColor={themeColors.mutedForeground}
               value={resResult}

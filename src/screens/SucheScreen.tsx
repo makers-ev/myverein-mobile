@@ -13,7 +13,8 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import Skeleton from '@/components/ui/Skeleton';
 import ListRow from '@/components/ui/ListRow';
-import SectionLabel from '@/components/ui/SectionLabel';
+import ListSection from '@/components/ui/ListSection';
+import { CalendarDays, CircleX, FileText, MapPin, Search, SearchX, Users } from 'lucide-react-native';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 /**
@@ -36,12 +37,11 @@ export default function SucheScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <View className="px-6 pt-4 pb-2">
-        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-3">
-          {t('search.title')}
-        </Text>
-        <View className="flex-row items-center bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-xl px-3" style={{ minHeight: 48 }}>
+    // The stack header says "Suche"; the field is the first thing on the screen and takes the focus.
+    <SafeAreaView edges={['bottom', 'left', 'right']} className="flex-1 bg-background dark:bg-background-dark">
+      <View className="px-4 pt-3 pb-2">
+        <View className="flex-row items-center bg-muted dark:bg-muted-dark rounded-[10px] pl-3" style={{ minHeight: 44, gap: 8 }}>
+          <Search size={20} strokeWidth={1.75} color={themeColors.mutedForeground} />
           <TextInput
             autoFocus
             value={query}
@@ -52,69 +52,60 @@ export default function SucheScreen() {
             returnKeyType="search"
             autoCorrect={false}
             autoCapitalize="none"
-            className="flex-1 text-foreground dark:text-foreground-dark text-base"
+            className="flex-1 text-foreground dark:text-foreground-dark text-[17px]"
             style={{ minHeight: 44 }}
           />
           {query.length > 0 ? (
             <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('search.clear')} onPress={() => setQuery('')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-              <Text className="text-muted-foreground dark:text-muted-foreground-dark text-lg">×</Text>
+              <CircleX size={20} strokeWidth={1.75} color={themeColors.mutedForeground} />
             </TouchableOpacity>
           ) : null}
         </View>
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">{tooShort ? t('search.too-short') : t('search.hint')}</Text>
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-1.5 px-1">{tooShort ? t('search.too-short') : t('search.hint')}</Text>
       </View>
 
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 120 }}>
         {!activeClub ? (
           <EmptyState title={t('search.no-club')} />
         ) : error ? (
           <ErrorState error={error} onRetry={retry} />
         ) : loading ? (
-          <Skeleton lines={4} />
+          <Skeleton shape="rows" lines={4} />
         ) : results && total === 0 ? (
-          <EmptyState title={t('search.empty.title')} hint={t('search.empty.body')} action={<Button variant="secondary" label={t('search.empty.action')} onPress={() => setQuery('')} />} />
+          <EmptyState icon={SearchX} title={t('search.empty.for', { query: query.trim() })} hint={t('search.empty.body')} action={<Button variant="secondary" label={t('search.empty.action')} onPress={() => setQuery('')} />} />
         ) : results ? (
           <>
             {results.members && results.members.length > 0 ? (
-              <Group title={t('search.group.members')}>
+              <ListSection title={t('search.group.members')} inset={60}>
                 {results.members.map((m) => (
-                  <ListRow key={m.id} title={m.name} hint={m.departmentNames?.join(', ')} onPress={() => navigation.navigate('Verein', { tab: 'mitglieder', memberId: m.id })} />
+                  <ListRow key={m.id} icon={Users} title={m.name} hint={m.departmentNames?.join(', ')} onPress={() => navigation.navigate('Verein', { tab: 'mitglieder', memberId: m.id })} />
                 ))}
-              </Group>
+              </ListSection>
             ) : null}
             {results.events.length > 0 ? (
-              <Group title={t('search.group.events')}>
+              <ListSection title={t('search.group.events')} inset={60}>
                 {results.events.map((e) => (
-                  <ListRow key={e.id} title={e.title} hint={when(e.startsAt)} onPress={() => navigation.navigate('Kalender', { tab: 'termine', eventId: e.id })} />
+                  <ListRow key={e.id} icon={CalendarDays} title={e.title} hint={when(e.startsAt)} onPress={() => navigation.navigate('Kalender', { tab: 'termine', eventId: e.id })} />
                 ))}
-              </Group>
+              </ListSection>
             ) : null}
             {results.documents.length > 0 ? (
-              <Group title={t('search.group.documents')}>
+              <ListSection title={t('search.group.documents')} inset={60}>
                 {results.documents.map((d) => (
-                  <ListRow key={d.id} title={d.title} onPress={() => navigation.navigate('Archiv')} />
+                  <ListRow key={d.id} icon={FileText} title={d.title} onPress={() => navigation.navigate('Archiv')} />
                 ))}
-              </Group>
+              </ListSection>
             ) : null}
             {results.locations.length > 0 ? (
-              <Group title={t('search.group.locations')}>
+              <ListSection title={t('search.group.locations')} inset={60}>
                 {results.locations.map((l) => (
-                  <ListRow key={l.id} title={l.name} onPress={() => navigation.navigate('Standorte', { tab: 'orte', locationId: l.id })} />
+                  <ListRow key={l.id} icon={MapPin} title={l.name} onPress={() => navigation.navigate('Standorte', { tab: 'orte', locationId: l.id })} />
                 ))}
-              </Group>
+              </ListSection>
             ) : null}
           </>
         ) : null}
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function Group({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <View>
-      <SectionLabel>{title}</SectionLabel>
-      {children}
-    </View>
   );
 }

@@ -1,11 +1,11 @@
 import React from 'react';
-import { Text, TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useBallots } from '@/hooks/useBallots';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import type { BallotSummary } from '@/lib/assembly';
-import { Body, Card, ErrorRetry, Loading, labelOr } from './ui';
+import { Badge, Body, Card, ErrorRetry, Loading, labelOr } from './ui';
 
 const SYMBOL: Record<string, string> = { scheduled: '⏳', voting: '●', ended: '✓', cancelled: '✕', draft: '…' };
 
@@ -18,11 +18,19 @@ function Row({ ballot, onPress }: { ballot: BallotSummary; onPress: () => void }
       accessibilityRole="button"
       accessibilityLabel={[ballot.title, phase, until].filter(Boolean).join(', ')}
       onPress={onPress}
-      className="min-h-[64px] bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-3"
+      className="min-h-[64px] bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-2"
     >
-      <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{ballot.title}</Text>
-      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{`${SYMBOL[ballot.phase] ?? '•'} ${phase}${ballot.secret ? ` · ${t('assembly.secret')}` : ''}`}</Text>
-      {until ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">{until}</Text> : null}
+      <Text className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-2">{ballot.title}</Text>
+      {/* Status as line icon + word (never a text glyph, never colour alone). */}
+      <View className="flex-row flex-wrap items-center" style={{ gap: 6 }}>
+        <Badge symbol={SYMBOL[ballot.phase] ?? '…'} label={phase} />
+        {ballot.secret ? <Badge symbol="lock" label={t('assembly.secret')} /> : null}
+      </View>
+      {until ? (
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px]" style={{ fontVariant: ['tabular-nums'] }}>
+          {until}
+        </Text>
+      ) : null}
     </TouchableOpacity>
   );
 }
@@ -45,13 +53,13 @@ export default function BallotListView({ clubId, onSelect }: { clubId: string; o
   }
   return (
     <>
-      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-lg mb-2">
+      <Text accessibilityRole="header" className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-2 px-1">
         {t('assembly.list.open')}
       </Text>
       {open.length === 0 ? <Body muted>{t('assembly.list.none-open')}</Body> : open.map((b) => <Row key={b.id} ballot={b} onPress={() => onSelect(b.id)} />)}
       {rest.length > 0 ? (
         <>
-          <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-lg mt-4 mb-2">
+          <Text accessibilityRole="header" className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mt-6 mb-2 px-1">
             {t('assembly.list.done')}
           </Text>
           {rest.map((b) => (

@@ -293,7 +293,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
 
   return (
     <KeyboardAwareScreen
-      className="bg-muted dark:bg-muted-dark"
+      className="bg-background dark:bg-background-dark"
       contentContainerStyle={{ flexGrow: 1, padding: 24, paddingBottom: 64 }}
     >
       <Text className="text-3xl font-semibold text-center mb-1 text-foreground dark:text-foreground-dark">
@@ -573,7 +573,7 @@ function StatusView({
 
   return (
     <KeyboardAwareScreen
-      className="bg-muted dark:bg-muted-dark"
+      className="bg-background dark:bg-background-dark"
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
     >
       <View className="bg-card dark:bg-card-dark p-6 rounded-2xl">

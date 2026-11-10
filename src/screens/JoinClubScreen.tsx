@@ -181,7 +181,7 @@ export default function JoinClubScreen({ navigation }: Props) {
     const key = CONFLICT_KEY[conflict];
     return (
       <KeyboardAwareScreen
-        className="bg-muted dark:bg-muted-dark"
+        className="bg-background dark:bg-background-dark"
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
       >
         <View className="bg-card dark:bg-card-dark p-6 rounded-2xl items-center" accessibilityLiveRegion="polite">
@@ -225,8 +225,8 @@ export default function JoinClubScreen({ navigation }: Props) {
               {t('join-club.slug.label')}
             </Text>
             <TextInput
-              className={`bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border mb-2 ${
-                loadErrorKey ? 'border-destructive' : 'border-border dark:border-border-dark'
+              className={`bg-card dark:bg-card-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border mb-2 ${
+                loadErrorKey ? 'border-destructive' : 'border-border-control dark:border-border-control-dark'
               }`}
               accessibilityLabel={t('join-club.slug.label')}
               placeholder={t('forms.apply.slugPlaceholder')}

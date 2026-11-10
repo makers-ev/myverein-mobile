@@ -13,11 +13,11 @@ const PageLayoutTranslation: Translation = {
 
     'home.guest-heading': 'Browsing as a guest',
     'home.guest-body': 'Sign up to unlock the full app, or log in if you already have an account.',
-    'home.signup-cta': 'Sign up',
-    'home.login-cta': 'Log in',
+    'home.signup-cta': 'Create account',
+    'home.login-cta': 'Sign in',
     'home.signed-in-as': 'Signed in as {email}',
     'home.go-to-settings': 'Go to settings',
-    'home.hero-title': 'Club life, organised.',
+    'home.hero-title': 'Your club. One place.',
     'home.hero-subtitle': 'Members, calendar, locations and inventory in one place.',
     'home.feature.kalender.title': 'Calendar & meetings',
     'home.feature.kalender.body': 'Events, RSVP and scheduling based on availability.',
@@ -38,6 +38,7 @@ const PageLayoutTranslation: Translation = {
     'dashboard.title': 'Dashboard',
 
     'legal.fallback-notice': 'Not available in your language yet — showing English.',
+    'home.section.features': 'What you get',
   },
   de: {
     'login.title': 'Login',
@@ -47,11 +48,11 @@ const PageLayoutTranslation: Translation = {
 
     'home.guest-heading': 'Du bist als Gast unterwegs',
     'home.guest-body': 'Registriere dich, um die volle App freizuschalten, oder logge dich ein, falls du schon einen Account hast.',
-    'home.signup-cta': 'Registrieren',
-    'home.login-cta': 'Login',
+    'home.signup-cta': 'Konto erstellen',
+    'home.login-cta': 'Anmelden',
     'home.signed-in-as': 'Angemeldet als {email}',
     'home.go-to-settings': 'Zu den Einstellungen',
-    'home.hero-title': 'Vereinsleben, organisiert.',
+    'home.hero-title': 'Dein Verein. Ein Ort.',
     'home.hero-subtitle': 'Mitglieder, Kalender, Standorte und Material an einem Ort.',
     'home.feature.kalender.title': 'Kalender & Treffen',
     'home.feature.kalender.body': 'Termine, Zusagen und Terminfindung nach Verfügbarkeit.',
@@ -72,6 +73,7 @@ const PageLayoutTranslation: Translation = {
     'dashboard.title': 'Dashboard',
 
     'legal.fallback-notice': 'Noch nicht in deiner Sprache verfügbar — zeigt Englisch.',
+    'home.section.features': 'Was dich erwartet',
   },
   fr: {
     'login.title': 'Connexion',

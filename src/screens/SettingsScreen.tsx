@@ -510,7 +510,7 @@ function ProfileSection({
         <SectionCard title={t('settings.section-profile')}>
             <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1">{t('settings.field-name')}</Text>
             <TextInput
-                className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
+                className="bg-card dark:bg-card-dark rounded-lg p-3 text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
                 value={name}
                 onChangeText={setName}
             />
@@ -648,14 +648,14 @@ function SecuritySection({
                 ) : (
                     <View className="mt-2">
                         <TextInput
-                            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-2"
+                            className="bg-card dark:bg-card-dark rounded-lg p-3 text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-2"
                             placeholder={t('settings.current-password')}
                             secureTextEntry
                             value={currentPassword}
                             onChangeText={setCurrentPassword}
                         />
                         <TextInput
-                            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-2"
+                            className="bg-card dark:bg-card-dark rounded-lg p-3 text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-2"
                             placeholder={t('settings.new-password')}
                             secureTextEntry
                             value={newPassword}
@@ -718,7 +718,7 @@ function SecuritySection({
                             {t('settings.2fa-password-prompt')}
                         </Text>
                         <TextInput
-                            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-2"
+                            className="bg-card dark:bg-card-dark rounded-lg p-3 text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-2"
                             placeholder={t('settings.current-password')}
                             secureTextEntry
                             value={twoFactorPassword}
@@ -757,7 +757,7 @@ function SecuritySection({
                             </Text>
                         )}
                         <TextInput
-                            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-center tracking-[6px] text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-2"
+                            className="bg-card dark:bg-card-dark rounded-lg p-3 text-center tracking-[6px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-2"
                             placeholder={t('settings.2fa-code-placeholder')}
                             keyboardType="number-pad"
                             maxLength={6}

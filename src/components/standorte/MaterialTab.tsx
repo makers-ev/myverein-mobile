@@ -481,7 +481,7 @@ function MaterialDetail({
         {showDamageForm ? (
           <View className="mt-3 pt-3 border-t border-border dark:border-border-dark">
             <TextInput
-              className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
+              className="bg-card dark:bg-card-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
               placeholder={t('material.damage-reports.description-placeholder')}
               placeholderTextColor={themeColors.mutedForeground}
               value={description}

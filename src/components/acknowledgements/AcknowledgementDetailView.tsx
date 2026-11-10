@@ -112,7 +112,7 @@ export default function AcknowledgementDetailView({ clubId, item, onChanged, onB
                 textContentType="password"
                 accessibilityLabel={t('ack.password')}
                 placeholder={t('ack.password')}
-                className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-2 min-h-[48px]"
+                className="bg-card dark:bg-card-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-2 min-h-[48px]"
               />
             </>
           ) : null}

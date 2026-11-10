@@ -158,7 +158,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
                       {t('verfuegbarkeit.start-time')}
                     </Text>
                     <TextInput
-                      className="bg-muted dark:bg-muted-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
+                      className="bg-card dark:bg-card-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
                       placeholder="HH:MM"
                       keyboardType="numbers-and-punctuation"
                       maxLength={5}
@@ -173,7 +173,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
                       {t('verfuegbarkeit.end-time')}
                     </Text>
                     <TextInput
-                      className="bg-muted dark:bg-muted-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
+                      className="bg-card dark:bg-card-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
                       placeholder="HH:MM"
                       keyboardType="numbers-and-punctuation"
                       maxLength={5}
@@ -249,7 +249,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
             {t('verfuegbarkeit.exceptions.note')}
           </Text>
           <TextInput
-            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
+            className="bg-card dark:bg-card-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
             placeholderTextColor={themeColors.mutedForeground}
             value={excNote}
             onChangeText={setExcNote}

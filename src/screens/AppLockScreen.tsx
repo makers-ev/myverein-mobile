@@ -61,7 +61,7 @@ export default function AppLockScreen({ pin, onUnlock }: AppLockScreenProps) {
         </Text>
 
         <TextInput
-          className={`bg-card dark:bg-card-dark rounded-lg p-3.5 text-2xl tracking-[8px] text-center w-40 border border-border dark:border-border-dark text-foreground dark:text-foreground-dark ${isLocked ? 'opacity-50' : ''}`}
+          className={`bg-card dark:bg-card-dark rounded-lg p-3.5 text-2xl tracking-[8px] text-center w-40 border border-border-control dark:border-border-control-dark text-foreground dark:text-foreground-dark ${isLocked ? 'opacity-50' : ''}`}
           keyboardType="numeric"
           maxLength={4}
           secureTextEntry

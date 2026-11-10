@@ -22,21 +22,24 @@ interface Props {
   action?: { label: string; onPress: () => void };
   /** Announce as an alert (errors, offline); default only for `danger`/`offline`. */
   alert?: boolean;
+  /** Replace the tone's default icon (e.g. a lock for "geheime Abstimmung"). */
+  icon?: LucideIcon;
 }
 
 /**
  * Banner (Figma `Banner`): an inline message on the soft tint of its tone, icon + Label/M title + Body/M text and an
  * optional tertiary action. Tone is never the only cue (icon + words). Radius 14, padding 12/16.
  */
-export default function Banner({ tone = 'info', title, body, action, alert }: Props) {
+export default function Banner({ tone = 'info', title, body, action, alert, icon }: Props) {
   const c = TONES[tone];
+  const Icon = icon ?? c.Icon;
   const colors = useThemeColors();
   const announce = alert ?? (tone === 'danger' || tone === 'offline');
   return (
     <View accessibilityRole={announce ? 'alert' : undefined} className={`rounded-[14px] px-4 py-3 ${c.box}`}>
       <View className="flex-row items-start" style={{ gap: 10 }}>
         <View style={{ marginTop: 1 }}>
-          <c.Icon size={20} strokeWidth={1.75} color={colors[c.icon]} />
+          <Icon size={20} strokeWidth={1.75} color={colors[c.icon]} />
         </View>
         <View className="flex-1">
           {title ? <Text className={`text-[15px] leading-5 font-semibold ${c.text}`}>{title}</Text> : null}

@@ -159,6 +159,7 @@ const NavigationTranslation: Translation = {
     'mehr.time.hint': 'Clock, my hours, team hours',
     'mehr.time.hint.my': 'Your hours this month',
     'mehr.search.open': 'Open search',
+    'search.empty.for': 'Nothing found for “{{query}}”',
   },
   de: {
     'auth.required.action': 'Anmelden',
@@ -314,6 +315,7 @@ const NavigationTranslation: Translation = {
     'mehr.time.hint': 'Stempeluhr, meine Stunden, Team-Stunden',
     'mehr.time.hint.my': 'Deine Stunden in diesem Monat',
     'mehr.search.open': 'Suche öffnen',
+    'search.empty.for': 'Nichts gefunden für „{{query}}“',
   },
   fr: {},
   es: {},

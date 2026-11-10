@@ -83,7 +83,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
               <View className="mb-4">
                 <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">{t('signup.first-name')}</Text>
                 <TextInput
-                  className="bg-muted dark:bg-muted-dark p-3 rounded-xl text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
+                  className="bg-card dark:bg-card-dark p-3 rounded-xl text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
                   placeholder={t('signup.first-name.placeholder')}
                   accessibilityLabel={t('signup.first-name')}
                   autoComplete="given-name"
@@ -97,7 +97,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
               <View className="mb-4">
                 <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">{t('signup.last-name')}</Text>
                 <TextInput
-                  className="bg-muted dark:bg-muted-dark p-3 rounded-xl text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
+                  className="bg-card dark:bg-card-dark p-3 rounded-xl text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
                   placeholder={t('signup.last-name.placeholder')}
                   accessibilityLabel={t('signup.last-name')}
                   autoComplete="family-name"
