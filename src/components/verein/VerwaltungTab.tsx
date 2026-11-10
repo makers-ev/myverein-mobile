@@ -44,7 +44,7 @@ export default function VerwaltungTab({ clubId, onOpenMembers }: { clubId: strin
   if (loading && !membership) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }

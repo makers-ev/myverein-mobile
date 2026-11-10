@@ -143,7 +143,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
   if (status === 'loading') {
     return (
       <View className={wrapper}>
-        <ActivityIndicator color={themeColors.primary} accessibilityLabel={t('forms.cf.values.loading')} />
+        <ActivityIndicator color={themeColors.primaryText} accessibilityLabel={t('forms.cf.values.loading')} />
       </View>
     );
   }

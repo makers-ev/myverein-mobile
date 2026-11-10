@@ -115,7 +115,7 @@ export default function MeetingInvitees({ invitees, directory, nameFor, onAdd, o
               >
                 <Text className="text-foreground dark:text-foreground-dark text-sm">{m.name ?? '—'}</Text>
                 {busyId === m.memberId ? (
-                  <ActivityIndicator color={themeColors.primary} size="small" />
+                  <ActivityIndicator color={themeColors.primaryText} size="small" />
                 ) : (
                   <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('treffen.invitees.invite')}</Text>
                 )}

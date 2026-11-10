@@ -115,7 +115,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
   if (loading && meetings.length === 0) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }
@@ -404,7 +404,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
           <ErrorRetry message={t('treffen.detail.error')} onRetry={() => void refetch()} />
         ) : (
           <View className="py-12 items-center" accessibilityLabel={loading ? t('treffen.detail.loading') : undefined}>
-            <ActivityIndicator color={themeColors.primary} />
+            <ActivityIndicator color={themeColors.primaryText} />
           </View>
         )}
       </>

@@ -303,7 +303,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
             </View>
           ) : !review || loading ? (
             <View className="mt-10 items-center" accessibilityLiveRegion="polite">
-              <ActivityIndicator size="large" color={themeColors.primary} />
+              <ActivityIndicator size="large" color={themeColors.primaryText} />
               <Text className="text-sm mt-3 text-muted-foreground dark:text-muted-foreground-dark">{t('forms.review.loading')}</Text>
             </View>
           ) : (
@@ -311,7 +311,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
               <View className="flex-row flex-wrap mt-2" style={{ gap: 8 }}>
                 {child ? (
                   <View className="flex-row items-center rounded-md bg-primary/10 dark:bg-primary-dark/10 px-2.5 py-0.5" style={{ gap: 4 }}>
-                    <Baby size={14} color={themeColors.primary} />
+                    <Baby size={14} color={themeColors.primaryText} />
                     <Text className="text-xs font-semibold text-primary dark:text-primary-dark">{t('forms.review.badge.child')}</Text>
                   </View>
                 ) : null}
@@ -458,7 +458,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
                                   style={{ minHeight: 44 }}
                                 >
                                   {fileBusy === f.id ? (
-                                    <ActivityIndicator size="small" color={themeColors.primary} />
+                                    <ActivityIndicator size="small" color={themeColors.primaryText} />
                                   ) : (
                                     <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">
                                       {shown ? t('forms.review.file.hide') : t('forms.review.file.show')}
@@ -504,7 +504,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
                 {review.consent ? (
                   <View className="rounded-lg border border-border dark:border-border-dark p-3">
                     <View className="flex-row items-center" style={{ gap: 8 }}>
-                      <ShieldCheck size={16} color={themeColors.primary} />
+                      <ShieldCheck size={16} color={themeColors.primaryText} />
                       <Text className="flex-1 text-sm font-medium text-foreground dark:text-foreground-dark">
                         {review.consent.consentFieldKeys.length > 0 ? t('forms.review.consent.given') : t('forms.review.consent.notGiven')}
                       </Text>

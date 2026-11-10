@@ -54,7 +54,7 @@ export default function WardEventsSection({ ward, events }: { ward: Ward; events
         {t('heute.events.title')}
       </Text>
       {loading && rows.length === 0 && !error ? (
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       ) : error && rows.length === 0 ? (
         <View>
           <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'heute.events.error')}</Text>

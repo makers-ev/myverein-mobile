@@ -253,7 +253,7 @@ function CalendarCard({
 
           <Field label={t('kalender.manage.visibility')}>
             {grants === null ? (
-              <ActivityIndicator color={themeColors.primary} />
+              <ActivityIndicator color={themeColors.primaryText} />
             ) : (
               <>
                 <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">

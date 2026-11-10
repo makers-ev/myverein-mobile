@@ -290,7 +290,7 @@ export default function JoinClubScreen({ navigation }: Props) {
 
             {refreshing ? (
               <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
-                <ActivityIndicator size="small" color={themeColors.primary} />
+                <ActivityIndicator size="small" color={themeColors.primaryText} />
                 <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark">{t('forms.apply.working')}</Text>
               </View>
             ) : null}
@@ -340,7 +340,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                       {t(s.onBehalfOf === 'guardian' ? 'forms.apply.open.forChild' : 'forms.apply.open.forSelf')}
                     </Text>
                     <View className="flex-row items-center mt-1" style={{ gap: 6 }}>
-                      <Clock size={14} color={themeColors.primary} />
+                      <Clock size={14} color={themeColors.primaryText} />
                       <Text className="text-xs font-semibold text-primary dark:text-primary-dark">{t('forms.apply.open.waiting')}</Text>
                     </View>
                     <Text className="text-xs mt-1 text-muted-foreground dark:text-muted-foreground-dark">

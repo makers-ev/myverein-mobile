@@ -37,7 +37,7 @@ export function Button({ label, onPress, busy, disabled, secondary, accessibilit
       className={`min-h-[48px] rounded-[10px] px-5 items-center justify-center mb-2 ${secondary ? 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark' : 'bg-primary dark:bg-primary-dark'} ${off ? 'opacity-50' : ''}`}
     >
       {busy ? (
-        <ActivityIndicator color={secondary ? colors.primary : colors.primaryForeground} />
+        <ActivityIndicator color={secondary ? colors.primaryText : colors.primaryForeground} />
       ) : (
         <Text className={`font-semibold text-sm ${secondary ? 'text-foreground dark:text-foreground-dark' : 'text-primary-foreground dark:text-primary-foreground-dark'}`}>{label}</Text>
       )}
@@ -63,7 +63,7 @@ export function Loading() {
   const colors = useThemeColors();
   return (
     <View className="py-10 items-center">
-      <ActivityIndicator size="large" color={colors.primary} />
+      <ActivityIndicator size="large" color={colors.primaryText} />
     </View>
   );
 }

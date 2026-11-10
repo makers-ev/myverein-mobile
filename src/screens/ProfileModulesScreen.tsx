@@ -75,7 +75,7 @@ function ModuleCard({ module: m, name, description, helpText, allowed, reason, b
         accessibilityState={{ disabled, busy }}
       >
         {busy ? (
-          <ActivityIndicator color={active ? colors.primary : colors.primaryForeground} />
+          <ActivityIndicator color={active ? colors.primaryText : colors.primaryForeground} />
         ) : (
           <Text className={`text-sm font-semibold ${active ? 'text-destructive dark:text-destructive-dark' : 'text-primary-foreground dark:text-primary-foreground-dark'}`}>{actionLabel}</Text>
         )}
@@ -154,7 +154,7 @@ export default function ProfileModulesScreen() {
 
       {initialLoading ? (
         <View className="flex-1 items-center justify-center" accessibilityLabel={t('forms.pm.loading')}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.primaryText} />
         </View>
       ) : !activeClub && clubsError ? (
         <ClubsLoadError />
@@ -173,7 +173,7 @@ export default function ProfileModulesScreen() {
       ) : (
         <ScrollView
           contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140, flexGrow: 1 }}
-          refreshControl={<RefreshControl refreshing={false} onRefresh={() => void reload()} tintColor={colors.primary} />}
+          refreshControl={<RefreshControl refreshing={false} onRefresh={() => void reload()} tintColor={colors.primaryText} />}
         >
           <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">{t('forms.pm.intro')}</Text>
           <Note text={t('forms.pm.note.optional')} />

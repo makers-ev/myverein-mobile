@@ -20,7 +20,7 @@ export default function NotifySwitch({ label, hint, value, onChange, disabled }:
         <Text className="flex-1 text-foreground dark:text-foreground-dark text-sm font-semibold">{label}</Text>
         <Switch
           accessibilityLabel={label}
-          trackColor={{ false: themeColors.border, true: themeColors.primary }}
+          trackColor={{ false: themeColors.borderControl, true: themeColors.primary }}
           thumbColor={themeColors.card}
           ios_backgroundColor={themeColors.border}
           value={value}

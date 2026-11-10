@@ -87,7 +87,7 @@ export function SettingsDropdownOption({
                       {item.label}
                     </Text>
                     {selectedValue === item.value && (
-                      <Text style={{ color: themeColors.primary, fontWeight: "bold" }}>✔</Text>
+                      <Text style={{ color: themeColors.primaryText, fontWeight: "bold" }}>✔</Text>
                     )}
                   </TouchableOpacity>
                 )}

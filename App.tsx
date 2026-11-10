@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { LanguageProvider } from './src/contexts/translation/LanguageContext';
 import { PaletteProvider } from './src/theme/PaletteProvider';
+import { FontProvider } from './src/theme/fonts';
 import { AuthProvider } from './src/auth/AuthProvider';
 import { ActiveClubProvider } from './src/clubs/ActiveClubProvider';
 import { WardsProvider } from './src/guardian/WardsProvider';
@@ -40,23 +41,26 @@ export default function App() {
           {/* Required by KeyboardAwareScreen.tsx's KeyboardAwareScrollView. */}
           <KeyboardProvider>
             <PaletteProvider>
-              <LanguageProvider>
-                <AuthProvider>
-                  {/* Bar background can't be set here in Expo Go (edge-to-edge
-                      limitation, github.com/expo/expo/issues/36814) -- it comes
-                      from AppNavigator.tsx's contentStyle + NavigationContainer
-                      theme instead. */}
-                  <StatusBar style="auto" />
-                  <NavigationBar style="auto" />
-                  <ActiveClubProvider>
-                    <WardsProvider>
-                      <PushProvider>
-                        <AppNavigator />
-                      </PushProvider>
-                    </WardsProvider>
-                  </ActiveClubProvider>
-                </AuthProvider>
-              </LanguageProvider>
+              {/* Instrument Serif for titles only; never blocks the first render (system font until loaded). */}
+              <FontProvider>
+                <LanguageProvider>
+                  <AuthProvider>
+                    {/* Bar background can't be set here in Expo Go (edge-to-edge
+                        limitation, github.com/expo/expo/issues/36814) -- it comes
+                        from AppNavigator.tsx's contentStyle + NavigationContainer
+                        theme instead. */}
+                    <StatusBar style="auto" />
+                    <NavigationBar style="auto" />
+                    <ActiveClubProvider>
+                      <WardsProvider>
+                        <PushProvider>
+                          <AppNavigator />
+                        </PushProvider>
+                      </WardsProvider>
+                    </ActiveClubProvider>
+                  </AuthProvider>
+                </LanguageProvider>
+              </FontProvider>
             </PaletteProvider>
           </KeyboardProvider>
         </SafeAreaProvider>

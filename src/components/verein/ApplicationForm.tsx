@@ -95,7 +95,7 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
           accessibilityLiveRegion="polite"
         >
           <View className="flex-row items-center" style={{ gap: 8 }}>
-            <RefreshCw size={16} color={themeColors.primary} />
+            <RefreshCw size={16} color={themeColors.primaryText} />
             <Text className="flex-1 text-sm font-semibold text-foreground dark:text-foreground-dark">{t('forms.apply.updated.title')}</Text>
           </View>
           <Text className="text-sm mt-1 text-foreground dark:text-foreground-dark">{t('forms.apply.updated.body')}</Text>

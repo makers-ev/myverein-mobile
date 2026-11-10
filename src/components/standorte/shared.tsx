@@ -125,7 +125,7 @@ export function SwitchRow({ label, value, onChange }: { label: string; value: bo
   return (
     <View className="flex-row items-center justify-between mb-3">
       <Text className="flex-1 text-foreground dark:text-foreground-dark text-sm">{label}</Text>
-      <Switch value={value} onValueChange={onChange} trackColor={{ true: themeColors.primary, false: themeColors.border }} />
+      <Switch value={value} onValueChange={onChange} trackColor={{ true: themeColors.primary, false: themeColors.borderControl }} />
     </View>
   );
 }

@@ -28,7 +28,7 @@ export default function VisibilitySection({ clubId, clubMemberId }: { clubId: st
   return (
     <PrivacyCard title={t('datenschutz.visibility.title')} intro={t('datenschutz.visibility.intro')}>
       {loading && !levels && !error ? (
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       ) : !levels ? (
         <>
           <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'datenschutz.visibility.load-error')}</Text>

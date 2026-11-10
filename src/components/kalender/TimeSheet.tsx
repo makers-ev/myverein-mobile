@@ -86,7 +86,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
 
       {time.loading ? (
         <View className="py-8 items-center" accessibilityLabel={t('time.loading')}>
-          <ActivityIndicator color={themeColors.primary} />
+          <ActivityIndicator color={themeColors.primaryText} />
         </View>
       ) : time.error && time.entries.length === 0 && !running ? (
         <View className="py-4">

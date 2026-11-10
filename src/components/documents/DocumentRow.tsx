@@ -31,7 +31,7 @@ export default function DocumentRow({ title, meta, busy, disabled, isLast, onPre
       className={`flex-row items-center py-3 ${isLast ? '' : 'border-b border-border dark:border-border-dark'} ${disabled && !busy ? 'opacity-50' : ''}`}
       style={{ minHeight: 48, gap: 12 }}
     >
-      <FileText size={20} color={colors.primary} />
+      <FileText size={20} color={colors.primaryText} />
       <View className="flex-1">
         <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold" numberOfLines={2}>
           {title}
@@ -42,7 +42,7 @@ export default function DocumentRow({ title, meta, busy, disabled, isLast, onPre
           </Text>
         ) : null}
       </View>
-      {busy ? <ActivityIndicator color={colors.primary} /> : null}
+      {busy ? <ActivityIndicator color={colors.primaryText} /> : null}
     </TouchableOpacity>
   );
 }

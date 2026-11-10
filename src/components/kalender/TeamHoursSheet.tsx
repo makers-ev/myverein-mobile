@@ -38,7 +38,7 @@ export default function TeamHoursSheet({ visible, onClose, clubId }: Props) {
       <MonthSwitch month={month} onChange={setMonth} />
       {team.loading ? (
         <View className="py-8 items-center" accessibilityLabel={t('time.loading')}>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={colors.primaryText} />
         </View>
       ) : team.error && !report ? (
         <View className="py-4">

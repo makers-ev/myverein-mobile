@@ -206,7 +206,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
   if (!membership) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }

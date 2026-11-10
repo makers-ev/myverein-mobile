@@ -200,7 +200,7 @@ export default function ExitRequestsQueue({ clubId, ownMemberId }: { clubId: str
 
   let body: React.ReactNode;
   if (!loaded && loading) {
-    body = <ActivityIndicator color={themeColors.primary} />;
+    body = <ActivityIndicator color={themeColors.primaryText} />;
   } else if (!loaded && error) {
     body = (
       <View>

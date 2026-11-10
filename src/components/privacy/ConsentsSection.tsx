@@ -100,7 +100,7 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
       ) : null}
 
       {loading && consents.length === 0 && !error ? (
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       ) : error && consents.length === 0 ? (
         <View>
           <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'consent.load-error')}</Text>

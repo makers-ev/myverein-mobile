@@ -35,7 +35,7 @@ export default function MyApplicationsStatus({ open, decided, phase, errorKey, d
   if (phase === 'loading') {
     return (
       <View className="flex-row items-center mt-4" style={{ gap: 8 }} accessibilityLiveRegion="polite">
-        <ActivityIndicator size="small" color={colors.primary} />
+        <ActivityIndicator size="small" color={colors.primaryText} />
         <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark">{t('forms.apply.status.loading')}</Text>
       </View>
     );
@@ -68,7 +68,7 @@ export default function MyApplicationsStatus({ open, decided, phase, errorKey, d
               <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">{clubLabel(a.club)}</Text>
               <Text className="text-xs mt-0.5 text-muted-foreground dark:text-muted-foreground-dark">{t(forWhom(a.onBehalfOf))}</Text>
               <View className="flex-row items-center mt-1" style={{ gap: 6 }}>
-                <Clock size={14} color={colors.primary} />
+                <Clock size={14} color={colors.primaryText} />
                 <Text className="flex-1 text-xs font-semibold text-primary dark:text-primary-dark">
                   {t(a.status === 'draft' ? 'forms.apply.status.draft' : 'forms.apply.open.waiting')}
                 </Text>

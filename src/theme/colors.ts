@@ -2,7 +2,7 @@ import { useColorScheme } from 'nativewind';
 import { DarkTheme, DefaultTheme, type Theme as NavigationTheme } from '@react-navigation/native';
 
 import { usePalette } from './PaletteProvider';
-import { FIXED_COLORS } from './palettes';
+import { FIXED_COLORS, type TokenSet } from './palettes';
 
 /**
  * Fixed regardless of the chosen palette (ADR-008) -- danger/success/warning
@@ -13,20 +13,8 @@ import { FIXED_COLORS } from './palettes';
  * MyVerein's overdue-loan/maintenance-due/open-Beitrag states.
  */
 
-export type ThemeColors = {
-  background: string;
-  foreground: string;
-  card: string;
-  muted: string;
-  mutedForeground: string;
-  border: string;
-  primary: string;
-  primaryForeground: string;
-  accent: string;
-  accentForeground: string;
-  destructive: string;
-  success: string;
-  warning: string;
+export type ThemeColors = TokenSet & {
+  [K in keyof (typeof FIXED_COLORS)['light']]: string;
 };
 
 /** Resolves the current color-scheme's + palette's token set for use in JS-prop colors. */
@@ -51,7 +39,7 @@ export function useNavigationTheme(): NavigationTheme {
       ...base.colors,
       background: themeColors.background,
       card: themeColors.card,
-      primary: themeColors.primary,
+      primary: themeColors.primaryText,
       text: themeColors.foreground,
       border: themeColors.border,
     },

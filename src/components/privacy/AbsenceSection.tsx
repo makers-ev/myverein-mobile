@@ -101,7 +101,7 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
 
       {loading && absences.length === 0 && !error ? (
         <View className="mt-3">
-          <ActivityIndicator color={themeColors.primary} />
+          <ActivityIndicator color={themeColors.primaryText} />
         </View>
       ) : error && absences.length === 0 ? (
         <View className="mt-2">

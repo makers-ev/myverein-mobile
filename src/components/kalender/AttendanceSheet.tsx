@@ -178,7 +178,7 @@ export default function AttendanceSheet({ visible, onClose, clubId, event }: Pro
 
       {att.loading && !view ? (
         <View className="py-8 items-center" accessibilityLabel={t('att.loading')}>
-          <ActivityIndicator color={themeColors.primary} />
+          <ActivityIndicator color={themeColors.primaryText} />
         </View>
       ) : att.loadError && !view ? (
         <View className="py-4">

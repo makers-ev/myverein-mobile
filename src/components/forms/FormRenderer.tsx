@@ -372,7 +372,7 @@ function CredentialField({
           value={have}
           disabled={disabled}
           onValueChange={(next) => onChange(next ? buildCredentialValue(value, { have: true }) : undefined)}
-          trackColor={{ true: themeColors.primary, false: themeColors.border }}
+          trackColor={{ true: themeColors.primary, false: themeColors.borderControl }}
           accessibilityLabel={`${field.label}: ${t('forms.cred.have')}`}
           accessibilityHint={field.helpText || undefined}
         />
@@ -444,7 +444,7 @@ function PrivacyBlock({ text, title }: { text: string; title?: string }) {
       accessibilityRole="summary"
     >
       <View className="flex-row items-center" style={{ gap: 8 }}>
-        <ShieldCheck size={20} color={themeColors.primary} />
+        <ShieldCheck size={20} color={themeColors.primaryText} />
         <Text className="flex-1 text-sm font-semibold text-foreground dark:text-foreground-dark" accessibilityRole="header">
           {title || t('forms.privacy.title')}
         </Text>
@@ -693,7 +693,7 @@ function UploadField({ field, files, error, disabled, onUploadFile, onRemoveFile
         )}
         {busy ? (
           <View className="flex-row items-center" style={{ gap: 8 }} accessibilityRole="progressbar" accessibilityLiveRegion="polite">
-            <ActivityIndicator size="small" color={themeColors.primary} />
+            <ActivityIndicator size="small" color={themeColors.primaryText} />
             <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark">
               {progress === null || progress === undefined ? t('forms.file.uploading') : t('forms.file.uploadingPercent', { percent: progress })}
             </Text>

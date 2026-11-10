@@ -264,7 +264,7 @@ export default function KeysSection({
         action={canWrite ? <IconButton kind="add" label={t('standorte.keys.issue')} onPress={() => setIssuing(true)} /> : undefined}
       >
         {holders.length === 0 ? (
-          <EmptyState icon={<KeyRound size={26} color={themeColors.primary} />} text={t('standorte.detail.key-holders.empty')} />
+          <EmptyState icon={<KeyRound size={26} color={themeColors.primaryText} />} text={t('standorte.detail.key-holders.empty')} />
         ) : (
           holders.map((h, i) => (
             <View
@@ -298,7 +298,7 @@ export default function KeysSection({
       {!history.forbidden && (
         <SectionCard title={t('standorte.keys.history')}>
           {history.loading && history.entries.length === 0 ? (
-            <ActivityIndicator color={themeColors.primary} />
+            <ActivityIndicator color={themeColors.primaryText} />
           ) : history.error && history.entries.length === 0 ? (
             <View>
               <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{t('standorte.keys.history-error')}</Text>
@@ -317,7 +317,7 @@ export default function KeysSection({
               {history.hasMore && (
                 <TouchableOpacity onPress={() => void history.loadMore()} disabled={history.loadingMore} accessibilityRole="button" hitSlop={8} className="self-start mt-2">
                   {history.loadingMore ? (
-                    <ActivityIndicator color={themeColors.primary} size="small" />
+                    <ActivityIndicator color={themeColors.primaryText} size="small" />
                   ) : (
                     <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.keys.load-more')}</Text>
                   )}

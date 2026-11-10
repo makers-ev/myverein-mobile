@@ -26,7 +26,7 @@ export function SettingsSwitchOption({
       <View className="flex-row items-center justify-between w-80 bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-xl">
         <Text className={`flex-1 p-4 text-lg ${textColor} text-center`}>{infoField}</Text>
         <Switch
-          trackColor={trackColor ?? { false: themeColors.border, true: themeColors.primary }}
+          trackColor={trackColor ?? { false: themeColors.borderControl, true: themeColors.primary }}
           thumbColor={thumbColor ?? themeColors.card}
           ios_backgroundColor={themeColors.border}
           onValueChange={onSwitchToggle}

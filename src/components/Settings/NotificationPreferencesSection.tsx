@@ -36,7 +36,7 @@ export default function NotificationPreferencesSection({ clubId }: { clubId?: st
 
       <View className="mt-2">
         {loading && !preferences ? (
-          <ActivityIndicator color={themeColors.primary} />
+          <ActivityIndicator color={themeColors.primaryText} />
         ) : !preferences ? (
           <View>
             <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{error ? t('settings.notifications.error') : ''}</Text>
@@ -59,7 +59,7 @@ export default function NotificationPreferencesSection({ clubId }: { clubId?: st
                     {ch.switchable && ch.channel !== 'in_app' ? (
                       <Switch
                         accessibilityLabel={`${t(`settings.notifications.category.${entry.category}`)} - ${t(`settings.notifications.channel.${ch.channel}`)}`}
-                        trackColor={{ false: themeColors.border, true: themeColors.primary }}
+                        trackColor={{ false: themeColors.borderControl, true: themeColors.primary }}
                         thumbColor={themeColors.card}
                         ios_backgroundColor={themeColors.border}
                         value={ch.enabled}

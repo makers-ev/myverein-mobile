@@ -24,7 +24,7 @@ function LocationPhotoPlaceholder({ className }: { className: string }) {
   return (
     <View className={`items-center justify-center bg-muted dark:bg-muted-dark ${className}`}>
       <View className="w-16 h-16 rounded-full items-center justify-center bg-primary/10 dark:bg-primary-dark/10">
-        <MapPin size={28} color={themeColors.primary} />
+        <MapPin size={28} color={themeColors.primaryText} />
       </View>
     </View>
   );
@@ -68,7 +68,7 @@ function LocationList({ clubId, canWrite, onSelect }: { clubId: string; canWrite
   if (loading && locations.length === 0) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }
@@ -83,7 +83,7 @@ function LocationList({ clubId, canWrite, onSelect }: { clubId: string; canWrite
       </View>
 
       {locations.length === 0 ? (
-        <EmptyState icon={<MapPin size={26} color={themeColors.primary} />} text={t('standorte.list.empty')} docsPath={DOCS_PATHS.places} />
+        <EmptyState icon={<MapPin size={26} color={themeColors.primaryText} />} text={t('standorte.list.empty')} docsPath={DOCS_PATHS.places} />
       ) : (
         locations.map((loc) => <LocationCard key={loc.id} location={loc} onPress={() => onSelect(loc.id)} onPhotoExpired={onPhotoExpired} />)
       )}
@@ -105,7 +105,7 @@ function WifiCard({ network, onEdit }: { network: WifiNetwork; onEdit?: () => vo
   return (
     <View className="border border-border dark:border-border-dark rounded-xl p-3 mb-3">
       <View className="flex-row items-center mb-1" style={{ gap: 8 }}>
-        <Wifi size={16} color={themeColors.primary} />
+        <Wifi size={16} color={themeColors.primaryText} />
         <Text className="flex-1 text-foreground dark:text-foreground-dark font-semibold text-sm">{network.label}</Text>
         {onEdit && <IconButton kind="edit" label={t('standorte.wifi.edit')} onPress={onEdit} />}
       </View>
@@ -126,13 +126,13 @@ function WifiCard({ network, onEdit }: { network: WifiNetwork; onEdit?: () => vo
             <QRCode value={qrValue} size={140} color="#000000" backgroundColor="#FFFFFF" />
           </View>
           <TouchableOpacity onPress={() => setShowQr(false)} accessibilityRole="button" hitSlop={8} className="self-start mt-2 flex-row items-center" style={{ gap: 4 }}>
-            <EyeOff size={14} color={themeColors.primary} />
+            <EyeOff size={14} color={themeColors.primaryText} />
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.wifi.hide-qr')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <TouchableOpacity onPress={() => setShowQr(true)} accessibilityRole="button" hitSlop={8} className="self-start flex-row items-center" style={{ gap: 4 }}>
-          <Eye size={14} color={themeColors.primary} />
+          <Eye size={14} color={themeColors.primaryText} />
           <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.wifi.show-qr')}</Text>
         </TouchableOpacity>
       )}
@@ -150,7 +150,7 @@ function LinkRow({ link, isLast, onEdit }: { link: LocationLink; isLast: boolean
         className="flex-1 flex-row items-center"
         style={{ gap: 8 }}
       >
-        <Link2 size={16} color={themeColors.primary} />
+        <Link2 size={16} color={themeColors.primaryText} />
         <Text className="flex-1 text-foreground dark:text-foreground-dark text-sm font-medium">{link.title}</Text>
         <ExternalLink size={16} color={themeColors.mutedForeground} />
       </TouchableOpacity>
@@ -204,7 +204,7 @@ function LocationDetail({
   if (loading && !location) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }

@@ -42,7 +42,7 @@ export default function StandorteScreen() {
 
       {clubsLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={themeColors.primary} />
+          <ActivityIndicator size="large" color={themeColors.primaryText} />
         </View>
       ) : !activeClub && clubsError ? (
         <ClubsLoadError />

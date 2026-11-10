@@ -69,7 +69,7 @@ export default function AppLockGate({ children }: AppLockGateProps) {
   if (isChecking) {
     return (
       <View className="flex-1 items-center justify-center bg-background dark:bg-background-dark">
-        <ActivityIndicator size="large" color={themeColors.primary} />
+        <ActivityIndicator size="large" color={themeColors.primaryText} />
       </View>
     );
   }

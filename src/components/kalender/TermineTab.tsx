@@ -360,7 +360,7 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
         <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">
           {selectedDate.toLocaleDateString(language, { weekday: 'long', day: 'numeric', month: 'long' })}
         </Text>
-        {loading ? <ActivityIndicator size="small" color={themeColors.primary} /> : null}
+        {loading ? <ActivityIndicator size="small" color={themeColors.primaryText} /> : null}
       </View>
 
       {error || loadError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error ?? apiErrorMessage(loadError, t)}</Text> : null}

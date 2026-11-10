@@ -251,12 +251,35 @@ Tailwind's opacity modifiers working (`bg-primary/10`, used in
 
 | Piece | File | Role |
 |---|---|---|
-| Palette registry | `src/theme/palettes.ts` | `palettes` — a `Record<paletteId, { label, light, dark }>` of predefined palettes (`ink-navy`, `ocean`, `forest`, `sunset`). `ink-navy` is the default |
+| Palette registry | `src/theme/palettes.ts` | `palettes` — a `Record<paletteId, { label, light, dark }>` of predefined palettes (`vereinsblau`, `ink-navy`, `ocean`, `forest`, `sunset`). `vereinsblau` is the default; each defines the full token set below |
 | Runtime application | `src/theme/PaletteProvider.tsx` | Wraps the whole app (`App.tsx`, above `AppNavigator`). Computes the active token set, converts each color to an "R G B" triplet, and injects it via `vars()` on a root `View`. Persists the chosen palette id + custom colors to `AsyncStorage`. Exposes `usePalette()` (`paletteId`, `setPaletteId`, `customAnchors`, `setCustomAnchors`, resolved `tokens`) |
 | Custom palette derivation | `src/theme/deriveTokens.ts` | Pure function: 3 anchor colors (background/foreground/primary, one set per mode) → a full token set, mixing card/muted/border from the anchors. Same formula as the website's `deriveTokens.ts`. No WCAG contrast enforcement — deliberate, see the vault's `ADR-008` |
 | Persistence | `src/theme/paletteStorage.ts` | `AsyncStorage`, keys `myverein.color-palette-id` / `.color-palette-custom` — same convention as `themePreferenceStorage.ts` |
 | Custom palette UI | `src/components/Settings/PaletteCustomEditor.tsx` (rendered from `SettingsScreen.tsx`'s Appearance section) | 6 swatches (light/dark × background/foreground/primary); tapping one opens a bottom-sheet [`reanimated-color-picker`](https://alabsi91.github.io/reanimated-color-picker/) (hue slider + saturation/brightness panel), committed via `onCompleteJS` when the gesture ends — React Native has no built-in color picker like the web's `<input type="color">` |
-| JS-prop colors | `src/theme/colors.ts` | `useThemeColors()` / `useNavigationTheme()` now read the active palette via `usePalette()` instead of a fixed `colors.light`/`colors.dark` object — still the only place `ActivityIndicator`/icon-`color`/`Switch` props should import a color from. `destructive`/`success` stay fixed regardless of palette (danger/success shouldn't drift with the accent) |
+| JS-prop colors | `src/theme/colors.ts` | `useThemeColors()` / `useNavigationTheme()` now read the active palette via `usePalette()` instead of a fixed `colors.light`/`colors.dark` object — still the only place `ActivityIndicator`/icon-`color`/`Switch` props should import a color from. `destructive`/`success`/`warning`/`info` (+ soft variants, `destructiveFill`, `scrim`) stay fixed regardless of palette (danger/success shouldn't drift with the accent). Icons and spinners on a surface use `primaryText`, a fill uses `primary`; switch tracks use `borderControl` when off |
+
+### Design tokens ("Vereinsheim", design handoff 2026)
+
+Every palette defines the same roles in light and dark (`TokenSet` in `src/theme/palettes.ts`, CSS variable `--color-<kebab-name>` plus `-dark`, Tailwind class in brackets):
+
+| Role | Tailwind | Use |
+|---|---|---|
+| `background` | `bg-background` | Canvas behind everything (Vereinsblau: warm paper `#f7f5f0` / deep `#0e1013`) |
+| `card` | `bg-card` | Raised surface: list sections, cards, tab bar |
+| `muted` | `bg-muted` | Sunken surface: facts blocks, skeletons, quiet fills. In dark mode the three surfaces are clearly stepped (card/canvas 1.17, muted/canvas 1.40) |
+| `foreground` / `mutedForeground` | `text-foreground` / `text-muted-foreground` | Strong / secondary text, AA on all three surfaces |
+| `border` | `border-border` | Decorative hairline between rows (never the only cue) |
+| `borderControl` | `border-border-control` | Boundary of inputs, secondary buttons, switch tracks (off), at least 3:1 |
+| `primary` / `primaryForeground` | `bg-primary` / `text-primary-foreground` | Solid fill of the one primary action. Dark mode is a mid-tone fill with **white** text in every palette (decision D4) |
+| `primaryText` | `text-primary` (!) / `text-primary-text` | Primary as text or icon on a surface (links, active tab). `tailwind.config.js` maps `text-primary` to this token, so every existing `text-primary dark:text-primary-dark` reads well on the dark surfaces; JS colours use `useThemeColors().primaryText` for icons and spinners |
+| `primarySoft` / `primarySoftForeground` | `bg-primary-soft` / `text-primary-soft-foreground` | Quiet primary tint (selected filter chip, unread marker, primary tag) |
+| `accent` (+ `accentForeground`, `accentSoft`, `accentSoftForeground`) | `bg-accent`, `bg-accent-soft` ... | The club's own accent (Pokal-Gold in Vereinsblau): Vorstand tag, crest, membership card stripe. Used sparingly |
+
+Fixed semantic colours (`FIXED_COLORS`, palette-independent): `destructive`, `success`, `warning`, `info` are **text** colours (`text-destructive dark:text-destructive-dark`, ...) with a matching `*Soft` background (`bg-destructive-soft`, `bg-success-soft`, `bg-warning-soft`, `bg-info-soft`); `destructiveFill` (`bg-destructive-fill`) is the solid red of an irreversible action with white text; `scrim` is the overlay behind sheets (48 %). Red means "you must act" and nothing else.
+
+`deriveTokens.ts` derives the same roles for a custom palette and enforces AA for the derived roles (primary fill vs. its text, `primaryText` and `mutedForeground` on every surface, soft pairs, `borderControl` 3:1); only the user's own background/foreground anchors are taken as chosen. `contrast.test.ts` checks every text pair (4.5:1) and control pair (3:1) for every built-in palette in light and dark, the semantic colours on every surface and on their soft tint, the dark surface steps, and a spread of custom anchors.
+
+**Type.** System font for all UI text (weights 400/500/600, sentence case, tabular figures for times/dates/counts, scale in `src/theme/typography.ts`: Heading/M 20, Heading/S 17, Body/L 17, Body/M 15, Label/M 15, Label/S 13, Caption 13, Numeric/L 28). **Instrument Serif** (the website's display face) is bundled as a TTF (`@expo-google-fonts/instrument-serif`, regular weight only) and loaded at runtime by `src/theme/fonts.tsx` (`FontProvider` in `App.tsx`, `expo-font`'s `useFonts`; works in Expo Go, no config plugin). It is used only for screen titles, hero cards and the membership card (`components/ui/Title.tsx`); the app never waits for it -- until it is loaded, or if loading fails, titles render in the system font at weight 600. Geist (the website's UI face) is deliberately **not** bundled: React Native has no global default font (React 19 dropped `Text.defaultProps`), and per-weight family names on Android would mean rewriting ~1300 `Text` nodes; a partial switch would give a mixed-font app.
 
 **Adding a new predefined palette:** add an entry to `palettes` in
 `src/theme/palettes.ts` with a `label`, `light`, and `dark` token set — the
@@ -264,7 +287,7 @@ Tailwind's opacity modifiers working (`bg-primary/10`, used in
 other file to touch (no `tailwind.config.js` edit needed — it already reads
 every token through a CSS variable).
 
-**Changing the default palette's colors:** edit `palettes['ink-navy']` in
+**Changing the default palette's colors:** edit `palettes['vereinsblau']` in
 `src/theme/palettes.ts` — that's the *only* place, unlike the website
 template (which also has to keep `globals.css` in sync, since a website has
 a pre-JS first paint; this app has no such SSR-equivalent moment, so there's

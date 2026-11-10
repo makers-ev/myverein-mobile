@@ -22,7 +22,7 @@ export default function WhoIsAbsentCard({ clubId }: { clubId: string }) {
         {t('absence.today.title')}
       </Text>
       {loading && absences.length === 0 && !error ? (
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       ) : error && absences.length === 0 ? (
         <View>
           <Text className="text-destructive dark:text-destructive-dark text-sm">{t('absence.today.error')}</Text>

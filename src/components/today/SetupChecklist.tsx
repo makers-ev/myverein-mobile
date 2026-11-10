@@ -47,7 +47,7 @@ export default function SetupChecklist({ setup }: { setup: TodaySetup }) {
             style={{ minHeight: 44, gap: 10 }}
           >
             <View style={{ width: 20, alignItems: 'center' }}>
-              {done ? <Check size={18} strokeWidth={2} color={colors.primary} /> : <Circle size={18} strokeWidth={1.5} color={colors.mutedForeground} />}
+              {done ? <Check size={18} strokeWidth={2} color={colors.primaryText} /> : <Circle size={18} strokeWidth={1.5} color={colors.mutedForeground} />}
             </View>
             <View className="flex-1">
               <Text className={`text-sm ${done ? 'text-muted-foreground dark:text-muted-foreground-dark line-through' : 'text-foreground dark:text-foreground-dark font-medium'}`}>{label}</Text>

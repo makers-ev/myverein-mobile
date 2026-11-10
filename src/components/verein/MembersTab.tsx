@@ -236,7 +236,7 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
   if (membershipLoading) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }
@@ -283,7 +283,7 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
       {staleAt ? <OfflineNotice savedAt={staleAt} /> : null}
       {loading && members.length === 0 ? (
         <View className="py-12 items-center" accessibilityLabel={t('verein.members.loading')}>
-          <ActivityIndicator color={themeColors.primary} />
+          <ActivityIndicator color={themeColors.primaryText} />
         </View>
       ) : error ? (
         <View className="py-6">
@@ -348,7 +348,7 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
               accessibilityState={{ disabled: loadingMore, busy: loadingMore }}
             >
               {loadingMore ? (
-                <ActivityIndicator color={themeColors.primary} />
+                <ActivityIndicator color={themeColors.primaryText} />
               ) : (
                 <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.members.load-more')}</Text>
               )}

@@ -27,10 +27,16 @@ const TOKEN_VAR_STEMS: Record<keyof TokenSet, string> = {
     muted: '--color-muted',
     mutedForeground: '--color-muted-foreground',
     border: '--color-border',
+    borderControl: '--color-border-control',
     primary: '--color-primary',
     primaryForeground: '--color-primary-foreground',
+    primaryText: '--color-primary-text',
+    primarySoft: '--color-primary-soft',
+    primarySoftForeground: '--color-primary-soft-foreground',
     accent: '--color-accent',
     accentForeground: '--color-accent-foreground',
+    accentSoft: '--color-accent-soft',
+    accentSoftForeground: '--color-accent-soft-foreground',
 };
 
 interface PaletteContextValue {

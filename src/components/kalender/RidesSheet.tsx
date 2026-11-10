@@ -172,7 +172,7 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
             onPress={() => void run(key, () => rides.requestSeat(ride.id, subject))}
           />
         )}
-        {busy === key ? <ActivityIndicator size="small" color={themeColors.primary} /> : null}
+        {busy === key ? <ActivityIndicator size="small" color={themeColors.primaryText} /> : null}
       </View>
     );
   };
@@ -192,7 +192,7 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
     >
       {rides.loading && !rides.data ? (
         <View className="py-8 items-center" accessibilityLabel={t('ride.loading')}>
-          <ActivityIndicator color={themeColors.primary} />
+          <ActivityIndicator color={themeColors.primaryText} />
         </View>
       ) : rides.error && !rides.data ? (
         <View className="py-4">

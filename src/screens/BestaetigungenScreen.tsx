@@ -21,10 +21,10 @@ const STATUS_KEY: Record<AcknowledgementStatus, string> = { offen: 'ack.status.o
 
 function StatusIcon({ status }: { status: AcknowledgementStatus }) {
   const colors = useThemeColors();
-  if (status === 'bestaetigt') return <CheckCircle2 size={20} color={colors.primary} />;
+  if (status === 'bestaetigt') return <CheckCircle2 size={20} color={colors.primaryText} />;
   if (status === 'abgelehnt') return <XCircle size={20} color={colors.mutedForeground} />;
   if (status === 'abgelaufen') return <Clock size={20} color={colors.mutedForeground} />;
-  return <Circle size={20} color={colors.primary} />;
+  return <Circle size={20} color={colors.primaryText} />;
 }
 
 function Row({ item, isLast, onPress }: { item: MyAcknowledgement; isLast: boolean; onPress: () => void }) {

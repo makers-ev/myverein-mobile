@@ -209,7 +209,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
 
   let body: React.ReactNode;
   if (!loaded && loading) {
-    body = <ActivityIndicator color={themeColors.primary} />;
+    body = <ActivityIndicator color={themeColors.primaryText} />;
   } else if (!loaded && error) {
     body = (
       <View>
@@ -248,7 +248,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
           accessibilityLabel={t('exit.withdraw')}
           accessibilityState={{ disabled: withdrawing, busy: withdrawing }}
         >
-          {withdrawing ? <ActivityIndicator color={themeColors.primary} /> : <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('exit.withdraw')}</Text>}
+          {withdrawing ? <ActivityIndicator color={themeColors.primaryText} /> : <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('exit.withdraw')}</Text>}
         </TouchableOpacity>
       </View>
     );
@@ -380,7 +380,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
             ) : null}
           </View>
         ) : (
-          <ActivityIndicator color={themeColors.primary} accessibilityLabel={t('forms.exit.loading')} />
+          <ActivityIndicator color={themeColors.primaryText} accessibilityLabel={t('forms.exit.loading')} />
         )}
       </FormSheet>
     </View>

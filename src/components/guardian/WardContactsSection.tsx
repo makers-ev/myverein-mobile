@@ -32,7 +32,7 @@ export default function WardContactsSection({ contacts }: { contacts: ReturnType
         {t('heute.contacts.title')}
       </Text>
       {loading && rows.length === 0 && !error ? (
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       ) : error && rows.length === 0 ? (
         <View>
           <Text className="text-destructive dark:text-destructive-dark text-sm">{t('heute.contacts.error')}</Text>

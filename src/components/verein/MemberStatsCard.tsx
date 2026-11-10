@@ -36,7 +36,7 @@ export default function MemberStatsCard({ clubId }: { clubId: string }) {
 
       {loading && !stats ? (
         <View className="py-6 items-center" accessibilityLabel={t('verein.stats.loading')}>
-          <ActivityIndicator color={themeColors.primary} />
+          <ActivityIndicator color={themeColors.primaryText} />
         </View>
       ) : error && !stats ? (
         <View>

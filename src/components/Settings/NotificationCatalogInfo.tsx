@@ -27,7 +27,7 @@ export default function NotificationCatalogInfo() {
         className="flex-row items-center justify-between min-h-[44px]"
       >
         <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('settings.notifications.info.title')}</Text>
-        <Chevron size={16} color={themeColors.primary} />
+        <Chevron size={16} color={themeColors.primaryText} />
       </TouchableOpacity>
       {open ? (
         <View className="bg-muted dark:bg-muted-dark rounded-xl p-3" style={{ gap: 8 }}>

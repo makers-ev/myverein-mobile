@@ -146,7 +146,7 @@ export default function HelpersSheet({ visible, onClose, clubId, event }: Props)
         ))}
 
         <View className="flex-row flex-wrap items-center mt-1">
-          {busy ? <ActivityIndicator size="small" color={themeColors.primary} /> : null}
+          {busy ? <ActivityIndicator size="small" color={themeColors.primaryText} /> : null}
           {on ? (
             <>
               <LinkButton label={t('help.withdraw')} danger disabled={busy} onPress={() => void act(shift.id, () => helpers.withdraw(shift.id, subject))} />
@@ -178,7 +178,7 @@ export default function HelpersSheet({ visible, onClose, clubId, event }: Props)
     <FormSheet visible={visible} title={t('help.title', { title: event.title })} onClose={onClose} cancelLabel={t('ui.done')} error={error}>
       {helpers.loading && !plan ? (
         <View className="py-8 items-center" accessibilityLabel={t('help.loading')}>
-          <ActivityIndicator color={themeColors.primary} />
+          <ActivityIndicator color={themeColors.primaryText} />
         </View>
       ) : helpers.error && !plan ? (
         <View className="py-4">

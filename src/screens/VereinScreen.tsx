@@ -72,7 +72,7 @@ function VereinsinfoTab({ clubId }: { clubId: string }) {
   if (loading || !info) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }
@@ -114,7 +114,7 @@ function VereinsinfoTab({ clubId }: { clubId: string }) {
                 className={`flex-row items-center py-2 ${i === info.pages.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}
                 style={{ minHeight: 44, gap: 10 }}
               >
-                <FileText size={18} color={themeColors.primary} />
+                <FileText size={18} color={themeColors.primaryText} />
                 <Text className="text-foreground dark:text-foreground-dark text-sm font-medium flex-1">{p.title}</Text>
                 {p.hasAttachment ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{t('docs.reader.has-pdf')}</Text> : null}
               </TouchableOpacity>
@@ -253,7 +253,7 @@ export default function VereinScreen() {
 
       {clubsLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={themeColors.primary} />
+          <ActivityIndicator size="large" color={themeColors.primaryText} />
         </View>
       ) : !activeClub && clubsError ? (
         <ClubsLoadError />

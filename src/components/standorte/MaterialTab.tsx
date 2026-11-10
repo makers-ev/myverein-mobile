@@ -69,7 +69,7 @@ function ItemCard({ item, locationName, onPress }: { item: InventoryItem; locati
       style={{ gap: 12 }}
     >
       <View className="w-10 h-10 rounded-xl items-center justify-center bg-primary/10 dark:bg-primary-dark/10">
-        <Package size={20} color={themeColors.primary} />
+        <Package size={20} color={themeColors.primaryText} />
       </View>
       <View className="flex-1">
         <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
@@ -115,7 +115,7 @@ function MaterialList({
   if (loading && items.length === 0) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }
@@ -144,7 +144,7 @@ function MaterialList({
       )}
 
       {visible.length === 0 ? (
-        <EmptyState icon={<Package size={26} color={themeColors.primary} />} text={t('material.list.empty')} docsPath={DOCS_PATHS.places} />
+        <EmptyState icon={<Package size={26} color={themeColors.primaryText} />} text={t('material.list.empty')} docsPath={DOCS_PATHS.places} />
       ) : (
         visible.map((i) => <ItemCard key={i.id} item={i} locationName={locationName(i.locationId)} onPress={() => onSelect(i.id)} />)
       )}
@@ -352,7 +352,7 @@ function MaterialDetail({
   if (loading && !item) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }
@@ -388,7 +388,7 @@ function MaterialDetail({
       <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
         <View className="flex-row items-start" style={{ gap: 12 }}>
           <View className="w-12 h-12 rounded-xl items-center justify-center bg-primary/10 dark:bg-primary-dark/10">
-            <Package size={24} color={themeColors.primary} />
+            <Package size={24} color={themeColors.primaryText} />
           </View>
           <View className="flex-1">
             <Text className="text-xl font-semibold text-foreground dark:text-foreground-dark">{item.name}</Text>
@@ -504,7 +504,7 @@ function MaterialDetail({
               </TouchableOpacity>
               {photoUploading ? (
                 <View className="flex-row items-center" style={{ gap: 6 }}>
-                  <ActivityIndicator size="small" color={themeColors.primary} />
+                  <ActivityIndicator size="small" color={themeColors.primaryText} />
                   <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
                     {t('material.damage-reports.uploading')}
                   </Text>

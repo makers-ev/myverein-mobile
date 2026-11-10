@@ -177,7 +177,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
           <View className="mt-4">
             {loading ? (
               <View className="py-8 items-center" accessibilityLabel={t('forms.cred.overview.loading')}>
-                <ActivityIndicator color={colors.primary} />
+                <ActivityIndicator color={colors.primaryText} />
               </View>
             ) : failure ? (
               <View>
@@ -240,7 +240,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
                     >
                       <View className="flex-row items-center justify-between" style={{ gap: 8 }}>
                         <Text className="flex-1 text-foreground dark:text-foreground-dark font-semibold text-sm">{name}</Text>
-                        {opening === row.clubMemberId ? <ActivityIndicator color={colors.primary} accessibilityLabel={t('forms.cred.overview.opening')} /> : null}
+                        {opening === row.clubMemberId ? <ActivityIndicator color={colors.primaryText} accessibilityLabel={t('forms.cred.overview.opening')} /> : null}
                       </View>
                       <View className="flex-row items-center flex-wrap mt-0.5" style={{ gap: 6 }}>
                         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{fieldLabel}</Text>

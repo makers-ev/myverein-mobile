@@ -39,7 +39,7 @@ function ApplicationCard({ application, onOpen }: { application: ClubApplication
         </View>
         {child ? (
           <View className="flex-row items-center bg-primary/10 dark:bg-primary-dark/10 px-2 py-1 rounded-md" style={{ gap: 4 }}>
-            <Baby size={12} color={themeColors.primary} />
+            <Baby size={12} color={themeColors.primaryText} />
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('forms.review.badge.child')}</Text>
           </View>
         ) : application.legacy ? (
@@ -145,7 +145,7 @@ export default function ClubApplicationsScreen() {
 
       {initialLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={themeColors.primary} />
+          <ActivityIndicator size="large" color={themeColors.primaryText} />
         </View>
       ) : !activeClub && clubsError ? (
         <ClubsLoadError />
@@ -158,7 +158,7 @@ export default function ClubApplicationsScreen() {
       ) : (
         <ScrollView
           contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140, flexGrow: 1 }}
-          refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void refetch()} tintColor={themeColors.primary} />}
+          refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void refetch()} tintColor={themeColors.primaryText} />}
         >
           {outcome ? (
             <View

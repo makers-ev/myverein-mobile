@@ -38,7 +38,7 @@ export default function HomeScreen({ navigation }: Props) {
           onPress={() => requireAuth(() => navigation.navigate(route))}
         >
           <View className="bg-primary/10 dark:bg-primary-dark/10 rounded-xl p-2.5 self-start mb-3">
-            <Icon size={22} color={colors.primary} />
+            <Icon size={22} color={colors.primaryText} />
           </View>
           <Text className="text-foreground dark:text-foreground-dark font-semibold">{t(`home.feature.${key}.title`)}</Text>
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mt-1">{t(`home.feature.${key}.body`)}</Text>

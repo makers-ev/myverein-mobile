@@ -55,7 +55,7 @@ export default function DataRightsSection({ clubId }: { clubId: string }) {
           className={`border border-border dark:border-border-dark rounded-xl items-center justify-center ${exportData.loading ? 'opacity-50' : ''}`}
           style={{ minHeight: 48 }}
         >
-          {exportData.loading ? <ActivityIndicator color={themeColors.primary} /> : <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">{t('datenschutz.export.show')}</Text>}
+          {exportData.loading ? <ActivityIndicator color={themeColors.primaryText} /> : <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">{t('datenschutz.export.show')}</Text>}
         </TouchableOpacity>
         {exportData.error ? (
           <Text className="text-destructive dark:text-destructive-dark text-sm mt-2" accessibilityRole="alert">
@@ -87,7 +87,7 @@ export default function DataRightsSection({ clubId }: { clubId: string }) {
             className={`border border-destructive rounded-xl items-center justify-center ${saving ? 'opacity-50' : ''}`}
             style={{ minHeight: 48 }}
           >
-            {saving ? <ActivityIndicator color={themeColors.primary} /> : <Text className="text-destructive dark:text-destructive-dark font-semibold text-sm">{t('datenschutz.erasure.request')}</Text>}
+            {saving ? <ActivityIndicator color={themeColors.primaryText} /> : <Text className="text-destructive dark:text-destructive-dark font-semibold text-sm">{t('datenschutz.erasure.request')}</Text>}
           </TouchableOpacity>
         )}
         {notice ? (
@@ -103,7 +103,7 @@ export default function DataRightsSection({ clubId }: { clubId: string }) {
 
         <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mt-4 mb-1">{t('datenschutz.requests.title')}</Text>
         {loading && requests.length === 0 && !error ? (
-          <ActivityIndicator color={themeColors.primary} />
+          <ActivityIndicator color={themeColors.primaryText} />
         ) : error && requests.length === 0 ? (
           <>
             <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'datenschutz.requests.error')}</Text>

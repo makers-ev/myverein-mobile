@@ -61,7 +61,7 @@ export default function ClubSwitcher({ onBeforeSwitch }: { onBeforeSwitch?: (pro
                     <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold flex-1">
                       {club.clubName ?? t('club-switcher.unnamed')}
                     </Text>
-                    {selected ? <Check size={18} color={themeColors.primary} /> : null}
+                    {selected ? <Check size={18} color={themeColors.primaryText} /> : null}
                   </TouchableOpacity>
                 );
               })}

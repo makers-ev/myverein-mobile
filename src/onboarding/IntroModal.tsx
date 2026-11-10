@@ -62,7 +62,7 @@ export default function IntroModal({ visible, onClose }: IntroModalProps) {
 
           <View className="flex-row mb-5" style={{ gap: 12 }}>
             <View className="w-12 h-12 rounded-xl items-center justify-center bg-primary/10 dark:bg-primary-dark/15">
-              <Icon size={22} color={themeColors.primary} />
+              <Icon size={22} color={themeColors.primaryText} />
             </View>
             <View className="flex-1">
               <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{t(`onboarding.intro.${step.key}.title`)}</Text>

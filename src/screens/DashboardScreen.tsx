@@ -194,7 +194,7 @@ export default function DashboardScreen({ navigation }: Props) {
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 140 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void handleRefresh()} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void handleRefresh()} tintColor={colors.primaryText} />}
       >
         <View className="p-6" style={{ gap: 12 }}>
           <View className="mb-1">

@@ -145,7 +145,7 @@ export default function MitteilungenScreen() {
 
       {clubsLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={themeColors.primary} />
+          <ActivityIndicator size="large" color={themeColors.primaryText} />
         </View>
       ) : !activeClub && clubsError ? (
         <ClubsLoadError />
@@ -158,12 +158,12 @@ export default function MitteilungenScreen() {
         <ScrollView
           key={activeClub.clubId}
           contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 12, paddingBottom: 140, flexGrow: 1 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void handleRefresh()} tintColor={themeColors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void handleRefresh()} tintColor={themeColors.primaryText} />}
         >
           <PushPrompt />
           {loading && messages.length === 0 && !error ? (
             <View className="items-center py-10">
-              <ActivityIndicator size="large" color={themeColors.primary} />
+              <ActivityIndicator size="large" color={themeColors.primaryText} />
             </View>
           ) : error && messages.length === 0 ? (
             <View>

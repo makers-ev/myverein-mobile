@@ -33,7 +33,7 @@ export default function MyHoursSheet({ visible, onClose, clubId }: Props) {
       <MonthSwitch month={month} onChange={setMonth} />
       {hours.loading ? (
         <View className="py-8 items-center" accessibilityLabel={t('time.loading')}>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={colors.primaryText} />
         </View>
       ) : hours.error && hours.entries.length === 0 ? (
         <View className="py-4">

@@ -168,7 +168,7 @@ export default function CalendarFeedsSheet({ visible, onClose, clubId, calendars
 
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-2">{t('feeds.list.title')}</Text>
       {loading && feeds.length === 0 ? (
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       ) : error && feeds.length === 0 ? (
         <View>
           <Text className="text-destructive dark:text-destructive-dark text-sm mb-1">{t('feeds.list.error')}</Text>

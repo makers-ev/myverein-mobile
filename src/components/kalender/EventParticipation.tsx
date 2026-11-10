@@ -70,7 +70,7 @@ function Button({
       className={`${base} ${style} ${disabled || busy ? 'opacity-60' : ''}`}
       style={{ minHeight: 48 }}
     >
-      {busy ? <ActivityIndicator size="small" color={variant === 'primary' ? themeColors.primaryForeground : themeColors.primary} /> : <Text className={`text-sm ${text}`}>{label}</Text>}
+      {busy ? <ActivityIndicator size="small" color={variant === 'primary' ? themeColors.primaryForeground : themeColors.primaryText} /> : <Text className={`text-sm ${text}`}>{label}</Text>}
     </TouchableOpacity>
   );
 }

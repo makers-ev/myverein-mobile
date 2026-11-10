@@ -21,7 +21,7 @@ export default function ClubNoticeCard({ clubId }: { clubId: string }) {
   return (
     <PrivacyCard title={t('datenschutz.notice.title')} intro={t('datenschutz.notice.intro')}>
       {loading && !notice && !error ? (
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       ) : error && !notice ? (
         <>
           <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'datenschutz.notice.error')}</Text>

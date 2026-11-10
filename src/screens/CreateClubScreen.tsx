@@ -421,7 +421,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
                   </Text>
                 </View>
                 {removingId === doc.id ? (
-                  <ActivityIndicator color={themeColors.primary} />
+                  <ActivityIndicator color={themeColors.primaryText} />
                 ) : (
                   <TouchableOpacity accessibilityRole="button"
                     onPress={() => void handleRemove(doc.id)}
@@ -447,7 +447,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
                   </Text>
                 </View>
                 {item.status === 'uploading' ? (
-                  <ActivityIndicator color={themeColors.primary} />
+                  <ActivityIndicator color={themeColors.primaryText} />
                 ) : (
                   <TouchableOpacity accessibilityRole="button"
                     onPress={() => setUploads((prev) => prev.filter((u) => u.localId !== item.localId))}
@@ -472,7 +472,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
               style={{ gap: 8 }}
               onPress={() => void handlePickDocument()}
             >
-              <Camera size={18} color={themeColors.primary} />
+              <Camera size={18} color={themeColors.primaryText} />
               <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('create-club.docs.pick')}</Text>
             </TouchableOpacity>
             <Text className="text-xs mb-4 text-muted-foreground dark:text-muted-foreground-dark">
@@ -642,7 +642,7 @@ export default function CreateClubScreen({ navigation }: Props) {
   if (loading && !registration) {
     return (
       <View className="flex-1 items-center justify-center bg-muted dark:bg-muted-dark">
-        <ActivityIndicator size="large" color={themeColors.primary} />
+        <ActivityIndicator size="large" color={themeColors.primaryText} />
       </View>
     );
   }

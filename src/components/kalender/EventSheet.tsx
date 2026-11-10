@@ -112,7 +112,7 @@ export function CancelPreviewCard({
 
   let body: React.ReactNode;
   if (loading) {
-    body = <ActivityIndicator color={themeColors.primary} />;
+    body = <ActivityIndicator color={themeColors.primaryText} />;
   } else if (!preview) {
     body = failed ? (
       <View>
@@ -646,7 +646,7 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
           ) : null}
           {editingRule ? (
             seriesLoading ? (
-              <ActivityIndicator color={themeColors.primary} />
+              <ActivityIndicator color={themeColors.primaryText} />
             ) : seriesError || !seriesDetail ? (
               <View className="mb-3">
                 <Text className="text-destructive dark:text-destructive-dark text-sm mb-1">{t('series.error.rule-load')}</Text>

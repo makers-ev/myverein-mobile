@@ -122,7 +122,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
   if (loading || !initialized) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }
@@ -145,7 +145,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
                   value={row.available}
                   onValueChange={(value) => void handleToggle(day, value)}
                   disabled={savingDay === day}
-                  trackColor={{ false: themeColors.border, true: themeColors.primary }}
+                  trackColor={{ false: themeColors.borderControl, true: themeColors.primary }}
                   thumbColor={themeColors.card}
                   ios_backgroundColor={themeColors.border}
                 />
@@ -239,7 +239,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
             <Switch
               value={excAvailable}
               onValueChange={setExcAvailable}
-              trackColor={{ false: themeColors.border, true: themeColors.primary }}
+              trackColor={{ false: themeColors.borderControl, true: themeColors.primary }}
               thumbColor={themeColors.card}
               ios_backgroundColor={themeColors.border}
             />
