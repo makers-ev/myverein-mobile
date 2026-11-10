@@ -93,10 +93,8 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <View className="px-6 pt-4">
-        <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark mb-4">
-          {t('notifications.title')}
-        </Text>
+      <View className="px-4 pt-3">
+        {/* The stack header names the screen (no second large title). */}
 
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('notifications.platform-hint')}</Text>
 
@@ -123,7 +121,7 @@ export default function NotificationsScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}>
         {notifications.length === 0 ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">
             {t(`notifications.empty.${tab}`)}

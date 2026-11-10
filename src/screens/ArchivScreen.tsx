@@ -35,11 +35,9 @@ export default function ArchivScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 140 }}>
-        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
-          {t('archive.title')}
-        </Text>
-        {activeClub?.clubName ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-4">{activeClub.clubName}</Text> : <View className="mb-4" />}
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 120 }}>
+        {/* The stack header names the screen (no second large title). */}
+        {activeClub?.clubName ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-4 px-1">{activeClub.clubName}</Text> : <View className="mb-4" />}
         {loading ? (
           <Loading />
         ) : !clubId ? (

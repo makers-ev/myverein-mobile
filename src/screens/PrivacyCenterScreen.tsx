@@ -13,6 +13,7 @@ import DpaHintCard from '@/components/privacy/DpaHintCard';
 import VisibilitySection from '@/components/privacy/VisibilitySection';
 import DataRightsSection from '@/components/privacy/DataRightsSection';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+import Title from '@/components/ui/Title';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PrivacyCenter'>;
 
@@ -32,9 +33,9 @@ export default function PrivacyCenterScreen({ navigation }: Props) {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="px-6 pt-4">
-        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
+        <Title className="text-foreground dark:text-foreground-dark mb-1">
           {t('datenschutz.title')}
-        </Text>
+        </Title>
         {activeClub?.clubName ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-2" numberOfLines={1}>
             {activeClub.clubName}

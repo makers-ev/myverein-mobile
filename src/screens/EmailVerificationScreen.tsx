@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
+import Title from '@/components/ui/Title';
 
 interface EmailVerificationScreenProps {
   email: string;
@@ -38,9 +39,9 @@ export default function EmailVerificationScreen({ email, onResend, onBackToLogin
   return (
     <SafeAreaView className="flex-1 bg-muted dark:bg-muted-dark">
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }} keyboardShouldPersistTaps="handled">
-        <Text className="text-2xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
+        <Title className="text-foreground dark:text-foreground-dark text-center mb-2">
           {t('email-verification.title')}
-        </Text>
+        </Title>
         <Text className="text-sm text-center mb-8 text-muted-foreground dark:text-muted-foreground-dark">
           {t('email-verification.description')}
         </Text>

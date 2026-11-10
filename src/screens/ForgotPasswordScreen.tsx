@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import Logo from '@/components/Logo';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
+import Title from '@/components/ui/Title';
 
 interface ForgotPasswordScreenProps {
   onSubmit?: (email: string) => Promise<{ success: boolean; error?: string }>;
@@ -44,9 +45,9 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
         <Logo />
       </View>
 
-      <Text className="text-3xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
+      <Title className="text-foreground dark:text-foreground-dark text-center mb-2">
         {t('forgot-password.title')}
-      </Text>
+      </Title>
       <Text className="text-sm text-center mb-8 text-muted-foreground dark:text-muted-foreground-dark">
         {t('forgot-password.description')}
       </Text>

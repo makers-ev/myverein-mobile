@@ -29,6 +29,7 @@ import {
   type LegalForm,
   type RegistrationInput,
 } from '@/hooks/useClubRegistration';
+import Title from '@/components/ui/Title';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateClub'>;
 type Translate = (key: string, params?: Record<string, string | number>) => string;
@@ -296,9 +297,9 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
       className="bg-background dark:bg-background-dark"
       contentContainerStyle={{ flexGrow: 1, padding: 24, paddingBottom: 64 }}
     >
-      <Text className="text-3xl font-semibold text-center mb-1 text-foreground dark:text-foreground-dark">
+      <Title className="text-foreground dark:text-foreground-dark text-center mb-1">
         {t('create-club.title')}
-      </Text>
+      </Title>
       <Text className="text-sm text-center mb-6 text-muted-foreground dark:text-muted-foreground-dark">
         {t('create-club.step', { step, total: 3 })} · {t(`create-club.step${step}.title`)}
       </Text>

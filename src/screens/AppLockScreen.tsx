@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useAttemptLockout } from '@/hooks/useAttemptLockout';
 import { useThemeColors } from '@/theme/colors';
+import Title from '@/components/ui/Title';
 
 interface AppLockScreenProps {
   pin: string;
@@ -53,9 +54,9 @@ export default function AppLockScreen({ pin, onUnlock }: AppLockScreenProps) {
   return (
     <SafeAreaView className="flex-1 bg-muted dark:bg-muted-dark">
       <View className="flex-1 justify-center items-center p-6">
-        <Text className="text-2xl font-semibold mb-2 text-foreground dark:text-foreground-dark">
+        <Title className="text-foreground dark:text-foreground-dark mb-2">
           {t('app-lock.title')}
-        </Text>
+        </Title>
         <Text className="text-sm mb-8 text-muted-foreground dark:text-muted-foreground-dark text-center">
           {t('app-lock.description')}
         </Text>

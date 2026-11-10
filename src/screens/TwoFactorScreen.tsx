@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useAttemptLockout } from '@/hooks/useAttemptLockout';
 import { useThemeColors } from '@/theme/colors';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
+import Title from '@/components/ui/Title';
 
 interface TwoFactorScreenProps {
   onVerify?: (code: string) => Promise<{ success: boolean; error?: string }>;
@@ -60,9 +61,9 @@ export default function TwoFactorScreen({ onVerify, onCancel }: TwoFactorScreenP
       className="bg-background dark:bg-background-dark"
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
     >
-        <Text className="text-2xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
+        <Title className="text-foreground dark:text-foreground-dark text-center mb-2">
           {t('twofactor.title')}
-        </Text>
+        </Title>
         <Text className="text-sm text-center mb-8 text-muted-foreground dark:text-muted-foreground-dark">
           {t('twofactor.description')}
         </Text>

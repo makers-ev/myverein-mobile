@@ -145,10 +145,8 @@ export default function ProfileModulesScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <View className="px-6 pt-4 pb-3">
-        <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark" accessibilityRole="header">
-          {t('forms.pm.title')}
-        </Text>
+      <View className="px-4 pt-3 pb-3">
+        {/* The stack header names the screen (no second large title). */}
         {data ? <Text className={`${mutedClass} mt-1`}>{t('forms.pm.limit', { used: data.limit.used, max: data.limit.max })}</Text> : null}
       </View>
 
@@ -172,7 +170,7 @@ export default function ProfileModulesScreen() {
         </View>
       ) : (
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140, flexGrow: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, flexGrow: 1 }}
           refreshControl={<RefreshControl refreshing={false} onRefresh={() => void reload()} tintColor={colors.primaryText} />}
         >
           <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">{t('forms.pm.intro')}</Text>

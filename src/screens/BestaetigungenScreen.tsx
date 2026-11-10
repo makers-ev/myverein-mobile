@@ -81,7 +81,7 @@ function ClubAcknowledgements({ clubId }: { clubId: string }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 12, paddingBottom: 140 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} />}>
+    <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 120 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} />}>
       {loading && !items ? (
         <Loading />
       ) : !items ? (
@@ -133,10 +133,8 @@ export default function BestaetigungenScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <View className="px-6 pt-4">
-        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
-          {t('ack.title')}
-        </Text>
+      <View className="px-4 pt-3">
+        {/* The stack header names the screen (no second large title). */}
         <ChipSelector chips={chips} selectedKey={selected?.key ?? null} onSelect={setChoice} />
       </View>
       {clubLoading ? (

@@ -132,10 +132,8 @@ export default function ClubApplicationsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <View className="px-6 pt-4 pb-3">
-        <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark" accessibilityRole="header">
-          {t('verein.applications.title')}
-        </Text>
+      <View className="px-4 pt-3 pb-3">
+        {/* The stack header names the screen (no second large title). */}
         {can('members:write') && total > 0 ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">
             {t(total === 1 ? 'forms.review.list.totalOne' : 'forms.review.list.total', { total })}
@@ -157,7 +155,7 @@ export default function ClubApplicationsScreen() {
         </View>
       ) : (
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140, flexGrow: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, flexGrow: 1 }}
           refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void refetch()} tintColor={themeColors.primaryText} />}
         >
           {outcome ? (

@@ -19,6 +19,7 @@ import type { SubmittedResult } from '@/hooks/useFormSubmission';
 import { ApiError } from '@/lib/api';
 import { type ApplyConflict, childWarningKey, formErrorKey, type OnBehalfOf } from '@/lib/formSchema';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+import Title from '@/components/ui/Title';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'JoinClub'>;
 
@@ -213,9 +214,9 @@ export default function JoinClubScreen({ navigation }: Props) {
       className="bg-muted dark:bg-muted-dark"
       contentContainerStyle={{ flexGrow: 1, padding: 24, paddingBottom: 40, justifyContent: ready ? 'flex-start' : 'center' }}
     >
-      <Text className="text-3xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark" accessibilityRole="header">
+      <Title className="text-foreground dark:text-foreground-dark text-center mb-2">
         {t('join-club.title')}
-      </Text>
+      </Title>
       <Text className="text-sm text-center mb-6 text-muted-foreground dark:text-muted-foreground-dark">{t('join-club.description')}</Text>
 
       <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
