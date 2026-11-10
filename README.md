@@ -151,6 +151,8 @@ There's no data-fetching library here (no react-query, no SWR). `src/lib/api.ts`
 
 **2. The typed fetch wrapper, `apiFetch<T>` in `src/lib/api.ts`, already exists — reuse it.** It's built on `authClient.$fetch` (from `src/auth/auth-client.ts`) so the session cookie is attached automatically — never add an `Authorization` header by hand — and have it throw a small `ApiError` (`status`/`code`/`details`) on any non-2xx response, matching the backend's `AppError` shape. Inside `apiFetch`, always call `$fetch` with an *absolute* URL (`` `${backendUrl}${path}` ``, importing `backendUrl` from `auth-client.ts`), never the bare `path` callers pass in: `authClient` is configured with `baseURL: backendUrl`, but better-auth's client resolves a relative path against `${backendUrl}/api/auth` (its own routes' base, see `withPath()` in better-auth's `client/utils/url.ts`), not `backendUrl` itself. A bare `/profile/me` silently resolves to `/api/auth/profile/me` — a path Better Auth's own handler doesn't recognize, so it 404s with an empty, non-JSON body instead of your actual route's response. Callers themselves keep passing bare paths — `apiFetch` is the one place that prepends `backendUrl`, so nothing above it has to think about this:
 
+`apiFetch` also passes its own `jsonParser` (`plainJsonParse`, plain `JSON.parse`): Better Auth's default parser has `parseDates: true` and would turn ISO timestamps (`...Z`) into `Date` objects, breaking `typeof x === 'string'` guards and string comparisons on `startsAt`/`dueAt` etc. Timestamps from `apiFetch` are always ISO strings (regression test: `src/lib/api.dates.test.ts`).
+
 ```ts
 apiFetch<{ data: Profile }>('/profile/me');
 apiFetch<{ data: Profile }>('/profile/me', { method: 'PATCH', body: input });
