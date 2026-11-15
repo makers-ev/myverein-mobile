@@ -35,7 +35,6 @@ const SettingsTranslation: Translation = {
     // App Lock gate (full-screen PIN prompt shown on launch/foreground)
     'app-lock.title': 'App Locked',
     'app-lock.digits': '{{count}} of 4 digits entered',
-    'app-lock.keypad': 'Number pad',
     'app-lock.delete': 'Delete last digit',
     'app-lock.description': 'Enter your PIN to continue.',
 
@@ -120,7 +119,6 @@ const SettingsTranslation: Translation = {
     // App Lock gate (full-screen PIN prompt shown on launch/foreground)
     'app-lock.title': 'App gesperrt',
     'app-lock.digits': '{{count}} von 4 Ziffern eingegeben',
-    'app-lock.keypad': 'Zifferntastatur',
     'app-lock.delete': 'Letzte Ziffer löschen',
     'app-lock.description': 'Gib deine PIN ein, um fortzufahren.',
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 const SIZES = { S: { box: 32, text: 'text-[13px]' }, M: { box: 40, text: 'text-[15px]' }, L: { box: 72, text: 'text-[24px]' } } as const;
 
@@ -16,10 +16,10 @@ export function initialsOf(name: string | null | undefined): string {
 
 /**
  * Avatar (Figma `Avatar`): S 32 / M 40 / L 72, round, initials on the sunken surface (or `accent` soft for the club
- * crest). A photo URI must already be a signed, short-lived URL from the media layer (see `SignedImage`). Decorative:
- * the name is always written next to it.
+ * crest). Initials only: member photos go through `SignedImage` and the media layer, never through an
+ * unchecked URL prop here. Decorative: the name is always written next to it.
  */
-export default function Avatar({ name, uri, size = 'M', tone = 'neutral' }: { name: string | null | undefined; uri?: string | null; size?: 'S' | 'M' | 'L'; tone?: 'neutral' | 'accent' }) {
+export default function Avatar({ name, size = 'M', tone = 'neutral' }: { name: string | null | undefined; size?: 'S' | 'M' | 'L'; tone?: 'neutral' | 'accent' }) {
   const s = SIZES[size];
   const box = tone === 'accent' ? 'bg-accent-soft dark:bg-accent-soft-dark' : 'bg-muted dark:bg-muted-dark';
   const text = tone === 'accent' ? 'text-accent-soft-foreground dark:text-accent-soft-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark';
@@ -30,13 +30,9 @@ export default function Avatar({ name, uri, size = 'M', tone = 'neutral' }: { na
       className={`rounded-full items-center justify-center overflow-hidden ${box}`}
       style={{ width: s.box, height: s.box }}
     >
-      {uri ? (
-        <Image source={{ uri }} style={{ width: s.box, height: s.box }} />
-      ) : (
-        <Text maxFontSizeMultiplier={1.2} className={`${s.text} font-semibold ${text}`}>
-          {initialsOf(name)}
-        </Text>
-      )}
+      <Text maxFontSizeMultiplier={1.2} className={`${s.text} font-semibold ${text}`}>
+        {initialsOf(name)}
+      </Text>
     </View>
   );
 }

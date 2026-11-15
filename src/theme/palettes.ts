@@ -93,7 +93,7 @@ export const palettes = {
         light: {
             background: '#ffffff', foreground: '#1b2733',
             card: '#ffffff', muted: '#eef4f7', mutedForeground: '#5b7285',
-            border: '#dde7ec', borderControl: '#7d909f',
+            border: '#dde7ec', borderControl: '#7b8e9d',
             primary: '#0e7490', primaryForeground: '#ffffff',
             primaryText: '#0e7490', primarySoft: '#e7f1f4', primarySoftForeground: '#0b576c',
             accent: '#0e7490', accentForeground: '#ffffff',
@@ -135,7 +135,7 @@ export const palettes = {
         light: {
             background: '#fffefb', foreground: '#322620',
             card: '#ffffff', muted: '#f6efe7', mutedForeground: '#765f4c',
-            border: '#ece0d3', borderControl: '#9a897b',
+            border: '#ece0d3', borderControl: '#978678',
             primary: '#c2542a', primaryForeground: '#ffffff',
             primaryText: '#b24d27', primarySoft: '#f9eeea', primarySoftForeground: '#84391d',
             accent: '#b04a22', accentForeground: '#ffffff',

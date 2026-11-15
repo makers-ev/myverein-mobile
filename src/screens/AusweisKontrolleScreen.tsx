@@ -120,12 +120,8 @@ export default function AusweisKontrolleScreen() {
   const fullBleed = allowed && phase.kind !== 'scanning';
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={fullBleed ? ['bottom'] : undefined}>
-      {fullBleed ? null : (
-        <View className="px-4 pt-3">
-        {/* The stack header names the screen (no second large title). */}
-        </View>
-      )}
-      <View className={fullBleed ? 'flex-1' : 'flex-1 px-6 pb-6'}>{body}</View>
+      {/* The stack header names the screen (no second large title). */}
+      <View className={fullBleed ? 'flex-1' : 'flex-1 px-6 pt-3 pb-6'}>{body}</View>
     </SafeAreaView>
   );
 }

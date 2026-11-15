@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { ClipboardCheck, Repeat } from 'lucide-react-native';
 
@@ -45,6 +45,8 @@ interface Props {
   onEventGone?: () => void;
   /** An action chosen in the Kalender top bar (+ / overflow menu); `n` changes with every tap. */
   command?: { kind: KalenderCommand; n: number } | null;
+  /** The command was taken over (sheet opened); the screen clears it so it can neither be lost nor fire twice. */
+  onCommandHandled?: () => void;
 }
 
 /** Top-bar actions of the Kalender screen that open a sheet owned by this tab. */
@@ -118,7 +120,7 @@ export interface EventFocus {
   event: CalendarEvent;
 }
 
-export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone, command }: Props) {
+export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone, command, onCommandHandled }: Props) {
   const { t, language } = useLanguage();
   const themeColors = useThemeColors();
   const { info } = useClubInfo(clubId);
@@ -234,31 +236,32 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone,
   }, [selectedDay]);
 
   // Top-bar actions (decision D3: the hours and calendar tools live in the header, not as buttons above the grid).
-  const lastCommand = useRef(0);
+  // The screen only offers an action to people who may use it, so no right is re-checked here (and none can be "not
+  // loaded yet" at mount). A command stays buffered in the screen until this tab handled it, then it is cleared.
   useEffect(() => {
-    if (!command || command.n === lastCommand.current) return;
-    lastCommand.current = command.n;
+    if (!command) return;
     switch (command.kind) {
       case 'new':
-        if (canWrite) setSheetTarget({ day: selectedDate });
+        setSheetTarget({ day: selectedDate });
         break;
       case 'manage':
-        if (canWrite) setManageOpen(true);
+        setManageOpen(true);
         break;
       case 'feeds':
         setFeedsOpen(true);
         break;
       case 'time':
-        if (trackTime) setTimeOpen(true);
+        setTimeOpen(true);
         break;
       case 'myHours':
-        if (myHours) setMyHoursOpen(true);
+        setMyHoursOpen(true);
         break;
       case 'teamHours':
-        if (teamHours) setTeamHoursOpen(true);
+        setTeamHoursOpen(true);
         break;
     }
-    // Only a new command (n) triggers; the rights and the selected day are read at that moment.
+    onCommandHandled?.();
+    // Only a new command triggers; the selected day is read at that moment.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [command]);
 

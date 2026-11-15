@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { RefreshControl, ScrollView, View } from 'react-native';
+import { AccessibilityInfo, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Baby, CalendarDays, IdCard, Search } from 'lucide-react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
-import { ApiError, apiFetch } from '@/lib/api';
-import { registrationErrorKey } from '@/lib/eventRegistration';
+import { apiFetch } from '@/lib/api';
+import { rsvpPath, type MyRsvp, type RegistrationInfo } from '@/lib/eventRegistration';
 import { useRsvpActions } from '@/hooks/useEventRegistration';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
@@ -18,7 +19,9 @@ import WhoIsAbsentCard from '@/components/privacy/WhoIsAbsentCard';
 import { useToday } from '@/hooks/useToday';
 import { useWards } from '@/hooks/useWards';
 import { useClubInbox } from '@/hooks/useClubInbox';
-import { isTodayEmpty, type Today } from '@/lib/today';
+import { isTodayEmpty } from '@/lib/today';
+import { pickHero } from '@/lib/heroPick';
+import { createSingleFlight, quickRsvp } from '@/lib/quickRsvp';
 import ErrorState from '@/components/ui/ErrorState';
 import Skeleton from '@/components/ui/Skeleton';
 import Button from '@/components/ui/Button';
@@ -48,15 +51,18 @@ function useNextEvent(clubId: string | null) {
   // Only the newest request may write state (club switch / retry bump this).
   const requestId = useRef(0);
 
-  const refetch = useCallback(async () => {
+  // `silent` keeps the shown event on screen while it reloads (after a sign-up, on focus), so the hero never flickers.
+  const refetch = useCallback(async (silent = false) => {
     const reqId = ++requestId.current;
     if (!clubId) {
       setEvent(null);
       setLoading(false);
       return;
     }
-    setEvent(null);
-    setLoading(true);
+    if (!silent) {
+      setEvent(null);
+      setLoading(true);
+    }
     setError(false);
     try {
       const from = new Date();
@@ -78,29 +84,6 @@ function useNextEvent(clubId: string | null) {
   }, [refetch]);
 
   return { event, loading, error, refetch };
-}
-
-type Hero =
-  | { kind: 'vote'; count: number }
-  | { kind: 'event'; event: CalendarEvent }
-  | { kind: 'board'; count: number }
-  | { kind: 'empty' }
-  | { kind: 'loading' }
-  | { kind: 'error' };
-
-/**
- * Hero priority (decision D7): an open vote that needs my answer, then today's next event, then the next upcoming
- * event, then a calm empty state with the next action. `useNextEvent` already returns the earliest event from now on,
- * so "today" wins over "later" by order.
- */
-function pickHero(today: Today | null, event: CalendarEvent | null, eventLoading: boolean, eventError: boolean): Hero {
-  if (today && today.openBallots > 0) return { kind: 'vote', count: today.openBallots };
-  if (event) return { kind: 'event', event };
-  if (eventLoading) return { kind: 'loading' };
-  if (eventError) return { kind: 'error' };
-  const apps = today?.board?.openApplications ?? 0;
-  if (apps > 0) return { kind: 'board', count: apps };
-  return { kind: 'empty' };
 }
 
 function sameDay(a: Date, b: Date) {
@@ -128,11 +111,26 @@ export default function DashboardScreen({ navigation }: Props) {
   const { hasWards } = useWards();
   const { submit: submitRsvp } = useRsvpActions(clubId);
   const [rsvpBusy, setRsvpBusy] = useState(false);
-  const [rsvpError, setRsvpError] = useState<string | null>(null);
-  const [rsvpDone, setRsvpDone] = useState<{ eventId: string; status: 'angemeldet' | 'warteliste' } | null>(null);
+  const flight = useRef(createSingleFlight()).current;
+  // Outcome of the last one-tap sign-up, bound to club + event: another club or another hero event never shows it.
+  const [rsvpOutcome, setRsvpOutcome] = useState<{ clubId: string; eventId: string; status?: 'angemeldet' | 'warteliste'; errorKey?: string } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Back on the tab (another device may have changed the answer): reload quietly, without skeletons.
+  const firstFocus = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      if (firstFocus.current) {
+        firstFocus.current = false;
+        return;
+      }
+      void reloadToday();
+      void refetchEvent(true);
+    }, [reloadToday, refetchEvent]),
+  );
+
   const handleRefresh = async () => {
+    setRsvpOutcome(null);
     setRefreshing(true);
     try {
       await Promise.all([reloadToday(), refetchEvent(), refetchClubs()]);
@@ -141,23 +139,37 @@ export default function DashboardScreen({ navigation }: Props) {
     }
   };
 
-  // One tap from the hero: a plain sign-up (no form, no companions). When the event asks for details the server answers
-  // 422 and the person lands in the event sheet instead.
-  const quickRsvp = async (eventId: string) => {
-    if (rsvpBusy) return;
-    setRsvpBusy(true);
-    setRsvpError(null);
-    try {
-      const result = await submitRsvp(eventId, { form: null, maxCompanions: 0 }, { partySize: 1, answers: {}, forClubMemberId: null });
-      setRsvpDone({ eventId, status: result.status });
-      void reloadToday();
-      void refetchEvent();
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 422) navigation.navigate('Kalender', { tab: 'termine', eventId });
-      else setRsvpError(t(registrationErrorKey(err)));
-    } finally {
-      setRsvpBusy(false);
+  // One tap from the hero (see `quickRsvp`): details needed -> event sheet, existing sign-up -> untouched, errors -> message.
+  const runQuickRsvp = async (eventId: string) => {
+    if (!clubId) return;
+    const result = await flight(async () => {
+      setRsvpBusy(true);
+      setRsvpOutcome(null);
+      const q = `clubId=${encodeURIComponent(clubId)}`;
+      try {
+        return await quickRsvp({
+          fetchRegistration: async () => (await apiFetch<{ data: RegistrationInfo }>(`/events/${encodeURIComponent(eventId)}/registration?${q}`)).data,
+          fetchMine: async () => (await apiFetch<{ data: MyRsvp | null }>(rsvpPath(eventId, clubId, null))).data ?? null,
+          submit: () => submitRsvp(eventId, { form: null, maxCompanions: 0 }, { partySize: 1, answers: {}, forClubMemberId: null }),
+        });
+      } finally {
+        setRsvpBusy(false);
+      }
+    });
+    if (!result) return;
+    if (result.kind === 'details') {
+      navigation.navigate('Kalender', { tab: 'termine', eventId });
+      return;
     }
+    if (result.kind === 'error') {
+      setRsvpOutcome({ clubId, eventId, errorKey: result.errorKey });
+      AccessibilityInfo.announceForAccessibility(t(result.errorKey));
+      return;
+    }
+    setRsvpOutcome({ clubId, eventId, status: result.status });
+    AccessibilityInfo.announceForAccessibility(t(result.status === 'warteliste' ? 'today.hero.waitlist' : 'today.hero.going'));
+    void reloadToday();
+    void refetchEvent(true);
   };
 
   const time = (d: Date) => d.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' });
@@ -181,7 +193,9 @@ export default function DashboardScreen({ navigation }: Props) {
         ? t('today.hero.tomorrow')
         : start.toLocaleDateString(language, { weekday: 'short', day: 'numeric', month: 'short' });
     const range = e.allDay ? t('termine.all-day') : end && sameDay(start, end) ? `${time(start)} – ${time(end)}` : time(start);
-    const done = rsvpDone?.eventId === e.id ? rsvpDone.status : null;
+    const outcome = rsvpOutcome && rsvpOutcome.clubId === clubId && rsvpOutcome.eventId === e.id ? rsvpOutcome : null;
+    const done = outcome?.status ?? null;
+    const rsvpError = outcome?.errorKey ? t(outcome.errorKey) : null;
     const myRsvp = done ?? e.myRsvp;
     const needsAnswer = !done && !!today?.openRsvps.some((r) => r.eventId === e.id);
     const status = e.cancelled
@@ -198,7 +212,7 @@ export default function DashboardScreen({ navigation }: Props) {
       <HeroCard eyebrow={`${dayLabel} · ${range}`} title={e.title} meta={rsvpError ?? status ?? undefined}>
         {needsAnswer && !e.cancelled ? (
           <>
-            <Button variant="inverse" label={t('termine.rsvp')} loading={rsvpBusy} onPress={() => void quickRsvp(e.id)} />
+            <Button variant="inverse" label={t('termine.rsvp')} loading={rsvpBusy} onPress={() => void runQuickRsvp(e.id)} />
             <Button variant="inverseOutline" label={t('today.hero.open')} onPress={open} />
           </>
         ) : (
@@ -240,11 +254,7 @@ export default function DashboardScreen({ navigation }: Props) {
       <>
         <FadeIn>{heroNode}</FadeIn>
 
-        {today?.setup ? (
-          <View className="mt-6">
-            <SetupChecklist setup={today.setup} clubId={activeClub.clubId} />
-          </View>
-        ) : null}
+        {today?.setup ? <SetupChecklist setup={today.setup} clubId={activeClub.clubId} /> : null}
 
         <View className="mt-6">
           {todayLoading && !today ? <Skeleton shape="rows" lines={3} /> : null}
@@ -252,7 +262,7 @@ export default function DashboardScreen({ navigation }: Props) {
           {today && !isTodayEmpty(today) ? (
             <TodoSection today={today} latestMessageTitle={latestUnread?.title ?? null} heroEventId={heroEventId} hideBallots={hero.kind === 'vote'} />
           ) : null}
-          {today?.board ? <BoardSection board={today.board} /> : null}
+          {today?.board ? <BoardSection board={today.board} applicationsInHero={hero.kind === 'board'} /> : null}
           {can('absences:read') ? <WhoIsAbsentCard key={`absent-${activeClub.clubId}`} clubId={activeClub.clubId} /> : null}
 
           <ListSection title={t('today.section.you')} inset={60}>

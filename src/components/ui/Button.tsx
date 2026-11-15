@@ -14,7 +14,7 @@ interface Props {
   /**
    * `primary` solid fill, at most one per screen region; `secondary` neutral with a visible boundary; `tertiary` text
    * only (links like "Kalender öffnen"); `destructive` solid red, only for irreversible actions behind a confirmation.
-   * `inverse` / `inverseOutline` sit ON a primary fill (hero card): white fill with primary text / white outline.
+   * `inverse` / `inverseOutline` sit ON a primary fill (hero card): fill and outline in the on-primary colour (so a light own palette keeps its contrast), label in the primary fill colour / on-primary colour.
    * `danger` is the former name of `destructive`.
    */
   variant?: ButtonVariant | 'danger';
@@ -36,8 +36,8 @@ const BOX = {
   secondary: 'bg-card dark:bg-card-dark border border-border-control dark:border-border-control-dark',
   tertiary: '',
   destructive: 'bg-destructive-fill dark:bg-destructive-fill-dark',
-  inverse: 'bg-white',
-  inverseOutline: 'border border-white',
+  inverse: 'bg-primary-foreground dark:bg-primary-foreground-dark',
+  inverseOutline: 'border border-primary-foreground dark:border-primary-foreground-dark',
 } as const;
 
 const TEXT = {
@@ -46,7 +46,7 @@ const TEXT = {
   tertiary: 'text-primary dark:text-primary-dark',
   destructive: 'text-white',
   inverse: '',
-  inverseOutline: 'text-white',
+  inverseOutline: 'text-primary-foreground dark:text-primary-foreground-dark',
 } as const;
 
 /**
@@ -74,7 +74,7 @@ export default function Button({ label, onPress, variant = 'primary', size = 'L'
           : v === 'inverse'
             ? colors.primary
             : v === 'inverseOutline'
-              ? '#ffffff'
+              ? colors.primaryForeground
               : colors.foreground;
   return (
     <PressScale

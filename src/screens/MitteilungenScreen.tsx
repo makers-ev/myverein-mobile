@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import { INBOX_PAGE_SIZE, useClubInbox, type InboxMessage } from '@/hooks/useClubInbox';
+import { truncateText } from '@/lib/truncate';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import FormSheet from '@/components/ui/FormSheet';
@@ -206,7 +207,7 @@ export default function MitteilungenScreen() {
                   <HeroCard
                     eyebrow={`${t('mitteilungen.urgent')} · ${t('mitteilungen.unread')}`}
                     title={hero.title}
-                    meta={[hero.body.length > 110 ? `${hero.body.slice(0, 110)}…` : hero.body, hero.authorName].filter(Boolean).join('\n')}
+                    meta={[truncateText(hero.body, 110), hero.authorName].filter(Boolean).join('\n')}
                     onPress={() => handleOpen(hero)}
                   />
                 </View>

@@ -20,3 +20,10 @@ export async function dismissSetupChecklist(clubId: string): Promise<void> {
   if (current.includes(clubId)) return;
   await writeItem(asyncStore, KEY, JSON.stringify([...current, clubId]));
 }
+
+/** Shows the hidden checklist of a club again (Mehr > "Einrichtungs-Checkliste anzeigen"). */
+export async function restoreSetupChecklist(clubId: string): Promise<void> {
+  const current = await getDismissedSetupClubs();
+  if (!current.includes(clubId)) return;
+  await writeItem(asyncStore, KEY, JSON.stringify(current.filter((id) => id !== clubId)));
+}

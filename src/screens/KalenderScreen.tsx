@@ -21,6 +21,7 @@ import ScreenHeader from '@/components/ui/ScreenHeader';
 import IconButton from '@/components/ui/IconButton';
 import ActionSheet from '@/components/ui/ActionSheet';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
+import { queueCommand } from '@/lib/kalenderCommand';
 import { canSeeTeamHours, canTrackTime } from '@/lib/eventRights';
 import VerfuegbarkeitTab from '@/components/kalender/VerfuegbarkeitTab';
 import TreffenTab from '@/components/kalender/TreffenTab';
@@ -97,9 +98,10 @@ export default function KalenderScreen() {
   const teamHours = canSeeTeamHours(membership);
   const [menuOpen, setMenuOpen] = useState(false);
   const [command, setCommand] = useState<{ kind: KalenderCommand; n: number } | null>(null);
+  const clearCommand = useCallback(() => setCommand(null), []);
   const run = (kind: KalenderCommand) => {
     setTab('termine');
-    setCommand((prev) => ({ kind, n: (prev?.n ?? 0) + 1 }));
+    setCommand((prev) => queueCommand(prev, kind));
   };
 
   return (
@@ -135,7 +137,7 @@ export default function KalenderScreen() {
           <TabChips tabs={(['termine', 'verfuegbarkeit', 'treffen'] as const).map((value) => ({ value, label: t(`kalender.tab.${value}`) }))} active={tab} onChange={setTab} />
 
           <ScrollView key={activeClub.clubId} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 120 }}>
-            {tab === 'termine' && <TermineTab clubId={activeClub.clubId} focus={focus} onFocusHandled={clearFocus} onEventGone={eventGone} command={command} />}
+            {tab === 'termine' && <TermineTab clubId={activeClub.clubId} focus={focus} onFocusHandled={clearFocus} onEventGone={eventGone} command={command} onCommandHandled={clearCommand} />}
             {tab === 'verfuegbarkeit' && <VerfuegbarkeitTab clubId={activeClub.clubId} />}
             {tab === 'treffen' && <TreffenTab clubId={activeClub.clubId} />}
           </ScrollView>

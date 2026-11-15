@@ -19,14 +19,14 @@ interface Props {
   primary?: { label: string; onPress: () => void };
   /** The neutral alternative ("Ablehnen" -> a sheet with an optional reason follows). */
   secondary?: { label: string; onPress: () => void };
-  /** Set when this person may not decide (own request): no buttons, a lock and this sentence instead. */
+  /** Set when this person may not approve (own request): the primary action is replaced by a lock and this sentence; "Ablehnen" stays (the server allows it). */
   blockedReason?: string | null;
 }
 
 /**
  * Decision card (Figma `Decision card`, rule 2): header (avatar, name, kind + date, tags), a facts block on the sunken
- * surface, then ONE primary action that names the outcome plus a neutral "Ablehnen". When the viewer may not decide
- * there are no disabled buttons, only a lock and an explanation. Used for exit requests in Verein > Verwaltung.
+ * surface, then ONE primary action that names the outcome plus a neutral "Ablehnen". When the viewer may not approve
+ * there is no disabled button, only a lock and an explanation. Used for exit requests in Verein > Verwaltung.
  */
 export default function DecisionCard({ name, meta, tags, facts, primary, secondary, blockedReason }: Props) {
   const colors = useThemeColors();
@@ -69,9 +69,10 @@ export default function DecisionCard({ name, meta, tags, facts, primary, seconda
           </View>
           <Text className="flex-1 text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px]">{blockedReason}</Text>
         </View>
-      ) : primary || secondary ? (
+      ) : null}
+      {(!blockedReason && primary) || secondary ? (
         <View className="flex-row flex-wrap mt-4" style={{ gap: 8 }}>
-          {primary ? <Button label={primary.label} onPress={primary.onPress} /> : null}
+          {!blockedReason && primary ? <Button label={primary.label} onPress={primary.onPress} /> : null}
           {secondary ? <Button variant="secondary" label={secondary.label} onPress={secondary.onPress} /> : null}
         </View>
       ) : null}

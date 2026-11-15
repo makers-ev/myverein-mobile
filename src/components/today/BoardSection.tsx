@@ -12,11 +12,17 @@ import type { TodayBoard } from '@/lib/today';
  * only sends the keys the caller holds the permission for, so a plain member never sees this section (the whole
  * `board` object is absent) and nothing is decided on the device.
  */
-export default function BoardSection({ board }: { board: TodayBoard }) {
-  const { t } = useLanguage();
-  const apps = board.openApplications ?? 0;
+/** Count and target of the requests row; applications the hero already shows are left out so nothing appears twice. */
+export function requestsRow(board: TodayBoard, applicationsInHero: boolean): { count: number; route: 'ClubApplications' | 'Verein' } {
+  const apps = applicationsInHero ? 0 : (board.openApplications ?? 0);
   const exits = board.openExits ?? 0;
-  const requests = apps + exits;
+  // Applications only: straight to the review list; anything with exits: the Verwaltung tab lists both.
+  return { count: apps + exits, route: exits > 0 ? 'Verein' : 'ClubApplications' };
+}
+
+export default function BoardSection({ board, applicationsInHero = false }: { board: TodayBoard; applicationsInHero?: boolean }) {
+  const { t } = useLanguage();
+  const { count: requests, route } = requestsRow(board, applicationsInHero);
   return (
     <ListSection title={t('today.board.title')}>
       {requests > 0 ? (
@@ -26,8 +32,7 @@ export default function BoardSection({ board }: { board: TodayBoard }) {
           hint={t('today.board.requests.hint')}
           count={requests}
           countTone="attention"
-          // Applications only: straight to the review list; anything with exits: the Verwaltung tab lists both.
-          onPress={() => (exits > 0 ? navigate('Verein', { tab: 'verwaltung' }) : navigate('ClubApplications'))}
+          onPress={() => (route === 'Verein' ? navigate('Verein', { tab: 'verwaltung' }) : navigate('ClubApplications'))}
         />
       ) : null}
       {board.maintenanceDue && board.maintenanceDue > 0 ? (

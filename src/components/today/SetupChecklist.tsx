@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { Check, ChevronRight, ChevronUp, Circle, X } from 'lucide-react-native';
 
@@ -35,15 +36,18 @@ export default function SetupChecklist({ setup, clubId }: { setup: TodaySetup; c
   const [dismissed, setDismissed] = useState<boolean | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  useEffect(() => {
-    let alive = true;
-    void getDismissedSetupClubs().then((ids) => {
-      if (alive) setDismissed(ids.includes(clubId));
-    });
-    return () => {
-      alive = false;
-    };
-  }, [clubId]);
+  // Re-read when Heute comes back into view: the checklist may have been brought back from Mehr meanwhile.
+  useFocusEffect(
+    useCallback(() => {
+      let alive = true;
+      void getDismissedSetupClubs().then((ids) => {
+        if (alive) setDismissed(ids.includes(clubId));
+      });
+      return () => {
+        alive = false;
+      };
+    }, [clubId]),
+  );
 
   const steps = SETUP_STEPS.filter((s) => setup.done.includes(s) || setup.open.includes(s));
   const done = steps.filter((s) => setup.done.includes(s));
@@ -61,7 +65,7 @@ export default function SetupChecklist({ setup, clubId }: { setup: TodaySetup; c
 
   if (collapsed) {
     return (
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] flex-row items-center">
+      <View className="mt-6 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] flex-row items-center">
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={[progress, nextText].filter(Boolean).join('. ')}
@@ -86,7 +90,7 @@ export default function SetupChecklist({ setup, clubId }: { setup: TodaySetup; c
   }
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] px-4 pt-4 pb-2">
+    <View className="mt-6 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] px-4 pt-4 pb-2">
       <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold">
         {t('today.setup.title')}
       </Text>

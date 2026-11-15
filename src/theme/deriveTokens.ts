@@ -63,8 +63,8 @@ export function deriveTokens({ background, foreground, primary }: PaletteAnchors
     const readable = (c: string, min: number) => surfaces.every((s) => contrastRatio(c, s) >= min);
     const mutedForeground = walk(mix(foreground, background, 0.35), foreground, (c) => readable(c, 4.5));
     const fill = dark && contrastRatio('#ffffff', primary) < 4.5 ? walk(primary, '#000000', (c) => contrastRatio('#ffffff', c) >= 4.6) : primary;
-    const primaryText = walk(primary, foreground, (c) => readable(c, 4.6));
     const primarySoft = mix(card, primary, dark ? 0.16 : 0.1);
+    const primaryText = walk(primary, foreground, (c) => readable(c, 4.6) && contrastRatio(c, primarySoft) >= 4.6);
     const primarySoftForeground = walk(primaryText, foreground, (c) => contrastRatio(c, primarySoft) >= 4.6);
     const borderControl = walk(mix(card, mutedForeground, 0.5), mutedForeground, (c) => readable(c, 3));
     return {

@@ -95,7 +95,7 @@ export default function AppLockScreen({ pin, onUnlock }: AppLockScreenProps) {
         </Text>
       </View>
 
-      <View accessibilityLabel={t('app-lock.keypad')} className="bg-muted dark:bg-muted-dark px-2 pt-2.5 pb-4" style={{ gap: 8 }}>
+      <View className="bg-muted dark:bg-muted-dark px-2 pt-2.5 pb-4" style={{ gap: 8 }}>
         {[['1', '2', '3'], ['4', '5', '6'], ['7', '8', '9'], ['', '0', 'del']].map((row, r) => (
           <View key={r} className="flex-row" style={{ gap: 8 }}>
             {row.map((k, c) =>
@@ -109,7 +109,7 @@ export default function AppLockScreen({ pin, onUnlock }: AppLockScreenProps) {
                   accessibilityState={{ disabled: isLocked }}
                   disabled={isLocked}
                   onPress={() => (k === 'del' ? backspace() : press(k))}
-                  className={`flex-1 items-center justify-center rounded-lg ${k === 'del' ? '' : 'bg-card dark:bg-card-dark'}`}
+                  className={`flex-1 items-center justify-center rounded-lg ${k === 'del' ? '' : 'bg-card dark:bg-card-dark border border-border-control dark:border-border-control-dark'}`}
                   style={{ minHeight: 56 }}
                 >
                   {k === 'del' ? (

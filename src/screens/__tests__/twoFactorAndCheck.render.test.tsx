@@ -52,7 +52,6 @@ describe('CardCheckResult', () => {
     ['ungueltig', 'NOT VALID'],
   ])('shows %s as a word and offers the next check', async (result, word) => {
     const onNext = jest.fn();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await render(wrap(<CardCheckResult phase={answer(result) as any} onNext={onNext} onRetry={jest.fn()} canRetry={false} />));
     expect(await screen.findByText(word)).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Check next card' }));

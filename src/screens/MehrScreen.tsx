@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -19,6 +20,7 @@ import {
   User,
   UserPlus,
   Users,
+  ListChecks,
 } from 'lucide-react-native';
 
 import { useAuth } from '@/auth/AuthProvider';
@@ -32,6 +34,7 @@ import { canSeeTeamHours, canTrackTime } from '@/lib/eventRights';
 import { useThemeColors } from '@/theme/colors';
 import ListRow from '@/components/ui/ListRow';
 import ListSection from '@/components/ui/ListSection';
+import { getDismissedSetupClubs, restoreSetupChecklist } from '@/settings/setupChecklistStorage';
 import ScreenHeader from '@/components/ui/ScreenHeader';
 import ActionSheet from '@/components/ui/ActionSheet';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
@@ -66,6 +69,23 @@ export default function MehrScreen({ navigation }: Props) {
   const trackTime = canTrackTime(membership);
   const myHours = trackTime || membership?.hasRate === true;
   const teamHours = canSeeTeamHours(membership);
+  // A hidden Heute setup checklist can be brought back here (only offered for clubs where it was hidden on this device).
+  const [checklistHidden, setChecklistHidden] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      let alive = true;
+      if (!clubId) {
+        setChecklistHidden(false);
+        return undefined;
+      }
+      void getDismissedSetupClubs().then((ids) => {
+        if (alive) setChecklistHidden(ids.includes(clubId));
+      });
+      return () => {
+        alive = false;
+      };
+    }, [clubId]),
+  );
   const [hoursMenu, setHoursMenu] = useState(false);
   const [hoursSheet, setHoursSheet] = useState<HoursSheet>(null);
   // Club entries: shown to guests (they sign in on tap) and members; hidden for signed-in accounts without a club.
@@ -120,6 +140,21 @@ export default function MehrScreen({ navigation }: Props) {
                 hint={t('mehr.verfuegbarkeit.hint')}
                 onPress={() => requireAuth(() => goToTab('Kalender', { tab: 'verfuegbarkeit' }))}
               />
+              {checklistHidden && clubId ? (
+                <ListRow
+                  key="setup"
+                  icon={ListChecks}
+                  title={t('mehr.setup.show')}
+                  hint={t('mehr.setup.show.hint')}
+                  noChevron
+                  onPress={() => {
+                    void restoreSetupChecklist(clubId).then(() => {
+                      setChecklistHidden(false);
+                      goToTab('Dashboard');
+                    });
+                  }}
+                />
+              ) : null}
             </ListSection>
           ) : null}
 

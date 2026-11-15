@@ -24,6 +24,8 @@ const TEXT_PAIRS: [Key, Key][] = [
 const CONTROL_PAIRS: [Key, Key][] = [
   ['borderControl', 'card'],
   ['borderControl', 'background'],
+  // PIN-pad keys sit on the sunken surface and carry a control border.
+  ['borderControl', 'muted'],
 ];
 
 function failures(tokens: TokenSet): string[] {
@@ -126,5 +128,24 @@ describe('custom palettes (deriveTokens)', () => {
       const out = derived.filter(([fg, bg, min]) => contrastRatio(tokens[fg], tokens[bg]) < min).map(([fg, bg]) => `${fg} on ${bg}: ${contrastRatio(tokens[fg], tokens[bg]).toFixed(2)}`);
       expect(out).toEqual([]);
     });
+  }
+});
+
+// Own palettes (ADR-008): the hero buttons `inverse` (fill = on-primary colour, label = primary fill) and `inverseOutline`
+// (outline and label = on-primary colour) are exactly the pair primaryForeground/primary, so it must hold for light own
+// colours such as a yellow, a cyan and a mid grey, on a light and on a dark canvas.
+describe('derived palettes keep the on-primary pairs readable', () => {
+  const anchors = [
+    ['light', '#ffffff', '#111111'],
+    ['dark', '#101114', '#f2f2f2'],
+  ] as const;
+  for (const primary of ['#f5d000', '#22b8cf', '#888888']) {
+    for (const [mode, background, foreground] of anchors) {
+      it(`${primary} on ${mode}`, () => {
+        const tokens = deriveTokens({ background, foreground, primary });
+        expect(failures(tokens)).toEqual([]);
+        expect(contrastRatio(tokens.primaryForeground, tokens.primary)).toBeGreaterThanOrEqual(4.5);
+      });
+    }
   }
 });
