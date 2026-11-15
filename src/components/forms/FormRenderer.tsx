@@ -23,6 +23,7 @@ import {
 import { buildCredentialValue, credentialLevelMode, expiryApplies, parseCredential } from '@/lib/credentials';
 import { discardPickerFile, normalizeImageMime } from '@/lib/media';
 import { useThemeColors } from '@/theme/colors';
+import Button from '@/components/ui/Button';
 
 /** A photo the person picked (camera or library); `type` is a normalised image MIME type. */
 export interface PickedAsset {
@@ -317,13 +318,9 @@ function SelectField({
                   <Text className="text-foreground dark:text-foreground-dark font-semibold">{t('forms.select.clear')}</Text>
                 </TouchableOpacity>
               ) : null}
-              <TouchableOpacity
-                onPress={() => setOpen(false)}
-                className="flex-1 bg-primary dark:bg-primary-dark rounded-xl py-3 items-center"
-                accessibilityRole="button"
-              >
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('forms.select.close')}</Text>
-              </TouchableOpacity>
+              <View className="flex-1">
+                <Button block label={t('forms.select.close')} onPress={() => setOpen(false)} />
+              </View>
             </View>
           </View>
         </View>

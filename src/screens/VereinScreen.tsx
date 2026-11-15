@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -29,6 +29,7 @@ import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
 import Skeleton from '@/components/ui/Skeleton';
 import Title from '@/components/ui/Title';
+import Button from '@/components/ui/Button';
 
 type Tab = 'info' | 'mitglieder' | 'profil' | 'verwaltung';
 
@@ -137,14 +138,7 @@ function NoClubState() {
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">
             {t(`create-club.status.${registration.status}.body`)}
           </Text>
-          <TouchableOpacity accessibilityRole="button"
-            className="bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center self-start px-5"
-            onPress={() => navigate('CreateClub')}
-          >
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">
-              {t(registration.status === 'draft' ? 'verein.no-club.registration.continue' : 'verein.no-club.registration.view')}
-            </Text>
-          </TouchableOpacity>
+          <Button label={t(registration.status === 'draft' ? 'verein.no-club.registration.continue' : 'verein.no-club.registration.view')} onPress={() => navigate('CreateClub')} />
         </View>
       ) : null}
     </View>

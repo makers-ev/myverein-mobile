@@ -4,6 +4,7 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { usePush } from '@/notifications/PushProvider';
+import Button from '@/components/ui/Button';
 
 /**
  * Device-level push block of the notification settings (Wave 9 M2): explains what push does, asks
@@ -21,14 +22,9 @@ export default function PushDeviceSection() {
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t(`push.status.${status}`)}</Text>
       {status === 'registering' || busy ? <ActivityIndicator className="self-start mt-2" color={themeColors.primaryText} /> : null}
       {status === 'undetermined' ? (
-        <TouchableOpacity
-          accessibilityRole="button"
-          disabled={busy}
-          onPress={() => void enable()}
-          className="bg-primary dark:bg-primary-dark rounded-xl min-h-[44px] items-center justify-center mt-2 px-4"
-        >
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('push.enable')}</Text>
-        </TouchableOpacity>
+        <View className="mt-2">
+          <Button block label={t('push.enable')} disabled={busy} onPress={() => void enable()} />
+        </View>
       ) : null}
       {status === 'error' ? (
         <TouchableOpacity accessibilityRole="button" disabled={busy} onPress={() => void retry()} className="min-h-[44px] justify-center self-start mt-1">

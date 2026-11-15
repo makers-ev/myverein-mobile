@@ -7,6 +7,7 @@ import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { isNotFound, parseDayKey, privacyErrorKeyOr } from '@/lib/ward';
 import { useAbsences, type Absence, type AbsenceInput, type AbsenceSubject } from '@/hooks/useAbsences';
 import AbsenceSheet from './AbsenceSheet';
+import Button from '@/components/ui/Button';
 
 interface Props {
   subject: AbsenceSubject;
@@ -74,21 +75,11 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
         {t('absence.title')}
       </Text>
       {canReport ? (
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel={wardName ? t('absence.button-ward', { name: wardName }) : t('absence.button')}
-          onPress={() => {
+        <Button block label={wardName ? t('absence.button-ward', { name: wardName }) : t('absence.button')} onPress={() => {
             setNotice(null);
             setSheetError(null);
             setSheetOpen(true);
-          }}
-          className="bg-primary dark:bg-primary-dark rounded-xl items-center justify-center"
-          style={{ minHeight: 48 }}
-        >
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold text-sm">
-            {wardName ? t('absence.button-ward', { name: wardName }) : t('absence.button')}
-          </Text>
-        </TouchableOpacity>
+          }} />
       ) : (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('absence.read-only-ward')}</Text>
       )}

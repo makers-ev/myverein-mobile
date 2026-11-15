@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useAttemptLockout } from '@/hooks/useAttemptLockout';
 import { useThemeColors } from '@/theme/colors';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 import Title from '@/components/ui/Title';
+import Button from '@/components/ui/Button';
 
 interface TwoFactorScreenProps {
   onVerify?: (code: string) => Promise<{ success: boolean; error?: string }>;
@@ -89,19 +90,7 @@ export default function TwoFactorScreen({ onVerify, onCancel }: TwoFactorScreenP
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3 text-center">{attemptsMessage}</Text>
           )}
 
-          <TouchableOpacity accessibilityRole="button"
-            className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-1 ${(isSubmitting || isLocked) ? 'opacity-70' : ''}`}
-            onPress={handleVerify}
-            disabled={isSubmitting || isLocked || code.length === 0}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color={themeColors.primaryForeground} />
-            ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">
-                {t('twofactor.button')}
-              </Text>
-            )}
-          </TouchableOpacity>
+          <Button block label={t('twofactor.button')} onPress={handleVerify} loading={isSubmitting} disabled={isLocked || code.length === 0} />
 
           <TouchableOpacity accessibilityRole="button" className="mt-4 items-center" onPress={onCancel}>
             <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('twofactor.cancel')}</Text>

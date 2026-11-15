@@ -25,6 +25,7 @@ import {
 import { formatBytes } from '@/lib/formSchema';
 import { clearReviewFileCache, downloadReviewImage } from '@/lib/media';
 import { useThemeColors } from '@/theme/colors';
+import Button from '@/components/ui/Button';
 
 export interface DecisionOutcome {
   action: 'approved' | 'rejected';
@@ -210,60 +211,25 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
     review && pending ? (
       rejecting ? (
         <View className="flex-row" style={{ gap: 10 }}>
-          <TouchableOpacity
-            onPress={() => setRejecting(false)}
-            disabled={busy}
-            accessibilityRole="button"
-            className={`flex-1 border border-border dark:border-border-dark rounded-xl items-center justify-center ${busy ? 'opacity-60' : ''}`}
-            style={{ minHeight: 48 }}
-          >
-            <Text className="text-foreground dark:text-foreground-dark font-semibold">{t('forms.review.reject.back')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => void decide('reject')}
-            disabled={busy}
-            accessibilityRole="button"
-            className={`flex-1 bg-destructive rounded-xl items-center justify-center ${busy ? 'opacity-60' : ''}`}
-            style={{ minHeight: 48 }}
-          >
-            {busy ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-semibold">{t('forms.review.reject.confirm')}</Text>}
-          </TouchableOpacity>
+          <View className="flex-1">
+            <Button block variant="secondary" label={t('forms.review.reject.back')} onPress={() => setRejecting(false)} disabled={busy} />
+          </View>
+          <View className="flex-1">
+            <Button block variant="destructive" label={t('forms.review.reject.confirm')} onPress={() => void decide('reject')} loading={busy} />
+          </View>
         </View>
       ) : (
         <View className="flex-row" style={{ gap: 10 }}>
-          <TouchableOpacity
-            onPress={() => setRejecting(true)}
-            disabled={busy}
-            accessibilityRole="button"
-            className={`flex-1 border border-border dark:border-border-dark rounded-xl items-center justify-center ${busy ? 'opacity-60' : ''}`}
-            style={{ minHeight: 48 }}
-          >
-            <Text className="text-destructive dark:text-destructive-dark font-semibold">{t('verein.applications.reject')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => void decide('approve')}
-            disabled={busy}
-            accessibilityRole="button"
-            className={`flex-1 bg-primary dark:bg-primary-dark rounded-xl items-center justify-center ${busy ? 'opacity-60' : ''}`}
-            style={{ minHeight: 48 }}
-          >
-            {busy ? (
-              <ActivityIndicator color={themeColors.primaryForeground} />
-            ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('verein.applications.approve')}</Text>
-            )}
-          </TouchableOpacity>
+          <View className="flex-1">
+            <Button block variant="secondary" label={t('verein.applications.reject')} onPress={() => setRejecting(true)} disabled={busy} />
+          </View>
+          <View className="flex-1">
+            <Button block label={t('verein.applications.approve')} onPress={() => void decide('approve')} loading={busy} />
+          </View>
         </View>
       )
     ) : (
-      <TouchableOpacity
-        onPress={onClose}
-        accessibilityRole="button"
-        className="border border-border dark:border-border-dark rounded-xl items-center justify-center"
-        style={{ minHeight: 48 }}
-      >
-        <Text className="text-foreground dark:text-foreground-dark font-semibold">{t('forms.review.close')}</Text>
-      </TouchableOpacity>
+      <Button block variant="secondary" label={t('forms.review.close')} onPress={onClose} />
     );
 
   return (
@@ -292,14 +258,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
           {error ? (
             <View className="mt-4" accessibilityRole="alert">
               <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{t(reviewErrorKey(error))}</Text>
-              <TouchableOpacity
-                onPress={() => void refetch()}
-                accessibilityRole="button"
-                className="bg-primary dark:bg-primary-dark rounded-lg px-5 self-start items-center justify-center"
-                style={{ minHeight: 44 }}
-              >
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('forms.review.retry')}</Text>
-              </TouchableOpacity>
+              <Button label={t('forms.review.retry')} onPress={() => void refetch()} />
             </View>
           ) : !review || loading ? (
             <View className="mt-10 items-center" accessibilityLiveRegion="polite">

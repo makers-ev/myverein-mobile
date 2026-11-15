@@ -11,6 +11,7 @@ import { useCalendarFeeds } from '@/hooks/useCalendarFeeds';
 import type { Calendar } from '@/hooks/useCalendars';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 import { ColorChip } from './ColorChip';
+import Button from '@/components/ui/Button';
 
 interface Props {
   visible: boolean;
@@ -151,20 +152,9 @@ export default function CalendarFeedsSheet({ visible, onClose, clubId, calendars
           placeholderTextColor={themeColors.mutedForeground}
         />
       </Field>
-      <TouchableOpacity
-        onPress={() => void create()}
-        disabled={!!busy}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: !!busy, busy: busy === 'create' }}
-        className={`bg-primary dark:bg-primary-dark rounded-xl items-center justify-center mb-4 ${busy ? 'opacity-60' : ''}`}
-        style={{ minHeight: 44 }}
-      >
-        {busy === 'create' ? (
-          <ActivityIndicator color={themeColors.primaryForeground} size="small" />
-        ) : (
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('feeds.create')}</Text>
-        )}
-      </TouchableOpacity>
+      <View className="mb-4">
+        <Button block label={t('feeds.create')} onPress={() => void create()} loading={busy === 'create'} disabled={!!busy} />
+      </View>
 
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-2">{t('feeds.list.title')}</Text>
       {loading && feeds.length === 0 ? (

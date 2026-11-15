@@ -25,6 +25,7 @@ import { wardsOfClub } from '@/lib/eventRegistration';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 import DateTimeField from '@/components/ui/DateTimeField';
 import SubjectChips from './SubjectChips';
+import Button from '@/components/ui/Button';
 
 interface Props {
   visible: boolean;
@@ -251,14 +252,9 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
               ) : (
                 rides.data.rides.map(renderRide)
               )}
-              <TouchableOpacity
-                onPress={() => setOffering(true)}
-                accessibilityRole="button"
-                className="bg-primary dark:bg-primary-dark rounded-xl items-center justify-center mt-2"
-                style={{ minHeight: 48 }}
-              >
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('ride.offer')}</Text>
-              </TouchableOpacity>
+              <View className="mt-2">
+                <Button block label={t('ride.offer')} onPress={() => setOffering(true)} />
+              </View>
             </View>
           )}
         </View>

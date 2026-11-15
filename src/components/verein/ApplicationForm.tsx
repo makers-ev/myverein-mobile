@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { ActivityIndicator, Alert, AppState, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, AppState, Text, TouchableOpacity, View } from 'react-native';
 import { RefreshCw } from 'lucide-react-native';
 
 import FormRenderer, { type FormRendererHandle } from '@/components/forms/FormRenderer';
@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useFormSubmission, type UseFormSubmissionOptions } from '@/hooks/useFormSubmission';
 import { fieldErrorKey, type FieldErrorCode } from '@/lib/formSchema';
 import { useThemeColors } from '@/theme/colors';
+import Button from '@/components/ui/Button';
 
 interface Props extends UseFormSubmissionOptions {
   /** Lets the parent wait for a pending autosave before it replaces this form (mode switch, other club). */
@@ -166,20 +167,9 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
           {t('forms.apply.uploadRunning')}
         </Text>
       ) : null}
-      <TouchableOpacity
-        className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-4 ${busy || waitingForUpload ? 'opacity-70' : ''}`}
-        onPress={() => void submit()}
-        disabled={busy || waitingForUpload}
-        accessibilityRole="button"
-        accessibilityState={{ busy, disabled: busy || waitingForUpload }}
-        style={{ minHeight: 48 }}
-      >
-        {form.submitting ? (
-          <ActivityIndicator color={themeColors.primaryForeground} />
-        ) : (
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">{t('forms.apply.submit')}</Text>
-        )}
-      </TouchableOpacity>
+      <View className="mt-4">
+        <Button block label={t('forms.apply.submit')} onPress={() => void submit()} loading={form.submitting} disabled={busy || waitingForUpload} />
+      </View>
       {form.hasDraft ? (
         <TouchableOpacity
           onPress={confirmDiscard}

@@ -8,6 +8,7 @@ import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useTimeTracking } from '@/hooks/useTimeTracking';
 import { canDeleteEntry, elapsedMinutes, formatDuration, timeErrorKey, totalMinutes } from '@/lib/timeTracking';
 import FormSheet from '@/components/ui/FormSheet';
+import Button from '@/components/ui/Button';
 
 interface Props {
   visible: boolean;
@@ -117,16 +118,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
             ) : (
               <>
                 <Text className="text-foreground dark:text-foreground-dark text-sm mb-2">{eventTitle ? t('time.start-for', { title: eventTitle }) : t('time.idle')}</Text>
-                <TouchableOpacity
-                  onPress={() => void run('in', () => time.clockIn(eventId ?? null))}
-                  disabled={!!busy || time.currentLoading}
-                  accessibilityRole="button"
-                  className={`flex-row items-center justify-center bg-primary dark:bg-primary-dark rounded-xl ${busy || time.currentLoading ? 'opacity-60' : ''}`}
-                  style={{ gap: 8, minHeight: 52 }}
-                >
-                  <Play size={18} color={themeColors.primaryForeground} />
-                  <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('time.start')}</Text>
-                </TouchableOpacity>
+                <Button block icon={Play} label={t('time.start')} onPress={() => void run('in', () => time.clockIn(eventId ?? null))} disabled={!!busy || time.currentLoading} />
               </>
             )}
           </View>
