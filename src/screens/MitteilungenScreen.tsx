@@ -16,6 +16,7 @@ import Banner from '@/components/ui/Banner';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import FilterChip from '@/components/ui/FilterChip';
+import HeroCard from '@/components/ui/HeroCard';
 import PressScale from '@/components/ui/PressScale';
 import ScreenHeader from '@/components/ui/ScreenHeader';
 import Skeleton from '@/components/ui/Skeleton';
@@ -107,7 +108,10 @@ export default function MitteilungenScreen() {
   const open = messages.find((m) => m.id === openId) ?? null;
   const [noticeKey, setNoticeKey] = useState<string | null>(null);
   const [unreadOnly, setUnreadOnly] = useState(false);
-  const shown = unreadOnly ? messages.filter((m) => !m.readAt) : messages;
+  const filtered = unreadOnly ? messages.filter((m) => !m.readAt) : messages;
+  // An urgent message nobody has read yet is the one thing that matters here: it leads as the hero.
+  const hero = unreadOnly ? null : (messages.find((m) => m.urgent && !m.readAt) ?? null);
+  const shown = hero ? filtered.filter((m) => m.id !== hero.id) : filtered;
   const { target, ready, unreachable, consume } = usePushScreenTarget('Mitteilungen');
 
   // Tapped push (M3): handled once; the target is consumed first so re-renders cannot repeat it.
@@ -197,9 +201,24 @@ export default function MitteilungenScreen() {
                   <Banner tone="warning" body={t('mitteilungen.refresh-failed')} action={{ label: t('connection.retry'), onPress: () => void refetch() }} />
                 </View>
               ) : null}
-              {shown.length === 0 ? (
+              {hero ? (
+                <View className="mb-6">
+                  <HeroCard
+                    eyebrow={`${t('mitteilungen.urgent')} · ${t('mitteilungen.unread')}`}
+                    title={hero.title}
+                    meta={[hero.body.length > 110 ? `${hero.body.slice(0, 110)}…` : hero.body, hero.authorName].filter(Boolean).join('\n')}
+                    onPress={() => handleOpen(hero)}
+                  />
+                </View>
+              ) : null}
+              {hero && shown.length > 0 ? (
+                <Text accessibilityRole="header" className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-2 px-1">
+                  {t('mitteilungen.more')}
+                </Text>
+              ) : null}
+              {shown.length === 0 && !hero ? (
                 <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] px-1 py-2">{t('mitteilungen.filter.unread-empty')}</Text>
-              ) : (
+              ) : shown.length === 0 ? null : (
                 <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] overflow-hidden">
                   {shown.map((message, i) => (
                     <MessageRow key={message.id} divider={i > 0} message={message} onPress={() => handleOpen(message)} />

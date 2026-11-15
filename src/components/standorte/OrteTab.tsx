@@ -10,6 +10,7 @@ import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { useLocations, useLocationDetail, type Location, type WifiNetwork, type WifiSecurity, type LocationLink } from '@/hooks/useLocations';
 import { buildWifiQrPayload } from '@/lib/wifiQr';
 import SignedImage from '@/components/ui/SignedImage';
+import Skeleton from '@/components/ui/Skeleton';
 import { useThrottledCallback } from '@/hooks/useThrottledCallback';
 import KeysSection from './KeysSection';
 import { LinkForm, LocationForm, WifiForm } from './LocationForms';
@@ -34,7 +35,7 @@ function LocationCard({ location, onPress, onPhotoExpired }: { location: Locatio
   return (
     <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
-      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] mb-4 overflow-hidden shadow-sm"
+      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] mb-4 overflow-hidden"
     >
       {location.photoUrl ? (
         <SignedImage
@@ -66,11 +67,7 @@ function LocationList({ clubId, canWrite, onSelect }: { clubId: string; canWrite
   const onPhotoExpired = useThrottledCallback(() => void refetch(), PHOTO_REFRESH_MS);
 
   if (loading && locations.length === 0) {
-    return (
-      <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primaryText} />
-      </View>
-    );
+    return <Skeleton shape="rows" lines={3} />;
   }
 
   return (

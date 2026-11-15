@@ -4,6 +4,7 @@ import { Mail, Lock } from 'lucide-react-native';
 import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
+import BackButton from '@/components/ui/BackButton';
 import Logo from '@/components/Logo';
 import Button from '@/components/ui/Button';
 import Banner from '@/components/ui/Banner';
@@ -69,6 +70,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
     >
         <View className="px-4 pb-32 relative">
 
+          <BackButton />
           <View className="pt-8 mb-8">
             <Logo />
             <View className="mt-6">

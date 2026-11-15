@@ -3,7 +3,9 @@ import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
-import { Body, Card, Loading } from '@/components/assembly/ui';
+import { FileText } from 'lucide-react-native';
+import EmptyState from '@/components/ui/EmptyState';
+import Skeleton from '@/components/ui/Skeleton';
 import ChipSelector from '@/components/documents/ChipSelector';
 import MemberDocumentsList from '@/components/documents/MemberDocumentsList';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
@@ -65,11 +67,9 @@ export default function MeineDokumenteScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} />}
       >
         {clubLoading || (wardsLoading && wards.length === 0) ? (
-          <Loading />
+          <Skeleton shape="rows" lines={4} />
         ) : !selected ? (
-          <Card>
-            <Body muted>{t('mydocs.no-club')}</Body>
-          </Card>
+          <EmptyState icon={FileText} title={t('mydocs.no-club')} />
         ) : (
           <MemberDocumentsList
             key={`${selected.key}:${version}`}

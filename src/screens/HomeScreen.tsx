@@ -10,6 +10,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import Logo from '@/components/Logo';
 import SignedInCard from '@/components/SignedInCard';
 import Button from '@/components/ui/Button';
+import HeroCard from '@/components/ui/HeroCard';
 import ListRow from '@/components/ui/ListRow';
 import ListSection from '@/components/ui/ListSection';
 import Title from '@/components/ui/Title';
@@ -58,12 +59,11 @@ export default function HomeScreen({ navigation }: Props) {
             {isAuthenticated ? (
               <SignedInCard onOpenSettings={() => navigation.navigate('Settings')} />
             ) : (
-              // Browse first: the two account actions, and the list below stays open for looking around.
-              <View style={{ gap: 10 }}>
-                <Button block label={t('home.login-cta')} onPress={() => navigation.navigate('Login', {})} />
-                <Button block variant="secondary" label={t('home.signup-cta')} onPress={() => navigation.navigate('Signup')} />
-                <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] text-center mt-1">{t('home.guest-body')}</Text>
-              </View>
+              // Browse first: the two account actions in the hero, and the list below stays open for looking around.
+              <HeroCard title={t('home.guest-title')} meta={t('home.guest-body')}>
+                <Button variant="inverse" label={t('home.signup-cta')} onPress={() => navigation.navigate('Signup')} />
+                <Button variant="inverseOutline" label={t('home.login-cta')} onPress={() => navigation.navigate('Login', {})} />
+              </HeroCard>
             )}
           </View>
 

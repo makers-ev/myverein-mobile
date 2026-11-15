@@ -4,7 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
-import { Body, Card, Loading } from '@/components/assembly/ui';
+import { FolderOpen } from 'lucide-react-native';
+import EmptyState from '@/components/ui/EmptyState';
+import Skeleton from '@/components/ui/Skeleton';
 import ArchiveBrowser from '@/components/documents/ArchiveBrowser';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 
@@ -39,11 +41,9 @@ export default function ArchivScreen() {
         {/* The stack header names the screen (no second large title). */}
         {activeClub?.clubName ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-4 px-1">{activeClub.clubName}</Text> : <View className="mb-4" />}
         {loading ? (
-          <Loading />
+          <Skeleton shape="rows" lines={4} />
         ) : !clubId ? (
-          <Card>
-            <Body muted>{t('archive.no-club')}</Body>
-          </Card>
+          <EmptyState icon={FolderOpen} title={t('archive.no-club')} />
         ) : (
           <ArchiveBrowser key={clubId} clubId={clubId} folderId={folderId} onFolderChange={setFolder} />
         )}

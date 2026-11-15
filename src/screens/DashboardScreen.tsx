@@ -83,6 +83,7 @@ function useNextEvent(clubId: string | null) {
 type Hero =
   | { kind: 'vote'; count: number }
   | { kind: 'event'; event: CalendarEvent }
+  | { kind: 'board'; count: number }
   | { kind: 'empty' }
   | { kind: 'loading' }
   | { kind: 'error' };
@@ -97,6 +98,8 @@ function pickHero(today: Today | null, event: CalendarEvent | null, eventLoading
   if (event) return { kind: 'event', event };
   if (eventLoading) return { kind: 'loading' };
   if (eventError) return { kind: 'error' };
+  const apps = today?.board?.openApplications ?? 0;
+  if (apps > 0) return { kind: 'board', count: apps };
   return { kind: 'empty' };
 }
 
@@ -201,6 +204,12 @@ export default function DashboardScreen({ navigation }: Props) {
         ) : (
           <Button variant="inverse" label={t('today.hero.open')} onPress={open} />
         )}
+      </HeroCard>
+    );
+  } else if (hero.kind === 'board') {
+    heroNode = (
+      <HeroCard eyebrow={t('admin.applications.hero.eyebrow')} title={t('verein.applications.open')} meta={t('admin.applications.hint', { count: hero.count })}>
+        <Button variant="inverse" label={t('admin.applications.hero.action')} onPress={() => navigation.navigate('ClubApplications')} />
       </HeroCard>
     );
   } else if (hero.kind === 'loading') {

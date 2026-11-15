@@ -610,7 +610,7 @@ function SecuritySection({
     return (
         <SectionCard title={t('settings.section-security')}>
             {/* Change password */}
-            <View className="border border-dashed border-border dark:border-border-dark rounded-lg p-3 mb-3">
+            <View className="border border-border dark:border-border-dark rounded-[10px] p-3 mb-3">
                 <Text className="font-semibold text-foreground dark:text-foreground-dark">{t('settings.change-password')}</Text>
 
                 {!showPasswordForm ? (
@@ -668,7 +668,7 @@ function SecuritySection({
             </View>
 
             {/* Two-factor authentication */}
-            <View className="border border-dashed border-border dark:border-border-dark rounded-lg p-3">
+            <View className="border border-border dark:border-border-dark rounded-[10px] p-3">
                 <View className="flex-row justify-between items-center">
                     <Text className="font-semibold text-foreground dark:text-foreground-dark">{t('settings.two-factor')}</Text>
                     <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark">
@@ -813,7 +813,7 @@ function SessionsSection({
                 <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('settings.no-other-sessions')}</Text>
             ) : (
                 otherSessions.map((s) => (
-                    <View key={s.id} className="flex-row items-center justify-between border border-dashed border-border dark:border-border-dark rounded-lg p-3 mb-2">
+                    <View key={s.id} className="flex-row items-center justify-between border border-border dark:border-border-dark rounded-[10px] p-3 mb-2">
                         <View className="flex-1 pr-2">
                             <Text className="text-foreground dark:text-foreground-dark text-sm" numberOfLines={1}>
                                 {s.userAgent ?? s.id}

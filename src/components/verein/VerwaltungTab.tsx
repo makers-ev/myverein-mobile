@@ -6,6 +6,8 @@ import { useThemeColors } from '@/theme/colors';
 import { navigate } from '@/navigation/navigationRef';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { useClubApplications } from '@/hooks/useClubApplications';
+import Button from '@/components/ui/Button';
+import HeroCard from '@/components/ui/HeroCard';
 import ListRow from '@/components/ui/ListRow';
 import ListSection from '@/components/ui/ListSection';
 import { Landmark, SlidersHorizontal, UserPlus, Users, Vote } from 'lucide-react-native';
@@ -29,8 +31,19 @@ function ApplicationsEntry({ clubId }: { clubId: string }) {
       : total === 0
         ? t('admin.applications.hint-zero')
         : t('admin.applications.hint', { count: total });
+  if (!error && total > 0) {
+    return (
+      <View className="mb-6">
+        <HeroCard eyebrow={t('admin.applications.hero.eyebrow')} title={t('verein.applications.open')} meta={hint}>
+          <Button variant="inverse" label={t('admin.applications.hero.action')} onPress={() => navigate('ClubApplications')} />
+        </HeroCard>
+      </View>
+    );
+  }
   return (
-    <ListRow icon={UserPlus} title={t('verein.applications.open')} hint={hint} count={error ? 0 : total} countTone="attention" onPress={() => navigate('ClubApplications')} />
+    <ListSection title={t('admin.section.open')} inset={60}>
+      <ListRow icon={UserPlus} title={t('verein.applications.open')} hint={hint} onPress={() => navigate('ClubApplications')} />
+    </ListSection>
   );
 }
 
@@ -58,11 +71,7 @@ export default function VerwaltungTab({ clubId, onOpenMembers }: { clubId: strin
 
   return (
     <>
-      {can('members:write') ? (
-        <ListSection title={t('admin.section.open')} inset={60}>
-          <ApplicationsEntry clubId={clubId} />
-        </ListSection>
-      ) : null}
+      {can('members:write') ? <ApplicationsEntry clubId={clubId} /> : null}
       {can('members:write') ? <ExitRequestsQueue clubId={clubId} ownMemberId={membership?.memberId ?? null} /> : null}
       <ListSection title={t('admin.section.tools')} inset={60}>
         {can('members:write') || can('members:read_sensitive') ? (

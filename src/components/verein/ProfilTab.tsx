@@ -238,7 +238,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
 
   return (
     <View>
-      <View className="mb-6">
+      <View className="mb-4 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
         <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('member-photo.title')}</Text>
         <MemberPhotoEditor
           clubId={clubId}
@@ -252,7 +252,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
         />
       </View>
 
-      <View className="mb-6">
+      <View className="mb-4 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
         <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('profil.section.name')}</Text>
         {textInput(
           'firstName',
@@ -279,21 +279,21 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
         </View>
       </View>
 
-      <View className="mb-6">
+      <View className="mb-4 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
         <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('profil.section.personal')}</Text>
         <Field label={t('profil.birth-date')}>
           <DateTimeField mode="date" value={draft.birthDate} onChange={(d) => update('birthDate', d)} clearable />
         </Field>
       </View>
 
-      <View className="mb-6">
+      <View className="mb-4 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
         <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('profil.section.address')}</Text>
         {textInput('street', t('profil.street'), { maxLength: 200, autoComplete: 'street-address', textContentType: 'streetAddressLine1' })}
         {textInput('postalCode', t('profil.postal-code'), { maxLength: 12, autoComplete: 'postal-code', textContentType: 'postalCode' }, visibleErrors.postalCode)}
         {textInput('city', t('profil.city'), { maxLength: 120, textContentType: 'addressCity' })}
       </View>
 
-      <View className="mb-6">
+      <View className="mb-4 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
         <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-1">{t('profil.section.contact')}</Text>
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] mb-3">{t('profil.contact.hint')}</Text>
         {textInput('phone', t('profil.phone'), { keyboardType: 'phone-pad', maxLength: 50, textContentType: 'telephoneNumber' })}
@@ -305,7 +305,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
         )}
       </View>
 
-      <View className="mb-6">
+      <View className="mb-4 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
         <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('profil.section.emergency')}</Text>
         {textInput('emergencyContactName', t('profil.emergency-contact-name'), { maxLength: 200 })}
         {textInput('emergencyContactPhone', t('profil.emergency-contact-phone'), { keyboardType: 'phone-pad', maxLength: 50 })}

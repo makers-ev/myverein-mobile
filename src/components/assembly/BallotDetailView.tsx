@@ -5,12 +5,15 @@ import { Check, ChevronLeft, Lock } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useBallot } from '@/hooks/useBallots';
 import { useScopedResource } from '@/hooks/useScopedResource';
-import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { canSubmitSelection, openProxies, toggleOption, votingOpenFor, type BallotDetail, type BallotOption, type VoteFailure } from '@/lib/assembly';
 import { useThemeColors } from '@/theme/colors';
 import Banner from '@/components/ui/Banner';
 import UiButton from '@/components/ui/Button';
-import { Badge, Body, Button, Card, ErrorRetry, Loading, labelOr } from './ui';
+import Badge, { type BadgeTone } from '@/components/ui/Badge';
+import ErrorState from '@/components/ui/ErrorState';
+import Skeleton from '@/components/ui/Skeleton';
+import Title from '@/components/ui/Title';
+import { Body, Button, Card, labelOr } from './ui';
 
 interface Props {
   clubId: string;
@@ -18,7 +21,7 @@ interface Props {
   onBack: () => void;
 }
 
-const PHASE_SYMBOL: Record<string, string> = { scheduled: '⏳', voting: '●', ended: '✓', cancelled: '✕', draft: '…' };
+const PHASE_TONE: Record<string, BadgeTone> = { scheduled: 'neutral', voting: 'warning', ended: 'neutral', cancelled: 'neutral', draft: 'neutral' };
 
 function when(iso: string | null, language: string): string {
   return iso ? new Date(iso).toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' }) : '';
@@ -131,7 +134,6 @@ function Election({ clubId, electionId }: { clubId: string; electionId: string }
  */
 export default function BallotDetailView({ clubId, ballotId, onBack }: Props) {
   const { t, language } = useLanguage();
-  const colors = useThemeColors();
   const { ballot, loading, error, reload, castVote, voting } = useBallot(clubId, ballotId);
   const [selected, setSelected] = useState<string[]>([]);
   const [confirming, setConfirming] = useState(false);
@@ -160,8 +162,8 @@ export default function BallotDetailView({ clubId, ballotId, onBack }: Props) {
     setForMember(null);
   }, [ballotId]);
 
-  if (loading && !ballot) return <Loading />;
-  if (!ballot) return <ErrorRetry message={apiErrorMessage(error, t, 'assembly.ballot.error')} onRetry={() => void reload()} />;
+  if (loading && !ballot) return <Skeleton shape="hero" />;
+  if (!ballot) return <ErrorState error={error} fallbackKey="assembly.ballot.error" onRetry={() => void reload()} />;
 
   const multi = ballot.maxChoices > 1;
   // A chosen proxy that is gone (voted elsewhere, withdrawn) falls back to the default instead of voting for the wrong person.
@@ -189,19 +191,23 @@ export default function BallotDetailView({ clubId, ballotId, onBack }: Props) {
       <View className="self-start mb-1" style={{ marginLeft: -12 }}>
         <UiButton variant="tertiary" size="M" icon={ChevronLeft} label={t('assembly.back')} onPress={onBack} />
       </View>
-      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[20px] leading-[26px] font-semibold mb-2">
-        {ballot.title}
-      </Text>
-      <Badge symbol={PHASE_SYMBOL[ballot.phase] ?? '•'} label={labelOr(t, `assembly.phase.${ballot.phase}`, 'assembly.phase.other')} />
+      <Title>{ballot.title}</Title>
+      <View className="flex-row flex-wrap my-2" style={{ gap: 6 }}>
+        <Badge tone={PHASE_TONE[ballot.phase] ?? 'neutral'}>{labelOr(t, `assembly.phase.${ballot.phase}`, 'assembly.phase.other')}</Badge>
+        {ballot.secret ? (
+          <Badge tone="neutral" icon={Lock}>
+            {t('assembly.secret')}
+          </Badge>
+        ) : null}
+      </View>
       {ballot.description ? <Body>{ballot.description}</Body> : null}
       {ballot.meeting ? <Body muted>{ballot.meeting.title}</Body> : null}
       {ballot.mode === 'circular' ? <Body muted>{t('assembly.circular-hint')}</Body> : null}
       {ballot.opensAt && ballot.phase === 'scheduled' ? <Body muted>{t('assembly.opens-at', { when: when(ballot.opensAt, language) })}</Body> : null}
       {ballot.closesAt && (ballot.phase === 'voting' || ballot.phase === 'scheduled') ? <Body muted>{t('assembly.closes-at', { when: when(ballot.closesAt, language) })}</Body> : null}
-      {ballot.secret ? (
-        <View className="flex-row items-center mb-3" style={{ gap: 6 }}>
-          <Lock size={16} strokeWidth={1.75} color={colors.mutedForeground} />
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium">{t('assembly.secret')}</Text>
+      {ballot.secret && ballot.phase === 'voting' ? (
+        <View className="mb-4">
+          <Banner tone="info" icon={Lock} body={t('assembly.secret-hint')} />
         </View>
       ) : null}
       {ballot.electionId ? <Election clubId={clubId} electionId={ballot.electionId} /> : null}
@@ -255,12 +261,6 @@ export default function BallotDetailView({ clubId, ballotId, onBack }: Props) {
           <Body>{!ballot.me.eligible ? t('assembly.vote.not-eligible') : ballot.me.checkedIn === false ? t('assembly.vote.not-checked-in') : t('assembly.vote.unavailable')}</Body>
           <Button secondary label={t('connection.retry')} onPress={() => void reload()} />
         </Card>
-      ) : null}
-
-      {ballot.secret ? (
-        <View className="mb-4">
-          <Banner tone="info" icon={Lock} body={t('assembly.secret-hint')} />
-        </View>
       ) : null}
 
       {ballot.phase === 'ended' || ballot.status === 'finalized' ? (

@@ -7,6 +7,7 @@ import { Field, inputClassName } from '@/components/ui/FormSheet';
 import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
+import BackButton from '@/components/ui/BackButton';
 import Logo from '@/components/Logo';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 
@@ -43,6 +44,7 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
       className="bg-background dark:bg-background-dark"
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 16 }}
     >
+        <BackButton />
         <View className="mb-8">
           <Logo />
           <View className="mt-6">

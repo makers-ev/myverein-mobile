@@ -12,6 +12,7 @@ const PageLayoutTranslation: Translation = {
     'settings.title': 'Settings',
 
     'home.guest-heading': 'Browsing as a guest',
+    'home.guest-title': 'You are browsing as a guest',
     'home.guest-body': 'Sign up to unlock the full app, or log in if you already have an account.',
     'home.signup-cta': 'Create account',
     'home.login-cta': 'Sign in',
@@ -47,6 +48,7 @@ const PageLayoutTranslation: Translation = {
     'settings.title': 'Einstellungen',
 
     'home.guest-heading': 'Du bist als Gast unterwegs',
+    'home.guest-title': 'Du bist als Gast unterwegs',
     'home.guest-body': 'Registriere dich, um die volle App freizuschalten, oder logge dich ein, falls du schon einen Account hast.',
     'home.signup-cta': 'Konto erstellen',
     'home.login-cta': 'Anmelden',

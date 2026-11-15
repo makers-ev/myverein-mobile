@@ -1,53 +1,42 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { BackHandler, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { BackHandler, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { CheckCircle2, Circle, Clock, XCircle } from 'lucide-react-native';
+import { FileCheck } from 'lucide-react-native';
 
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
 import AcknowledgementDetailView from '@/components/acknowledgements/AcknowledgementDetailView';
-import { Body, Button, Card, ErrorRetry, Loading } from '@/components/assembly/ui';
+import Badge, { type BadgeTone } from '@/components/ui/Badge';
+import Button from '@/components/ui/Button';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import HeroCard from '@/components/ui/HeroCard';
+import ListRow from '@/components/ui/ListRow';
+import ListSection from '@/components/ui/ListSection';
+import Skeleton from '@/components/ui/Skeleton';
 import ChipSelector, { type Chip } from '@/components/documents/ChipSelector';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useAcknowledgements } from '@/hooks/useAcknowledgements';
 import { useWards } from '@/hooks/useWards';
 import { splitAcknowledgements, type AcknowledgementStatus, type MyAcknowledgement } from '@/lib/acknowledgements';
-import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { formatDocumentDate } from '@/lib/documents';
 import { isOwnClub } from '@/lib/ward';
-import { useThemeColors } from '@/theme/colors';
 
 const STATUS_KEY: Record<AcknowledgementStatus, string> = { offen: 'ack.status.offen', bestaetigt: 'ack.status.bestaetigt', abgelehnt: 'ack.status.abgelehnt', abgelaufen: 'ack.status.abgelaufen' };
+const STATUS_TONE: Record<AcknowledgementStatus, BadgeTone> = { offen: 'warning', bestaetigt: 'success', abgelehnt: 'neutral', abgelaufen: 'warning' };
 
-function StatusIcon({ status }: { status: AcknowledgementStatus }) {
-  const colors = useThemeColors();
-  if (status === 'bestaetigt') return <CheckCircle2 size={20} color={colors.primaryText} />;
-  if (status === 'abgelehnt') return <XCircle size={20} color={colors.mutedForeground} />;
-  if (status === 'abgelaufen') return <Clock size={20} color={colors.mutedForeground} />;
-  return <Circle size={20} color={colors.primaryText} />;
-}
-
-function Row({ item, isLast, onPress }: { item: MyAcknowledgement; isLast: boolean; onPress: () => void }) {
+function Row({ item, onPress }: { item: MyAcknowledgement; onPress: () => void }) {
   const { t } = useLanguage();
-  const meta = [item.relation === 'guardian' ? item.personName : null, t(STATUS_KEY[item.status]), item.dueAt && item.status === 'offen' ? t('ack.due', { date: formatDocumentDate(item.dueAt) }) : null].filter(Boolean).join(' · ');
+  const open = item.status === 'offen';
+  const meta = [item.relation === 'guardian' ? item.personName : null, open ? t(STATUS_KEY[item.status]) : null, item.dueAt && open ? t('ack.due', { date: formatDocumentDate(item.dueAt) }) : null].filter(Boolean).join(' · ');
   return (
-    <TouchableOpacity
+    <ListRow
+      title={item.documentTitle}
+      hint={meta || undefined}
+      trailing={open ? undefined : <Badge tone={STATUS_TONE[item.status]}>{t(STATUS_KEY[item.status])}</Badge>}
+      noChevron={!open}
       onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${item.documentTitle}. ${meta}`}
-      className={`flex-row items-center py-3 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`}
-      style={{ minHeight: 56, gap: 12 }}
-    >
-      <StatusIcon status={item.status} />
-      <View className="flex-1">
-        <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold" numberOfLines={2}>
-          {item.documentTitle}
-        </Text>
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5" numberOfLines={2}>
-          {meta}
-        </Text>
-      </View>
-    </TouchableOpacity>
+    />
   );
 }
 
@@ -80,31 +69,45 @@ function ClubAcknowledgements({ clubId }: { clubId: string }) {
     }
   };
 
+  const first = open[0] ?? null;
   return (
     <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 120 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} />}>
       {loading && !items ? (
-        <Loading />
+        <Skeleton shape="hero" />
       ) : !items ? (
-        <ErrorRetry message={apiErrorMessage(error, t, 'ack.error.load')} onRetry={() => void reload()} />
+        <ErrorState error={error} fallbackKey="ack.error.load" onRetry={() => void reload()} />
       ) : selected ? (
         <AcknowledgementDetailView clubId={clubId} item={selected} onChanged={() => void reload()} onBack={() => setSelectedId(null)} />
       ) : items.length === 0 ? (
-        <Card>
-          <Body muted>{t('ack.empty')}</Body>
-        </Card>
+        <EmptyState icon={FileCheck} title={t('ack.empty')} />
       ) : (
         <>
-          <Card title={t('ack.open')}>
-            {open.length === 0 ? <Body muted>{t('ack.none-open')}</Body> : open.map((a, i) => <Row key={a.id} item={a} isLast={i === open.length - 1} onPress={() => setSelectedId(a.id)} />)}
-          </Card>
-          {error ? <ErrorRetry message={apiErrorMessage(error, t, 'ack.error.load')} onRetry={() => (hasMore ? loadMore() : void reload())} /> : null}
-          {hasMore ? <Button secondary label={t('ack.more')} busy={loading} disabled={loading} onPress={loadMore} /> : null}
+          {first ? (
+            <View className="mb-6">
+              <HeroCard
+                eyebrow={[t(STATUS_KEY[first.status]), first.dueAt ? t('ack.due', { date: formatDocumentDate(first.dueAt) }) : null].filter(Boolean).join(' · ')}
+                title={first.documentTitle}
+                meta={first.relation === 'guardian' ? first.personName ?? undefined : undefined}
+              >
+                <Button variant="inverse" label={t('ack.hero.read')} onPress={() => setSelectedId(first.id)} />
+              </HeroCard>
+            </View>
+          ) : null}
+          <ListSection title={t('ack.open')}>
+            {open.length === 0 ? <ListRow title={t('ack.none-open')} /> : open.map((a) => <Row key={a.id} item={a} onPress={() => setSelectedId(a.id)} />)}
+          </ListSection>
+          {error ? <ErrorState error={error} fallbackKey="ack.error.load" onRetry={() => (hasMore ? loadMore() : void reload())} /> : null}
+          {hasMore ? (
+            <View className="mb-6">
+              <Button block variant="secondary" label={t('ack.more')} loading={loading} onPress={loadMore} />
+            </View>
+          ) : null}
           {done.length > 0 ? (
-            <Card title={t('ack.done')}>
-              {done.map((a, i) => (
-                <Row key={a.id} item={a} isLast={i === done.length - 1} onPress={() => setSelectedId(a.id)} />
+            <ListSection title={t('ack.done')}>
+              {done.map((a) => (
+                <Row key={a.id} item={a} onPress={() => setSelectedId(a.id)} />
               ))}
-            </Card>
+            </ListSection>
           ) : null}
         </>
       )}
@@ -138,12 +141,12 @@ export default function BestaetigungenScreen() {
         <ChipSelector chips={chips} selectedKey={selected?.key ?? null} onSelect={setChoice} />
       </View>
       {clubLoading ? (
-        <Loading />
+        <View className="px-4 pt-3">
+          <Skeleton shape="hero" />
+        </View>
       ) : !selected ? (
-        <View className="px-6 pt-3">
-          <Card>
-            <Body muted>{t('mydocs.no-club')}</Body>
-          </Card>
+        <View className="px-4 pt-3">
+          <EmptyState icon={FileCheck} title={t('mydocs.no-club')} />
         </View>
       ) : (
         <ClubAcknowledgements key={selected.key} clubId={selected.key} />

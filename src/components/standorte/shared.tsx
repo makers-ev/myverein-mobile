@@ -112,7 +112,7 @@ export function IconButton({ kind, onPress, label }: { kind: 'add' | 'edit'; onP
 
 export function EmptyState({ icon, text, docsPath }: { icon: React.ReactNode; text: string; docsPath?: string }) {
   return (
-    <View className="items-center py-10 px-6 border border-dashed border-border dark:border-border-dark rounded-2xl">
+    <View className="items-center py-10 px-6 border border-border dark:border-border-dark rounded-[14px] bg-card dark:bg-card-dark">
       <View className="w-14 h-14 rounded-full items-center justify-center bg-primary/10 dark:bg-primary-dark/10 mb-3">{icon}</View>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm text-center">{text}</Text>
       {docsPath ? <DocsLink path={docsPath} /> : null}
