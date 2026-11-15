@@ -4,13 +4,13 @@ import { ChevronDown, ChevronRight, X } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
-import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { isLockedDefaultCalendar } from './calendars';
 import { useCalendarAdmin, type Calendar, type CalendarVisibility } from '@/hooks/useCalendars';
 import type { Department } from '@/hooks/useClubInfo';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 import { ColorChip } from './EventSheet';
+import Button from '@/components/ui/Button';
 
 const ROLE_TYPES = [
   'vorsitz',
@@ -93,17 +93,7 @@ export default function CalendarManageSheet({ visible, onClose, clubId, calendar
             <DepartmentPicker departments={departments} value={departmentId} onChange={setDepartmentId} />
           </Field>
         ) : null}
-        <TouchableOpacity accessibilityRole="button"
-          className={`bg-primary dark:bg-primary-dark rounded-xl py-3 items-center ${!name.trim() || creating ? 'opacity-50' : ''}`}
-          onPress={() => void handleCreate()}
-          disabled={!name.trim() || creating}
-        >
-          {creating ? (
-            <ActivityIndicator color={themeColors.primaryForeground} size="small" />
-          ) : (
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold text-sm">{t('kalender.manage.create')}</Text>
-          )}
-        </TouchableOpacity>
+        <Button block label={t('kalender.manage.create')} onPress={() => void handleCreate()} loading={creating} disabled={!name.trim()} />
       </View>
     </FormSheet>
   );
@@ -230,13 +220,7 @@ function CalendarCard({
                 maxLength={200}
                 placeholderTextColor={themeColors.mutedForeground}
               />
-              <TouchableOpacity accessibilityRole="button"
-                onPress={() => void run(() => updateCalendar(calendar.id, { name: name.trim() }))}
-                disabled={busy || !name.trim() || name.trim() === calendar.name}
-                className={`bg-primary dark:bg-primary-dark rounded-xl px-3 py-2.5 ${busy || !name.trim() || name.trim() === calendar.name ? 'opacity-50' : ''}`}
-              >
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold text-sm">{t('ui.save')}</Text>
-              </TouchableOpacity>
+              <Button size="M" label={t('ui.save')} onPress={() => void run(() => updateCalendar(calendar.id, { name: name.trim() }))} disabled={busy || !name.trim() || name.trim() === calendar.name} />
             </View>
           </Field>
 

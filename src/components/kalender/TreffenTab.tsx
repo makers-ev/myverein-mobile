@@ -14,6 +14,7 @@ import ResolutionCorrection from './ResolutionCorrection';
 import MeetingManageSection from './MeetingManageSection';
 import MeetingInvitees from './MeetingInvitees';
 import MeetingAttendance from './MeetingAttendance';
+import Button from '@/components/ui/Button';
 
 interface Props {
   clubId: string;
@@ -173,17 +174,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
             <DateTimeField value={scheduledAt} onChange={setScheduledAt} placeholder={t('treffen.scheduled-at.placeholder')} clearable />
           </View>
           {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error}</Text> : null}
-          <TouchableOpacity accessibilityRole="button"
-            className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${saving || !title.trim() || !type ? 'opacity-50' : ''}`}
-            onPress={() => void handleCreate()}
-            disabled={saving || !title.trim() || !type}
-          >
-            {saving ? (
-              <ActivityIndicator color={themeColors.primaryForeground} />
-            ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('treffen.submit')}</Text>
-            )}
-          </TouchableOpacity>
+          <Button block label={t('treffen.submit')} onPress={() => void handleCreate()} loading={saving} disabled={!title.trim() || !type} />
         </View>
       ) : (
         <TouchableOpacity accessibilityRole="button"

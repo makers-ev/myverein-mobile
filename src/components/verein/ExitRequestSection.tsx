@@ -12,6 +12,7 @@ import { type Answers, type FieldErrorCode, fieldErrorsFromError, formErrorKey, 
 import { activeCancellation, exitErrorCode, formatDay, todayBerlin, useMyExitRequests, type ExitPreview } from '@/hooks/useExitRequests';
 import DateTimeField, { toDateString } from '@/components/ui/DateTimeField';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
+import Button from '@/components/ui/Button';
 
 function noticeHint(preview: ExitPreview | null, t: (key: string, params?: Record<string, string | number>) => string): string {
   if (!preview || (preview.noticePeriodDays === null && preview.noticeMode === null)) return t('exit.notice.none');
@@ -239,17 +240,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
               : t('exit.pending.body', { requested: formatDay(pending.requestedOn) })
             : t('exit.scheduled.body', { date: formatDay(active.effectiveOn) })}
         </Text>
-        <TouchableOpacity
-          className={`border border-border dark:border-border-dark rounded-xl items-center justify-center ${withdrawing ? 'opacity-50' : ''}`}
-          style={{ minHeight: 48 }}
-          onPress={confirmWithdraw}
-          disabled={withdrawing}
-          accessibilityRole="button"
-          accessibilityLabel={t('exit.withdraw')}
-          accessibilityState={{ disabled: withdrawing, busy: withdrawing }}
-        >
-          {withdrawing ? <ActivityIndicator color={themeColors.primaryText} /> : <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('exit.withdraw')}</Text>}
-        </TouchableOpacity>
+        <Button block variant="secondary" label={t('exit.withdraw')} onPress={confirmWithdraw} loading={withdrawing} />
       </View>
     );
   } else if (isOwner) {

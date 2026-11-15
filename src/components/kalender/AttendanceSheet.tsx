@@ -19,6 +19,7 @@ import {
 import { formatEventRange } from '@/lib/eventDays';
 import type { CalendarEvent } from '@/hooks/useEvents';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
+import Button from '@/components/ui/Button';
 
 interface Props {
   visible: boolean;
@@ -226,16 +227,9 @@ export default function AttendanceSheet({ visible, onClose, clubId, event }: Pro
               </Field>
             </View>
           ) : (
-            <TouchableOpacity
-              onPress={att.markAllPresent}
-              disabled={view.summary.offen === 0}
-              accessibilityRole="button"
-              className={`flex-row items-center justify-center bg-primary dark:bg-primary-dark rounded-xl mb-3 ${view.summary.offen === 0 ? 'opacity-50' : ''}`}
-              style={{ gap: 8, minHeight: 52 }}
-            >
-              <CheckCheck size={18} color={themeColors.primaryForeground} />
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('att.all-present')}</Text>
-            </TouchableOpacity>
+            <View className="mb-3">
+              <Button block icon={CheckCheck} label={t('att.all-present')} onPress={att.markAllPresent} disabled={view.summary.offen === 0} />
+            </View>
           )}
 
           {view.supervisionWarning ? (

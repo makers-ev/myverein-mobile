@@ -7,6 +7,7 @@ import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { daysUntil, isOpenRequest } from '@/lib/privacyCenter';
 import { useDataExportSummary, useDataRequests } from '@/hooks/usePrivacyCenter';
 import PrivacyCard from './PrivacyCard';
+import Button from '@/components/ui/Button';
 
 const SECTION_KEYS = ['member_core', 'consents', 'absences', 'guardianship', 'forms_and_applications', 'exit_requests', 'communication', 'account_data'];
 
@@ -48,15 +49,7 @@ export default function DataRightsSection({ clubId }: { clubId: string }) {
   return (
     <>
       <PrivacyCard title={t('datenschutz.export.title')} intro={t('datenschutz.export.intro')}>
-        <TouchableOpacity
-          accessibilityRole="button"
-          disabled={exportData.loading}
-          onPress={() => void exportData.load()}
-          className={`border border-border dark:border-border-dark rounded-xl items-center justify-center ${exportData.loading ? 'opacity-50' : ''}`}
-          style={{ minHeight: 48 }}
-        >
-          {exportData.loading ? <ActivityIndicator color={themeColors.primaryText} /> : <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">{t('datenschutz.export.show')}</Text>}
-        </TouchableOpacity>
+        <Button block variant="secondary" label={t('datenschutz.export.show')} onPress={() => void exportData.load()} loading={exportData.loading} />
         {exportData.error ? (
           <Text className="text-destructive dark:text-destructive-dark text-sm mt-2" accessibilityRole="alert">
             {apiErrorMessage(exportData.error, t, 'datenschutz.export.error')}
@@ -80,15 +73,7 @@ export default function DataRightsSection({ clubId }: { clubId: string }) {
       <PrivacyCard title={t('datenschutz.erasure.title')} intro={t('datenschutz.erasure.intro')}>
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('datenschutz.erasure.warning')}</Text>
         {openErasure ? null : (
-          <TouchableOpacity
-            accessibilityRole="button"
-            disabled={saving}
-            onPress={confirmErasure}
-            className={`border border-destructive rounded-xl items-center justify-center ${saving ? 'opacity-50' : ''}`}
-            style={{ minHeight: 48 }}
-          >
-            {saving ? <ActivityIndicator color={themeColors.primaryText} /> : <Text className="text-destructive dark:text-destructive-dark font-semibold text-sm">{t('datenschutz.erasure.request')}</Text>}
-          </TouchableOpacity>
+          <Button block variant="destructive" label={t('datenschutz.erasure.request')} onPress={confirmErasure} loading={saving} />
         )}
         {notice ? (
           <Text className="text-success dark:text-success-dark text-sm mt-2" accessibilityLiveRegion="polite">

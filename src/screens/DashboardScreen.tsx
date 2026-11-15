@@ -6,7 +6,9 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
-import { apiFetch } from '@/lib/api';
+import { ApiError, apiFetch } from '@/lib/api';
+import { registrationErrorKey } from '@/lib/eventRegistration';
+import { useRsvpActions } from '@/hooks/useEventRegistration';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
@@ -121,6 +123,10 @@ export default function DashboardScreen({ navigation }: Props) {
   const { messages } = useClubInbox(today && today.unreadAnnouncements > 0 ? clubId : null);
   const latestUnread = messages.find((m) => !m.readAt) ?? null;
   const { hasWards } = useWards();
+  const { submit: submitRsvp } = useRsvpActions(clubId);
+  const [rsvpBusy, setRsvpBusy] = useState(false);
+  const [rsvpError, setRsvpError] = useState<string | null>(null);
+  const [rsvpDone, setRsvpDone] = useState<{ eventId: string; status: 'angemeldet' | 'warteliste' } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -129,6 +135,25 @@ export default function DashboardScreen({ navigation }: Props) {
       await Promise.all([reloadToday(), refetchEvent(), refetchClubs()]);
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  // One tap from the hero: a plain sign-up (no form, no companions). When the event asks for details the server answers
+  // 422 and the person lands in the event sheet instead.
+  const quickRsvp = async (eventId: string) => {
+    if (rsvpBusy) return;
+    setRsvpBusy(true);
+    setRsvpError(null);
+    try {
+      const result = await submitRsvp(eventId, { form: null, maxCompanions: 0 }, { partySize: 1, answers: {}, forClubMemberId: null });
+      setRsvpDone({ eventId, status: result.status });
+      void reloadToday();
+      void refetchEvent();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 422) navigation.navigate('Kalender', { tab: 'termine', eventId });
+      else setRsvpError(t(registrationErrorKey(err)));
+    } finally {
+      setRsvpBusy(false);
     }
   };
 
@@ -153,20 +178,29 @@ export default function DashboardScreen({ navigation }: Props) {
         ? t('today.hero.tomorrow')
         : start.toLocaleDateString(language, { weekday: 'short', day: 'numeric', month: 'short' });
     const range = e.allDay ? t('termine.all-day') : end && sameDay(start, end) ? `${time(start)} – ${time(end)}` : time(start);
-    const needsAnswer = !!today?.openRsvps.some((r) => r.eventId === e.id);
+    const done = rsvpDone?.eventId === e.id ? rsvpDone.status : null;
+    const myRsvp = done ?? e.myRsvp;
+    const needsAnswer = !done && !!today?.openRsvps.some((r) => r.eventId === e.id);
     const status = e.cancelled
       ? t('today.hero.cancelled')
-      : e.myRsvp === 'angemeldet'
+      : myRsvp === 'angemeldet'
         ? t('today.hero.going')
-        : e.myRsvp === 'warteliste'
+        : myRsvp === 'warteliste'
           ? t('today.hero.waitlist')
           : typeof e.attendeeCount === 'number' && e.attendeeCount > 0
             ? t('today.hero.attendees', { count: e.attendeeCount })
             : null;
     const open = () => navigation.navigate('Kalender', { tab: 'termine', eventId: e.id });
     heroNode = (
-      <HeroCard eyebrow={`${dayLabel} · ${range}`} title={e.title} meta={status ?? undefined}>
-        <Button variant="inverse" label={needsAnswer && !e.cancelled ? t('today.hero.rsvp.action') : t('today.hero.open')} onPress={open} />
+      <HeroCard eyebrow={`${dayLabel} · ${range}`} title={e.title} meta={rsvpError ?? status ?? undefined}>
+        {needsAnswer && !e.cancelled ? (
+          <>
+            <Button variant="inverse" label={t('termine.rsvp')} loading={rsvpBusy} onPress={() => void quickRsvp(e.id)} />
+            <Button variant="inverseOutline" label={t('today.hero.open')} onPress={open} />
+          </>
+        ) : (
+          <Button variant="inverse" label={t('today.hero.open')} onPress={open} />
+        )}
       </HeroCard>
     );
   } else if (hero.kind === 'loading') {

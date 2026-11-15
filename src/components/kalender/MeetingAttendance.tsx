@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
-import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import {
   applyAttendanceEdit,
@@ -13,6 +12,7 @@ import {
 } from '@/lib/meetingAttendance';
 import type { ClubMember } from '@/hooks/useClubMembers';
 import type { AttendanceEntry, AttendanceRow, MeetingInvitee } from '@/hooks/useMeetingDetail';
+import Button from '@/components/ui/Button';
 
 interface Props {
   invitees: MeetingInvitee[];
@@ -46,7 +46,6 @@ function Check({ checked, label, onPress, disabled }: { checked: boolean; label:
  */
 export default function MeetingAttendance({ invitees, attendance, directory, nameFor, onSave }: Props) {
   const { t } = useLanguage();
-  const themeColors = useThemeColors();
   const [edits, setEdits] = useState<AttendanceEdits>({});
   const [proxyFor, setProxyFor] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -167,20 +166,9 @@ export default function MeetingAttendance({ invitees, attendance, directory, nam
       {saved && !error && !dirty ? <Text className="text-success dark:text-success-dark text-xs mt-3">{t('treffen.attendance.saved')}</Text> : null}
 
       {memberIds.length > 0 ? (
-        <TouchableOpacity
-          className={`bg-primary dark:bg-primary-dark rounded-lg items-center justify-center mt-3 ${saving || !dirty ? 'opacity-50' : ''}`}
-          style={{ minHeight: 44 }}
-          onPress={() => void handleSave()}
-          disabled={saving || !dirty}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: saving || !dirty, busy: saving }}
-        >
-          {saving ? (
-            <ActivityIndicator color={themeColors.primaryForeground} size="small" />
-          ) : (
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">{t('treffen.attendance.save')}</Text>
-          )}
-        </TouchableOpacity>
+        <View className="mt-3">
+          <Button block label={t('treffen.attendance.save')} onPress={() => void handleSave()} loading={saving} disabled={!dirty} />
+        </View>
       ) : null}
     </View>
   );

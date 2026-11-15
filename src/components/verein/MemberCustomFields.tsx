@@ -11,6 +11,7 @@ import { unverifiedEntryKey } from '@/lib/credentials';
 import { contentLang, customFieldErrorKey, displayValue, localizedHelpText, localizedLabel, partitionFields, toFormField, valuesPatch, valuesToAnswers } from '@/lib/customFields';
 import { type Answers, type FieldErrorCode, fieldErrorsFromError, validateAnswers } from '@/lib/formSchema';
 import { useThemeColors } from '@/theme/colors';
+import Button from '@/components/ui/Button';
 
 interface Props {
   clubId: string;
@@ -267,21 +268,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
               {result.text}
             </Text>
           ) : null}
-          <TouchableOpacity
-            className={`bg-primary dark:bg-primary-dark rounded-xl py-3 items-center justify-center ${busy || !dirty ? 'opacity-50' : ''}`}
-            style={{ minHeight: 48 }}
-            onPress={() => void handleSave()}
-            disabled={busy || !dirty}
-            accessibilityRole="button"
-            accessibilityLabel={t('forms.cf.values.save')}
-            accessibilityState={{ disabled: busy || !dirty, busy }}
-          >
-            {busy ? (
-              <ActivityIndicator color={themeColors.primaryForeground} />
-            ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('forms.cf.values.save')}</Text>
-            )}
-          </TouchableOpacity>
+          <Button block label={t('forms.cf.values.save')} onPress={() => void handleSave()} loading={busy} disabled={!dirty} />
         </View>
       ) : null}
     </View>

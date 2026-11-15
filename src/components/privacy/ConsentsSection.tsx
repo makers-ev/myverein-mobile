@@ -8,6 +8,7 @@ import { isNotFound, privacyErrorKeyOr } from '@/lib/ward';
 import { consentActions, consentBadgeKey } from '@/lib/consentUi';
 import { useConsents, type ConsentSubject, type ConsentView } from '@/hooks/useConsents';
 import FormSheet from '@/components/ui/FormSheet';
+import Button from '@/components/ui/Button';
 
 interface Props {
   subject: ConsentSubject;
@@ -155,30 +156,10 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
             {canDecide ? (
               <View style={{ gap: 8 }}>
                 {actions.grant ? (
-                  <TouchableOpacity
-                    accessibilityRole="button"
-                    disabled={saving}
-                    onPress={() => void run(open, 'grant')}
-                    className={`bg-primary dark:bg-primary-dark rounded-xl items-center justify-center ${saving ? 'opacity-50' : ''}`}
-                    style={{ minHeight: 48 }}
-                  >
-                    {saving ? (
-                      <ActivityIndicator color={themeColors.primaryForeground} />
-                    ) : (
-                      <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold text-sm">{t(actions.grant)}</Text>
-                    )}
-                  </TouchableOpacity>
+                  <Button block label={t(actions.grant)} onPress={() => void run(open, 'grant')} loading={saving} />
                 ) : null}
                 {actions.decline ? (
-                  <TouchableOpacity
-                    accessibilityRole="button"
-                    disabled={saving}
-                    onPress={() => (open.state === 'granted' ? confirmRevoke(open) : void run(open, 'revoke'))}
-                    className={`border border-border dark:border-border-dark rounded-xl items-center justify-center ${saving ? 'opacity-50' : ''}`}
-                    style={{ minHeight: 48 }}
-                  >
-                    <Text className={`font-semibold text-sm ${open.state === 'granted' ? 'text-destructive dark:text-destructive-dark' : 'text-foreground dark:text-foreground-dark'}`}>{t(actions.decline)}</Text>
-                  </TouchableOpacity>
+                  <Button block variant={open.state === 'granted' ? 'destructive' : 'secondary'} label={t(actions.decline)} onPress={() => (open.state === 'granted' ? confirmRevoke(open) : void run(open, 'revoke'))} disabled={saving} />
                 ) : null}
               </View>
             ) : (
