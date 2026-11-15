@@ -31,6 +31,19 @@ export function isNetworkFailure(err: unknown): boolean {
 }
 
 /**
+ * Plain JSON parse. Better Auth's default parser (`parseDates: true`) turns ISO-`Z` strings into `Date` objects, but the
+ * backend contract is ISO *strings* (`typeof x === 'string'` guards, string comparisons, `localeCompare` all rely on it).
+ * A non-JSON body (e.g. an empty 404) is returned as the raw text, like better-fetch's own default.
+ */
+export function plainJsonParse(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+/**
  * Typed wrapper around `authClient.$fetch` -- see README.md's "Adding a new
  * API request" for the full recipe this implements. Callers pass a bare
  * path (`/notifications`); this is the one place that prepends `backendUrl`,
@@ -43,6 +56,7 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     result = await authClient.$fetch<T>(`${backendUrl}${path}`, {
       method: options.method ?? 'GET',
       body: options.body,
+      jsonParser: plainJsonParse,
     });
   } catch (err) {
     // The request never reached the server (no connection, timeout): status 0, so screens can say "no connection"
