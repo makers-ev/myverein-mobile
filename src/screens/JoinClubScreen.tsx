@@ -19,7 +19,11 @@ import type { SubmittedResult } from '@/hooks/useFormSubmission';
 import { ApiError } from '@/lib/api';
 import { type ApplyConflict, childWarningKey, formErrorKey, type OnBehalfOf } from '@/lib/formSchema';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
-import Title from '@/components/ui/Title';
+import Banner from '@/components/ui/Banner';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import FlowHeader from '@/components/ui/FlowHeader';
+import ListSection from '@/components/ui/ListSection';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'JoinClub'>;
 
@@ -181,26 +185,12 @@ export default function JoinClubScreen({ navigation }: Props) {
   if (conflict) {
     const key = CONFLICT_KEY[conflict];
     return (
-      <KeyboardAwareScreen
-        className="bg-background dark:bg-background-dark"
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
-      >
-        <View className="bg-card dark:bg-card-dark p-6 rounded-2xl items-center" accessibilityLiveRegion="polite">
-          <Text className="text-xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
-            {t(`join-club.result.${key}.title`)}
-          </Text>
-          <Text className="text-sm text-center mb-5 text-muted-foreground dark:text-muted-foreground-dark">
-            {t(`join-club.result.${key}.body`)}
-          </Text>
-          <TouchableOpacity
-            className="bg-primary dark:bg-primary-dark rounded-lg py-3 px-6 items-center"
-            style={{ minHeight: 44 }}
-            onPress={() => navigation.goBack()}
-            accessibilityRole="button"
-            accessibilityLabel={t('join-club.pending.back')}
-          >
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">{t('join-club.pending.back')}</Text>
-          </TouchableOpacity>
+      <KeyboardAwareScreen className="bg-background dark:bg-background-dark" contentContainerStyle={{ flexGrow: 1, paddingTop: 8, paddingBottom: 40 }}>
+        <FlowHeader title={t('join-club.title')} onBack={() => navigation.goBack()} />
+        <View className="px-4" accessibilityLiveRegion="polite">
+          <Card variant="action" icon={key === 'already-member' ? CheckCircle2 : Clock} title={t(`join-club.result.${key}.title`)} body={t(`join-club.result.${key}.body`)}>
+            <Button block label={t('join-club.pending.back')} onPress={() => navigation.goBack()} />
+          </Card>
         </View>
       </KeyboardAwareScreen>
     );
@@ -208,27 +198,31 @@ export default function JoinClubScreen({ navigation }: Props) {
 
   const ready = phase === 'ready' && club !== null;
 
+  const stepNumber = (n: number) => (
+    <View className="rounded-full bg-primary-soft dark:bg-primary-soft-dark items-center justify-center" style={{ width: 24, height: 24 }}>
+      <Text className="text-primary-soft-foreground dark:text-primary-soft-foreground-dark text-[13px] font-semibold">{n}</Text>
+    </View>
+  );
+
   return (
     <KeyboardAwareScreen
       scrollRef={scrollRef}
-      className="bg-muted dark:bg-muted-dark"
-      contentContainerStyle={{ flexGrow: 1, padding: 24, paddingBottom: 40, justifyContent: ready ? 'flex-start' : 'center' }}
+      className="bg-background dark:bg-background-dark"
+      contentContainerStyle={{ flexGrow: 1, paddingTop: 8, paddingBottom: 40 }}
     >
-      <Title className="text-foreground dark:text-foreground-dark text-center mb-2">
-        {t('join-club.title')}
-      </Title>
-      <Text className="text-sm text-center mb-6 text-muted-foreground dark:text-muted-foreground-dark">{t('join-club.description')}</Text>
+      <FlowHeader title={t('join-club.title')} description={t('join-club.description')} onBack={() => navigation.goBack()} />
 
-      <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
+      <View className={`mx-4 ${ready ? 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4' : ''}`}>
         {!ready ? (
           <>
-            <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
+            <Text className="text-[13px] leading-[18px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
               {t('join-club.slug.label')}
             </Text>
             <TextInput
-              className={`bg-card dark:bg-card-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border mb-2 ${
-                loadErrorKey ? 'border-destructive' : 'border-border-control dark:border-border-control-dark'
+              className={`bg-card dark:bg-card-dark rounded-[10px] px-3 text-[17px] text-foreground dark:text-foreground-dark border mb-3 ${
+                loadErrorKey ? 'border-destructive dark:border-destructive-dark' : 'border-border-control dark:border-border-control-dark'
               }`}
+              style={{ minHeight: 48 }}
               accessibilityLabel={t('join-club.slug.label')}
               placeholder={t('forms.apply.slugPlaceholder')}
               placeholderTextColor={themeColors.mutedForeground}
@@ -243,26 +237,22 @@ export default function JoinClubScreen({ navigation }: Props) {
               onSubmitEditing={handleLoad}
               returnKeyType="go"
             />
+            <Button block label={t('forms.apply.load')} onPress={handleLoad} loading={phase === 'loading'} disabled={!slug.trim()} />
             {loadErrorKey ? (
-              <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert" accessibilityLiveRegion="polite">
-                {t(loadErrorKey)}
-              </Text>
+              <View className="mt-3" accessibilityLiveRegion="polite">
+                <Banner tone="warning" body={t(loadErrorKey)} alert />
+              </View>
             ) : null}
-            <TouchableOpacity
-              className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-1 ${phase === 'loading' || !slug.trim() ? 'opacity-70' : ''}`}
-              style={{ minHeight: 48 }}
-              onPress={handleLoad}
-              disabled={phase === 'loading' || !slug.trim()}
-              accessibilityRole="button"
-              accessibilityLabel={t('forms.apply.load')}
-              accessibilityState={{ busy: phase === 'loading' }}
-            >
-              {phase === 'loading' ? (
-                <ActivityIndicator color={themeColors.primaryForeground} />
-              ) : (
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">{t('forms.apply.load')}</Text>
-              )}
-            </TouchableOpacity>
+            <View className="mt-6">
+              <ListSection title={t('join-club.steps.title')} inset={52}>
+                {(['1', '2', '3'] as const).map((n) => (
+                  <View key={n} className="flex-row items-center px-4 py-3" style={{ gap: 12, minHeight: 56 }}>
+                    {stepNumber(Number(n))}
+                    <Text className="flex-1 text-foreground dark:text-foreground-dark text-[15px] leading-[22px]">{t(`join-club.steps.${n}`)}</Text>
+                  </View>
+                ))}
+              </ListSection>
+            </View>
             <MyApplicationsStatus
               open={applications.open}
               decided={applications.decided}
@@ -427,37 +417,9 @@ export default function JoinClubScreen({ navigation }: Props) {
                     ) : null}
                     {resendState === 'failed' ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-2">{t('forms.apply.unverified.failed')}</Text> : null}
                     <View className="flex-row flex-wrap mt-2" style={{ gap: 8 }}>
-                      <TouchableOpacity
-                        onPress={() => void resend()}
-                        disabled={resendState === 'sending' || !user?.email}
-                        accessibilityRole="button"
-                        accessibilityLabel={t('forms.apply.unverified.resend')}
-                        className="bg-primary dark:bg-primary-dark rounded-lg px-4 items-center justify-center"
-                        style={{ minHeight: 44 }}
-                      >
-                        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('forms.apply.unverified.resend')}</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => void recheckVerification()}
-                        disabled={checking}
-                        accessibilityRole="button"
-                        accessibilityLabel={t('forms.apply.unverified.check')}
-                        className="border border-border dark:border-border-dark rounded-lg px-4 items-center justify-center"
-                        style={{ minHeight: 44 }}
-                      >
-                        <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('forms.apply.unverified.check')}</Text>
-                      </TouchableOpacity>
-                      {club.modes.includes('self') ? (
-                        <TouchableOpacity
-                          onPress={() => void changeMode('self')}
-                          accessibilityRole="button"
-                          accessibilityLabel={t('forms.apply.mode.self')}
-                          className="rounded-lg px-4 items-center justify-center"
-                          style={{ minHeight: 44 }}
-                        >
-                          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('forms.apply.mode.self')}</Text>
-                        </TouchableOpacity>
-                      ) : null}
+                      <Button size="M" label={t('forms.apply.unverified.resend')} onPress={() => void resend()} disabled={resendState === 'sending' || !user?.email} />
+                      <Button size="M" variant="secondary" label={t('forms.apply.unverified.check')} onPress={() => void recheckVerification()} disabled={checking} />
+                      {club.modes.includes('self') ? <Button size="M" variant="tertiary" label={t('forms.apply.mode.self')} onPress={() => void changeMode('self')} /> : null}
                     </View>
                   </View>
                 ) : (
@@ -480,15 +442,6 @@ export default function JoinClubScreen({ navigation }: Props) {
         )}
       </View>
 
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        accessibilityRole="button"
-        accessibilityLabel={t('join-club.pending.back')}
-        className="items-center mt-4"
-        style={{ minHeight: 44, justifyContent: 'center' }}
-      >
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm font-semibold">{t('join-club.pending.back')}</Text>
-      </TouchableOpacity>
     </KeyboardAwareScreen>
   );
 }

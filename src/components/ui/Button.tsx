@@ -27,6 +27,8 @@ interface Props {
   /** Shows a spinner next to the label and blocks taps while saving. */
   loading?: boolean;
   accessibilityHint?: string;
+  /** Longer spoken name when several buttons share a visible label ("Prüfen" per application). */
+  accessibilityLabel?: string;
 }
 
 const BOX = {
@@ -52,7 +54,7 @@ const TEXT = {
  * AA-readable label on the sunken surface instead of fading to 50 % -- people must still be able to read what they
  * cannot do yet (and the screen should say why). Busy and disabled states are announced; a press scales it by 2 %.
  */
-export default function Button({ label, onPress, variant = 'primary', size = 'L', icon: Icon, block, disabled, loading, accessibilityHint }: Props) {
+export default function Button({ label, onPress, variant = 'primary', size = 'L', icon: Icon, block, disabled, loading, accessibilityHint, accessibilityLabel }: Props) {
   const colors = useThemeColors();
   const v: ButtonVariant = variant === 'danger' ? 'destructive' : variant;
   const blocked = !!disabled || !!loading;
@@ -77,7 +79,7 @@ export default function Button({ label, onPress, variant = 'primary', size = 'L'
   return (
     <PressScale
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: blocked, busy: !!loading }}
       disabled={blocked}

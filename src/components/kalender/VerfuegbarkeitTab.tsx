@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Switch, Text, TextInput, View } from 'react-native';
 import { Trash2 } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
@@ -7,6 +7,12 @@ import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useAvailability } from '@/hooks/useAvailability';
+import Badge from '@/components/ui/Badge';
+import Banner from '@/components/ui/Banner';
+import Button from '@/components/ui/Button';
+import ListSection from '@/components/ui/ListSection';
+import PressScale from '@/components/ui/PressScale';
+import Skeleton from '@/components/ui/Skeleton';
 import DateTimeField, { fromDateString, toDateString } from '@/components/ui/DateTimeField';
 
 interface Props {
@@ -119,46 +125,38 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
     }
   };
 
-  if (loading || !initialized) {
-    return (
-      <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primaryText} />
-      </View>
-    );
-  }
+  if (loading || !initialized) return <Skeleton shape="rows" lines={4} />;
+
+  const timeInput = 'bg-card dark:bg-card-dark rounded-[10px] px-2 text-[15px] text-center text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark';
 
   return (
     <>
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
-        {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error}</Text> : null}
+      {error ? (
+        <View className="mb-3">
+          <Banner tone="danger" body={error} />
+        </View>
+      ) : null}
 
+      <ListSection footer={t('verfuegbarkeit.hint')}>
         {WEEKDAY_KEYS.map((key, day) => {
           const row = rows[day] ?? DEFAULT_ROW;
-          const isLast = day === WEEKDAY_KEYS.length - 1;
+          const dayName = t(`verfuegbarkeit.weekday.${key}`);
           return (
-            <View key={key} className={`py-3 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`}>
-              <View className="flex-row items-center justify-between">
-                <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">
-                  {t(`verfuegbarkeit.weekday.${key}`)}
+            <View key={key}>
+              {day > 0 ? <View className="bg-border dark:bg-border-dark" style={{ height: 1, marginLeft: 16 }} /> : null}
+              <View className="flex-row items-center px-4" style={{ minHeight: 60, gap: 8 }}>
+                <Text
+                  className={`flex-1 text-[17px] leading-[22px] ${row.available ? 'text-foreground dark:text-foreground-dark font-medium' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}
+                  numberOfLines={1}
+                >
+                  {dayName}
                 </Text>
-                <Switch
-                  value={row.available}
-                  onValueChange={(value) => void handleToggle(day, value)}
-                  disabled={savingDay === day}
-                  trackColor={{ false: themeColors.borderControl, true: themeColors.primary }}
-                  thumbColor={themeColors.card}
-                  ios_backgroundColor={themeColors.border}
-                />
-              </View>
-
-              {row.available && (
-                <View className="flex-row items-center mt-2" style={{ gap: 10 }}>
-                  <View className="flex-1">
-                    <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1">
-                      {t('verfuegbarkeit.start-time')}
-                    </Text>
+                {row.available ? (
+                  <View className="flex-row items-center" style={{ gap: 6 }}>
                     <TextInput
-                      className="bg-card dark:bg-card-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
+                      className={timeInput}
+                      style={{ width: 64, minHeight: 44, fontVariant: ['tabular-nums'] }}
+                      accessibilityLabel={`${dayName}: ${t('verfuegbarkeit.start-time')}`}
                       placeholder="HH:MM"
                       keyboardType="numbers-and-punctuation"
                       maxLength={5}
@@ -167,13 +165,11 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
                       onChangeText={(value) => setRows((prev) => ({ ...prev, [day]: { ...(prev[day] ?? DEFAULT_ROW), startTime: value } }))}
                       onBlur={() => void handleTimeBlur(day)}
                     />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1">
-                      {t('verfuegbarkeit.end-time')}
-                    </Text>
+                    <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px]">{t('verfuegbarkeit.until')}</Text>
                     <TextInput
-                      className="bg-card dark:bg-card-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
+                      className={timeInput}
+                      style={{ width: 64, minHeight: 44, fontVariant: ['tabular-nums'] }}
+                      accessibilityLabel={`${dayName}: ${t('verfuegbarkeit.end-time')}`}
                       placeholder="HH:MM"
                       keyboardType="numbers-and-punctuation"
                       maxLength={5}
@@ -183,60 +179,73 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
                       onBlur={() => void handleTimeBlur(day)}
                     />
                   </View>
-                </View>
-              )}
+                ) : null}
+                <Switch
+                  accessibilityLabel={dayName}
+                  value={row.available}
+                  onValueChange={(value) => void handleToggle(day, value)}
+                  disabled={savingDay === day}
+                  trackColor={{ false: themeColors.borderControl, true: themeColors.primary }}
+                  thumbColor={themeColors.card}
+                  ios_backgroundColor={themeColors.border}
+                />
+              </View>
             </View>
           );
         })}
-      </View>
+      </ListSection>
 
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
-        <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('verfuegbarkeit.exceptions.title')}</Text>
-
+      <Text accessibilityRole="header" className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-2 px-1">
+        {t('verfuegbarkeit.exceptions.title')}
+      </Text>
+      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] overflow-hidden">
         {exceptions.length === 0 ? (
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">{t('verfuegbarkeit.exceptions.empty')}</Text>
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] p-4">{t('verfuegbarkeit.exceptions.empty')}</Text>
         ) : (
           exceptions.map((exc, i) => (
             <View
               key={exc.id}
-              className={`flex-row items-start justify-between py-2 ${i === exceptions.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}
-              style={{ gap: 8 }}
+              className={`flex-row items-center pl-4 pr-1 ${i === 0 ? '' : 'border-t border-border dark:border-border-dark'}`}
+              style={{ gap: 8, minHeight: 60 }}
             >
-              <View className="flex-1">
+              <View className="flex-1 py-2">
                 <View className="flex-row items-center flex-wrap" style={{ gap: 8 }}>
-                  <Text className="text-foreground dark:text-foreground-dark text-sm font-medium">
+                  <Text className="text-foreground dark:text-foreground-dark text-[15px] leading-[22px] font-medium">
                     {fromDateString(exc.date)?.toLocaleDateString(language, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
                   </Text>
-                  <View className={`px-2 py-1 rounded-md ${exc.isAvailable ? 'bg-success/10' : 'bg-destructive/10'}`}>
-                    <Text className={`text-xs font-semibold ${exc.isAvailable ? 'text-success dark:text-success-dark' : 'text-destructive dark:text-destructive-dark'}`}>
-                      {t(exc.isAvailable ? 'verfuegbarkeit.exceptions.available' : 'verfuegbarkeit.exceptions.unavailable')}
-                    </Text>
-                  </View>
+                  <Badge tone={exc.isAvailable ? 'success' : 'danger'}>
+                    {t(exc.isAvailable ? 'verfuegbarkeit.exceptions.available' : 'verfuegbarkeit.exceptions.unavailable')}
+                  </Badge>
                 </View>
-                {exc.note ? (
-                  <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">{exc.note}</Text>
-                ) : null}
+                {exc.note ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-1">{exc.note}</Text> : null}
               </View>
-              <TouchableOpacity accessibilityRole="button" onPress={() => void handleDeleteException(exc.id)} hitSlop={8} className="p-1">
-                <Trash2 size={18} color={themeColors.mutedForeground} />
-              </TouchableOpacity>
+              <PressScale
+                accessibilityRole="button"
+                accessibilityLabel={t('ui.delete')}
+                onPress={() => void handleDeleteException(exc.id)}
+                className="items-center justify-center"
+                style={{ width: 44, height: 44 }}
+              >
+                <Trash2 size={20} strokeWidth={1.75} color={themeColors.mutedForeground} />
+              </PressScale>
             </View>
           ))
         )}
 
-        <View className="mt-4 pt-4 border-t border-border dark:border-border-dark">
-          <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
+        <View className={`p-4 ${exceptions.length === 0 ? 'border-t border-border dark:border-border-dark' : 'border-t border-border dark:border-border-dark'}`}>
+          <Text className="text-[13px] leading-[18px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('verfuegbarkeit.exceptions.date')}
           </Text>
           <View className="mb-3">
             <DateTimeField mode="date" value={excDate} onChange={setExcDate} />
           </View>
 
-          <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-sm text-foreground dark:text-foreground-dark">
+          <View className="flex-row items-center justify-between mb-3" style={{ minHeight: 44 }}>
+            <Text className="text-[17px] text-foreground dark:text-foreground-dark">
               {t(excAvailable ? 'verfuegbarkeit.exceptions.available' : 'verfuegbarkeit.exceptions.unavailable')}
             </Text>
             <Switch
+              accessibilityLabel={t(excAvailable ? 'verfuegbarkeit.exceptions.available' : 'verfuegbarkeit.exceptions.unavailable')}
               value={excAvailable}
               onValueChange={setExcAvailable}
               trackColor={{ false: themeColors.borderControl, true: themeColors.primary }}
@@ -245,31 +254,24 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
             />
           </View>
 
-          <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
+          <Text className="text-[13px] leading-[18px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('verfuegbarkeit.exceptions.note')}
           </Text>
           <TextInput
-            className="bg-card dark:bg-card-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
+            className="bg-card dark:bg-card-dark rounded-[10px] px-3 text-[17px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
+            style={{ minHeight: 48 }}
             placeholderTextColor={themeColors.mutedForeground}
             value={excNote}
             onChangeText={setExcNote}
           />
 
-          {excError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{excError}</Text> : null}
+          {excError ? (
+            <View className="mb-3">
+              <Banner tone="danger" body={excError} />
+            </View>
+          ) : null}
 
-          <TouchableOpacity accessibilityRole="button"
-            className={`bg-primary dark:bg-primary-dark rounded-lg py-3 items-center ${excSaving || !excDate ? 'opacity-70' : ''}`}
-            onPress={() => void handleAddException()}
-            disabled={excSaving || !excDate}
-          >
-            {excSaving ? (
-              <ActivityIndicator color={themeColors.primaryForeground} />
-            ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">
-                {t('verfuegbarkeit.exceptions.add')}
-              </Text>
-            )}
-          </TouchableOpacity>
+          <Button block label={t('verfuegbarkeit.exceptions.add')} onPress={() => void handleAddException()} loading={excSaving} disabled={!excDate} />
         </View>
       </View>
     </>

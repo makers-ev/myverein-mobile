@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Check, X } from 'lucide-react-native';
+import { Check, Plus, Users, X } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -14,7 +14,15 @@ import ResolutionCorrection from './ResolutionCorrection';
 import MeetingManageSection from './MeetingManageSection';
 import MeetingInvitees from './MeetingInvitees';
 import MeetingAttendance from './MeetingAttendance';
+import Badge, { type BadgeTone } from '@/components/ui/Badge';
+import Banner from '@/components/ui/Banner';
 import Button from '@/components/ui/Button';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import FilterChip from '@/components/ui/FilterChip';
+import ListRow from '@/components/ui/ListRow';
+import ListSection from '@/components/ui/ListSection';
+import Skeleton from '@/components/ui/Skeleton';
 
 interface Props {
   clubId: string;
@@ -29,13 +37,11 @@ function SectionCard({ title, children }: { title: string; children: React.React
   );
 }
 
+const STATUS_TONE: Record<MeetingStatus, BadgeTone> = { terminfindung: 'warning', geplant: 'success', abgehalten: 'neutral', protokolliert: 'info' };
+
 function StatusBadge({ status }: { status: MeetingStatus }) {
   const { t } = useLanguage();
-  return (
-    <View className="bg-primary/10 dark:bg-primary-dark/10 px-2.5 py-1 rounded-md self-start">
-      <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t(`treffen.status.${status}`)}</Text>
-    </View>
-  );
+  return <Badge tone={STATUS_TONE[status] ?? 'primary'}>{t(`treffen.status.${status}`)}</Badge>;
 }
 
 /** Localised meeting type; unknown legacy values are shown as they are. */
@@ -44,21 +50,10 @@ function useTypeLabel() {
   return (type: string) => ((MEETING_TYPES as readonly string[]).includes(type) ? t(`treffen.type.${type}`) : type);
 }
 
-function ErrorRetry({ message, onRetry }: { message: string; onRetry: () => void }) {
-  const { t } = useLanguage();
+function ErrorRetry({ fallbackKey, onRetry }: { fallbackKey: string; onRetry: () => void }) {
   return (
-    <View className="py-6">
-      <Text className="text-destructive dark:text-destructive-dark text-sm mb-3" accessibilityRole="alert">
-        {message}
-      </Text>
-      <TouchableOpacity
-        onPress={onRetry}
-        className="self-start px-5 justify-center rounded-lg bg-primary dark:bg-primary-dark"
-        style={{ minHeight: 44 }}
-        accessibilityRole="button"
-      >
-        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('verein.retry')}</Text>
-      </TouchableOpacity>
+    <View className="py-2">
+      <ErrorState fallbackKey={fallbackKey} onRetry={onRetry} />
     </View>
   );
 }
@@ -66,21 +61,10 @@ function ErrorRetry({ message, onRetry }: { message: string; onRetry: () => void
 function MeetingListRow({ meeting, onPress }: { meeting: Meeting; onPress: () => void }) {
   const { t } = useLanguage();
   const typeLabel = useTypeLabel();
-  return (
-    <TouchableOpacity accessibilityRole="button"
-      onPress={onPress}
-      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-3 mb-3"
-    >
-      <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-1">{meeting.title}</Text>
-      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{typeLabel(meeting.type)}</Text>
-      <View className="flex-row items-center justify-between">
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
-          {meeting.scheduledAt ? new Date(meeting.scheduledAt).toLocaleString() : t('treffen.scheduled-at.pending')}
-        </Text>
-        <StatusBadge status={meeting.status} />
-      </View>
-    </TouchableOpacity>
-  );
+  const when = meeting.scheduledAt
+    ? new Date(meeting.scheduledAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+    : t('treffen.scheduled-at.pending');
+  return <ListRow title={meeting.title} hint={`${typeLabel(meeting.type)} · ${when}`} trailing={<StatusBadge status={meeting.status} />} onPress={onPress} />;
 }
 
 function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite: boolean; onSelect: (id: string) => void }) {
@@ -113,25 +97,29 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
     }
   };
 
-  if (loading && meetings.length === 0) {
-    return (
-      <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primaryText} />
-      </View>
-    );
-  }
+  if (loading && meetings.length === 0) return <Skeleton shape="rows" lines={3} />;
 
-  if (loadError && meetings.length === 0) return <ErrorRetry message={t('treffen.list.error')} onRetry={() => void refetch()} />;
+  if (loadError && meetings.length === 0) return <ErrorRetry fallbackKey="treffen.list.error" onRetry={() => void refetch()} />;
 
   return (
     <>
+      {canWrite && !showCreate ? (
+        <View className="mb-5">
+          <Button block icon={Plus} label={t('treffen.create')} onPress={() => setShowCreate(true)} />
+        </View>
+      ) : null}
+
       {meetings.length === 0 ? (
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-4">{t('treffen.list.empty')}</Text>
+        <EmptyState icon={Users} title={t('treffen.list.empty')} />
       ) : (
-        meetings.map((m) => <MeetingListRow key={m.id} meeting={m} onPress={() => onSelect(m.id)} />)
+        <ListSection title={t('treffen.list.title')} footer={t('treffen.list.footer')} inset={16}>
+          {meetings.map((m) => (
+            <MeetingListRow key={m.id} meeting={m} onPress={() => onSelect(m.id)} />
+          ))}
+        </ListSection>
       )}
 
-      {!canWrite ? null : showCreate ? (
+      {canWrite && showCreate ? (
         <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
           <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.title')}
@@ -146,26 +134,9 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
             {t('treffen.type')}
           </Text>
           <View className="flex-row flex-wrap mb-3" style={{ gap: 8 }}>
-            {MEETING_TYPES.map((value) => {
-              const selected = type === value;
-              return (
-                <TouchableOpacity
-                  key={value}
-                  onPress={() => setType(value)}
-                  className={`px-3 rounded-[10px] justify-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark'}`}
-                  style={{ minHeight: 44 }}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  accessibilityLabel={typeLabel(value)}
-                >
-                  <Text
-                    className={`text-xs font-semibold ${selected ? 'text-primary-foreground dark:text-primary-foreground-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}
-                  >
-                    {typeLabel(value)}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+            {MEETING_TYPES.map((value) => (
+              <FilterChip key={value} label={typeLabel(value)} selected={type === value} onPress={() => setType(value)} />
+            ))}
           </View>
           <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.scheduled-at')}
@@ -173,17 +144,14 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
           <View className="mb-3">
             <DateTimeField value={scheduledAt} onChange={setScheduledAt} placeholder={t('treffen.scheduled-at.placeholder')} clearable />
           </View>
-          {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error}</Text> : null}
+          {error ? (
+            <View className="mb-3">
+              <Banner tone="danger" body={error} />
+            </View>
+          ) : null}
           <Button block label={t('treffen.submit')} onPress={() => void handleCreate()} loading={saving} disabled={!title.trim() || !type} />
         </View>
-      ) : (
-        <TouchableOpacity accessibilityRole="button"
-          className="bg-primary dark:bg-primary-dark rounded-lg py-3 items-center self-start px-5"
-          onPress={() => setShowCreate(true)}
-        >
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('treffen.create')}</Text>
-        </TouchableOpacity>
-      )}
+      ) : null}
     </>
   );
 }
@@ -259,19 +227,7 @@ function AgendaMinutes({
         numberOfLines={3}
       />
       {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error}</Text> : null}
-      <TouchableOpacity accessibilityRole="button"
-        className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${saving ? 'opacity-70' : ''}`}
-        onPress={() => void handleSave()}
-        disabled={saving}
-      >
-        {saving ? (
-          <ActivityIndicator color={themeColors.primaryForeground} size="small" />
-        ) : (
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-xs font-semibold">
-            {t('treffen.agenda-minutes.save')}
-          </Text>
-        )}
-      </TouchableOpacity>
+      <Button block label={t('treffen.agenda-minutes.save')} onPress={() => void handleSave()} loading={saving} />
     </SectionCard>
   );
 }
@@ -392,7 +348,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
           <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('treffen.back')}</Text>
         </TouchableOpacity>
         {loadError ? (
-          <ErrorRetry message={t('treffen.detail.error')} onRetry={() => void refetch()} />
+          <ErrorRetry fallbackKey="treffen.detail.error" onRetry={() => void refetch()} />
         ) : (
           <View className="py-12 items-center" accessibilityLabel={loading ? t('treffen.detail.loading') : undefined}>
             <ActivityIndicator color={themeColors.primaryText} />
