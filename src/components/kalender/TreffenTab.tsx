@@ -396,7 +396,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
           {rsvpError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{rsvpError}</Text> : null}
           <View className="flex-row" style={{ gap: 10 }}>
             <TouchableOpacity accessibilityRole="button"
-              className={`bg-primary dark:bg-primary-dark rounded-control py-2 px-4 ${rsvpSaving ? 'opacity-70' : ''}`}
+              className={`bg-primary dark:bg-primary-dark rounded-control min-h-11 justify-center py-2 px-4 ${rsvpSaving ? 'opacity-70' : ''}`}
               onPress={() => void handleRespond('zugesagt')}
               disabled={rsvpSaving}
             >
@@ -405,7 +405,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
               </Text>
             </TouchableOpacity>
             <TouchableOpacity accessibilityRole="button"
-              className={`bg-muted dark:bg-muted-dark rounded-control py-2 px-4 ${rsvpSaving ? 'opacity-70' : ''}`}
+              className={`bg-muted dark:bg-muted-dark rounded-control min-h-11 justify-center py-2 px-4 ${rsvpSaving ? 'opacity-70' : ''}`}
               onPress={() => void handleRespond('abgesagt')}
               disabled={rsvpSaving}
             >
@@ -430,7 +430,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
             <View className="flex-1">
               <DateTimeField value={candidateInput} onChange={setCandidateInput} placeholder={t('treffen.overlap.candidate-placeholder')} />
             </View>
-            <TouchableOpacity accessibilityRole="button" className="bg-muted dark:bg-muted-dark rounded-control py-2.5 px-3" onPress={handleAddCandidate}>
+            <TouchableOpacity accessibilityRole="button" className="bg-muted dark:bg-muted-dark rounded-control min-h-11 justify-center py-2.5 px-3" onPress={handleAddCandidate}>
               <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold">{t('treffen.overlap.add-candidate')}</Text>
             </TouchableOpacity>
           </View>
@@ -438,7 +438,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
           {overlapError ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-2">{overlapError}</Text> : null}
 
           <TouchableOpacity accessibilityRole="button"
-            className={`bg-primary dark:bg-primary-dark rounded-control py-2.5 items-center mt-3 ${overlapChecking || candidates.length === 0 ? 'opacity-70' : ''}`}
+            className={`bg-primary dark:bg-primary-dark rounded-control min-h-11 py-2.5 items-center justify-center mt-3 ${overlapChecking || candidates.length === 0 ? 'opacity-70' : ''}`}
             onPress={() => void handleCheckOverlap()}
             disabled={overlapChecking || candidates.length === 0}
           >
@@ -591,7 +591,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
             />
             {resError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{resError}</Text> : null}
             <TouchableOpacity accessibilityRole="button"
-              className={`bg-primary dark:bg-primary-dark rounded-control py-2.5 items-center ${resSaving ? 'opacity-70' : ''}`}
+              className={`bg-primary dark:bg-primary-dark rounded-control min-h-11 py-2.5 items-center justify-center ${resSaving ? 'opacity-70' : ''}`}
               onPress={() => void handleCreateResolution()}
               disabled={resSaving}
             >

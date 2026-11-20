@@ -33,7 +33,7 @@ export default function Card({ title, body, icon: Icon, variant = 'summary', chi
       {title || Icon ? (
         <View className="flex-row items-start" style={{ gap: 12 }}>
           {Icon ? (
-            <View className="bg-muted dark:bg-muted-dark rounded-md items-center justify-center" style={{ width: 32, height: 32 }}>
+            <View className="bg-muted dark:bg-muted-dark rounded-tile items-center justify-center" style={{ width: 32, height: 32 }}>
               <Icon size={18} strokeWidth={1.75} color={colors.foreground} />
             </View>
           ) : null}

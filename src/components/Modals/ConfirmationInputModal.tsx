@@ -97,14 +97,14 @@ export default function ConfirmationInputModal({
 
           <View className="flex-row justify-around">
             <TouchableOpacity accessibilityRole="button"
-              className={`py-2 px-4 rounded-md ${isValid ? 'bg-red-600' : 'bg-red-200'}`}
+              className={`py-2 px-4 rounded-control ${isValid ? 'bg-red-600' : 'bg-red-200'}`}
               onPress={handleConfirm}
               disabled={!isValid}
             >
               <Text className="text-white font-semibold text-center">{confirmText}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity accessibilityRole="button" className="py-2 px-4 rounded-md bg-green-600" onPress={handleClose}>
+            <TouchableOpacity accessibilityRole="button" className="py-2 px-4 rounded-control bg-green-600" onPress={handleClose}>
               <Text className="text-white font-semibold text-center">{cancelText}</Text>
             </TouchableOpacity>
           </View>

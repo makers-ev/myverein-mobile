@@ -53,7 +53,7 @@ export default function ConfirmationModal({
               {buttons.slice(0, 2).map((button, index) => (
                 <TouchableOpacity accessibilityRole="button"
                   key={index}
-                  className={`py-2 px-4 rounded-md ${button.color}`}
+                  className={`py-2 px-4 rounded-control ${button.color}`}
                   onPress={button.onPress}
                 >
                   <Text className="text-white font-semibold text-center">

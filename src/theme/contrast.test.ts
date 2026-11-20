@@ -20,7 +20,22 @@ const TEXT_PAIRS: [Key, Key][] = [
   ['accentForeground', 'accent'],
   ['accentSoftForeground', 'accentSoft'],
   ['foreground', 'primarySoft'],
+  ['mutedForeground', 'primarySoft'],
 ];
+
+/** Termin rows tint the card with 40 % primarySoft (`bg-primary-soft/40`): muted meta text must stay readable on that blend. */
+function tintedFailures(t: TokenSet): string[] {
+  const r = contrastRatio(t.mutedForeground, blend(t.primarySoft, t.card, 0.4));
+  return r < 4.5 ? [`mutedForeground on 40% primarySoft: ${r.toFixed(2)}`] : [];
+}
+
+/** `divider` is a light decorative line: visible against the card but never stronger than `border`. */
+function dividerFailures(t: TokenSet): string[] {
+  const out: string[] = [];
+  if (t.divider.toLowerCase() === t.card.toLowerCase()) out.push('divider equals card');
+  if (contrastRatio(t.divider, t.card) > contrastRatio(t.border, t.card) + 0.001) out.push('divider stronger than border');
+  return out;
+}
 const CONTROL_PAIRS: [Key, Key][] = [
   ['borderControl', 'card'],
   ['borderControl', 'background'],
@@ -46,12 +61,22 @@ describe('palette contrast (WCAG AA: text 4.5:1, controls 3:1)', () => {
     for (const mode of ['light', 'dark'] as const) {
       it(`${name} ${mode}`, () => {
         expect(failures(palette[mode])).toEqual([]);
+        expect(tintedFailures(palette[mode])).toEqual([]);
+      });
+      it(`${name} ${mode}: divider`, () => {
+        expect(dividerFailures(palette[mode])).toEqual([]);
       });
     }
   }
 });
 
 describe('surface steps', () => {
+  for (const [name, palette] of Object.entries(palettes)) {
+    it(`${name} dark: card is a visible step above the canvas (no borders in dark mode)`, () => {
+      expect(contrastRatio(palette.dark.card, palette.dark.background)).toBeGreaterThanOrEqual(1.1);
+    });
+  }
+
   it('Vereinsblau dark: card and muted are visibly stepped from the canvas (decision D1)', () => {
     const d = palettes.vereinsblau.dark;
     expect(contrastRatio(d.card, d.background)).toBeGreaterThanOrEqual(1.15);
@@ -127,8 +152,15 @@ describe('custom palettes (deriveTokens)', () => {
       ];
       const out = derived.filter(([fg, bg, min]) => contrastRatio(tokens[fg], tokens[bg]) < min).map(([fg, bg]) => `${fg} on ${bg}: ${contrastRatio(tokens[fg], tokens[bg]).toFixed(2)}`);
       expect(out).toEqual([]);
+      expect(tintedFailures(tokens)).toEqual([]);
+      expect(dividerFailures(tokens)).toEqual([]);
+      expect(contrastRatio(tokens.mutedForeground, tokens.primarySoft)).toBeGreaterThanOrEqual(4.5);
     });
   }
+  it('derived dark palette: card is stepped from the canvas', () => {
+    const t = deriveTokens({ background: '#808080', foreground: '#f0f0f0', primary: '#22b8cf' });
+    expect(t.divider).not.toBe(t.card);
+  });
 });
 
 // Own palettes (ADR-008): the hero buttons `inverse` (fill = on-primary colour, label = primary fill) and `inverseOutline`

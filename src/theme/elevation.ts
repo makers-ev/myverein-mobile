@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { Platform, type ViewStyle } from 'react-native';
 import { useColorScheme } from 'nativewind';
 
 import { useThemeColors } from './colors';
+import { contrastRatio } from './contrast';
 
 /**
  * Elevation instead of hairlines (Apple style). Light mode: a soft, warm, low shadow on the card surface (iOS `shadow*`,
@@ -17,10 +19,17 @@ const NONE: ViewStyle = { shadowOpacity: 0, elevation: 0 };
 export function useElevation(level: Elevation = 'card'): ViewStyle {
   const { colorScheme } = useColorScheme();
   const colors = useThemeColors();
-  if (colorScheme === 'dark') return level === 'hero' ? hero(colors.primary, 0.35) : NONE;
-  if (level === 'hero') return hero(colors.primary, 0.28);
-  if (level === 'bar') return { shadowColor: '#1a160c', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: -2 }, elevation: 8 };
-  return { shadowColor: '#1a160c', shadowOpacity: 0.07, shadowRadius: 10, shadowOffset: { width: 0, height: 2 }, elevation: Platform.OS === 'android' ? 2 : 0 };
+  const dark = colorScheme === 'dark';
+  const { primary, card, background, divider } = colors;
+  return useMemo(() => {
+    if (dark) return level === 'hero' ? hero(primary, 0.35) : NONE;
+    if (level === 'hero') return hero(primary, 0.28);
+    if (level === 'bar') return { shadowColor: '#1a160c', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: -2 }, elevation: 8 };
+    const shadow: ViewStyle = { shadowColor: '#1a160c', shadowOpacity: 0.07, shadowRadius: 10, shadowOffset: { width: 0, height: 2 }, elevation: Platform.OS === 'android' ? 2 : 0 };
+    // Palettes whose light card equals the canvas (ink-navy, ocean, forest, sunset, derived ones) cannot rely on the
+    // shadow alone: add a fine divider edge there. Vereinsblau (warm canvas, white card) stays borderless.
+    return contrastRatio(card, background) < 1.05 ? { ...shadow, borderWidth: 1, borderColor: divider } : shadow;
+  }, [dark, level, primary, card, background, divider]);
 }
 
 function hero(color: string, opacity: number): ViewStyle {

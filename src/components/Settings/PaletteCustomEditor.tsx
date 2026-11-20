@@ -42,7 +42,7 @@ export default function PaletteCustomEditor({ customAnchors, onChange }: Palette
                             <TouchableOpacity accessibilityRole="button"
                                 key={key}
                                 onPress={() => setEditing({ mode, key })}
-                                className="flex-row items-center justify-between px-2 py-1.5 rounded bg-muted dark:bg-muted-dark border border-border dark:border-border-dark"
+                                className="flex-row items-center justify-between px-2 py-1.5 rounded-control bg-muted dark:bg-muted-dark border border-border dark:border-border-dark"
                             >
                                 <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark capitalize">{key}</Text>
                                 <View

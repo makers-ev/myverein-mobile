@@ -82,7 +82,7 @@ export const palettes = {
         },
         dark: {
             background: '#1e1e1e', foreground: '#dcddde',
-            card: '#2a2a2b', muted: '#2a2a2b', mutedForeground: '#9a9a9d',
+            card: '#2a2a2b', muted: '#2a2a2b', mutedForeground: '#a4a4a7',
             border: '#3a3a3c', divider: '#323234', borderControl: '#7a7a7c',
             primary: '#697586', primaryForeground: '#ffffff',
             primaryText: '#91a0b5', primarySoft: '#343538', primarySoftForeground: '#bcc5d2',
@@ -94,7 +94,7 @@ export const palettes = {
         label: 'Ocean',
         light: {
             background: '#ffffff', foreground: '#1b2733',
-            card: '#ffffff', muted: '#eef4f7', mutedForeground: '#5b7285',
+            card: '#ffffff', muted: '#eef4f7', mutedForeground: '#546b7e',
             border: '#dde7ec', divider: '#eef3f6', borderControl: '#7b8e9d',
             primary: '#0e7490', primaryForeground: '#ffffff',
             primaryText: '#0e7490', primarySoft: '#e7f1f4', primarySoftForeground: '#0b576c',

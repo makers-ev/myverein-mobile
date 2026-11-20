@@ -1,5 +1,5 @@
 import React, { createContext, useContext, type ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, type ViewStyle } from 'react-native';
 import { ChevronRight, type LucideIcon } from 'lucide-react-native';
 
 import { useThemeColors } from '@/theme/colors';
@@ -41,9 +41,8 @@ interface Props {
  * 52pt high and grows with the text. The chevron appears ONLY when the row navigates (rule k). Inside a `ListSection`
  * it shares the section surface; on its own it draws its own card.
  */
-export default function ListRow({ title, hint, onPress, icon: Icon, leading, count, countTone = 'quiet', value, trailing, destructive, noChevron, accessibilityHint, badge }: Props) {
+function RowView({ shadow, title, hint, onPress, icon: Icon, leading, count, countTone = 'quiet', value, trailing, destructive, noChevron, accessibilityHint, badge }: Props & { shadow: ViewStyle | null }) {
   const colors = useThemeColors();
-  const shadow = useElevation('card');
   const sectionInset = useContext(InListSection);
   const inSection = sectionInset !== null;
   const n = count ?? badge ?? 0;
@@ -78,7 +77,7 @@ export default function ListRow({ title, hint, onPress, icon: Icon, leading, cou
     return (
       <View>
         {divider}
-        <View accessible accessibilityLabel={label} className={`flex-row items-center px-4 ${surface}`} style={[{ minHeight: 52 }, inSection ? null : shadow]}>
+        <View accessible accessibilityLabel={label} className={`flex-row items-center px-4 ${surface}`} style={[{ minHeight: 52 }, shadow]}>
           {body}
         </View>
       </View>
@@ -89,7 +88,7 @@ export default function ListRow({ title, hint, onPress, icon: Icon, leading, cou
       {divider}
       <PressScale
         className={`flex-row items-center px-4 ${surface}`}
-        style={[{ minHeight: 52 }, inSection ? null : shadow]}
+        style={[{ minHeight: 52 }, shadow]}
         scale={0.99}
         onPress={onPress}
         accessibilityRole="button"
@@ -100,4 +99,15 @@ export default function ListRow({ title, hint, onPress, icon: Icon, leading, cou
       </PressScale>
     </View>
   );
+}
+
+/** Standalone rows carry their own card shadow; the hook only runs here, never for the many rows inside a `ListSection`. */
+function StandaloneRow(props: Props) {
+  const shadow = useElevation('card');
+  return <RowView {...props} shadow={shadow} />;
+}
+
+export default function ListRow(props: Props) {
+  const inSection = useContext(InListSection) !== null;
+  return inSection ? <RowView {...props} shadow={null} /> : <StandaloneRow {...props} />;
 }

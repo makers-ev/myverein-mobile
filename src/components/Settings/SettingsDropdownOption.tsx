@@ -72,7 +72,7 @@ export function SettingsDropdownOption({
                 keyExtractor={(item) => item.value}
                 renderItem={({ item }) => (
                   <TouchableOpacity accessibilityRole="button"
-                    className={`flex-row justify-between items-center py-2 px-3 rounded ${
+                    className={`flex-row justify-between items-center py-2 px-3 rounded-control ${
                       selectedValue === item.value ? "bg-muted dark:bg-muted-dark" : ""
                     }`}
                     onPress={() => handleOptionSelect(item)}

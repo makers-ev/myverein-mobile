@@ -728,7 +728,7 @@ function SecuritySection({
                             {t('settings.2fa-verify-prompt')}
                         </Text>
                         {totpUri && (
-                            <Text className="bg-muted dark:bg-muted-dark rounded p-2 text-xs mb-2" selectable>
+                            <Text className="bg-muted dark:bg-muted-dark rounded-tile p-2 text-xs mb-2" selectable>
                                 {totpUri}
                             </Text>
                         )}
