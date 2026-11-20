@@ -64,7 +64,7 @@ export default function MyApplicationsStatus({ open, decided, phase, errorKey, d
         <View className="mt-2">
           <Text className="text-[13px] font-medium text-muted-foreground dark:text-muted-foreground-dark">{t('forms.apply.status.openTitle')}</Text>
           {open.map((a) => (
-            <View key={a.id} className="mt-2 rounded-lg border border-border dark:border-border-dark p-3">
+            <View key={a.id} className="mt-2 rounded-control border border-border dark:border-border-dark p-3">
               <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">{clubLabel(a.club)}</Text>
               <Text className="text-xs mt-0.5 text-muted-foreground dark:text-muted-foreground-dark">{t(forWhom(a.onBehalfOf))}</Text>
               <View className="flex-row items-center mt-1" style={{ gap: 6 }}>
@@ -78,7 +78,7 @@ export default function MyApplicationsStatus({ open, decided, phase, errorKey, d
                 disabled={disabled}
                 accessibilityRole="button"
                 accessibilityLabel={t('forms.apply.status.resumeA11y', { club: clubLabel(a.club) })}
-                className={`self-start mt-2 rounded-lg bg-primary dark:bg-primary-dark px-4 items-center justify-center ${disabled ? 'opacity-60' : ''}`}
+                className={`self-start mt-2 rounded-control bg-primary dark:bg-primary-dark px-4 items-center justify-center ${disabled ? 'opacity-60' : ''}`}
                 style={{ minHeight: 44 }}
               >
                 <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('forms.apply.status.resume')}</Text>
@@ -95,7 +95,7 @@ export default function MyApplicationsStatus({ open, decided, phase, errorKey, d
             const Icon = d.status === 'accepted' ? CheckCircle2 : d.status === 'rejected' ? XCircle : Clock;
             const tone = d.status === 'accepted' ? colors.success : d.status === 'rejected' ? colors.destructive : colors.mutedForeground;
             return (
-              <View key={d.id} className="mt-2 rounded-lg border border-border dark:border-border-dark p-3">
+              <View key={d.id} className="mt-2 rounded-control border border-border dark:border-border-dark p-3">
                 <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">{clubLabel(d.club)}</Text>
                 <Text className="text-xs mt-0.5 text-muted-foreground dark:text-muted-foreground-dark">{t(forWhom(d.onBehalfOf))}</Text>
                 <View className="flex-row items-center mt-1" style={{ gap: 6 }}>
@@ -105,7 +105,7 @@ export default function MyApplicationsStatus({ open, decided, phase, errorKey, d
                   </Text>
                 </View>
                 {d.status === 'rejected' && d.decisionNote ? (
-                  <View className="mt-2 rounded-lg bg-muted dark:bg-muted-dark p-3">
+                  <View className="mt-2 rounded-control bg-muted dark:bg-muted-dark p-3">
                     <View className="flex-row items-center" style={{ gap: 6 }}>
                       <MessageSquare size={14} color={colors.mutedForeground} />
                       <Text className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground-dark">{t('forms.apply.status.note')}</Text>

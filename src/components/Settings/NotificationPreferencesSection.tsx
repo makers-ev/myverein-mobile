@@ -6,6 +6,7 @@ import { useThemeColors } from '@/theme/colors';
 import NotificationCatalogInfo from '@/components/Settings/NotificationCatalogInfo';
 import PushDeviceSection from '@/components/push/PushDeviceSection';
 import { useNotificationPreferences, type PreferenceCategory } from '@/hooks/useNotificationPreferences';
+import Surface from '@/components/ui/Surface';
 
 /**
  * Notification settings (Wave 9 M4): category x channel matrix from
@@ -27,7 +28,7 @@ export default function NotificationPreferencesSection({ clubId }: { clubId?: st
   };
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
+    <Surface className="p-4 mb-4">
       <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">{t('settings.section-notifications')}</Text>
       <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mt-0.5 mb-1">{t('settings.notifications.description')}</Text>
       <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1" testID="notification-scope-note">
@@ -77,7 +78,7 @@ export default function NotificationPreferencesSection({ clubId }: { clubId?: st
 
             <NotificationCatalogInfo />
 
-            <View className="bg-muted dark:bg-muted-dark rounded-xl p-3">
+            <View className="bg-muted dark:bg-muted-dark rounded-control p-3">
               <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mb-0.5">{t('settings.notifications.mandatory.title')}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('settings.notifications.mandatory.body')}</Text>
             </View>
@@ -85,6 +86,6 @@ export default function NotificationPreferencesSection({ clubId }: { clubId?: st
         )}
         {saveError ? <Text className="text-destructive dark:text-destructive-dark text-xs mt-2">{t('settings.notifications.save-error')}</Text> : null}
       </View>
-    </View>
+    </Surface>
   );
 }

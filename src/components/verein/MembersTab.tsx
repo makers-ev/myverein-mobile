@@ -26,6 +26,7 @@ import CredentialOverview from './CredentialOverview';
 import MemberStatsCard from './MemberStatsCard';
 import MemberAvatar from './MemberAvatar';
 import MemberDetailSheet, { categoryLabel, formatDay } from './MemberDetailSheet';
+import Surface from '@/components/ui/Surface';
 
 const SEARCH_DEBOUNCE_MS = 350;
 const PHOTO_REFRESH_MS = 10_000;
@@ -220,7 +221,7 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
       {isManager ? (
         <View className="mb-3">
           <TextInput
-            className="border border-border-control dark:border-border-control-dark bg-card dark:bg-card-dark rounded-[10px] px-3 text-foreground dark:text-foreground-dark text-[17px]"
+            className="border border-border-control dark:border-border-control-dark bg-card dark:bg-card-dark rounded-control px-3 text-foreground dark:text-foreground-dark text-[17px]"
             style={{ minHeight: 48 }}
             value={search}
             onChangeText={setSearch}
@@ -269,7 +270,7 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-2 px-1" accessibilityLiveRegion="polite" style={{ fontVariant: ['tabular-nums'] }}>
             {t('verein.members.count', { shown: members.length, total })}
           </Text>
-          <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] overflow-hidden mb-3">
+          <Surface className="overflow-hidden mb-3">
             {members.map((m, i) => (
               <MemberRow
                 key={m.id}
@@ -280,7 +281,7 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
                 onPhotoExpired={refreshForPhotos}
               />
             ))}
-          </View>
+          </Surface>
           {loadMoreError ? (
             <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
               {t('verein.members.load-more.error')}
@@ -290,7 +291,7 @@ export default function MembersTab({ clubId, memberId }: { clubId: string; membe
             <TouchableOpacity
               onPress={() => void loadMore()}
               disabled={loadingMore}
-              className="items-center justify-center rounded-[10px] border border-border-control dark:border-border-control-dark bg-card dark:bg-card-dark"
+              className="items-center justify-center rounded-control border border-border-control dark:border-border-control-dark bg-card dark:bg-card-dark"
               style={{ minHeight: 48 }}
               accessibilityRole="button"
               accessibilityLabel={t('verein.members.load-more')}

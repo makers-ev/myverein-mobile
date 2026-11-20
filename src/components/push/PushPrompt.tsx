@@ -4,6 +4,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { usePush } from '@/notifications/PushProvider';
 import Button from '@/components/ui/Button';
+import Surface from '@/components/ui/Surface';
 
 /**
  * One-time hint on the club inbox (after the member has seen it for the first time): explains push
@@ -15,7 +16,7 @@ export default function PushPrompt() {
   if (!promptVisible) return null;
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-3 mb-3">
+    <Surface className="p-3 mb-3">
       <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('push.prompt.title')}</Text>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">{t('push.prompt.body')}</Text>
       <View className="flex-row mt-2" style={{ gap: 8 }}>
@@ -27,6 +28,6 @@ export default function PushPrompt() {
           <Text className="text-muted-foreground dark:text-muted-foreground-dark font-semibold">{t('push.not-now')}</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </Surface>
   );
 }

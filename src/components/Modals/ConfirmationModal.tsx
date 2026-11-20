@@ -39,7 +39,7 @@ export default function ConfirmationModal({
         onPress={onClose}
         activeOpacity={1}
       >
-        <View className="bg-white rounded-lg p-5 max-w-xs">
+        <View className="bg-white rounded-control p-5 max-w-xs">
           <Text className={`text-lg font-semibold text-center mb-4 ${titleColor}`}>
             {title}
           </Text>

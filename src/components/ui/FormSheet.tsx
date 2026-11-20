@@ -41,7 +41,7 @@ export default function FormSheet({
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(11,12,15,0.48)' }}>
         <Pressable className="flex-1" onPress={onClose} accessibilityLabel={t('ui.cancel')} />
-        <SafeAreaView edges={['bottom']} className="bg-card dark:bg-card-dark rounded-t-[20px]" style={{ maxHeight: '90%' }}>
+        <SafeAreaView edges={['bottom']} className="bg-card dark:bg-card-dark rounded-t-sheet" style={{ maxHeight: '90%' }}>
           <View className="items-center pt-2">
             <View className="w-10 h-1 rounded-full bg-border-control dark:bg-border-control-dark" />
           </View>
@@ -65,7 +65,7 @@ export default function FormSheet({
             {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-2">{error}</Text> : null}
           </KeyboardAwareScrollView>
 
-          <View className="flex-row px-5 pb-4 pt-3 border-t border-border dark:border-border-dark" style={{ gap: 10 }}>
+          <View className="flex-row px-5 pb-4 pt-3 border-t border-divider dark:border-divider-dark" style={{ gap: 10 }}>
             <View className="flex-1">
               <Button block variant="secondary" label={cancelLabel ?? t('ui.cancel')} onPress={onClose} />
             </View>
@@ -93,4 +93,4 @@ export function Field({ label, children }: { label: string; children: React.Reac
 
 /** Shared TextInput className so all form inputs look alike. */
 export const inputClassName =
-  'border border-border-control dark:border-border-control-dark bg-card dark:bg-card-dark rounded-[10px] px-3 py-3 min-h-[48px] text-foreground dark:text-foreground-dark text-[17px]';
+  'border border-border-control dark:border-border-control-dark bg-card dark:bg-card-dark rounded-control px-3 py-3 min-h-[48px] text-foreground dark:text-foreground-dark text-[17px]';

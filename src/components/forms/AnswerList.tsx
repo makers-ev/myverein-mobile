@@ -17,7 +17,7 @@ export default function AnswerList({ answers }: { answers: readonly RenderedAnsw
   return (
     <View style={{ gap: 8 }}>
       {answers.map((a) => (
-        <View key={a.key} className="rounded-lg border border-border dark:border-border-dark px-3 py-2">
+        <View key={a.key} className="rounded-control border border-border dark:border-border-dark px-3 py-2">
           <Text className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground-dark">{a.label}</Text>
           {a.redacted ? (
             <View className="flex-row items-center mt-0.5" style={{ gap: 6 }} accessible accessibilityLabel={`${a.label}: ${t('forms.review.redacted')}`}>

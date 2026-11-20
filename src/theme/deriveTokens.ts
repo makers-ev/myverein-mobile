@@ -74,6 +74,7 @@ export function deriveTokens({ background, foreground, primary }: PaletteAnchors
         muted,
         mutedForeground,
         border: mix(background, foreground, 0.16),
+        divider: mix(background, foreground, dark ? 0.1 : 0.08),
         borderControl,
         primary: fill,
         primaryForeground: foregroundFor(fill),

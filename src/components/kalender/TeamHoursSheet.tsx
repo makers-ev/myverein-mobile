@@ -58,7 +58,7 @@ export default function TeamHoursSheet({ visible, onClose, clubId }: Props) {
             {withAmounts && typeof report.totals.amountCents === 'number' ? ` · ${formatEuro(report.totals.amountCents, language)}` : ''}
           </Text>
           {report.people.map((p) => (
-            <View key={p.clubMemberId} className="py-2 border-b border-border dark:border-border-dark" accessible>
+            <View key={p.clubMemberId} className="py-2 border-b border-divider dark:border-divider-dark" accessible>
               <Text className="text-foreground dark:text-foreground-dark text-sm">
                 {p.displayName} · {formatDuration(p.minutes)}
               </Text>

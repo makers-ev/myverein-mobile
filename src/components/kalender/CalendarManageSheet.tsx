@@ -11,6 +11,7 @@ import type { Department } from '@/hooks/useClubInfo';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 import { ColorChip } from './EventSheet';
 import Button from '@/components/ui/Button';
+import Surface from '@/components/ui/Surface';
 
 const ROLE_TYPES = [
   'vorsitz',
@@ -77,7 +78,7 @@ export default function CalendarManageSheet({ visible, onClose, clubId, calendar
         />
       ))}
 
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mt-2">
+      <Surface className="p-4 mt-2">
         <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('kalender.manage.create')}</Text>
         <Field label={t('kalender.manage.name')}>
           <TextInput
@@ -94,7 +95,7 @@ export default function CalendarManageSheet({ visible, onClose, clubId, calendar
           </Field>
         ) : null}
         <Button block label={t('kalender.manage.create')} onPress={() => void handleCreate()} loading={creating} disabled={!name.trim()} />
-      </View>
+      </Surface>
     </FormSheet>
   );
 }
@@ -192,7 +193,7 @@ function CalendarCard({
   const grantedDepartments = new Set(grants?.map((g) => g.departmentId));
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] mb-3 overflow-hidden">
+    <Surface className="mb-3 overflow-hidden">
       <TouchableOpacity accessibilityRole="button" onPress={onToggle} className="flex-row items-center p-3" style={{ gap: 10 }}>
         <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: color }} />
         <View className="flex-1">
@@ -210,7 +211,7 @@ function CalendarCard({
       </TouchableOpacity>
 
       {expanded ? (
-        <View className="px-3 pb-3 border-t border-border dark:border-border-dark pt-3">
+        <View className="px-3 pb-3 border-t border-divider dark:border-divider-dark pt-3">
           <Field label={t('kalender.manage.name')}>
             <View className="flex-row items-center" style={{ gap: 8 }}>
               <TextInput
@@ -322,6 +323,6 @@ function CalendarCard({
           )}
         </View>
       ) : null}
-    </View>
+    </Surface>
   );
 }

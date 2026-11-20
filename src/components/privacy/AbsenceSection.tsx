@@ -8,6 +8,7 @@ import { isNotFound, parseDayKey, privacyErrorKeyOr } from '@/lib/ward';
 import { useAbsences, type Absence, type AbsenceInput, type AbsenceSubject } from '@/hooks/useAbsences';
 import AbsenceSheet from './AbsenceSheet';
 import Button from '@/components/ui/Button';
+import Surface from '@/components/ui/Surface';
 
 interface Props {
   subject: AbsenceSubject;
@@ -70,7 +71,7 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
   };
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
+    <Surface className="p-4 mb-4">
       <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-base mb-2">
         {t('absence.title')}
       </Text>
@@ -103,7 +104,7 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
         </View>
       ) : (
         absences.map((a) => (
-          <View key={a.id} className="flex-row items-center border-t border-border dark:border-border-dark mt-3 pt-3" style={{ gap: 8 }}>
+          <View key={a.id} className="flex-row items-center border-t border-divider dark:border-divider-dark mt-3 pt-3" style={{ gap: 8 }}>
             <View className="flex-1">
               <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">
                 {t(`absence.kind.${a.kind}`)} - {period(a)}
@@ -120,6 +121,6 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
       )}
 
       <AbsenceSheet visible={sheetOpen} wardName={wardName} saving={saving} error={sheetError} onClose={() => !saving && setSheetOpen(false)} onSubmit={(i) => void submit(i)} />
-    </View>
+    </Surface>
   );
 }

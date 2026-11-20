@@ -34,7 +34,7 @@ export default function ActionSheet({ visible, title, onClose, groups }: Props) 
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View accessibilityViewIsModal className="flex-1 justify-end" style={{ backgroundColor: 'rgba(11,12,15,0.48)' }}>
         <Pressable className="flex-1" onPress={onClose} accessibilityRole="button" accessibilityLabel={t('ui.cancel')} />
-        <SafeAreaView edges={['bottom']} className="bg-background dark:bg-background-dark rounded-t-[20px]" style={{ maxHeight: '80%' }}>
+        <SafeAreaView edges={['bottom']} className="bg-background dark:bg-background-dark rounded-t-sheet" style={{ maxHeight: '80%' }}>
           <View className="items-center pt-2">
             <View className="w-10 h-1 rounded-full bg-border-control dark:bg-border-control-dark" />
           </View>

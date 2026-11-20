@@ -103,7 +103,7 @@ export default function DataRightsSection({ clubId }: { clubId: string }) {
             const open = isOpenRequest(r);
             const left = daysUntil(r.dueAt);
             return (
-              <View key={r.id} className="border-t border-border dark:border-border-dark py-2">
+              <View key={r.id} className="border-t border-divider dark:border-divider-dark py-2">
                 <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">
                   {t(`datenschutz.requests.kind.${r.kind}`)} - {t(`datenschutz.requests.status.${r.status}`)}
                 </Text>

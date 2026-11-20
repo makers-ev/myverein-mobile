@@ -69,9 +69,9 @@ export default function TwoFactorScreen({ onVerify, onCancel }: TwoFactorScreenP
           {t('twofactor.description')}
         </Text>
 
-        <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
+        <View className="bg-card dark:bg-card-dark p-5 rounded-card">
           <TextInput
-            className="bg-card dark:bg-card-dark rounded-lg p-3.5 text-2xl tracking-[8px] text-center text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-4"
+            className="bg-card dark:bg-card-dark rounded-control p-3.5 text-2xl tracking-[8px] text-center text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-4"
             placeholder={t('twofactor.placeholder')}
             placeholderTextColor={themeColors.mutedForeground}
             keyboardType="number-pad"

@@ -8,7 +8,7 @@ import { buildResolutionCorrection, validateResolutionDraft, type ResolutionCorr
 import type { MeetingResolution } from '@/hooks/useMeetingDetail';
 
 const inputClass =
-  'bg-muted dark:bg-muted-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark';
+  'bg-muted dark:bg-muted-dark rounded-control p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark';
 
 /** Inline "Beschluss korrigieren" form (`meetings:write`): edit values, mandatory Berichtigungsvermerk. */
 export default function ResolutionCorrection({
@@ -53,7 +53,7 @@ export default function ResolutionCorrection({
   };
 
   return (
-    <View className="mt-2 pt-3 border-t border-border dark:border-border-dark">
+    <View className="mt-2 pt-3 border-t border-divider dark:border-divider-dark">
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.resolutions.correct.hint')}</Text>
       <TextInput className={`${inputClass} mb-3`} value={description} onChangeText={setDescription} placeholder={t('treffen.resolutions.description')} placeholderTextColor={themeColors.mutedForeground} />
       {problems.required ? <Text className="text-destructive dark:text-destructive-dark text-xs mb-2">{t('treffen.resolutions.error.required')}</Text> : null}
@@ -96,7 +96,7 @@ export default function ResolutionCorrection({
       {error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error}</Text> : null}
       <View className="flex-row items-center" style={{ gap: 16 }}>
         <TouchableOpacity
-          className={`flex-1 bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${canSubmit ? '' : 'opacity-60'}`}
+          className={`flex-1 bg-primary dark:bg-primary-dark rounded-control py-2.5 items-center ${canSubmit ? '' : 'opacity-60'}`}
           onPress={() => void submit()}
           disabled={!canSubmit}
           accessibilityRole="button"

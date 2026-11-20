@@ -28,7 +28,7 @@ export default function WardSwitcher({ wards, selected, onSelect }: Props) {
             accessibilityState={{ selected: active, checked: active }}
             accessibilityLabel={[w.firstName ?? w.name, multiClub ? w.clubName : null, open].filter(Boolean).join(', ')}
             onPress={() => onSelect(wardKey(w))}
-            className={`rounded-2xl px-4 justify-center border ${
+            className={`rounded-card px-4 justify-center border ${
               active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'bg-card dark:bg-card-dark border-border dark:border-border-dark'
             }`}
             style={{ minHeight: 48 }}
@@ -42,7 +42,7 @@ export default function WardSwitcher({ wards, selected, onSelect }: Props) {
               </Text>
             ) : null}
             {open ? (
-              <View className="self-start mt-0.5 rounded-[10px] bg-destructive px-1.5">
+              <View className="self-start mt-0.5 rounded-control bg-destructive px-1.5">
                 <Text className="text-[10px] font-semibold text-white">{open}</Text>
               </View>
             ) : null}

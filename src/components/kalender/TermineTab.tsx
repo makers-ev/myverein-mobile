@@ -35,6 +35,7 @@ import EventParticipation from './EventParticipation';
 import { ApiError } from '@/lib/api';
 import DocsLink from '@/components/ui/DocsLink';
 import { DOCS_PATHS } from '@/lib/docsUrl';
+import Surface from '@/components/ui/Surface';
 
 interface Props {
   clubId: string;
@@ -58,12 +59,14 @@ function EventRow({ event, color, calendarName, rsvp, onPress, onAttendance }: {
   const when = formatTimeRange(event, language, t('termine.all-day'));
 
   return (
+    <Surface className="mb-2 overflow-hidden">
+    {/* Events are lightly highlighted: a very faint primary tint over the card surface, bar in the calendar colour. */}
     <PressScale
       accessibilityRole="button"
       accessibilityLabel={[event.title, when, calendarName, event.cancelled ? t('termine.cancelled') : null].filter(Boolean).join(', ')}
       onPress={onPress}
       scale={0.99}
-      className="flex-row bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] mb-2 overflow-hidden"
+      className={`flex-row ${event.cancelled ? '' : 'bg-primary-soft/40 dark:bg-primary-soft-dark/40'}`}
     >
       {/* Department colour as a 3pt bar; the calendar name next to the time explains it (no legend needed). */}
       <View style={{ width: 3, backgroundColor: event.cancelled ? themeColors.border : color }} />
@@ -105,6 +108,7 @@ function EventRow({ event, color, calendarName, rsvp, onPress, onAttendance }: {
         )}
       </View>
     </PressScale>
+    </Surface>
   );
 }
 

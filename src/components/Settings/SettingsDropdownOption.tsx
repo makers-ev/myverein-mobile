@@ -41,7 +41,7 @@ export function SettingsDropdownOption({
 
   return (
     <View>
-      <View className="self-stretch bg-muted dark:bg-muted-dark rounded-[10px]" style={{ minHeight: 52 }}>
+      <View className="self-stretch bg-muted dark:bg-muted-dark rounded-control" style={{ minHeight: 52 }}>
         <TouchableOpacity accessibilityRole="button" onPress={handlePress}>
           <Text className="px-4 py-3.5 text-[17px] leading-[22px] text-foreground dark:text-foreground-dark">
             {isDropdown && selectedValue && showSelectedValueInTitle
@@ -66,7 +66,7 @@ export function SettingsDropdownOption({
             onPress={() => setIsDropdownVisible(false)}
             activeOpacity={1}
           >
-            <View className="w-[200px] max-h-[300px] bg-card dark:bg-card-dark rounded-lg p-2 shadow-lg">
+            <View className="w-[200px] max-h-[300px] bg-card dark:bg-card-dark rounded-control p-2 shadow-lg">
               <FlatList
                 data={dropdownOptions}
                 keyExtractor={(item) => item.value}

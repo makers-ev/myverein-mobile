@@ -33,6 +33,7 @@ import Banner from '@/components/ui/Banner';
 import ErrorState from '@/components/ui/ErrorState';
 import FlowHeader from '@/components/ui/FlowHeader';
 import PressScale from '@/components/ui/PressScale';
+import Surface from '@/components/ui/Surface';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateClub'>;
 type Translate = (key: string, params?: Record<string, string | number>) => string;
@@ -44,7 +45,7 @@ const ALLOWED_MIME = ['image/jpeg', 'image/png'];
 
 const LABEL_CLASS = 'text-[13px] leading-[18px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark';
 const INPUT_CLASS =
-  'bg-card dark:bg-card-dark rounded-[10px] px-3 py-3 min-h-[48px] text-[17px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-4';
+  'bg-card dark:bg-card-dark rounded-control px-3 py-3 min-h-[48px] text-[17px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-4';
 
 interface FormState {
   clubName: string;
@@ -134,7 +135,7 @@ function SecondaryButton({ label, onPress, disabled }: { label: string; onPress:
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
-    <View className="px-4 py-3 border-b border-border dark:border-border-dark">
+    <View className="px-4 py-3 border-b border-divider dark:border-divider-dark">
       <Text className="text-[13px] leading-[18px] text-muted-foreground dark:text-muted-foreground-dark">{label}</Text>
       <Text className="text-[15px] leading-[22px] text-foreground dark:text-foreground-dark">{value}</Text>
     </View>
@@ -425,11 +426,10 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
             </Text>
 
             {documents.map((doc) => (
-              <View
+              <Surface
                 key={doc.id}
-                className="flex-row items-center bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-3 mb-2"
-                style={{ gap: 10 }}
-              >
+                className="flex-row items-center p-3 mb-2"
+                style={{ gap: 10 }}>
                 <View style={{ flex: 1 }}>
                   <Text className="text-sm font-semibold text-foreground dark:text-foreground-dark" numberOfLines={1}>
                     {doc.filename}
@@ -445,11 +445,11 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
                     <Trash2 size={20} strokeWidth={1.75} color={themeColors.destructive} />
                   </PressScale>
                 )}
-              </View>
+              </Surface>
             ))}
 
             {uploads.map((item) => (
-              <View key={item.localId} className="flex-row items-center bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-3 mb-2" style={{ gap: 10 }}>
+              <Surface key={item.localId} className="flex-row items-center p-3 mb-2" style={{ gap: 10 }}>
                 <View style={{ flex: 1 }}>
                   <Text className="text-sm font-semibold text-foreground dark:text-foreground-dark" numberOfLines={1}>
                     {item.name}
@@ -467,7 +467,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
                     <Trash2 size={20} strokeWidth={1.75} color={themeColors.mutedForeground} />
                   </PressScale>
                 )}
-              </View>
+              </Surface>
             ))}
 
             <Text className={`${LABEL_CLASS} mt-2`}>{t('create-club.docs.kind.label')}</Text>
@@ -505,7 +505,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
 
         {step === 3 && (
           <>
-            <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] overflow-hidden mb-5" style={{ marginBottom: 20 }}>
+            <Surface className="overflow-hidden mb-5" style={{ marginBottom: 20 }}>
             <SummaryRow label={t('create-club.name.label')} value={form.clubName.trim()} />
             <SummaryRow label={t('create-club.legal-form.label')} value={t(`create-club.legal-form.${form.legalForm}`)} />
             {isEv ? (
@@ -523,7 +523,7 @@ function Wizard({ registration, saveDraft, uploadDocument, removeDocument, submi
               label={t('create-club.summary.documents')}
               value={documents.map((d) => `${t(`create-club.doc-kind.${d.kind}`)} (${d.filename})`).join('\n')}
             />
-            </View>
+            </Surface>
 
             <Text className={LABEL_CLASS}>{t('create-club.role.label')}</Text>
             <View className="flex-row flex-wrap mb-2" style={{ gap: 8 }}>
@@ -600,16 +600,16 @@ function StatusView({
         ) : null}
 
         {(status === 'needs_info' || status === 'rejected') && registration.reviewNote ? (
-          <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
+          <Surface className="p-4 mb-4">
             <Text className="text-[13px] font-medium mb-1 text-muted-foreground dark:text-muted-foreground-dark">
               {t(status === 'rejected' ? 'create-club.status.reject-reason' : 'create-club.status.review-note')}
             </Text>
             <Text className="text-sm text-foreground dark:text-foreground-dark">{registration.reviewNote}</Text>
-          </View>
+          </Surface>
         ) : null}
 
         {status === 'approved' && registration.clubSlug ? (
-          <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
+          <Surface className="p-4 mb-4">
             <Text className="text-[13px] font-medium mb-1 text-muted-foreground dark:text-muted-foreground-dark">
               {t('create-club.status.slug')}
             </Text>
@@ -617,7 +617,7 @@ function StatusView({
             <Text className="text-xs mt-1 text-muted-foreground dark:text-muted-foreground-dark">
               {t('create-club.status.slug-hint')}
             </Text>
-          </View>
+          </Surface>
         ) : null}
 
         <View style={{ gap: 10 }}>

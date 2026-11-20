@@ -118,7 +118,7 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
     const own = requestOf(ride, subject, callerId);
     const key = ride.id;
     return (
-      <View key={ride.id} className="border border-border dark:border-border-dark rounded-xl p-3 mb-2">
+      <View key={ride.id} className="border border-border dark:border-border-dark rounded-control p-3 mb-2">
         <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">
           {ride.mine ? t('ride.mine') : (ride.driver.displayName ?? t('ride.driver-unknown'))}
         </Text>
@@ -207,11 +207,11 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
             <View>
               <Field label={t('ride.form.seats')}>
                 <View className="flex-row items-center" style={{ gap: 12 }}>
-                  <TouchableOpacity onPress={() => stepper(-1)} accessibilityRole="button" accessibilityLabel={t('reg.party.less')} className="border border-border dark:border-border-dark rounded-xl items-center justify-center" style={{ width: 48, height: 48 }}>
+                  <TouchableOpacity onPress={() => stepper(-1)} accessibilityRole="button" accessibilityLabel={t('reg.party.less')} className="border border-border dark:border-border-dark rounded-control items-center justify-center" style={{ width: 48, height: 48 }}>
                     <Minus size={18} color={themeColors.foreground} />
                   </TouchableOpacity>
                   <Text className="text-foreground dark:text-foreground-dark text-lg font-semibold">{draft.seats}</Text>
-                  <TouchableOpacity onPress={() => stepper(1)} accessibilityRole="button" accessibilityLabel={t('reg.party.more')} className="border border-border dark:border-border-dark rounded-xl items-center justify-center" style={{ width: 48, height: 48 }}>
+                  <TouchableOpacity onPress={() => stepper(1)} accessibilityRole="button" accessibilityLabel={t('reg.party.more')} className="border border-border dark:border-border-dark rounded-control items-center justify-center" style={{ width: 48, height: 48 }}>
                     <Plus size={18} color={themeColors.foreground} />
                   </TouchableOpacity>
                 </View>

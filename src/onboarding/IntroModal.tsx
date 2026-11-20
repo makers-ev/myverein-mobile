@@ -50,7 +50,7 @@ export default function IntroModal({ visible, onClose }: IntroModalProps) {
         <TouchableOpacity accessibilityRole="button" className="flex-1" onPress={onClose} activeOpacity={1} accessibilityElementsHidden importantForAccessibility="no" />
         <View
           accessibilityViewIsModal
-          className="bg-card dark:bg-card-dark rounded-[20px] px-6 pt-6 pb-6"
+          className="bg-card dark:bg-card-dark rounded-hero px-6 pt-6 pb-6"
           style={{ marginHorizontal: 16, marginBottom: navbarClearance, maxHeight: maxCardHeight }}
         >
           <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
@@ -61,7 +61,7 @@ export default function IntroModal({ visible, onClose }: IntroModalProps) {
           </Text>
 
           <View className="flex-row mb-5" style={{ gap: 12 }}>
-            <View className="w-12 h-12 rounded-xl items-center justify-center bg-primary/10 dark:bg-primary-dark/15">
+            <View className="w-12 h-12 rounded-tile items-center justify-center bg-primary/10 dark:bg-primary-dark/15">
               <Icon size={22} color={themeColors.primaryText} />
             </View>
             <View className="flex-1">

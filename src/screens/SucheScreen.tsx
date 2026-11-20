@@ -40,7 +40,7 @@ export default function SucheScreen() {
     // The stack header says "Suche"; the field is the first thing on the screen and takes the focus.
     <SafeAreaView edges={['bottom', 'left', 'right']} className="flex-1 bg-background dark:bg-background-dark">
       <View className="px-4 pt-3 pb-2">
-        <View className="flex-row items-center bg-muted dark:bg-muted-dark rounded-[10px] pl-3" style={{ minHeight: 44, gap: 8 }}>
+        <View className="flex-row items-center bg-muted dark:bg-muted-dark rounded-control pl-3" style={{ minHeight: 44, gap: 8 }}>
           <Search size={20} strokeWidth={1.75} color={themeColors.mutedForeground} />
           <TextInput
             autoFocus

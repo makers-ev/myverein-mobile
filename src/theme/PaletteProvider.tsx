@@ -27,6 +27,7 @@ const TOKEN_VAR_STEMS: Record<keyof TokenSet, string> = {
     muted: '--color-muted',
     mutedForeground: '--color-muted-foreground',
     border: '--color-border',
+    divider: '--color-divider',
     borderControl: '--color-border-control',
     primary: '--color-primary',
     primaryForeground: '--color-primary-foreground',

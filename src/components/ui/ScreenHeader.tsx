@@ -20,7 +20,7 @@ interface Props {
 }
 
 /**
- * Top bar (Figma `Top bar`). Large: club context line, serif Title/L with optional actions on the same row. Inline:
+ * Top bar (Figma `Top bar`). Large: club context line, bold Title/L with optional actions on the same row. Inline:
  * back button + Heading/M title for sub-screens. 16pt side gutter like the content below.
  */
 export default function ScreenHeader({ title, context, subtitle, actions, onBack }: Props) {

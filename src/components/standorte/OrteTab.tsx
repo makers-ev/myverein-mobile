@@ -15,6 +15,7 @@ import { useThrottledCallback } from '@/hooks/useThrottledCallback';
 import KeysSection from './KeysSection';
 import { LinkForm, LocationForm, WifiForm } from './LocationForms';
 import { EmptyState, IconButton, SectionCard, StatusChip } from './shared';
+import Surface from '@/components/ui/Surface';
 
 // Signed photo URLs expire; an image error triggers one refetch for fresh URLs, at most once per 10 s.
 const PHOTO_REFRESH_MS = 10_000;
@@ -33,10 +34,8 @@ function LocationPhotoPlaceholder({ className }: { className: string }) {
 
 function LocationCard({ location, onPress, onPhotoExpired }: { location: Location; onPress: () => void; onPhotoExpired: () => void }) {
   return (
-    <TouchableOpacity accessibilityRole="button"
-      onPress={onPress}
-      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] mb-4 overflow-hidden"
-    >
+    <Surface className="mb-4 overflow-hidden">
+    <TouchableOpacity accessibilityRole="button" onPress={onPress}>
       {location.photoUrl ? (
         <SignedImage
           uri={location.photoUrl}
@@ -56,6 +55,7 @@ function LocationCard({ location, onPress, onPhotoExpired }: { location: Locatio
         )}
       </View>
     </TouchableOpacity>
+    </Surface>
   );
 }
 
@@ -100,7 +100,7 @@ function WifiCard({ network, onEdit }: { network: WifiNetwork; onEdit?: () => vo
   const qrValue = network.qrPayload || buildWifiQrPayload(network.ssid, network.password, security);
 
   return (
-    <View className="border border-border dark:border-border-dark rounded-xl p-3 mb-3">
+    <View className="border border-border dark:border-border-dark rounded-control p-3 mb-3">
       <View className="flex-row items-center mb-1" style={{ gap: 8 }}>
         <Wifi size={16} color={themeColors.primaryText} />
         <Text className="flex-1 text-foreground dark:text-foreground-dark font-semibold text-sm">{network.label}</Text>
@@ -119,7 +119,7 @@ function WifiCard({ network, onEdit }: { network: WifiNetwork; onEdit?: () => vo
               {t('standorte.wifi.password')}: {network.password}
             </Text>
           )}
-          <View className="items-center bg-white p-3 rounded-lg self-start">
+          <View className="items-center bg-white p-3 rounded-control self-start">
             <QRCode value={qrValue} size={140} color="#000000" backgroundColor="#FFFFFF" />
           </View>
           <TouchableOpacity onPress={() => setShowQr(false)} accessibilityRole="button" hitSlop={8} className="self-start mt-2 flex-row items-center" style={{ gap: 4 }}>
@@ -141,7 +141,7 @@ function LinkRow({ link, isLast, onEdit }: { link: LocationLink; isLast: boolean
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   return (
-    <View className={`flex-row items-center py-2.5 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`} style={{ gap: 8 }}>
+    <View className={`flex-row items-center py-2.5 ${isLast ? '' : 'border-b border-divider dark:border-divider-dark'}`} style={{ gap: 8 }}>
       <TouchableOpacity accessibilityRole="button"
         onPress={() => Linking.openURL(link.url).catch((err) => console.error('Error opening URL:', err))}
         className="flex-1 flex-row items-center"
@@ -244,12 +244,12 @@ function LocationDetail({
       {location.photoUrl ? (
         <SignedImage
           uri={location.photoUrl}
-          className="w-full h-40 rounded-2xl mb-4"
+          className="w-full h-40 rounded-card mb-4"
           onExpired={onPhotoExpired}
-          fallback={<LocationPhotoPlaceholder className="w-full h-40 rounded-2xl mb-4" />}
+          fallback={<LocationPhotoPlaceholder className="w-full h-40 rounded-card mb-4" />}
         />
       ) : (
-        <LocationPhotoPlaceholder className="w-full h-40 rounded-2xl mb-4" />
+        <LocationPhotoPlaceholder className="w-full h-40 rounded-card mb-4" />
       )}
 
       <View className="flex-row items-center mb-4" style={{ gap: 8 }}>
@@ -262,7 +262,7 @@ function LocationDetail({
           <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">{location.address}</Text>
           <TouchableOpacity accessibilityRole="button"
             onPress={handleDirections}
-            className="flex-row items-center self-start bg-primary dark:bg-primary-dark rounded-lg py-2.5 px-4"
+            className="flex-row items-center self-start bg-primary dark:bg-primary-dark rounded-control py-2.5 px-4"
             style={{ gap: 6 }}
           >
             <MapPin size={14} color={themeColors.primaryForeground} />

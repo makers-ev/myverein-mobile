@@ -25,7 +25,7 @@ export function formatDay(value: string | null | undefined, locale: string): str
 function Row({ label, value }: { label: string; value: string | null | undefined }) {
   if (!value) return null;
   return (
-    <View className="py-2 border-b border-border dark:border-border-dark" accessible accessibilityLabel={`${label}: ${value}`}>
+    <View className="py-2 border-b border-divider dark:border-divider-dark" accessible accessibilityLabel={`${label}: ${value}`}>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold mb-0.5">{label}</Text>
       <Text className="text-foreground dark:text-foreground-dark text-sm">{value}</Text>
     </View>

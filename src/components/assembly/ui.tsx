@@ -5,17 +5,18 @@ import { Check, CircleAlert, CircleHelp, Clock, CloudOff, Ellipsis, Lock, X, typ
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import UiButton from '@/components/ui/Button';
+import Surface from '@/components/ui/Surface';
 
 export function Card({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
+    <Surface className="p-4 mb-4">
       {title ? (
         <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-2">
           {title}
         </Text>
       ) : null}
       {children}
-    </View>
+    </Surface>
   );
 }
 

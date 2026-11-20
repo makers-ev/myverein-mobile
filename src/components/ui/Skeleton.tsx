@@ -21,7 +21,7 @@ export default function Skeleton({ lines = 3, shape = 'lines', delayMs = 300 }: 
   const bar = 'rounded-md bg-muted dark:bg-muted-dark';
   return (
     <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ gap: 10, opacity: visible ? 1 : 0 }} className="py-2">
-      {shape === 'hero' ? <View className="rounded-[20px] bg-muted dark:bg-muted-dark" style={{ height: 156 }} /> : null}
+      {shape === 'hero' ? <View className="rounded-hero bg-muted dark:bg-muted-dark" style={{ height: 156 }} /> : null}
       {shape === 'rows'
         ? Array.from({ length: lines }, (_, i) => (
             <View key={i} className="flex-row items-center" style={{ gap: 12 }}>

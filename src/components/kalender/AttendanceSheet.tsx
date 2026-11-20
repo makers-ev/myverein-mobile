@@ -57,7 +57,7 @@ function StatusButtons({
             accessibilityRole="button"
             accessibilityLabel={`${entry.displayName}: ${t(`att.status.${status}`)}`}
             accessibilityState={{ selected, disabled }}
-            className={`flex-1 rounded-xl items-center justify-center border ${
+            className={`flex-1 rounded-control items-center justify-center border ${
               selected ? `${style.selected} border-transparent` : 'border-border dark:border-border-dark bg-card dark:bg-card-dark'
             } ${disabled ? 'opacity-60' : ''}`}
             style={{ minHeight: 48 }}
@@ -87,7 +87,7 @@ function Badge({ label, tone = 'muted' }: { label: string; tone?: 'muted' | 'war
 function EntryRow({ entry, disabled, onChange }: { entry: AttendanceEntry; disabled: boolean; onChange: (status: AttendanceStatus | null) => void }) {
   const { t } = useLanguage();
   return (
-    <View className="border border-border dark:border-border-dark rounded-xl p-3 mb-2">
+    <View className="border border-border dark:border-border-dark rounded-control p-3 mb-2">
       <View className="flex-row items-center flex-wrap mb-2" style={{ gap: 6 }}>
         <Text className="text-foreground dark:text-foreground-dark text-base font-semibold flex-shrink" accessibilityRole="header">
           {entry.displayName}
@@ -198,7 +198,7 @@ export default function AttendanceSheet({ visible, onClose, clubId, event }: Pro
           </View>
 
           {att.problem === 'network' ? (
-            <View className="border border-warning dark:border-warning-dark rounded-xl p-3 mb-3" accessibilityLiveRegion="polite">
+            <View className="border border-warning dark:border-warning-dark rounded-control p-3 mb-3" accessibilityLiveRegion="polite">
               <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('att.sync.network', { count: att.unsent })}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">{t('att.sync.network-hint')}</Text>
               <TouchableOpacity onPress={att.retryNow} accessibilityRole="button" className="self-start justify-center" style={{ minHeight: 44 }}>
@@ -233,7 +233,7 @@ export default function AttendanceSheet({ visible, onClose, clubId, event }: Pro
           )}
 
           {view.supervisionWarning ? (
-            <View className="border border-warning dark:border-warning-dark rounded-xl p-3 mb-3" accessibilityLiveRegion="polite">
+            <View className="border border-warning dark:border-warning-dark rounded-control p-3 mb-3" accessibilityLiveRegion="polite">
               <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('att.supervision.warning', { count: view.minorsPresent })}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">{t('att.supervision.disclaimer')}</Text>
             </View>
@@ -268,7 +268,7 @@ export default function AttendanceSheet({ visible, onClose, clubId, event }: Pro
                     disabled={disabled || att.busy || !guest.trim()}
                     accessibilityRole="button"
                     accessibilityLabel={t('att.guest.add')}
-                    className={`bg-primary dark:bg-primary-dark rounded-xl items-center justify-center ${disabled || att.busy || !guest.trim() ? 'opacity-50' : ''}`}
+                    className={`bg-primary dark:bg-primary-dark rounded-control items-center justify-center ${disabled || att.busy || !guest.trim() ? 'opacity-50' : ''}`}
                     style={{ minHeight: 44, minWidth: 48 }}
                   >
                     <UserPlus size={18} color={themeColors.primaryForeground} />
@@ -331,7 +331,7 @@ export default function AttendanceSheet({ visible, onClose, clubId, event }: Pro
 
           {canEdit && !view.closed ? (
             confirmClose ? (
-              <View className="border border-border dark:border-border-dark rounded-xl p-3 mb-3">
+              <View className="border border-border dark:border-border-dark rounded-control p-3 mb-3">
                 <Text className="text-foreground dark:text-foreground-dark text-sm mb-2">{t('att.close.message')}</Text>
                 {view.summary.offen > 0 ? (
                   <TouchableOpacity
@@ -360,7 +360,7 @@ export default function AttendanceSheet({ visible, onClose, clubId, event }: Pro
               <TouchableOpacity
                 onPress={() => setConfirmClose(true)}
                 accessibilityRole="button"
-                className="border border-border dark:border-border-dark rounded-xl items-center justify-center mb-3"
+                className="border border-border dark:border-border-dark rounded-control items-center justify-center mb-3"
                 style={{ minHeight: 48 }}
               >
                 <Text className="text-foreground dark:text-foreground-dark font-semibold">{t('att.close.open')}</Text>

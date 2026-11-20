@@ -86,7 +86,7 @@ export default function Button({ label, onPress, variant = 'primary', size = 'L'
       onPress={onPress}
       hitSlop={size === 'M' ? { top: 2, bottom: 2 } : undefined}
       style={{ minHeight: height }}
-      className={`rounded-[10px] ${v === 'tertiary' ? 'px-3' : size === 'L' ? 'px-5' : 'px-4'} justify-center items-center flex-row ${block ? 'self-stretch' : ''} ${box}`}
+      className={`rounded-control ${v === 'tertiary' ? 'px-3' : size === 'L' ? 'px-5' : 'px-4'} justify-center items-center flex-row ${block ? 'self-stretch' : ''} ${box}`}
     >
       <View className="flex-row items-center justify-center py-2.5" style={{ gap: 8 }}>
         {loading ? <ActivityIndicator size="small" color={iconColor} /> : Icon ? <Icon size={20} strokeWidth={1.75} color={iconColor} /> : null}

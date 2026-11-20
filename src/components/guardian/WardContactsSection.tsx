@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { telUrl } from '@/lib/ward';
 import type { useWardContacts } from '@/hooks/useWardToday';
+import Surface from '@/components/ui/Surface';
 
 function Action({ label, url }: { label: string; url: string }) {
   return (
@@ -12,7 +13,7 @@ function Action({ label, url }: { label: string; url: string }) {
       accessibilityRole="link"
       accessibilityLabel={label}
       onPress={() => void Linking.openURL(url).catch(() => undefined)}
-      className="rounded-xl border border-border dark:border-border-dark items-center justify-center px-4"
+      className="rounded-control border border-border dark:border-border-dark items-center justify-center px-4"
       style={{ minHeight: 44 }}
     >
       <Text className="text-primary dark:text-primary-dark font-semibold text-sm">{label}</Text>
@@ -44,7 +45,7 @@ export default function WardContactsSection({ contacts }: { contacts: ReturnType
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('heute.contacts.empty')}</Text>
       ) : (
         rows.map((c, i) => (
-          <View key={`${c.clubMemberId}-${c.department.id}-${i}`} className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-3 mb-2">
+          <Surface key={`${c.clubMemberId}-${c.department.id}-${i}`} className="p-3 mb-2">
             <Text className="text-foreground dark:text-foreground-dark text-base font-semibold">{c.name}</Text>
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">
               {[t(`heute.role.${c.roleType}`), c.department.name].join(' - ')}
@@ -57,7 +58,7 @@ export default function WardContactsSection({ contacts }: { contacts: ReturnType
             ) : (
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">{t('heute.contacts.none-shared')}</Text>
             )}
-          </View>
+          </Surface>
         ))
       )}
     </View>

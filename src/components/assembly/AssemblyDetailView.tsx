@@ -153,7 +153,7 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
                 value={search}
                 onChangeText={setSearch}
                 autoCorrect={false}
-                className="bg-card dark:bg-card-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-2 min-h-[48px]"
+                className="bg-card dark:bg-card-dark rounded-control p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-2 min-h-[48px]"
               />
               {holders.length === 0 ? <Body muted>{t('assembly.proxy.no-members')}</Body> : null}
               {holders.map((h) => (

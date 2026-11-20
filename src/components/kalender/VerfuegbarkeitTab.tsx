@@ -14,6 +14,7 @@ import ListSection from '@/components/ui/ListSection';
 import PressScale from '@/components/ui/PressScale';
 import Skeleton from '@/components/ui/Skeleton';
 import DateTimeField, { fromDateString, toDateString } from '@/components/ui/DateTimeField';
+import Surface from '@/components/ui/Surface';
 
 interface Props {
   clubId: string;
@@ -127,7 +128,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
 
   if (loading || !initialized) return <Skeleton shape="rows" lines={4} />;
 
-  const timeInput = 'bg-card dark:bg-card-dark rounded-[10px] px-2 text-[15px] text-center text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark';
+  const timeInput = 'bg-card dark:bg-card-dark rounded-control px-2 text-[15px] text-center text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark';
 
   return (
     <>
@@ -198,14 +199,14 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
       <Text accessibilityRole="header" className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-2 px-1">
         {t('verfuegbarkeit.exceptions.title')}
       </Text>
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] overflow-hidden">
+      <Surface className="overflow-hidden">
         {exceptions.length === 0 ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] p-4">{t('verfuegbarkeit.exceptions.empty')}</Text>
         ) : (
           exceptions.map((exc, i) => (
             <View
               key={exc.id}
-              className={`flex-row items-center pl-4 pr-1 ${i === 0 ? '' : 'border-t border-border dark:border-border-dark'}`}
+              className={`flex-row items-center pl-4 pr-1 ${i === 0 ? '' : 'border-t border-divider dark:border-divider-dark'}`}
               style={{ gap: 8, minHeight: 60 }}
             >
               <View className="flex-1 py-2">
@@ -232,7 +233,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
           ))
         )}
 
-        <View className={`p-4 ${exceptions.length === 0 ? 'border-t border-border dark:border-border-dark' : 'border-t border-border dark:border-border-dark'}`}>
+        <View className={`p-4 ${exceptions.length === 0 ? 'border-t border-divider dark:border-divider-dark' : 'border-t border-divider dark:border-divider-dark'}`}>
           <Text className="text-[13px] leading-[18px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('verfuegbarkeit.exceptions.date')}
           </Text>
@@ -258,7 +259,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
             {t('verfuegbarkeit.exceptions.note')}
           </Text>
           <TextInput
-            className="bg-card dark:bg-card-dark rounded-[10px] px-3 text-[17px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
+            className="bg-card dark:bg-card-dark rounded-control px-3 text-[17px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
             style={{ minHeight: 48 }}
             placeholderTextColor={themeColors.mutedForeground}
             value={excNote}
@@ -273,7 +274,7 @@ export default function VerfuegbarkeitTab({ clubId }: Props) {
 
           <Button block label={t('verfuegbarkeit.exceptions.add')} onPress={() => void handleAddException()} loading={excSaving} disabled={!excDate} />
         </View>
-      </View>
+      </Surface>
     </>
   );
 }

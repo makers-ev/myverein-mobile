@@ -91,7 +91,7 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
 
       {form.notice ? (
         <View
-          className="mt-3 rounded-lg border border-primary/40 dark:border-primary-dark/40 bg-primary/5 dark:bg-primary-dark/5 p-3"
+          className="mt-3 rounded-control border border-primary/40 dark:border-primary-dark/40 bg-primary/5 dark:bg-primary-dark/5 p-3"
           accessibilityRole="alert"
           accessibilityLiveRegion="polite"
         >

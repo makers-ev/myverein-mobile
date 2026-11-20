@@ -45,7 +45,7 @@ export default function EmailVerificationScreen({ email, onResend, onBackToLogin
           {t('email-verification.description')}
         </Text>
 
-        <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
+        <View className="bg-card dark:bg-card-dark p-5 rounded-card">
           <Text className="text-base font-semibold text-center mb-4 text-foreground dark:text-foreground-dark">
             {email}
           </Text>

@@ -7,6 +7,7 @@ import PressScale from '@/components/ui/PressScale';
 import { useAuth } from '@/auth/AuthProvider';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
+import { useElevation } from '@/theme/elevation';
 import { goToTab, navigationRef } from '@/navigation/navigationRef';
 import { tabForRoute, tabTarget, visibleTabs, type TabKey } from '@/navigation/tabs';
 import { getShowNavbarTitles } from '@/settings/appSettingsStorage';
@@ -109,12 +110,13 @@ interface TabBarProps {
 }
 
 /**
- * The bar itself (Figma `Bottom tab bar`), docked to the bottom edge: card surface with a hairline on top, no shadow.
+ * The bar itself (Figma `Bottom tab bar`), docked to the bottom edge: opaque card surface (no blur module in the project) with a fine light edge on top and a very soft upward shadow (none in dark mode).
  * The active tab gets a primary-soft pill behind its 22pt icon, the icon in `primaryText` and a semibold label; inactive
  * tabs are muted. Labels are Label/XS (capped at 130 % text size). The only count is the red unread count of
  * Mitteilungen (rule 4).
  */
 export function TabBar({ items, activeKey, showTitles, bottomInset, iconColors, onSelect }: TabBarProps) {
+    const shadow = useElevation('bar');
     return (
         <View
             pointerEvents="box-none"
@@ -124,8 +126,8 @@ export function TabBar({ items, activeKey, showTitles, bottomInset, iconColors, 
         >
             <View
                 accessibilityRole="tablist"
-                className="flex-row bg-card dark:bg-card-dark border-t border-border dark:border-border-dark px-2 pt-2"
-                style={{ paddingBottom: Math.max(bottomInset, 8) }}
+                className="flex-row bg-card dark:bg-card-dark border-t border-divider dark:border-divider-dark px-2 pt-2"
+                style={[{ paddingBottom: Math.max(bottomInset, 8) }, shadow]}
             >
                 {items.map((item) => {
                     const isActive = activeKey === item.key;

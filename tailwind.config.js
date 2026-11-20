@@ -26,6 +26,7 @@ module.exports = {
         accent: { DEFAULT: 'rgb(var(--color-accent) / <alpha-value>)', dark: 'rgb(var(--color-accent-dark) / <alpha-value>)' },
         'accent-foreground': { DEFAULT: 'rgb(var(--color-accent-foreground) / <alpha-value>)', dark: 'rgb(var(--color-accent-foreground-dark) / <alpha-value>)' },
         // "Vereinsheim" roles (design handoff 2026, section 3): see TokenSet in src/theme/palettes.ts.
+        divider: { DEFAULT: 'rgb(var(--color-divider) / <alpha-value>)', dark: 'rgb(var(--color-divider-dark) / <alpha-value>)' },
         'border-control': { DEFAULT: 'rgb(var(--color-border-control) / <alpha-value>)', dark: 'rgb(var(--color-border-control-dark) / <alpha-value>)' },
         'primary-text': { DEFAULT: 'rgb(var(--color-primary-text) / <alpha-value>)', dark: 'rgb(var(--color-primary-text-dark) / <alpha-value>)' },
         'primary-soft': { DEFAULT: 'rgb(var(--color-primary-soft) / <alpha-value>)', dark: 'rgb(var(--color-primary-soft-dark) / <alpha-value>)' },
@@ -45,6 +46,17 @@ module.exports = {
         info: { DEFAULT: '#1F5A8A', dark: '#8EC3EA' },
         'info-soft': { DEFAULT: '#E3EEF6', dark: '#1B2D3D' },
         scrim: '#0B0C0F',
+      },
+      // Radius tokens (Apple-style, rounded): never hard-code radii per file, use these classes.
+      // card 22 (cards, list sections, banners), control 16 (buttons, inputs, chips that are not pills),
+      // hero 28 (hero card, member card), sheet 28 (top corners of bottom sheets), tile 10 (icon tiles, date leaf).
+      // Pills and avatars keep `rounded-full`.
+      borderRadius: {
+        card: '22px',
+        control: '16px',
+        hero: '28px',
+        sheet: '28px',
+        tile: '10px',
       },
       // `text-primary` means "primary as text": it resolves to the `primaryText` token, which equals `primary` in light
       // mode and is the lighter, AA-readable variant in dark mode (the dark FILL is a mid-tone for white text and would

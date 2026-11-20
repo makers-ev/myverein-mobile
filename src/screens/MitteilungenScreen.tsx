@@ -25,6 +25,7 @@ import PushPrompt from '@/components/push/PushPrompt';
 import PushNotice from '@/components/push/PushNotice';
 import { usePushScreenTarget } from '@/notifications/usePushScreenTarget';
 import { lookupAnnouncement } from '@/notifications/pushLogic';
+import Surface from '@/components/ui/Surface';
 
 /** "09:12" today, "Gestern", else "Di., 3. Nov." -- short and tabular. */
 function when(iso: string | null, language: string, yesterday: string): string {
@@ -220,11 +221,11 @@ export default function MitteilungenScreen() {
               {shown.length === 0 && !hero ? (
                 <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] px-1 py-2">{t('mitteilungen.filter.unread-empty')}</Text>
               ) : shown.length === 0 ? null : (
-                <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] overflow-hidden">
+                <Surface className="overflow-hidden">
                   {shown.map((message, i) => (
                     <MessageRow key={message.id} divider={i > 0} message={message} onPress={() => handleOpen(message)} />
                   ))}
-                </View>
+                </Surface>
               )}
             </>
           )}

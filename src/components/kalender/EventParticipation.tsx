@@ -48,7 +48,7 @@ function Button({
   variant?: 'primary' | 'outline' | 'danger';
 }) {
   const themeColors = useThemeColors();
-  const base = 'rounded-xl items-center justify-center px-4';
+  const base = 'rounded-control items-center justify-center px-4';
   const style =
     variant === 'primary'
       ? 'bg-primary dark:bg-primary-dark'
@@ -89,7 +89,7 @@ function PartySizeStepper({ value, max, onChange, disabled }: { value: number; m
           disabled={disabled || value <= 1}
           accessibilityRole="button"
           accessibilityLabel={t('reg.party.less')}
-          className={`border border-border dark:border-border-dark rounded-xl items-center justify-center ${disabled || value <= 1 ? 'opacity-40' : ''}`}
+          className={`border border-border dark:border-border-dark rounded-control items-center justify-center ${disabled || value <= 1 ? 'opacity-40' : ''}`}
           style={{ width: 48, height: 48 }}
         >
           <Minus size={18} color={themeColors.foreground} />
@@ -102,7 +102,7 @@ function PartySizeStepper({ value, max, onChange, disabled }: { value: number; m
           disabled={disabled || value >= max}
           accessibilityRole="button"
           accessibilityLabel={t('reg.party.more')}
-          className={`border border-border dark:border-border-dark rounded-xl items-center justify-center ${disabled || value >= max ? 'opacity-40' : ''}`}
+          className={`border border-border dark:border-border-dark rounded-control items-center justify-center ${disabled || value >= max ? 'opacity-40' : ''}`}
           style={{ width: 48, height: 48 }}
         >
           <Plus size={18} color={themeColors.foreground} />
@@ -379,7 +379,7 @@ function GuestLinkCard({ clubId, event, info, onChanged }: { clubId: string; eve
 
   if (!info.allowGuests) {
     return (
-      <View className="border border-border dark:border-border-dark rounded-xl p-3">
+      <View className="border border-border dark:border-border-dark rounded-control p-3">
         <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('reg.guest.title')}</Text>
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">{t('reg.guest.not-allowed')}</Text>
       </View>
@@ -387,7 +387,7 @@ function GuestLinkCard({ clubId, event, info, onChanged }: { clubId: string; eve
   }
 
   return (
-    <View className="border border-border dark:border-border-dark rounded-xl p-3" style={{ gap: 6 }}>
+    <View className="border border-border dark:border-border-dark rounded-control p-3" style={{ gap: 6 }}>
       <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('reg.guest.title')}</Text>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('reg.guest.warning')}</Text>
       {fresh ? (

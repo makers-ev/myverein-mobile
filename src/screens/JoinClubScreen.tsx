@@ -5,6 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CheckCircle2, Clock } from 'lucide-react-native';
 
 import { useAuth } from '@/auth/AuthProvider';
+import { useElevation } from '@/theme/elevation';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
@@ -46,6 +47,7 @@ const CONFLICT_KEY: Record<Conflict, 'already-member' | 'application-pending'> =
  */
 export default function JoinClubScreen({ navigation }: Props) {
   const { t, language } = useLanguage();
+  const shadow = useElevation('card');
   const themeColors = useThemeColors();
   const { club, phase, loadErrorKey, refreshing, refreshFailed, load, reset, markSubmitted, withdraw } = useClubForm();
   const [slug, setSlug] = useState('');
@@ -212,14 +214,14 @@ export default function JoinClubScreen({ navigation }: Props) {
     >
       <FlowHeader title={t('join-club.title')} description={t('join-club.description')} onBack={() => navigation.goBack()} />
 
-      <View className={`mx-4 ${ready ? 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4' : ''}`}>
+      <View className={`mx-4 ${ready ? 'bg-card dark:bg-card-dark rounded-card p-4' : ''}`} style={ready ? shadow : undefined}>
         {!ready ? (
           <>
             <Text className="text-[13px] leading-[18px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
               {t('join-club.slug.label')}
             </Text>
             <TextInput
-              className={`bg-card dark:bg-card-dark rounded-[10px] px-3 text-[17px] text-foreground dark:text-foreground-dark border mb-3 ${
+              className={`bg-card dark:bg-card-dark rounded-control px-3 text-[17px] text-foreground dark:text-foreground-dark border mb-3 ${
                 loadErrorKey ? 'border-destructive dark:border-destructive-dark' : 'border-border-control dark:border-border-control-dark'
               }`}
               style={{ minHeight: 48 }}
@@ -302,7 +304,7 @@ export default function JoinClubScreen({ navigation }: Props) {
 
             {banner ? (
               <View
-                className="mt-4 rounded-lg border border-success/40 dark:border-success-dark/40 bg-success/10 dark:bg-success-dark/10 p-3"
+                className="mt-4 rounded-control border border-success/40 dark:border-success-dark/40 bg-success/10 dark:bg-success-dark/10 p-3"
                 accessibilityRole="alert"
                 accessibilityLiveRegion="polite"
               >
@@ -326,7 +328,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                   {t('forms.apply.open.title')}
                 </Text>
                 {club.submitted.map((s) => (
-                  <View key={s.id} className="mt-2 rounded-lg border border-border dark:border-border-dark p-3">
+                  <View key={s.id} className="mt-2 rounded-control border border-border dark:border-border-dark p-3">
                     <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">
                       {t(s.onBehalfOf === 'guardian' ? 'forms.apply.open.forChild' : 'forms.apply.open.forSelf')}
                     </Text>
@@ -373,7 +375,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                             onPress={() => void changeMode(m)}
                             accessibilityRole="radio"
                             accessibilityState={{ checked: active }}
-                            className={`px-4 rounded-[10px] items-center justify-center ${
+                            className={`px-4 rounded-control items-center justify-center ${
                               active ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark'
                             }`}
                             style={{ minHeight: 44 }}
@@ -394,7 +396,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                   </View>
                 ) : null}
                 {club.mode === 'guardian' ? (
-                  <View className="mt-3 rounded-lg border border-border dark:border-border-dark bg-muted/40 dark:bg-muted-dark/40 p-3">
+                  <View className="mt-3 rounded-control border border-border dark:border-border-dark bg-muted/40 dark:bg-muted-dark/40 p-3">
                     <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">{t('forms.apply.child.title')}</Text>
                     {(['data', 'consent', 'account'] as const).map((hint) => (
                       <Text key={hint} className="text-sm mt-1 text-muted-foreground dark:text-muted-foreground-dark">
@@ -406,7 +408,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                 ) : null}
                 {club.mode === 'guardian' && (user?.emailVerified === false || serverBlocked) ? (
                   <View
-                    className="mt-4 rounded-lg border border-warning/40 dark:border-warning-dark/40 bg-warning/10 dark:bg-warning-dark/10 p-3"
+                    className="mt-4 rounded-control border border-warning/40 dark:border-warning-dark/40 bg-warning/10 dark:bg-warning-dark/10 p-3"
                     accessibilityRole="alert"
                     accessibilityLiveRegion="polite"
                   >

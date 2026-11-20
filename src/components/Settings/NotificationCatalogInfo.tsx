@@ -30,7 +30,7 @@ export default function NotificationCatalogInfo() {
         <Chevron size={16} color={themeColors.primaryText} />
       </TouchableOpacity>
       {open ? (
-        <View className="bg-muted dark:bg-muted-dark rounded-xl p-3" style={{ gap: 8 }}>
+        <View className="bg-muted dark:bg-muted-dark rounded-control p-3" style={{ gap: 8 }}>
           {NOTIFICATION_INFO_GROUPS.map((group) => (
             <View key={group}>
               <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t(`settings.notifications.info.${group}.title`)}</Text>

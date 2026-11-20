@@ -109,7 +109,7 @@ export default function AppLockScreen({ pin, onUnlock }: AppLockScreenProps) {
                   accessibilityState={{ disabled: isLocked }}
                   disabled={isLocked}
                   onPress={() => (k === 'del' ? backspace() : press(k))}
-                  className={`flex-1 items-center justify-center rounded-lg ${k === 'del' ? '' : 'bg-card dark:bg-card-dark border border-border-control dark:border-border-control-dark'}`}
+                  className={`flex-1 items-center justify-center rounded-control ${k === 'del' ? '' : 'bg-card dark:bg-card-dark border border-border-control dark:border-border-control-dark'}`}
                   style={{ minHeight: 56 }}
                 >
                   {k === 'del' ? (

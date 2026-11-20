@@ -15,6 +15,7 @@ import { useMeetings } from '@/hooks/useMeetings';
 import { isAssemblyMeeting } from '@/lib/assembly';
 import { usePushScreenTarget } from '@/notifications/usePushScreenTarget';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+import { useElevation } from '@/theme/elevation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Versammlung'>;
 
@@ -25,6 +26,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Versammlung'>;
  */
 export default function VersammlungScreen({ route, navigation }: Props) {
   const { t, language } = useLanguage();
+  const shadow = useElevation('card');
   const { activeClub, loading: clubLoading } = useActiveClub();
   const clubId = activeClub?.clubId ?? null;
   // A tapped push may belong to another club: switch to it first, then drop the hand-over (the id arrives as a route param).
@@ -87,7 +89,8 @@ export default function VersammlungScreen({ route, navigation }: Props) {
               accessibilityRole="button"
               accessibilityLabel={`${m.title}, ${m.scheduledAt ? new Date(m.scheduledAt).toLocaleDateString(language) : t('treffen.scheduled-at.pending')}`}
               onPress={() => setMeetingId(m.id)}
-              className="min-h-[64px] bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-2"
+              className="min-h-[64px] bg-card dark:bg-card-dark rounded-card p-4 mb-2"
+              style={shadow}
             >
               <Text className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-1">{m.title}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px]" style={{ fontVariant: ['tabular-nums'] }}>{m.scheduledAt ? new Date(m.scheduledAt).toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' }) : t('treffen.scheduled-at.pending')}</Text>

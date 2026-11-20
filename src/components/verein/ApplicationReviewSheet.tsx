@@ -60,7 +60,7 @@ function Hint({ text, tone }: { text: string; tone: 'warning' | 'info' }) {
   const themeColors = useThemeColors();
   return (
     <View
-      className={`flex-row rounded-lg border p-3 ${
+      className={`flex-row rounded-control border p-3 ${
         tone === 'warning'
           ? 'border-warning/40 dark:border-warning-dark/40 bg-warning/10 dark:bg-warning-dark/10'
           : 'border-border dark:border-border-dark bg-muted/40 dark:bg-muted-dark/40'
@@ -205,7 +205,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
 
   const redactedAny = review?.answers.some((a) => a.redacted) || review?.files.some((f) => f.redacted);
   const inputClass =
-    'bg-muted dark:bg-muted-dark rounded-lg px-3 py-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark';
+    'bg-muted dark:bg-muted-dark rounded-control px-3 py-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark';
 
   const footer =
     review && pending ? (
@@ -363,7 +363,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
                   ) : (
                     <View style={{ gap: 8 }}>
                       {review.answers.map((a) => (
-                        <View key={a.key} className="rounded-lg border border-border dark:border-border-dark px-3 py-2">
+                        <View key={a.key} className="rounded-control border border-border dark:border-border-dark px-3 py-2">
                           <Text className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground-dark">{a.label}</Text>
                           {/* Plain text: answers are applicant input and are never interpreted as markup. */}
                           {a.redacted ? (
@@ -396,7 +396,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
                         const view = reviewFileView(f);
                         const shown = preview?.id === f.id;
                         return (
-                          <View key={f.id} className="rounded-lg border border-border dark:border-border-dark px-3 py-2">
+                          <View key={f.id} className="rounded-control border border-border dark:border-border-dark px-3 py-2">
                             <View className="flex-row items-center" style={{ gap: 8 }}>
                               <FileText size={16} color={themeColors.mutedForeground} />
                               <View className="flex-1">
@@ -413,7 +413,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
                                   onPress={() => (shown ? dropPreview() : void showImage(f))}
                                   disabled={fileBusy === f.id}
                                   accessibilityRole="button"
-                                  className="rounded-lg border border-border dark:border-border-dark px-3 items-center justify-center"
+                                  className="rounded-control border border-border dark:border-border-dark px-3 items-center justify-center"
                                   style={{ minHeight: 44 }}
                                 >
                                   {fileBusy === f.id ? (
@@ -461,7 +461,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
 
               <Section title={t('forms.review.consent')}>
                 {review.consent ? (
-                  <View className="rounded-lg border border-border dark:border-border-dark p-3">
+                  <View className="rounded-control border border-border dark:border-border-dark p-3">
                     <View className="flex-row items-center" style={{ gap: 8 }}>
                       <ShieldCheck size={16} color={themeColors.primaryText} />
                       <Text className="flex-1 text-sm font-medium text-foreground dark:text-foreground-dark">
@@ -627,7 +627,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
         </KeyboardAwareScrollView>
 
         {review || error ? (
-          <View className="px-5 pt-3 pb-3 border-t border-border dark:border-border-dark bg-background dark:bg-background-dark">{footer}</View>
+          <View className="px-5 pt-3 pb-3 border-t border-divider dark:border-divider-dark bg-background dark:bg-background-dark">{footer}</View>
         ) : null}
       </SafeAreaView>
     </Modal>

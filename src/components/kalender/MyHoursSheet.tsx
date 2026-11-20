@@ -51,7 +51,7 @@ export default function MyHoursSheet({ visible, onClose, clubId }: Props) {
           <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('time.my.confirmed', { duration: formatDuration(sum('bestaetigt')) })}</Text>
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{t('time.my.pending', { duration: formatDuration(sum('offen')) })}</Text>
           {finished.map((e) => (
-            <View key={e.id} className="py-2 border-b border-border dark:border-border-dark" accessible>
+            <View key={e.id} className="py-2 border-b border-divider dark:border-divider-dark" accessible>
               <Text className="text-foreground dark:text-foreground-dark text-sm">
                 {new Date(e.startedAt).toLocaleDateString(language, { day: 'numeric', month: 'short' })} · {formatDuration(e.minutes ?? 0)}
               </Text>

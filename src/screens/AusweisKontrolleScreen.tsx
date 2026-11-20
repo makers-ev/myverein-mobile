@@ -70,7 +70,7 @@ export default function AusweisKontrolleScreen() {
   } else {
     body = (
       <View className="flex-1">
-        <View className="flex-1 rounded-[20px] overflow-hidden bg-black" accessible accessibilityLabel={t('check.scan-hint')}>
+        <View className="flex-1 rounded-hero overflow-hidden bg-black" accessible accessibilityLabel={t('check.scan-hint')}>
           {focused ? (
             <CameraView
               style={{ flex: 1 }}

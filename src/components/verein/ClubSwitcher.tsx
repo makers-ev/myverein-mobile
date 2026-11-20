@@ -53,7 +53,7 @@ export default function ClubSwitcher({ onBeforeSwitch, variant = 'context' }: { 
           accessibilityRole="button"
           accessibilityLabel={`${t('club-switcher.open')}: ${name}`}
           onPress={() => setOpen(true)}
-          className="flex-row items-center self-start bg-muted dark:bg-muted-dark rounded-[10px] px-3 py-1.5 min-h-[44px]"
+          className="flex-row items-center self-start bg-muted dark:bg-muted-dark rounded-control px-3 py-1.5 min-h-[44px]"
           style={{ gap: 6, maxWidth: '100%' }}
         >
           <Text className="text-foreground dark:text-foreground-dark text-[13px] font-medium flex-shrink" numberOfLines={1}>
@@ -66,7 +66,7 @@ export default function ClubSwitcher({ onBeforeSwitch, variant = 'context' }: { 
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
         <View accessibilityViewIsModal className="flex-1 justify-end" style={{ backgroundColor: 'rgba(11,12,15,0.48)' }}>
           <Pressable className="flex-1" onPress={() => setOpen(false)} accessibilityRole="button" accessibilityLabel={t('ui.cancel')} />
-          <SafeAreaView edges={['bottom']} className="bg-card dark:bg-card-dark rounded-t-[20px]" style={{ maxHeight: '70%' }}>
+          <SafeAreaView edges={['bottom']} className="bg-card dark:bg-card-dark rounded-t-sheet" style={{ maxHeight: '70%' }}>
             <View className="items-center pt-2">
               <View className="w-10 h-1 rounded-full bg-border-control dark:bg-border-control-dark" />
             </View>
@@ -86,7 +86,7 @@ export default function ClubSwitcher({ onBeforeSwitch, variant = 'context' }: { 
                       if (onBeforeSwitch) onBeforeSwitch(proceed);
                       else proceed();
                     }}
-                    className={`flex-row items-center justify-between rounded-[14px] px-4 py-3 mb-2 min-h-[52px] ${
+                    className={`flex-row items-center justify-between rounded-card px-4 py-3 mb-2 min-h-[52px] ${
                       selected ? 'bg-primary-soft dark:bg-primary-soft-dark' : 'bg-muted dark:bg-muted-dark'
                     }`}
                   >

@@ -23,6 +23,7 @@ import FilterChip from '@/components/ui/FilterChip';
 import ListRow from '@/components/ui/ListRow';
 import ListSection from '@/components/ui/ListSection';
 import Skeleton from '@/components/ui/Skeleton';
+import Surface from '@/components/ui/Surface';
 
 interface Props {
   clubId: string;
@@ -30,10 +31,10 @@ interface Props {
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
+    <Surface className="p-4 mb-4">
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{title}</Text>
       {children}
-    </View>
+    </Surface>
   );
 }
 
@@ -120,12 +121,12 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
       )}
 
       {canWrite && showCreate ? (
-        <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
+        <Surface className="p-4">
           <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
             {t('treffen.title')}
           </Text>
           <TextInput
-            className="bg-card dark:bg-card-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
+            className="bg-card dark:bg-card-dark rounded-control p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
             placeholderTextColor={themeColors.mutedForeground}
             value={title}
             onChangeText={setTitle}
@@ -150,7 +151,7 @@ function MeetingList({ clubId, canWrite, onSelect }: { clubId: string; canWrite:
             </View>
           ) : null}
           <Button block label={t('treffen.submit')} onPress={() => void handleCreate()} loading={saving} disabled={!title.trim() || !type} />
-        </View>
+        </Surface>
       ) : null}
     </>
   );
@@ -210,7 +211,7 @@ function AgendaMinutes({
   return (
     <SectionCard title={t('treffen.agenda')}>
       <TextInput
-        className="bg-card dark:bg-card-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
+        className="bg-card dark:bg-card-dark rounded-control p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
         placeholderTextColor={themeColors.mutedForeground}
         value={agenda}
         onChangeText={setAgenda}
@@ -219,7 +220,7 @@ function AgendaMinutes({
       />
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-1">{t('treffen.minutes')}</Text>
       <TextInput
-        className="bg-card dark:bg-card-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
+        className="bg-card dark:bg-card-dark rounded-control p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
         placeholderTextColor={themeColors.mutedForeground}
         value={minutes}
         onChangeText={setMinutes}
@@ -395,7 +396,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
           {rsvpError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{rsvpError}</Text> : null}
           <View className="flex-row" style={{ gap: 10 }}>
             <TouchableOpacity accessibilityRole="button"
-              className={`bg-primary dark:bg-primary-dark rounded-lg py-2 px-4 ${rsvpSaving ? 'opacity-70' : ''}`}
+              className={`bg-primary dark:bg-primary-dark rounded-control py-2 px-4 ${rsvpSaving ? 'opacity-70' : ''}`}
               onPress={() => void handleRespond('zugesagt')}
               disabled={rsvpSaving}
             >
@@ -404,7 +405,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
               </Text>
             </TouchableOpacity>
             <TouchableOpacity accessibilityRole="button"
-              className={`bg-muted dark:bg-muted-dark rounded-lg py-2 px-4 ${rsvpSaving ? 'opacity-70' : ''}`}
+              className={`bg-muted dark:bg-muted-dark rounded-control py-2 px-4 ${rsvpSaving ? 'opacity-70' : ''}`}
               onPress={() => void handleRespond('abgesagt')}
               disabled={rsvpSaving}
             >
@@ -429,7 +430,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
             <View className="flex-1">
               <DateTimeField value={candidateInput} onChange={setCandidateInput} placeholder={t('treffen.overlap.candidate-placeholder')} />
             </View>
-            <TouchableOpacity accessibilityRole="button" className="bg-muted dark:bg-muted-dark rounded-lg py-2.5 px-3" onPress={handleAddCandidate}>
+            <TouchableOpacity accessibilityRole="button" className="bg-muted dark:bg-muted-dark rounded-control py-2.5 px-3" onPress={handleAddCandidate}>
               <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold">{t('treffen.overlap.add-candidate')}</Text>
             </TouchableOpacity>
           </View>
@@ -437,7 +438,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
           {overlapError ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-2">{overlapError}</Text> : null}
 
           <TouchableOpacity accessibilityRole="button"
-            className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${overlapChecking || candidates.length === 0 ? 'opacity-70' : ''}`}
+            className={`bg-primary dark:bg-primary-dark rounded-control py-2.5 items-center mt-3 ${overlapChecking || candidates.length === 0 ? 'opacity-70' : ''}`}
             onPress={() => void handleCheckOverlap()}
             disabled={overlapChecking || candidates.length === 0}
           >
@@ -455,7 +456,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
               {overlapResults.map((result) => {
                 const available = result.availability.filter((a) => a.available).length;
                 return (
-                  <View key={result.candidate} className="py-2 border-t border-border dark:border-border-dark">
+                  <View key={result.candidate} className="py-2 border-t border-divider dark:border-divider-dark">
                     <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold mb-1">
                       {new Date(result.candidate).toLocaleString()}
                     </Text>
@@ -496,7 +497,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
           resolutions.map((r, i) => (
             <View
               key={r.id}
-              className={`py-2.5 ${i === resolutions.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}
+              className={`py-2.5 ${i === resolutions.length - 1 ? '' : 'border-b border-divider dark:border-divider-dark'}`}
             >
               <Text className="text-foreground dark:text-foreground-dark text-sm font-medium mb-1">{r.description}</Text>
               <View className="flex-row items-center" style={{ gap: 10 }}>
@@ -535,9 +536,9 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
         )}
 
         {!canWrite ? null : showResolutionForm ? (
-          <View className="mt-3 pt-3 border-t border-border dark:border-border-dark">
+          <View className="mt-3 pt-3 border-t border-divider dark:border-divider-dark">
             <TextInput
-              className="bg-card dark:bg-card-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
+              className="bg-card dark:bg-card-dark rounded-control p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
               placeholder={t('treffen.resolutions.description')}
               placeholderTextColor={themeColors.mutedForeground}
               value={resDescription}
@@ -549,7 +550,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
                   {t('treffen.resolutions.votes-for')}
                 </Text>
                 <TextInput
-                  className="bg-card dark:bg-card-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
+                  className="bg-card dark:bg-card-dark rounded-control p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
                   keyboardType="number-pad"
                   value={resFor}
                   onChangeText={setResFor}
@@ -560,7 +561,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
                   {t('treffen.resolutions.votes-against')}
                 </Text>
                 <TextInput
-                  className="bg-card dark:bg-card-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
+                  className="bg-card dark:bg-card-dark rounded-control p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
                   keyboardType="number-pad"
                   value={resAgainst}
                   onChangeText={setResAgainst}
@@ -571,7 +572,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
                   {t('treffen.resolutions.votes-abstain')}
                 </Text>
                 <TextInput
-                  className="bg-card dark:bg-card-dark rounded-lg p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
+                  className="bg-card dark:bg-card-dark rounded-control p-2.5 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
                   keyboardType="number-pad"
                   value={resAbstain}
                   onChangeText={setResAbstain}
@@ -582,7 +583,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
               {t('treffen.resolutions.result')}
             </Text>
             <TextInput
-              className="bg-card dark:bg-card-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
+              className="bg-card dark:bg-card-dark rounded-control p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
               placeholder={t('treffen.resolutions.result.placeholder')}
               placeholderTextColor={themeColors.mutedForeground}
               value={resResult}
@@ -590,7 +591,7 @@ function MeetingDetail({ clubId, meetingId, onBack }: { clubId: string; meetingI
             />
             {resError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{resError}</Text> : null}
             <TouchableOpacity accessibilityRole="button"
-              className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${resSaving ? 'opacity-70' : ''}`}
+              className={`bg-primary dark:bg-primary-dark rounded-control py-2.5 items-center ${resSaving ? 'opacity-70' : ''}`}
               onPress={() => void handleCreateResolution()}
               disabled={resSaving}
             >

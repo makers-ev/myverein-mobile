@@ -9,6 +9,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
 import TabChips from '@/components/ui/TabChips';
 import { useNotifications, useNotificationMutations, type NotificationItem } from '@/hooks/useNotifications';
+import Surface from '@/components/ui/Surface';
 
 type Tab = 'unread' | 'read';
 
@@ -50,7 +51,7 @@ function NotificationRow({ n, first, onChange }: { n: NotificationItem; first: b
   };
 
   return (
-    <View className={`px-4 pt-3 pb-1 ${first ? '' : 'border-t border-border dark:border-border-dark'}`}>
+    <View className={`px-4 pt-3 pb-1 ${first ? '' : 'border-t border-divider dark:border-divider-dark'}`}>
       <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold">{title}</Text>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] mt-0.5">{body}</Text>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-1" style={{ fontVariant: ['tabular-nums'] }}>
@@ -93,11 +94,11 @@ export default function NotificationsScreen() {
         ) : notifications.length === 0 ? (
           <EmptyState icon={Bell} title={t(`notifications.empty.${tab}`)} />
         ) : (
-          <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] overflow-hidden">
+          <Surface className="overflow-hidden">
             {notifications.map((n, i) => (
               <NotificationRow key={n.id} n={n} first={i === 0} onChange={() => void refetch()} />
             ))}
-          </View>
+          </Surface>
         )}
       </ScrollView>
     </SafeAreaView>

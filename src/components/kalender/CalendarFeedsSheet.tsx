@@ -60,7 +60,7 @@ function NewLinkCard({ link, onDone }: { link: NewCalendarFeed; onDone: () => vo
   };
 
   return (
-    <View className="border border-primary dark:border-primary-dark rounded-xl p-3 mb-4" accessibilityLiveRegion="polite">
+    <View className="border border-primary dark:border-primary-dark rounded-control p-3 mb-4" accessibilityLiveRegion="polite">
       <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mb-1">{t('feeds.new.title')}</Text>
       <Text className="text-destructive dark:text-destructive-dark text-xs mb-2">{t('feeds.warning')}</Text>
       <Text selectable className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">
@@ -168,7 +168,7 @@ export default function CalendarFeedsSheet({ visible, onClose, clubId, calendars
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('feeds.list.empty')}</Text>
       ) : (
         feeds.map((feed) => (
-          <View key={feed.id} className="border border-border dark:border-border-dark rounded-xl p-3 mb-2">
+          <View key={feed.id} className="border border-border dark:border-border-dark rounded-control p-3 mb-2">
             <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{feed.label || t('feeds.unnamed')}</Text>
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{feed.calendarName ?? t('feeds.all-calendars')}</Text>
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">

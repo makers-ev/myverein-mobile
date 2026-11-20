@@ -16,6 +16,7 @@ import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import Skeleton from '@/components/ui/Skeleton';
+import Surface from '@/components/ui/Surface';
 
 const SUMMARY_ITEMS = 3;
 
@@ -26,7 +27,7 @@ function ApplicationRow({ application, onOpen, first }: { application: ClubAppli
   const title = application.subjectName ?? application.name ?? application.email ?? '—';
   const summary = application.summary.slice(0, SUMMARY_ITEMS);
   return (
-    <View className={`p-4 ${first ? '' : 'border-t border-border dark:border-border-dark'}`}>
+    <View className={`p-4 ${first ? '' : 'border-t border-divider dark:border-divider-dark'}`}>
       <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
         <View className="flex-1">
           <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-[17px] leading-[22px]">{title}</Text>
@@ -177,11 +178,11 @@ export default function ClubApplicationsScreen() {
           {!error && applications.length === 0 ? (
             <EmptyState icon={Inbox} align="center" title={t('verein.applications.empty')} />
           ) : (
-            <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] overflow-hidden">
+            <Surface className="overflow-hidden">
               {applications.map((a, i) => (
                 <ApplicationRow key={a.id} application={a} first={i === 0} onOpen={() => setOpened(a)} />
               ))}
-            </View>
+            </Surface>
           )}
 
           {pages > 1 ? (

@@ -17,7 +17,7 @@ export default function PushDeviceSection() {
   const { status, busy, enable, retry, openSystemSettings } = usePush();
 
   return (
-    <View className="bg-muted dark:bg-muted-dark rounded-xl p-3 mb-3">
+    <View className="bg-muted dark:bg-muted-dark rounded-control p-3 mb-3">
       <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mb-0.5">{t('push.status.title')}</Text>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t(`push.status.${status}`)}</Text>
       {status === 'registering' || busy ? <ActivityIndicator className="self-start mt-2" color={themeColors.primaryText} /> : null}

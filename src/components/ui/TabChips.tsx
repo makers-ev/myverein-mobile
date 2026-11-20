@@ -39,7 +39,7 @@ export default function TabChips<T extends string>({ tabs, active, onChange }: P
   }, [active, overflow]);
 
   return (
-    <View className="border-b border-border dark:border-border-dark" onLayout={(e) => setViewport(e.nativeEvent.layout.width)}>
+    <View className="border-b border-divider dark:border-divider-dark" onLayout={(e) => setViewport(e.nativeEvent.layout.width)}>
       <ScrollView
         ref={scroll}
         horizontal

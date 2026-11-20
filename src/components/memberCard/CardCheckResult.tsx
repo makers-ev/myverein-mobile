@@ -93,7 +93,7 @@ export default function CardCheckResult({ phase, onNext, onRetry, canRetry }: Pr
           accessibilityRole="button"
           accessibilityLabel={t('check.next')}
           onPress={onNext}
-          className="bg-white rounded-xl items-center justify-center"
+          className="bg-white rounded-control items-center justify-center"
           style={{ minHeight: 52 }}
         >
           <Text className="text-[16px] font-semibold" style={{ color: bg }}>

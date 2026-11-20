@@ -23,7 +23,7 @@ export function SettingsSwitchOption({
 
   return (
     <View>
-      <View className="flex-row items-center justify-between self-stretch bg-muted dark:bg-muted-dark rounded-[10px]" style={{ minHeight: 52 }}>
+      <View className="flex-row items-center justify-between self-stretch bg-muted dark:bg-muted-dark rounded-control" style={{ minHeight: 52 }}>
         <Text className={`flex-1 px-4 py-3 text-[17px] leading-[22px] ${textColor}`}>{infoField}</Text>
         <Switch
           trackColor={trackColor ?? { false: themeColors.borderControl, true: themeColors.primary }}

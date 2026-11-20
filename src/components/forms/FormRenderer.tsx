@@ -64,7 +64,7 @@ export interface FormRendererProps {
 const INLINE_OPTION_LIMIT = 6;
 
 const inputBase =
-  'bg-card dark:bg-card-dark rounded-[10px] px-3 py-3 min-h-[48px] text-[17px] text-foreground dark:text-foreground-dark border';
+  'bg-card dark:bg-card-dark rounded-control px-3 py-3 min-h-[48px] text-[17px] text-foreground dark:text-foreground-dark border';
 const inputClass = (error: boolean) =>
   `${inputBase} ${error ? 'border-destructive dark:border-destructive-dark' : 'border-border-control dark:border-border-control-dark'}`;
 
@@ -289,7 +289,7 @@ function SelectField({
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
         <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(11,12,15,0.48)' }}>
           <Pressable className="flex-1" onPress={() => setOpen(false)} accessibilityLabel={t('forms.select.close')} />
-          <View className="bg-background dark:bg-background-dark rounded-t-[20px] px-5 pt-4 pb-6" style={{ maxHeight: '75%' }}>
+          <View className="bg-background dark:bg-background-dark rounded-t-sheet px-5 pt-4 pb-6" style={{ maxHeight: '75%' }}>
             <Text className="text-foreground dark:text-foreground-dark text-lg font-semibold mb-2">{field.label}</Text>
             <ScrollView keyboardShouldPersistTaps="handled">
               {options.map((o) => (
@@ -312,7 +312,7 @@ function SelectField({
                     onChange(undefined);
                     setOpen(false);
                   }}
-                  className="flex-1 border border-border dark:border-border-dark rounded-xl py-3 items-center"
+                  className="flex-1 border border-border dark:border-border-dark rounded-control py-3 items-center"
                   accessibilityRole="button"
                 >
                   <Text className="text-foreground dark:text-foreground-dark font-semibold">{t('forms.select.clear')}</Text>
@@ -437,7 +437,7 @@ function PrivacyBlock({ text, title }: { text: string; title?: string }) {
   const themeColors = useThemeColors();
   return (
     <View
-      className="rounded-xl border-2 border-primary/40 dark:border-primary-dark/40 bg-primary/5 dark:bg-primary-dark/5 p-4"
+      className="rounded-control border-2 border-primary/40 dark:border-primary-dark/40 bg-primary/5 dark:bg-primary-dark/5 p-4"
       accessibilityRole="summary"
     >
       <View className="flex-row items-center" style={{ gap: 8 }}>
@@ -594,7 +594,7 @@ function UploadField({ field, files, error, disabled, onUploadFile, onRemoveFile
       <View style={{ gap: 8 }} accessibilityLabel={a11y.accessibilityLabel}>
         {image ? (
           <View className="flex-row items-center" style={{ gap: 12 }}>
-            <View className="w-24 h-24 rounded-xl overflow-hidden border border-border dark:border-border-dark bg-muted dark:bg-muted-dark items-center justify-center">
+            <View className="w-24 h-24 rounded-control overflow-hidden border border-border dark:border-border-dark bg-muted dark:bg-muted-dark items-center justify-center">
               {previewUri ? (
                 <Image
                   source={{ uri: previewUri }}
@@ -624,7 +624,7 @@ function UploadField({ field, files, error, disabled, onUploadFile, onRemoveFile
                 onPress={choose}
                 disabled={disabled || busy}
                 accessibilityRole="button"
-                className={`border border-border dark:border-border-dark rounded-lg px-3 items-center justify-center ${disabled || busy ? 'opacity-60' : ''}`}
+                className={`border border-border dark:border-border-dark rounded-control px-3 items-center justify-center ${disabled || busy ? 'opacity-60' : ''}`}
                 style={{ minHeight: 44 }}
               >
                 <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">
@@ -636,7 +636,7 @@ function UploadField({ field, files, error, disabled, onUploadFile, onRemoveFile
                   onPress={() => void remove(current)}
                   disabled={disabled || busy || removing === current.id}
                   accessibilityRole="button"
-                  className={`border border-border dark:border-border-dark rounded-lg px-3 items-center justify-center ${disabled || busy || removing ? 'opacity-60' : ''}`}
+                  className={`border border-border dark:border-border-dark rounded-control px-3 items-center justify-center ${disabled || busy || removing ? 'opacity-60' : ''}`}
                   style={{ minHeight: 44 }}
                 >
                   <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('forms.file.remove')}</Text>
@@ -649,7 +649,7 @@ function UploadField({ field, files, error, disabled, onUploadFile, onRemoveFile
             {own.map((f) => (
               <View
                 key={f.id}
-                className="flex-row items-center justify-between border border-border dark:border-border-dark rounded-lg px-3"
+                className="flex-row items-center justify-between border border-border dark:border-border-dark rounded-control px-3"
                 style={{ minHeight: 48, gap: 8 }}
               >
                 <FileText size={16} color={themeColors.mutedForeground} />
@@ -674,7 +674,7 @@ function UploadField({ field, files, error, disabled, onUploadFile, onRemoveFile
               onPress={choose}
               disabled={disabled || busy}
               accessibilityRole="button"
-              className={`border border-border dark:border-border-dark rounded-lg px-3 items-center justify-center ${disabled || busy ? 'opacity-60' : ''}`}
+              className={`border border-border dark:border-border-dark rounded-control px-3 items-center justify-center ${disabled || busy ? 'opacity-60' : ''}`}
               style={{ minHeight: 44 }}
             >
               <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">
@@ -744,7 +744,7 @@ export default function FormRenderer({
       case 'info':
         if (field.infoKind === 'privacy_notice') return <PrivacyBlock text={(field.text ?? '').trim() || privacyNotice || ''} title={field.label} />;
         return (
-          <View className="flex-row rounded-lg border border-border dark:border-border-dark bg-muted/40 dark:bg-muted-dark/40 p-3" style={{ gap: 8 }}>
+          <View className="flex-row rounded-control border border-border dark:border-border-dark bg-muted/40 dark:bg-muted-dark/40 p-3" style={{ gap: 8 }}>
             <Info size={16} color={themeColors.mutedForeground} style={{ marginTop: 2 }} />
             <View className="flex-1">
               <Text className="text-sm font-semibold text-foreground dark:text-foreground-dark">{field.label}</Text>
@@ -837,7 +837,7 @@ export default function FormRenderer({
         const label = field.required ? `${field.label}, ${t('forms.required')}` : field.label;
         return (
           <View
-            className={consent ? `rounded-xl border-2 p-3 ${error ? 'border-destructive' : 'border-primary/40 dark:border-primary-dark/40'} bg-primary/5 dark:bg-primary-dark/5` : ''}
+            className={consent ? `rounded-control border-2 p-3 ${error ? 'border-destructive' : 'border-primary/40 dark:border-primary-dark/40'} bg-primary/5 dark:bg-primary-dark/5` : ''}
           >
             <TouchableOpacity
               onPress={() => onChange(field.key, !checked)}

@@ -5,6 +5,7 @@ import { Lock } from 'lucide-react-native';
 import { useThemeColors } from '@/theme/colors';
 import Avatar from './Avatar';
 import Button from './Button';
+import Surface from '@/components/ui/Surface';
 
 interface Props {
   /** Person concerned. */
@@ -31,7 +32,7 @@ interface Props {
 export default function DecisionCard({ name, meta, tags, facts, primary, secondary, blockedReason }: Props) {
   const colors = useThemeColors();
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-3">
+    <Surface className="p-4 mb-3">
       <View className="flex-row items-center" style={{ gap: 12 }}>
         <Avatar name={name} size="M" />
         <View className="flex-1">
@@ -49,7 +50,7 @@ export default function DecisionCard({ name, meta, tags, facts, primary, seconda
         </View>
       ) : null}
       {facts.length > 0 ? (
-        <View className="bg-muted dark:bg-muted-dark rounded-[10px] px-3 py-2 mt-3">
+        <View className="bg-muted dark:bg-muted-dark rounded-control px-3 py-2 mt-3">
           {facts.map((f) => (
             <View key={f.label} accessible className="flex-row py-1" style={{ gap: 12 }}>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px]" style={{ width: 104 }}>
@@ -76,6 +77,6 @@ export default function DecisionCard({ name, meta, tags, facts, primary, seconda
           {secondary ? <Button variant="secondary" label={secondary.label} onPress={secondary.onPress} /> : null}
         </View>
       ) : null}
-    </View>
+    </Surface>
   );
 }

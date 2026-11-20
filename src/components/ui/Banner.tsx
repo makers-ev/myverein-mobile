@@ -36,7 +36,7 @@ export default function Banner({ tone = 'info', title, body, action, alert, icon
   const colors = useThemeColors();
   const announce = alert ?? (tone === 'danger' || tone === 'offline');
   return (
-    <View accessibilityRole={announce ? 'alert' : undefined} className={`rounded-[14px] px-4 py-3 ${c.box}`}>
+    <View accessibilityRole={announce ? 'alert' : undefined} className={`rounded-card px-4 py-3 ${c.box}`}>
       <View className="flex-row items-start" style={{ gap: 10 }}>
         <View style={{ marginTop: 1 }}>
           <Icon size={20} strokeWidth={1.75} color={colors[c.icon]} />

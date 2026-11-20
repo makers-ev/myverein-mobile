@@ -144,7 +144,7 @@ export function CancelPreviewCard({
   }
 
   return (
-    <View className="border border-border dark:border-border-dark rounded-xl p-3 mb-3" accessibilityLiveRegion="polite">
+    <View className="border border-border dark:border-border-dark rounded-control p-3 mb-3" accessibilityLiveRegion="polite">
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold mb-1">{t('termine.cancel.preview.title')}</Text>
       {body}
     </View>

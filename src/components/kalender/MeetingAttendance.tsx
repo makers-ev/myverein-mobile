@@ -13,6 +13,7 @@ import {
 import type { ClubMember } from '@/hooks/useClubMembers';
 import type { AttendanceEntry, AttendanceRow, MeetingInvitee } from '@/hooks/useMeetingDetail';
 import Button from '@/components/ui/Button';
+import Surface from '@/components/ui/Surface';
 
 interface Props {
   invitees: MeetingInvitee[];
@@ -83,7 +84,7 @@ export default function MeetingAttendance({ invitees, attendance, directory, nam
   const proxyCandidates = (memberId: string) => directory.filter((m) => m.memberId && m.memberId !== memberId);
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
+    <Surface className="p-4 mb-4">
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('treffen.attendance.title')}</Text>
       {memberIds.length === 0 ? (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('treffen.attendance.empty')}</Text>
@@ -93,7 +94,7 @@ export default function MeetingAttendance({ invitees, attendance, directory, nam
           const proxyName = row.proxyForMemberId ? nameFor(row.proxyForMemberId) : null;
           const open = proxyFor === memberId;
           return (
-            <View key={memberId} className={`py-2 ${i === memberIds.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}>
+            <View key={memberId} className={`py-2 ${i === memberIds.length - 1 ? '' : 'border-b border-divider dark:border-divider-dark'}`}>
               <Text className="text-foreground dark:text-foreground-dark text-sm font-medium">{nameFor(memberId)}</Text>
               <View className="flex-row flex-wrap items-center" style={{ columnGap: 16 }}>
                 <Check checked={row.present} label={t('treffen.attendance.present')} disabled={saving} onPress={() => edit(memberId, 'present', !row.present)} />
@@ -117,7 +118,7 @@ export default function MeetingAttendance({ invitees, attendance, directory, nam
                 </Text>
               </TouchableOpacity>
               {open ? (
-                <View className="rounded-lg border border-border dark:border-border-dark bg-muted dark:bg-muted-dark p-2 mb-1">
+                <View className="rounded-control border border-border dark:border-border-dark bg-muted dark:bg-muted-dark p-2 mb-1">
                   <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-1">{t('treffen.attendance.proxy-hint')}</Text>
                   <ScrollView style={{ maxHeight: 220 }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
                     <TouchableOpacity
@@ -170,6 +171,6 @@ export default function MeetingAttendance({ invitees, attendance, directory, nam
           <Button block label={t('treffen.attendance.save')} onPress={() => void handleSave()} loading={saving} disabled={!dirty} />
         </View>
       ) : null}
-    </View>
+    </Surface>
   );
 }

@@ -11,6 +11,7 @@ import { DOCS_PATHS } from '@/lib/docsUrl';
 import Button from '@/components/ui/Button';
 import { useThemeColors } from '@/theme/colors';
 import { dismissSetupChecklist, getDismissedSetupClubs } from '@/settings/setupChecklistStorage';
+import Surface from '@/components/ui/Surface';
 
 /** From this many done steps on, the checklist is a single progress row (decision D6). */
 export const SETUP_COLLAPSE_AT = 4;
@@ -65,7 +66,7 @@ export default function SetupChecklist({ setup, clubId }: { setup: TodaySetup; c
 
   if (collapsed) {
     return (
-      <View className="mt-6 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] flex-row items-center">
+      <Surface className="mt-6 flex-row items-center">
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={[progress, nextText].filter(Boolean).join('. ')}
@@ -85,12 +86,12 @@ export default function SetupChecklist({ setup, clubId }: { setup: TodaySetup; c
         <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('today.setup.dismiss.label')} onPress={hide} className="items-center justify-center" style={{ width: 48, height: 56 }}>
           <X size={20} strokeWidth={1.75} color={colors.mutedForeground} />
         </TouchableOpacity>
-      </View>
+      </Surface>
     );
   }
 
   return (
-    <View className="mt-6 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] px-4 pt-4 pb-2">
+    <Surface className="mt-6 px-4 pt-4 pb-2">
       <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold">
         {t('today.setup.title')}
       </Text>
@@ -138,6 +139,6 @@ export default function SetupChecklist({ setup, clubId }: { setup: TodaySetup; c
           <Button variant="tertiary" size="M" icon={X} label={t('today.setup.dismiss')} onPress={hide} />
         )}
       </View>
-    </View>
+    </Surface>
   );
 }

@@ -4,6 +4,7 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { useClubStats } from '@/hooks/useClubStats';
+import Surface from '@/components/ui/Surface';
 
 const TOP_CATEGORIES = 5;
 
@@ -29,7 +30,7 @@ export default function MemberStatsCard({ clubId }: { clubId: string }) {
   const maxCount = categories.reduce((max, c) => Math.max(max, c.count), 0);
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mb-4">
+    <Surface className="p-4 mb-4">
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3" accessibilityRole="header">
         {t('verein.stats.title')}
       </Text>
@@ -45,7 +46,7 @@ export default function MemberStatsCard({ clubId }: { clubId: string }) {
           </Text>
           <TouchableOpacity
             onPress={() => void refetch()}
-            className="self-start px-4 justify-center rounded-lg border border-border dark:border-border-dark"
+            className="self-start px-4 justify-center rounded-control border border-border dark:border-border-dark"
             style={{ minHeight: 44 }}
             accessibilityRole="button"
           >
@@ -83,6 +84,6 @@ export default function MemberStatsCard({ clubId }: { clubId: string }) {
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">{t('verein.stats.hint')}</Text>
         </>
       ) : null}
-    </View>
+    </Surface>
   );
 }

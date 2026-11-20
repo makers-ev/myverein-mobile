@@ -22,6 +22,7 @@ import ChildrenCustomFields from './ChildrenCustomFields';
 import ExitRequestSection from './ExitRequestSection';
 import MemberCustomFields from './MemberCustomFields';
 import MemberPhotoEditor from './MemberPhotoEditor';
+import Surface from '@/components/ui/Surface';
 
 interface Props {
   clubId: string;
@@ -238,7 +239,7 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
 
   return (
     <View>
-      <View className="mb-4 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
+      <Surface className="mb-4 p-4">
         <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('member-photo.title')}</Text>
         <MemberPhotoEditor
           clubId={clubId}
@@ -250,9 +251,9 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
           onChanged={() => void refetch()}
           onPhotoExpired={() => void refetch()}
         />
-      </View>
+      </Surface>
 
-      <View className="mb-4 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
+      <Surface className="mb-4 p-4">
         <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('profil.section.name')}</Text>
         {textInput(
           'firstName',
@@ -277,23 +278,23 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
         <View className="self-start" style={{ marginLeft: -12 }}>
           <Button variant="tertiary" size="M" label={t('profil.name.settings')} onPress={() => navigate('Settings')} />
         </View>
-      </View>
+      </Surface>
 
-      <View className="mb-4 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
+      <Surface className="mb-4 p-4">
         <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('profil.section.personal')}</Text>
         <Field label={t('profil.birth-date')}>
           <DateTimeField mode="date" value={draft.birthDate} onChange={(d) => update('birthDate', d)} clearable />
         </Field>
-      </View>
+      </Surface>
 
-      <View className="mb-4 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
+      <Surface className="mb-4 p-4">
         <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('profil.section.address')}</Text>
         {textInput('street', t('profil.street'), { maxLength: 200, autoComplete: 'street-address', textContentType: 'streetAddressLine1' })}
         {textInput('postalCode', t('profil.postal-code'), { maxLength: 12, autoComplete: 'postal-code', textContentType: 'postalCode' }, visibleErrors.postalCode)}
         {textInput('city', t('profil.city'), { maxLength: 120, textContentType: 'addressCity' })}
-      </View>
+      </Surface>
 
-      <View className="mb-4 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
+      <Surface className="mb-4 p-4">
         <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-1">{t('profil.section.contact')}</Text>
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] mb-3">{t('profil.contact.hint')}</Text>
         {textInput('phone', t('profil.phone'), { keyboardType: 'phone-pad', maxLength: 50, textContentType: 'telephoneNumber' })}
@@ -303,13 +304,13 @@ export default function ProfilTab({ clubId, onDirtyChange }: Props) {
           { keyboardType: 'email-address', autoCapitalize: 'none', autoCorrect: false, maxLength: 320, textContentType: 'emailAddress' },
           visibleErrors.contactEmail,
         )}
-      </View>
+      </Surface>
 
-      <View className="mb-4 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4">
+      <Surface className="mb-4 p-4">
         <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{t('profil.section.emergency')}</Text>
         {textInput('emergencyContactName', t('profil.emergency-contact-name'), { maxLength: 200 })}
         {textInput('emergencyContactPhone', t('profil.emergency-contact-phone'), { keyboardType: 'phone-pad', maxLength: 50 })}
-      </View>
+      </Surface>
 
       {error ? (
         <View className="mb-3">

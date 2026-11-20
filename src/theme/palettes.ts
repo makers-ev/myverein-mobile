@@ -16,6 +16,8 @@ export interface TokenSet {
     mutedForeground: string;
     /** Decorative hairline between rows/cards (never the only cue). */
     border: string;
+    /** Lighter inset line between list rows and inside cards (decorative; cards themselves have no border, they carry a soft shadow / a surface step). */
+    divider: string;
     /** Visible boundary of an interactive control (inputs, secondary buttons, switches off), at least 3:1. */
     borderControl: string;
     /** Solid fill of the primary action. */
@@ -49,7 +51,7 @@ export const palettes = {
         light: {
             background: '#f7f5f0', foreground: '#1d2129',
             card: '#ffffff', muted: '#efece5', mutedForeground: '#585e6b',
-            border: '#dedad0', borderControl: '#8c877b',
+            border: '#dedad0', divider: '#ece9e2', borderControl: '#8c877b',
             primary: '#24416b', primaryForeground: '#ffffff',
             primaryText: '#24416b', primarySoft: '#e4eaf3', primarySoftForeground: '#1c3558',
             accent: '#8a6408', accentForeground: '#ffffff',
@@ -58,7 +60,7 @@ export const palettes = {
         dark: {
             background: '#0e1013', foreground: '#ecedef',
             card: '#1d2027', muted: '#2a2e37', mutedForeground: '#a9afba',
-            border: '#353a45', borderControl: '#7d8492',
+            border: '#353a45', divider: '#292d36', borderControl: '#7d8492',
             primary: '#3f6db0', primaryForeground: '#ffffff',
             primaryText: '#93b3e3', primarySoft: '#1f2e45', primarySoftForeground: '#c9d9f2',
             accent: '#e0b84d', accentForeground: '#0e1013',
@@ -72,7 +74,7 @@ export const palettes = {
         light: {
             background: '#ffffff', foreground: '#2e3338',
             card: '#ffffff', muted: '#f1f2f4', mutedForeground: '#5b6270',
-            border: '#e3e4e6', borderControl: '#878c97',
+            border: '#e3e4e6', divider: '#f1f2f2', borderControl: '#878c97',
             primary: '#1e293b', primaryForeground: '#ffffff',
             primaryText: '#1e293b', primarySoft: '#e9eaeb', primarySoftForeground: '#1e293b',
             accent: '#1e293b', accentForeground: '#ffffff',
@@ -81,7 +83,7 @@ export const palettes = {
         dark: {
             background: '#1e1e1e', foreground: '#dcddde',
             card: '#2a2a2b', muted: '#2a2a2b', mutedForeground: '#9a9a9d',
-            border: '#3a3a3c', borderControl: '#7a7a7c',
+            border: '#3a3a3c', divider: '#323234', borderControl: '#7a7a7c',
             primary: '#697586', primaryForeground: '#ffffff',
             primaryText: '#91a0b5', primarySoft: '#343538', primarySoftForeground: '#bcc5d2',
             accent: '#8a9ab0', accentForeground: '#1e1e1e',
@@ -93,7 +95,7 @@ export const palettes = {
         light: {
             background: '#ffffff', foreground: '#1b2733',
             card: '#ffffff', muted: '#eef4f7', mutedForeground: '#5b7285',
-            border: '#dde7ec', borderControl: '#7b8e9d',
+            border: '#dde7ec', divider: '#eef3f6', borderControl: '#7b8e9d',
             primary: '#0e7490', primaryForeground: '#ffffff',
             primaryText: '#0e7490', primarySoft: '#e7f1f4', primarySoftForeground: '#0b576c',
             accent: '#0e7490', accentForeground: '#ffffff',
@@ -102,7 +104,7 @@ export const palettes = {
         dark: {
             background: '#0f1b22', foreground: '#dbe7ec',
             card: '#16262e', muted: '#16262e', mutedForeground: '#8fa5b0',
-            border: '#23343c', borderControl: '#637781',
+            border: '#23343c', divider: '#1c2d35', borderControl: '#637781',
             primary: '#177f8f', primaryForeground: '#ffffff',
             primaryText: '#22b8cf', primarySoft: '#183d48', primarySoftForeground: '#7fd6e3',
             accent: '#22b8cf', accentForeground: '#06222a',
@@ -114,7 +116,7 @@ export const palettes = {
         light: {
             background: '#ffffff', foreground: '#232b24',
             card: '#ffffff', muted: '#f0f4ef', mutedForeground: '#5f6b61',
-            border: '#dfe6dd', borderControl: '#858f87',
+            border: '#dfe6dd', divider: '#eff2ee', borderControl: '#858f87',
             primary: '#2f6f4e', primaryForeground: '#ffffff',
             primaryText: '#2f6f4e', primarySoft: '#eaf1ed', primarySoftForeground: '#26593e',
             accent: '#2f6f4e', accentForeground: '#ffffff',
@@ -123,7 +125,7 @@ export const palettes = {
         dark: {
             background: '#16201a', foreground: '#dde6da',
             card: '#1f2b23', muted: '#1f2b23', mutedForeground: '#90a08f',
-            border: '#2c3a30', borderControl: '#6d7c6e',
+            border: '#2c3a30', divider: '#26322a', borderControl: '#6d7c6e',
             primary: '#46815e', primaryForeground: '#ffffff',
             primaryText: '#5fae7f', primarySoft: '#25382c', primarySoftForeground: '#9ccdb0',
             accent: '#5fae7f', accentForeground: '#0d1a12',
@@ -135,7 +137,7 @@ export const palettes = {
         light: {
             background: '#fffefb', foreground: '#322620',
             card: '#ffffff', muted: '#f6efe7', mutedForeground: '#765f4c',
-            border: '#ece0d3', borderControl: '#978678',
+            border: '#ece0d3', divider: '#f6efe7', borderControl: '#978678',
             primary: '#c2542a', primaryForeground: '#ffffff',
             primaryText: '#b24d27', primarySoft: '#f9eeea', primarySoftForeground: '#84391d',
             accent: '#b04a22', accentForeground: '#ffffff',
@@ -144,7 +146,7 @@ export const palettes = {
         dark: {
             background: '#241813', foreground: '#ecdfd4',
             card: '#2e211a', muted: '#2e211a', mutedForeground: '#b39d8b',
-            border: '#3d2c22', borderControl: '#837062',
+            border: '#3d2c22', divider: '#36261e', borderControl: '#837062',
             primary: '#b05e31', primaryForeground: '#ffffff',
             primaryText: '#e2793f', primarySoft: '#3c281d', primarySoftForeground: '#edab86',
             accent: '#e2793f', accentForeground: '#241209',

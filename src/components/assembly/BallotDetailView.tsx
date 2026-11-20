@@ -36,7 +36,7 @@ function OptionRow({ option, selected, multi, onPress }: { option: BallotOption;
       accessibilityState={multi ? { checked: selected } : { selected }}
       accessibilityLabel={option.label}
       onPress={onPress}
-      className={`min-h-[56px] flex-row items-center rounded-[10px] mb-2 ${
+      className={`min-h-[56px] flex-row items-center rounded-control mb-2 ${
         selected ? 'border-primary-text dark:border-primary-text-dark bg-primary-soft dark:bg-primary-soft-dark' : 'border-border-control dark:border-border-control-dark bg-card dark:bg-card-dark'
       }`}
       // 2pt ring when selected, 1pt otherwise; the padding keeps the content from shifting.

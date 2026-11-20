@@ -66,14 +66,14 @@ export default function ConfirmationInputModal({
         onPress={handleClose}
         activeOpacity={1}
       >
-        <View className="bg-white rounded-lg p-5 max-w-xs" onStartShouldSetResponder={() => true}>
+        <View className="bg-white rounded-control p-5 max-w-xs" onStartShouldSetResponder={() => true}>
           <Text className={`text-lg font-semibold text-center mb-4 ${titleColor}`}>{title}</Text>
           {message && <Text className={`text-sm text-center mb-4 ${messageColor}`}>{message}</Text>}
 
           <TextInput
             value={input}
             onChangeText={setInput}
-            className="text-center border-2 border-gray-300 rounded-lg p-2 mb-4"
+            className="text-center border-2 border-gray-300 rounded-control p-2 mb-4"
             placeholder={t('confirmation-input-modal.input-placeholder')}
             autoCapitalize="none"
             autoCorrect={false}

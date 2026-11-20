@@ -2,6 +2,7 @@ import React, { Children, isValidElement, useState, type ReactNode } from 'react
 import { Text, View } from 'react-native';
 
 import { InListSection } from './ListRow';
+import Surface from './Surface';
 
 interface Props {
   /** Section header (Label/S, muted, sentence case). */
@@ -14,7 +15,7 @@ interface Props {
 }
 
 /**
- * Grouped inset list (Figma `ListSection`): one card surface with hairline dividers between its rows, instead of a
+ * Grouped inset list (Figma `ListSection`): one rounded card surface (22, soft shadow, no border) with light inset dividers between its rows, instead of a
  * stack of equally weighted cards. Use it for every navigation list (Mehr, Verwaltung, "Für den Vorstand").
  * Each `ListRow` draws its own divider above it; the first one is clipped, so entries that decide themselves whether
  * they render (permission-gated entries returning `null`) never leave a stray line. A section whose rows all render
@@ -31,11 +32,11 @@ export default function ListSection({ title, footer, inset = 16, children }: Pro
           {title}
         </Text>
       ) : null}
-      <View className={empty ? '' : 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] overflow-hidden'}>
+      <Surface level={empty ? 'flat' : 'card'} className={empty ? '' : 'overflow-hidden'} style={empty ? { backgroundColor: 'transparent' } : undefined}>
         <View style={{ marginTop: -1 }} onLayout={(e) => setEmpty(e.nativeEvent.layout.height <= 1)}>
           <InListSection.Provider value={inset}>{rows}</InListSection.Provider>
         </View>
-      </View>
+      </Surface>
       {footer && !empty ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-2 px-1">{footer}</Text> : null}
     </View>
   );

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Image, Platform, Text, View } from 'react-native';
-import { useColorScheme } from 'nativewind';
+import { Image, Text, View } from 'react-native';
 import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 
@@ -11,6 +10,7 @@ import { formatDocumentDate } from '@/lib/documents';
 import { type CardState, canShowQr, effectiveCardState, formatCardStand, localDay } from '@/lib/memberCard';
 import { blend, luminance } from '@/theme/contrast';
 import { useThemeColors } from '@/theme/colors';
+import { useElevation } from '@/theme/elevation';
 import type { MemberCardView as View_ } from '@/hooks/useMemberCard';
 
 const STATE_KEY: Record<CardState, string> = {
@@ -45,15 +45,13 @@ interface Props {
 }
 
 /**
- * The card itself, the one hero moment of the app: a flat club-coloured ID card (monogram, club name in the display
- * serif, photo or initials without consent, name, number, category, validity), a 3pt Pokal-Gold stripe, a perforation, and
+ * The card itself, the one hero moment of the app: a flat club-coloured ID card (monogram, club name in the bold system font, photo or initials without consent, name, number, category, validity), a 3pt Pokal-Gold stripe, a perforation, and
  * below it the ticket stub with the status as icon + word (never colour alone) and the QR on white. Without a network the
  * cached copy is shown with "Stand von ..." and the QR disappears as soon as the card ended or the token expired (device date).
  */
 export default function MemberCardView({ view, confirming = false, onPhotoExpired }: Props) {
   const { t } = useLanguage();
   const colors = useThemeColors();
-  const { colorScheme } = useColorScheme();
   const { card } = view;
   const now = new Date();
   const state = effectiveCardState(card, localDay(now));
@@ -70,14 +68,11 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
   const StateIcon = state === 'gueltig' ? CheckCircle2 : state === 'abgelaufen' ? AlertTriangle : XCircle;
   const stand = formatCardStand(view.checkedAt);
   const tokenExpired = state === 'gueltig' && !showQr && !confirming;
-  const isDark = colorScheme === 'dark';
+  const shadow = useElevation('card');
 
   return (
-    <View
-      className="mb-6"
-      style={{ borderRadius: 20, shadowColor: '#000', shadowOpacity: isDark ? 0 : 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: isDark ? 0 : 2 }}
-    >
-      <View className="overflow-hidden border border-border dark:border-border-dark bg-card dark:bg-card-dark" style={{ borderRadius: 20 }}>
+    <View className="mb-6 rounded-hero" style={shadow}>
+      <View className="overflow-hidden bg-card dark:bg-card-dark rounded-hero">
         <View style={{ backgroundColor: band, minHeight: 208 }} className="p-5 justify-between">
 
           <View className="flex-row items-center" style={{ gap: 12 }}>
@@ -111,7 +106,7 @@ export default function MemberCardView({ view, confirming = false, onPhotoExpire
                 {card.member.displayName}
               </Text>
               {card.member.memberNumber ? (
-                <Text className="text-[15px] leading-5 mt-1" style={{ color: bandText, fontVariant: ['tabular-nums'], fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }) }}>
+                <Text className="text-[15px] leading-5 mt-1" style={{ color: bandText, fontVariant: ['tabular-nums'] }}>
                   {t('card.number', { number: card.member.memberNumber })}
                 </Text>
               ) : null}

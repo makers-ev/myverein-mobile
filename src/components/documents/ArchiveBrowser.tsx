@@ -55,7 +55,7 @@ export default function ArchiveBrowser({ clubId, folderId, onFolderChange }: Pro
           maxLength={100}
           placeholder={t('archive.search')}
           accessibilityLabel={t('archive.search')}
-          className="flex-1 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-xl px-3 text-foreground dark:text-foreground-dark text-sm"
+          className="flex-1 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-control px-3 text-foreground dark:text-foreground-dark text-sm"
           style={{ minHeight: 48 }}
         />
         {searching || draft ? (

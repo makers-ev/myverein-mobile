@@ -19,7 +19,7 @@ interface Props {
 
 /**
  * Header of a full-screen flow without a stack header (Verein beitreten / gründen): 44pt back button, optional eyebrow,
- * left-aligned serif title and a muted description. 16pt side gutter like the content below.
+ * left-aligned bold title and a muted description. 16pt side gutter like the content below.
  */
 export default function FlowHeader({ title, eyebrow, description, onBack, children }: Props) {
   const { t } = useLanguage();

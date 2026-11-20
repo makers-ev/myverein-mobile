@@ -113,7 +113,7 @@ export default function MehrScreen({ navigation }: Props) {
               accessibilityLabel={t('mehr.search.open')}
               accessibilityHint={t('search.placeholder')}
               onPress={() => navigation.navigate('Suche')}
-              className="flex-row items-center bg-muted dark:bg-muted-dark rounded-[10px] px-3 mb-6"
+              className="flex-row items-center bg-muted dark:bg-muted-dark rounded-control px-3 mb-6"
               style={{ minHeight: 44, gap: 8 }}
             >
               <Search size={20} strokeWidth={1.75} color={colors.mutedForeground} />

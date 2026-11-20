@@ -49,7 +49,7 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
     <>
       <TouchableOpacity accessibilityRole="button"
         onPress={openPicker}
-        className="flex-row items-center border border-border dark:border-border-dark bg-card dark:bg-card-dark rounded-xl px-3 py-2.5"
+        className="flex-row items-center border border-border dark:border-border-dark bg-card dark:bg-card-dark rounded-control px-3 py-2.5"
         style={{ gap: 8 }}
       >
         <CalendarDays size={16} color={themeColors.mutedForeground} />
@@ -65,7 +65,7 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <Pressable className="flex-1 justify-center px-4" style={{ backgroundColor: 'rgba(11,12,15,0.48)' }} onPress={() => setOpen(false)}>
-          <Pressable className="bg-background dark:bg-background-dark rounded-3xl p-3" onPress={() => undefined}>
+          <Pressable className="bg-background dark:bg-background-dark rounded-sheet p-3" onPress={() => undefined}>
             {mode === 'date' ? (
               // Year jumps so far-away dates (e.g. birth dates) don't need dozens of month taps.
               <View className="flex-row items-center justify-center mb-2" style={{ gap: 6 }}>
@@ -106,7 +106,7 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
             ) : null}
 
             <View className="flex-row mt-4" style={{ gap: 10 }}>
-              <TouchableOpacity accessibilityRole="button" onPress={() => setOpen(false)} className="flex-1 border border-border dark:border-border-dark rounded-xl py-3 items-center">
+              <TouchableOpacity accessibilityRole="button" onPress={() => setOpen(false)} className="flex-1 border border-border dark:border-border-dark rounded-control py-3 items-center">
                 <Text className="text-foreground dark:text-foreground-dark font-semibold">{t('ui.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity accessibilityRole="button"
@@ -114,7 +114,7 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
                   onChange(draft);
                   setOpen(false);
                 }}
-                className="flex-1 bg-primary dark:bg-primary-dark rounded-xl py-3 items-center"
+                className="flex-1 bg-primary dark:bg-primary-dark rounded-control py-3 items-center"
               >
                 <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('ui.done')}</Text>
               </TouchableOpacity>
@@ -130,7 +130,7 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
   return (
     <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
-      className={`px-3 py-1.5 rounded-[10px] border ${
+      className={`px-3 py-1.5 rounded-control border ${
         active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'border-border dark:border-border-dark'
       }`}
     >

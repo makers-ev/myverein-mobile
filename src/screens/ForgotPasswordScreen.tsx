@@ -55,7 +55,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
         {t('forgot-password.description')}
       </Text>
 
-      <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
+      <View className="bg-card dark:bg-card-dark p-5 rounded-card">
         {sent ? (
           <>
             <Text className="text-base font-semibold text-center mb-4 text-foreground dark:text-foreground-dark">
@@ -76,7 +76,7 @@ export default function ForgotPasswordScreen({ onSubmit, onBackToLogin }: Forgot
               {t('login.username')}
             </Text>
             <TextInput
-              className="bg-card dark:bg-card-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-4"
+              className="bg-card dark:bg-card-dark rounded-control p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-4"
               placeholder="user@example.com"
               placeholderTextColor={themeColors.mutedForeground}
               autoCapitalize="none"

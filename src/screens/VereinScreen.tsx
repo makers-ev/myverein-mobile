@@ -30,6 +30,7 @@ import Badge from '@/components/ui/Badge';
 import Skeleton from '@/components/ui/Skeleton';
 import Title from '@/components/ui/Title';
 import Button from '@/components/ui/Button';
+import Surface from '@/components/ui/Surface';
 
 type Tab = 'info' | 'mitglieder' | 'profil' | 'verwaltung';
 
@@ -45,7 +46,7 @@ function VereinsinfoTab({ clubId, clubName }: { clubId: string; clubName: string
 
   return (
     <>
-      {/* Club block: crest (accent soft) + serif name; the only hero moment of this tab. */}
+      {/* Club block: crest (accent soft) + bold name; the only hero moment of this tab. */}
       <View className="flex-row items-center mb-6" style={{ gap: 16 }}>
         <Avatar name={clubName} size="L" tone="accent" />
         <View className="flex-1">
@@ -128,7 +129,7 @@ function NoClubState() {
       <NoClubChoices hideCreate={!!registration} />
 
       {registration ? (
-        <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-[14px] p-4 mt-6">
+        <Surface className="p-4 mt-6">
           <Text className="text-[13px] font-medium mb-1 text-muted-foreground dark:text-muted-foreground-dark">
             {registration.clubName}
           </Text>
@@ -139,7 +140,7 @@ function NoClubState() {
             {t(`create-club.status.${registration.status}.body`)}
           </Text>
           <Button label={t(registration.status === 'draft' ? 'verein.no-club.registration.continue' : 'verein.no-club.registration.view')} onPress={() => navigate('CreateClub')} />
-        </View>
+        </Surface>
       ) : null}
     </View>
   );

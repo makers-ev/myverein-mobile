@@ -90,7 +90,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
               <View className="mb-4">
                 <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.first-name')}</Text>
                 <TextInput
-                  className="bg-card dark:bg-card-dark px-3 py-3 min-h-[48px] rounded-[10px] text-[17px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
+                  className="bg-card dark:bg-card-dark px-3 py-3 min-h-[48px] rounded-control text-[17px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
                   placeholder={t('signup.first-name.placeholder')}
                   accessibilityLabel={t('signup.first-name')}
                   autoComplete="given-name"
@@ -104,7 +104,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
               <View className="mb-4">
                 <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.last-name')}</Text>
                 <TextInput
-                  className="bg-card dark:bg-card-dark px-3 py-3 min-h-[48px] rounded-[10px] text-[17px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
+                  className="bg-card dark:bg-card-dark px-3 py-3 min-h-[48px] rounded-control text-[17px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
                   placeholder={t('signup.last-name.placeholder')}
                   accessibilityLabel={t('signup.last-name')}
                   autoComplete="family-name"
@@ -128,7 +128,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
 
               <View className="mb-4">
                 <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.email')}</Text>
-                <View className="flex-row items-center bg-card dark:bg-card-dark px-3 min-h-[48px] rounded-[10px] border border-border-control dark:border-border-control-dark" style={{ gap: 8 }}>
+                <View className="flex-row items-center bg-card dark:bg-card-dark px-3 min-h-[48px] rounded-control border border-border-control dark:border-border-control-dark" style={{ gap: 8 }}>
                   <IconMail size={18} color={themeColors.mutedForeground} />
                   <TextInput
                     className="flex-1 text-[17px] text-foreground dark:text-foreground-dark"
@@ -147,7 +147,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
 
               <View className="mb-4">
                 <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.password')}</Text>
-                <View className="flex-row items-center bg-card dark:bg-card-dark px-3 min-h-[48px] rounded-[10px] border border-border-control dark:border-border-control-dark" style={{ gap: 8 }}>
+                <View className="flex-row items-center bg-card dark:bg-card-dark px-3 min-h-[48px] rounded-control border border-border-control dark:border-border-control-dark" style={{ gap: 8 }}>
                   <IconLock size={18} color={themeColors.mutedForeground} />
                   <TextInput
                     className="flex-1 text-[17px] text-foreground dark:text-foreground-dark"

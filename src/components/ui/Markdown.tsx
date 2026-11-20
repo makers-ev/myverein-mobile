@@ -61,7 +61,7 @@ function columnWidths(header: Inline[][], rows: Inline[][][]): number[] {
 function TableView({ block, keyPrefix }: { block: Extract<Block, { type: 'table' }>; keyPrefix: string }) {
   const widths = columnWidths(block.header, block.rows);
   const cell = (nodes: Inline[], c: number, r: number, head: boolean) => (
-    <View key={`${keyPrefix}.${r}.${c}`} style={{ width: widths[c] }} className={`px-2 py-2 border-r border-border dark:border-border-dark ${head ? 'bg-muted dark:bg-muted-dark' : ''}`}>
+    <View key={`${keyPrefix}.${r}.${c}`} style={{ width: widths[c] }} className={`px-2 py-2 border-r border-divider dark:border-divider-dark ${head ? 'bg-muted dark:bg-muted-dark' : ''}`}>
       <Text
         accessibilityRole={head ? 'header' : undefined}
         style={{ textAlign: block.align[c] ?? 'left', fontWeight: head ? '700' : '400' }}
@@ -73,10 +73,10 @@ function TableView({ block, keyPrefix }: { block: Extract<Block, { type: 'table'
   );
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator role="grid" className="mb-3">
-      <View className="border border-b-0 border-border dark:border-border-dark rounded-lg overflow-hidden">
-        <View className="flex-row border-b border-border dark:border-border-dark">{block.header.map((h, c) => cell(h, c, 0, true))}</View>
+      <View className="border border-b-0 border-border dark:border-border-dark rounded-control overflow-hidden">
+        <View className="flex-row border-b border-divider dark:border-divider-dark">{block.header.map((h, c) => cell(h, c, 0, true))}</View>
         {block.rows.map((row, r) => (
-          <View key={`${keyPrefix}.row${r}`} className="flex-row border-b border-border dark:border-border-dark">
+          <View key={`${keyPrefix}.row${r}`} className="flex-row border-b border-divider dark:border-divider-dark">
             {row.map((cl, c) => cell(cl, c, r + 1, false))}
           </View>
         ))}
@@ -110,7 +110,7 @@ function BlockView({ block, index }: { block: Block; index: number }) {
       );
     case 'code':
       return (
-        <View className="bg-muted dark:bg-muted-dark rounded-lg p-3 mb-3">
+        <View className="bg-muted dark:bg-muted-dark rounded-control p-3 mb-3">
           <Text selectable className="text-foreground dark:text-foreground-dark text-xs" style={{ fontFamily: 'monospace' }}>
             {block.text}
           </Text>
