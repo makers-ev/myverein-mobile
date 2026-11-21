@@ -12,6 +12,8 @@ export interface MyClub {
   memberId: string;
   clubName: string | null;
   orgRole: string;
+  /** The platform suspended the club (Wave 15 B7): club routes answer 403 CLUB_SUSPENDED. Absent on older servers. */
+  suspended?: boolean;
 }
 
 interface ActiveClubContextValue {

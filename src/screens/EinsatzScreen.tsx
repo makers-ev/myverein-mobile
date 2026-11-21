@@ -14,6 +14,7 @@ import ScreenHeader from '@/components/ui/ScreenHeader';
 import Skeleton from '@/components/ui/Skeleton';
 import Surface from '@/components/ui/Surface';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
+import SuspendedBanner from '@/components/verein/SuspendedBanner';
 
 type T = (key: string, params?: Record<string, string | number>) => string;
 
@@ -105,6 +106,7 @@ export default function EinsatzScreen() {
     <SafeAreaView edges={['top']} className="flex-1 bg-background dark:bg-background-dark">
       <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} />} contentContainerStyle={{ paddingBottom: 120 }}>
         <ScreenHeader title={t('einsatz.title')} context={me ? <ClubSwitcher /> : undefined} />
+        <SuspendedBanner />
         <View className="px-4">
           {error && !me ? (
             <ErrorState error={error} fallbackKey="einsatz.error" onRetry={() => void reload()} />

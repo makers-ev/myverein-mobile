@@ -31,6 +31,7 @@ jest.mock('@/theme/colors', () => ({
 }));
 jest.mock('@/components/verein/ClubSwitcher', () => () => null);
 jest.mock('@/components/verein/ClubsLoadError', () => () => null);
+jest.mock('@/components/verein/SuspendedBanner', () => () => null);
 jest.mock('@/components/onboarding/NoClubChoices', () => () => null);
 
 let mockAccess: Record<string, unknown> = {};

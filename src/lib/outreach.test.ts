@@ -66,6 +66,11 @@ describe('parseExternalMe', () => {
     expect(me.sponsors.map((s) => s.name)).toEqual(['Bäckerei']);
     expect(me.assignments[0]!.location).toEqual({ id: 'l', name: 'Halle', address: 'Weg 1' });
   });
+  it('keeps the role information when the club name is null on the wire', () => {
+    const me = parseExternalMe({ data: { clubId: 'c', clubName: null, clubSlug: null, externalOnly: true, roleTypes: ['sponsor'], sponsors: [], assignments: [] } })!;
+    expect(me.clubName).toBe('');
+    expect(externalRoleOf(me)).toBe('sponsor');
+  });
   it('rejects a malformed answer', () => {
     expect(parseExternalMe({ data: { clubId: 1 } })).toBeNull();
     expect(parseExternalMe('x')).toBeNull();

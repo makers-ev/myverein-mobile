@@ -20,6 +20,7 @@ import { SponsorFacts } from '@/components/outreach/SponsorFacts';
 import { ContactList } from '@/components/outreach/ContactLines';
 import { navigate } from '@/navigation/navigationRef';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
+import SuspendedBanner from '@/components/verein/SuspendedBanner';
 
 const open = (url: string) => void Linking.openURL(url).catch(() => undefined);
 
@@ -65,6 +66,7 @@ export default function PartnerScreen() {
     <SafeAreaView edges={['top']} className="flex-1 bg-background dark:bg-background-dark">
       <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} />} contentContainerStyle={{ paddingBottom: 120 }}>
         <ScreenHeader title={t(me ? 'partner.title' : 'nav.heute')} context={me ? <ClubSwitcher /> : undefined} />
+        <SuspendedBanner />
         <View className="px-4">
           {error && !me ? (
             <ErrorState error={error} fallbackKey="partner.error" onRetry={() => void reload()} />

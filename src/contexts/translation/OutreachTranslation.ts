@@ -93,6 +93,9 @@ const authored = {
     'join-club.search.or-code': 'Oder mit Vereinskürzel',
 
     // Gesperrter Verein
+    'api.error.external-restricted': 'Dieser Bereich ist für deinen Zugang nicht freigegeben.',
+    'club.suspended.title': 'Verein vorübergehend gesperrt',
+    'club.suspended.body': 'Die Plattform hat diesen Verein vorübergehend gesperrt, die Inhalte sind gerade nicht erreichbar. Bitte wende dich an den Vorstand des Vereins.',
     'api.error.club-suspended': 'Dieser Verein ist vorübergehend gesperrt. Bitte wende dich an den Vorstand des Vereins.',
   },
   en: {
@@ -177,6 +180,9 @@ const authored = {
     'join-club.search.hit': 'Start an application for {{name}}',
     'join-club.search.or-code': 'Or use the club code',
 
+    'api.error.external-restricted': 'This area is not available for your access.',
+    'club.suspended.title': 'Club temporarily suspended',
+    'club.suspended.body': 'The platform has temporarily suspended this club, its content is not available right now. Please contact the club board.',
     'api.error.club-suspended': 'This club is temporarily suspended. Please contact the club board.',
   },
 };

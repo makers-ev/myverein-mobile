@@ -145,7 +145,7 @@ export interface ExternalAssignment {
   location: { id: string; name: string; address: string | null } | null;
 }
 
-/** `GET /external/me`: the whole reduced app of an external login. Own sponsor profile(s) never carry internal notes. */
+/** `GET /external/me` (backend `routes/external-access.ts`): the whole reduced app of an external login. Own sponsor profile(s) never carry internal notes. */
 export interface ExternalMe {
   clubId: string;
   clubName: string;
@@ -187,10 +187,11 @@ export function parseExternalMe(raw: unknown, nowMs: number = Date.now()): Exter
   const data = raw && typeof raw === 'object' && 'data' in raw ? (raw as { data: unknown }).data : raw;
   if (!data || typeof data !== 'object') return null;
   const r = data as Record<string, unknown>;
-  if (typeof r.clubId !== 'string' || typeof r.clubName !== 'string') return null;
+  // `clubName` may be null on the wire (club row missing): the answer is still the role information, so it is not rejected.
+  if (typeof r.clubId !== 'string') return null;
   return {
     clubId: r.clubId,
-    clubName: r.clubName,
+    clubName: typeof r.clubName === 'string' ? r.clubName : '',
     clubSlug: str(r.clubSlug),
     externalOnly: r.externalOnly === true,
     roleTypes: Array.isArray(r.roleTypes) ? r.roleTypes.filter((x): x is string => typeof x === 'string') : [],

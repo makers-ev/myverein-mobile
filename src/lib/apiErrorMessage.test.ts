@@ -36,6 +36,13 @@ describe('suspended club (Wave 15)', () => {
   });
 });
 
+describe('external role restriction (Wave 15)', () => {
+  it('explains the limit instead of the generic forbidden text', () => {
+    expect(apiErrorKey(new ApiError(403, 'FORBIDDEN', 'x', { code: 'external_role_restricted' }))).toBe('api.error.external-restricted');
+    expect(apiErrorKey(new ApiError(403, 'FORBIDDEN', 'x'))).toBe('api.error.forbidden');
+  });
+});
+
 describe('DPA_REQUIRED and account deletion blockers', () => {
   it('shows a readable message for the club-wide DPA lock, not the generic forbidden text', () => {
     expect(apiErrorKey(new ApiError(403, 'DPA_REQUIRED', 'Processor agreement missing', { code: 'dpa_required' }))).toBe('api.error.dpa-required');

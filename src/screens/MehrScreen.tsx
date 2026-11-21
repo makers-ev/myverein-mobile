@@ -39,6 +39,7 @@ import { getDismissedSetupClubs, restoreSetupChecklist } from '@/settings/setupC
 import ScreenHeader from '@/components/ui/ScreenHeader';
 import ActionSheet from '@/components/ui/ActionSheet';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
+import SuspendedBanner from '@/components/verein/SuspendedBanner';
 import { MyCardEntry, MyDocumentsEntry } from '@/components/documents/DocumentsEntry';
 import TimeSheet from '@/components/kalender/TimeSheet';
 import MyHoursSheet from '@/components/kalender/MyHoursSheet';
@@ -108,6 +109,7 @@ export default function MehrScreen({ navigation }: Props) {
     <SafeAreaView edges={['top']} className="flex-1 bg-background dark:bg-background-dark">
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 120 }}>
         <ScreenHeader title={t('mehr.title')} context={clubId || externalRole ? <ClubSwitcher /> : undefined} />
+        <SuspendedBanner />
         <View className="px-4">
           {clubId ? (
             // Looks like the search field of the Suche screen and opens it (one tap, keyboard comes up there).
