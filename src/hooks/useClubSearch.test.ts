@@ -25,7 +25,6 @@ describe('useClubSearch', () => {
     await flush();
     expect(apiFetchMock).not.toHaveBeenCalled();
     expect(result.current.phase).toBe('idle');
-    expect(result.current.tooShort).toBe(true);
   });
 
   it('searches debounced with the trimmed query and returns the hits', async () => {

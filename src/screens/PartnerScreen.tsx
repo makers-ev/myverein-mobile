@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Linking, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CalendarDays, Handshake, Mail, MapPin, Phone } from 'lucide-react-native';
+import { CalendarDays, ClipboardList, Handshake, Mail, MapPin, Phone } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useExternalAccess } from '@/external/ExternalAccessProvider';
 import { usePublicClub } from '@/hooks/usePublicClub';
-import { formatDay, formatInstant, safeWebLink, type Sponsor } from '@/lib/outreach';
+import { formatDay, formatInstant, safeMailto, safeTel, safeWebLink, type Sponsor } from '@/lib/outreach';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import HeroCard from '@/components/ui/HeroCard';
@@ -17,6 +17,8 @@ import Skeleton from '@/components/ui/Skeleton';
 import Surface from '@/components/ui/Surface';
 import OrgLogo from '@/components/outreach/OrgLogo';
 import { SponsorFacts } from '@/components/outreach/SponsorFacts';
+import { ContactList } from '@/components/outreach/ContactLines';
+import { navigate } from '@/navigation/navigationRef';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
 
 const open = (url: string) => void Linking.openURL(url).catch(() => undefined);
@@ -43,7 +45,7 @@ function SponsorHero({ sponsor }: { sponsor: Sponsor }) {
  */
 export default function PartnerScreen() {
   const { t, language } = useLanguage();
-  const { me, loading, error, reload } = useExternalAccess();
+  const { me, roles, loading, error, reload } = useExternalAccess();
   const pub = usePublicClub(me?.clubSlug ?? null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -56,14 +58,16 @@ export default function PartnerScreen() {
   const sponsors = me?.sponsors ?? [];
   const info = pub.info;
   const website = safeWebLink(info?.website);
+  const mailUrl = safeMailto(info?.contactEmail);
+  const telUrl = safeTel(info?.contactPhone);
 
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-background dark:bg-background-dark">
       <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} />} contentContainerStyle={{ paddingBottom: 120 }}>
-        <ScreenHeader title={t('partner.title')} context={me ? <ClubSwitcher /> : undefined} />
+        <ScreenHeader title={t(me ? 'partner.title' : 'nav.heute')} context={me ? <ClubSwitcher /> : undefined} />
         <View className="px-4">
           {error && !me ? (
-            <ErrorState fallbackKey="partner.error" onRetry={() => void reload()} />
+            <ErrorState error={error} fallbackKey="partner.error" onRetry={() => void reload()} />
           ) : loading || !me ? (
             <Skeleton shape="hero" />
           ) : (
@@ -84,15 +88,21 @@ export default function PartnerScreen() {
                     {s.contacts.length > 0 ? (
                       <View className="mt-4">
                         <ListSection title={t('sponsors.detail.contacts')} inset={16}>
-                          {s.contacts.map((c) => (
-                            <ListRow key={c.id} title={c.name} hint={[c.role, c.email, c.phone].filter(Boolean).join(' · ') || undefined} />
-                          ))}
+                          <View className="px-4 py-2">
+                            <ContactList contacts={s.contacts} />
+                          </View>
                         </ListSection>
                       </View>
                     ) : null}
                   </View>
                 ))
               )}
+
+              {roles.includes('dienstleister') ? (
+                <ListSection inset={60}>
+                  <ListRow icon={ClipboardList} title={t('einsatz.title')} hint={t('partner.einsatz.hint')} onPress={() => navigate('Einsatz')} />
+                </ListSection>
+              ) : null}
 
               <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[20px] leading-[26px] font-semibold mb-3">{t('partner.section.club')}</Text>
               {pub.loading && !info && !pub.missing ? (
@@ -115,8 +125,8 @@ export default function PartnerScreen() {
                   {info && (info.city || info.contactEmail || info.contactPhone || website) ? (
                     <ListSection inset={60}>
                       {info.city ? <ListRow key="city" icon={MapPin} title={[info.address, info.city].filter(Boolean).join(', ')} hint={t('partner.club.city')} /> : null}
-                      {info.contactEmail ? <ListRow key="mail" icon={Mail} title={info.contactEmail} hint={t('partner.club.contact')} noChevron onPress={() => open(`mailto:${info.contactEmail}`)} accessibilityHint={t('sponsors.detail.mail', { value: info.contactEmail })} /> : null}
-                      {info.contactPhone ? <ListRow key="tel" icon={Phone} title={info.contactPhone} hint={t('partner.club.contact')} noChevron onPress={() => open(`tel:${info.contactPhone!.replace(/\s+/g, '')}`)} accessibilityHint={t('sponsors.detail.call', { value: info.contactPhone })} /> : null}
+                      {info.contactEmail ? <ListRow key="mail" icon={Mail} title={info.contactEmail} hint={t('partner.club.contact')} noChevron onPress={mailUrl ? () => open(mailUrl) : undefined} accessibilityHint={t('sponsors.detail.mail', { value: info.contactEmail })} /> : null}
+                      {info.contactPhone ? <ListRow key="tel" icon={Phone} title={info.contactPhone} hint={t('partner.club.contact')} noChevron onPress={telUrl ? () => open(telUrl) : undefined} accessibilityHint={t('sponsors.detail.call', { value: info.contactPhone })} /> : null}
                       {website ? <ListRow key="web" title={website} hint={t('partner.website')} noChevron onPress={() => open(website)} accessibilityHint={t('sponsors.detail.website.open')} /> : null}
                     </ListSection>
                   ) : null}

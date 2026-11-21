@@ -19,6 +19,11 @@ import {
   canSearchClubs,
   canSeeSponsors,
   externalRoleOf,
+  externalRolesOf,
+  nextAssignmentBoundary,
+  safeMailto,
+  safeTel,
+  parseAssignments,
   formatInstant,
   parseExternalMe,
   parsePublicClub,
@@ -35,6 +40,7 @@ describe('externalRoleOf', () => {
   it('needs externalOnly and prefers sponsor over dienstleister', () => {
     expect(externalRoleOf({ externalOnly: true, roleTypes: ['dienstleister'] })).toBe('dienstleister');
     expect(externalRoleOf({ externalOnly: true, roleTypes: ['dienstleister', 'sponsor'] })).toBe('sponsor');
+    expect(externalRolesOf({ externalOnly: true, roleTypes: ['dienstleister', 'sponsor'] })).toEqual(['sponsor', 'dienstleister']);
   });
   it('is null for members, guardians and unknown values (deny by default)', () => {
     expect(externalRoleOf({ externalOnly: false, roleTypes: ['sponsor'] })).toBeNull();
@@ -55,7 +61,7 @@ describe('parseExternalMe', () => {
         sponsors: [{ id: 's', name: 'Bäckerei', status: 'aktiv', logoUrl: 'https://x/media/k?sig=1', contacts: [] }, { bad: 1 }],
         assignments: [{ id: 'a', title: 'Heizung', validFrom: '2026-05-01T08:00:00Z', validUntil: '2026-05-01T18:00:00Z', active: true, location: { id: 'l', name: 'Halle', address: 'Weg 1' } }],
       },
-    })!;
+    }, Date.parse('2026-05-01T12:00:00Z'))!;
     expect(me.externalOnly).toBe(true);
     expect(me.sponsors.map((s) => s.name)).toEqual(['Bäckerei']);
     expect(me.assignments[0]!.location).toEqual({ id: 'l', name: 'Halle', address: 'Weg 1' });
@@ -124,12 +130,30 @@ describe('sponsors', () => {
 
 describe('assignments', () => {
   const a = { validFrom: '2026-05-01T08:00:00.000Z', validUntil: '2026-05-01T18:00:00.000Z' };
-  it('knows the window, the server flag wins', () => {
+  it('judges the window by the local clock: a server active flag never extends it', () => {
     expect(assignmentPhase(a, Date.parse('2026-05-01T07:00:00Z'))).toBe('upcoming');
     expect(assignmentPhase(a, Date.parse('2026-05-01T12:00:00Z'))).toBe('active');
     expect(assignmentPhase(a, Date.parse('2026-05-02T00:00:00Z'))).toBe('over');
-    expect(assignmentPhase({ ...a, active: true }, Date.parse('2026-05-02T00:00:00Z'))).toBe('active');
+    expect(assignmentPhase({ ...a, active: true }, Date.parse('2026-05-02T00:00:00Z'))).toBe('over');
+    expect(assignmentPhase({ ...a, active: true }, Date.parse('2026-05-01T07:00:00Z'))).toBe('upcoming');
+    expect(assignmentPhase({ ...a, active: false }, Date.parse('2026-05-01T12:00:00Z'))).toBe('over');
     expect(assignmentPhase({ validFrom: 'x', validUntil: 'y' }, 0)).toBe('over');
+  });
+  it('finds the next boundary so the screen can re-judge when a window opens or closes', () => {
+    const now = Date.parse('2026-05-01T12:00:00Z');
+    expect(nextAssignmentBoundary([a], now)).toBe(Date.parse(a.validUntil));
+    expect(nextAssignmentBoundary([a, { validFrom: '2026-05-01T13:00:00Z', validUntil: '2026-05-01T20:00:00Z' }], now)).toBe(Date.parse('2026-05-01T13:00:00Z'));
+    expect(nextAssignmentBoundary([a], Date.parse('2026-05-03T00:00:00Z'))).toBeNull();
+  });
+  it('never takes place/address/note of a window that is not open into the state, whatever the server sends', () => {
+    const row = (id: string, from: string, until: string) => ({ id, title: id, note: 'Code 1234', validFrom: from, validUntil: until, active: true, location: { id: 'l', name: 'Halle', address: 'Weg 1' } });
+    const now = Date.parse('2026-05-01T12:00:00Z');
+    const list = parseAssignments([row('now', '2026-05-01T08:00:00Z', '2026-05-01T18:00:00Z'), row('later', '2026-05-02T08:00:00Z', '2026-05-02T18:00:00Z'), row('past', '2026-04-01T08:00:00Z', '2026-04-01T18:00:00Z')], now);
+    expect(list.map((x) => x.id)).toEqual(['now', 'later']);
+    expect(list[0]!.note).toBe('Code 1234');
+    expect(list[0]!.location?.name).toBe('Halle');
+    expect(list[1]!.note).toBeNull();
+    expect(list[1]!.location).toBeNull();
   });
   it('formats an instant only when it is a date', () => {
     expect(formatInstant('nope', 'de')).toBeNull();
@@ -154,5 +178,17 @@ describe('club search', () => {
     expect(isClubSuspendedError(new ApiError(423, 'X', '', { code: 'club_suspended' }))).toBe(true);
     expect(isClubSuspendedError(new ApiError(403, 'FORBIDDEN', ''))).toBe(false);
     expect(isClubSuspendedError(new Error('x'))).toBe(false);
+  });
+});
+
+describe('contact links', () => {
+  it('opens mail/phone only for clean values', () => {
+    expect(safeMailto('anna@example.org')).toBe('mailto:anna@example.org');
+    expect(safeMailto('a@b.de?cc=x@y.de')).toBeNull();
+    expect(safeMailto('a b@c.de')).toBeNull();
+    expect(safeTel('+49 (0)731 123-45')).toBe('tel:+49073112345');
+    expect(safeTel('0731/12345')).toBe('tel:073112345');
+    expect(safeTel('12; rm')).toBeNull();
+    expect(safeTel(null)).toBeNull();
   });
 });

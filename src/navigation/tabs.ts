@@ -31,6 +31,10 @@ interface TabContext {
   guardianOnly: boolean;
   /** Reduced login of the active club (Wave 15 M1): sponsor or service provider, see `useExternalAccess`. */
   externalRole?: ExternalRole | null;
+  /** All reduced roles (an account may be sponsor and service provider). */
+  externalRoles?: readonly ExternalRole[];
+  /** Guest membership whose role is not known (loading/failed): fail closed to the reduced app. */
+  externalPending?: boolean;
 }
 
 /** Stack route of the reduced start screen of an external role. */
@@ -45,6 +49,7 @@ export function tabTarget(tab: TabKey, ctx: TabContext): keyof RootStackParamLis
     case 'heute':
       if (!ctx.isAuthenticated) return 'Home';
       if (ctx.externalRole) return EXTERNAL_HOME[ctx.externalRole];
+      if (ctx.externalPending) return 'Partner';
       return ctx.guardianOnly ? 'Heute' : 'Dashboard';
     case 'kalender':
       return 'Kalender';
@@ -61,14 +66,19 @@ export function tabTarget(tab: TabKey, ctx: TabContext): keyof RootStackParamLis
  * Tabs shown: a guardian-only account has no club, so Kalender/Mitteilungen/Verein would only show empty states; an external
  * role (sponsor / service provider) gets the reduced app, only its own start screen and Mehr (Wave 15 M1).
  */
-export function visibleTabs(ctx: Pick<TabContext, 'guardianOnly' | 'externalRole'>): TabKey[] {
-  const reduced = ctx.guardianOnly || !!ctx.externalRole;
+export function visibleTabs(ctx: Pick<TabContext, 'guardianOnly' | 'externalRole' | 'externalPending'>): TabKey[] {
+  const reduced = ctx.guardianOnly || !!ctx.externalRole || !!ctx.externalPending;
   return TAB_ORDER.filter((tab) => !(reduced && (tab === 'kalender' || tab === 'mitteilungen' || tab === 'verein')));
 }
 
-/** Everything an external role may open: its own start screen and the account/legal screens of Mehr (never club or member screens). */
-export function externalRoutes(role: ExternalRole): readonly (keyof RootStackParamList)[] {
-  return [EXTERNAL_HOME[role], 'Mehr', 'Settings', 'Notifications', 'PrivacyPolicy', 'Imprint', 'TermsOfService'];
+/**
+ * Everything the reduced app may open: the start screen of each held role (an account with both roles reaches Partner AND
+ * Einsatz), Mehr and the account/legal screens, never club or member screens. With no known role (pending) only `Partner`,
+ * which shows the loading/retry state.
+ */
+export function externalRoutes(roles: readonly ExternalRole[]): readonly (keyof RootStackParamList)[] {
+  const homes = roles.length > 0 ? roles.map((r) => EXTERNAL_HOME[r]) : [EXTERNAL_HOME.sponsor];
+  return [...homes, 'Mehr', 'Settings', 'Notifications', 'PrivacyPolicy', 'Imprint', 'TermsOfService'];
 }
 
 /** Routes a guardian-only account (no club) cannot use: the hidden tabs' roots. */
@@ -76,7 +86,7 @@ const CLUB_ONLY_ROUTES: readonly (keyof RootStackParamList)[] = ['Kalender', 'Mi
 
 /** Where to go after sign-in: `returnTo` only when the account can reach it, otherwise the account's own Heute. */
 export function resolveReturnTo(returnTo: keyof RootStackParamList | undefined, ctx: TabContext): keyof RootStackParamList {
-  if (ctx.externalRole) return returnTo && externalRoutes(ctx.externalRole).includes(returnTo) ? returnTo : tabTarget('heute', { ...ctx, isAuthenticated: true });
+  if (ctx.externalRole || ctx.externalPending) return returnTo && externalRoutes(ctx.externalRoles ?? (ctx.externalRole ? [ctx.externalRole] : [])).includes(returnTo) ? returnTo : tabTarget('heute', { ...ctx, isAuthenticated: true });
   if (returnTo && !(ctx.guardianOnly && CLUB_ONLY_ROUTES.includes(returnTo)) && returnTo !== 'Login') return returnTo;
   return tabTarget('heute', { ...ctx, isAuthenticated: true });
 }

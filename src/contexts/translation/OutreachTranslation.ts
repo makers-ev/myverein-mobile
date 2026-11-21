@@ -61,6 +61,7 @@ const authored = {
     'partner.empty.hint': 'Sobald der Verein deine Partnerschaft hinterlegt hat, siehst du sie hier.',
     'partner.club.empty': 'Der Verein hat keine öffentliche Seite. Hier erscheinen dann seine freigegebenen Infos.',
     'partner.club.events': 'Nächste öffentliche Termine',
+    'partner.einsatz.hint': 'Orte und Zeitfenster, die der Verein für dich freigegeben hat',
     'partner.error': 'Deine Partnerschaft konnte nicht geladen werden.',
 
     // Reduzierte App: Dienstleister
@@ -147,6 +148,7 @@ const authored = {
     'partner.empty.hint': 'As soon as the club has recorded your partnership, you will see it here.',
     'partner.club.empty': 'The club has no public page. Its released information will appear here.',
     'partner.club.events': 'Next public events',
+    'partner.einsatz.hint': 'Places and time windows the club released for you',
     'partner.error': 'Your partnership could not be loaded.',
 
     'einsatz.title': 'Assignment',

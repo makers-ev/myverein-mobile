@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Linking, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Handshake, Lock } from 'lucide-react-native';
 
@@ -17,6 +17,7 @@ import ListSection from '@/components/ui/ListSection';
 import Skeleton from '@/components/ui/Skeleton';
 import OrgLogo from '@/components/outreach/OrgLogo';
 import { SponsorFacts } from '@/components/outreach/SponsorFacts';
+import { ContactList } from '@/components/outreach/ContactLines';
 import NoClubChoices from '@/components/onboarding/NoClubChoices';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 
@@ -34,21 +35,6 @@ function daysLeftLabel(s: Sponsor, t: (k: string, p?: Record<string, string | nu
   if (!s.expiringSoon || s.daysLeft === null) return null;
   if (s.daysLeft <= 0) return t('sponsors.days-left.today');
   return s.daysLeft === 1 ? t('sponsors.days-left.one') : t('sponsors.days-left', { count: s.daysLeft });
-}
-
-/** Contact line that opens the phone / mail app (an explicit tap, labelled). */
-function ContactRow({ text, label, url }: { text: string; label: string; url: string }) {
-  return (
-    <Text
-      accessibilityRole="link"
-      accessibilityLabel={label}
-      onPress={() => void Linking.openURL(url).catch(() => undefined)}
-      className="text-primary dark:text-primary-dark text-[15px] leading-[22px]"
-      style={{ minHeight: 44, textAlignVertical: 'center', paddingVertical: 10 }}
-    >
-      {text}
-    </Text>
-  );
 }
 
 /**
@@ -124,17 +110,7 @@ export default function SponsorenScreen() {
             {opened.contacts.length > 0 ? (
               <View>
                 <Text accessibilityRole="header" className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-1">{t('sponsors.detail.contacts')}</Text>
-                {opened.contacts.map((c) => (
-                  <View key={c.id} className="mb-2">
-                    <Text className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px]">
-                      {c.name}
-                      {c.role ? ` · ${c.role}` : ''}
-                    </Text>
-                    {c.isPrimary ? <Badge tone="primary">{t('sponsors.detail.contacts.primary')}</Badge> : null}
-                    {c.phone ? <ContactRow text={c.phone} label={t('sponsors.detail.call', { value: c.phone })} url={`tel:${c.phone.replace(/\s+/g, '')}`} /> : null}
-                    {c.email ? <ContactRow text={c.email} label={t('sponsors.detail.mail', { value: c.email })} url={`mailto:${c.email}`} /> : null}
-                  </View>
-                ))}
+                <ContactList contacts={opened.contacts} renderBadge={(c) => (c.isPrimary ? <Badge tone="primary">{t('sponsors.detail.contacts.primary')}</Badge> : null)} />
               </View>
             ) : null}
             {opened.linkedAccountName ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px]">{t('sponsors.detail.linked', { name: opened.linkedAccountName })}</Text> : null}

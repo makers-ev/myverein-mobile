@@ -28,7 +28,7 @@ export default function ClubSearch({ onSelect, disabled, autoFocus }: Props) {
   const { t } = useLanguage();
   const colors = useThemeColors();
   const [query, setQuery] = useState('');
-  const { phase, hits, error, tooShort, retry } = useClubSearch(query);
+  const { phase, hits, error, retry } = useClubSearch(query);
 
   return (
     <View>
@@ -39,7 +39,6 @@ export default function ClubSearch({ onSelect, disabled, autoFocus }: Props) {
           className="flex-1 text-foreground dark:text-foreground-dark text-[17px]"
           style={{ minHeight: 48 }}
           accessibilityLabel={t('join-club.search.label')}
-          accessibilityHint={t('join-club.search.hint', { min: MIN_CLUB_SEARCH_LENGTH })}
           placeholder={t('join-club.search.placeholder')}
           placeholderTextColor={colors.mutedForeground}
           autoCapitalize="none"

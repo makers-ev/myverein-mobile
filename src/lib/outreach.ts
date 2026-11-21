@@ -12,16 +12,15 @@ import { parseDayKey } from './ward';
 
 export type ExternalRole = 'sponsor' | 'dienstleister';
 
-/**
- * The reduced role of an account from `GET /external/me`: only when the server says `externalOnly` (a guest whose roles are
- * exclusively sponsor/dienstleister). A sponsor wins over a service provider when an account holds both. Deny by default:
- * anything else is a normal member (null) and sees the normal app.
- */
+/** All reduced roles of an account (`externalOnly` guests only); sponsor first. Empty for everybody else (deny by default). */
+export function externalRolesOf(me: Pick<ExternalMe, 'externalOnly' | 'roleTypes'> | null | undefined): ExternalRole[] {
+  if (!me || me.externalOnly !== true) return [];
+  return (['sponsor', 'dienstleister'] as const).filter((r) => me.roleTypes.includes(r));
+}
+
+/** The primary reduced role (a sponsor wins over a service provider; an account with both reaches both screens). */
 export function externalRoleOf(me: Pick<ExternalMe, 'externalOnly' | 'roleTypes'> | null | undefined): ExternalRole | null {
-  if (!me || me.externalOnly !== true) return null;
-  if (me.roleTypes.includes('sponsor')) return 'sponsor';
-  if (me.roleTypes.includes('dienstleister')) return 'dienstleister';
-  return null;
+  return externalRolesOf(me)[0] ?? null;
 }
 
 // --- Sponsors ---------------------------------------------------------------------------------------------------------
@@ -157,26 +156,34 @@ export interface ExternalMe {
   assignments: ExternalAssignment[];
 }
 
-export function parseAssignments(list: unknown): ExternalAssignment[] {
+/**
+ * Parses the assignments. Place, address and note are kept ONLY while the window is open right now (`nowMs`, checked
+ * locally whatever the server says); an assignment that has not started shows just title and window, one that is over is
+ * dropped. The details of a later window therefore never enter the state; the screen reloads when a window opens.
+ */
+export function parseAssignments(list: unknown, nowMs: number = Date.now()): ExternalAssignment[] {
   if (!Array.isArray(list)) return [];
   const out: ExternalAssignment[] = [];
   for (const a of list as Record<string, unknown>[]) {
     if (!a || typeof a.id !== 'string' || typeof a.title !== 'string' || typeof a.validFrom !== 'string' || typeof a.validUntil !== 'string') continue;
+    const phase = assignmentPhase({ validFrom: a.validFrom, validUntil: a.validUntil, active: a.active !== false }, nowMs);
+    if (phase === 'over') continue;
     const loc = a.location && typeof a.location === 'object' ? (a.location as Record<string, unknown>) : null;
+    const open = phase === 'active';
     out.push({
       id: a.id,
       title: a.title,
-      note: str(a.note),
+      note: open ? str(a.note) : null,
       validFrom: a.validFrom,
       validUntil: a.validUntil,
-      active: a.active === true,
-      location: loc && typeof loc.id === 'string' && typeof loc.name === 'string' ? { id: loc.id, name: loc.name, address: str(loc.address) } : null,
+      active: a.active !== false,
+      location: open && loc && typeof loc.id === 'string' && typeof loc.name === 'string' ? { id: loc.id, name: loc.name, address: str(loc.address) } : null,
     });
   }
   return out;
 }
 
-export function parseExternalMe(raw: unknown): ExternalMe | null {
+export function parseExternalMe(raw: unknown, nowMs: number = Date.now()): ExternalMe | null {
   const data = raw && typeof raw === 'object' && 'data' in raw ? (raw as { data: unknown }).data : raw;
   if (!data || typeof data !== 'object') return null;
   const r = data as Record<string, unknown>;
@@ -188,21 +195,35 @@ export function parseExternalMe(raw: unknown): ExternalMe | null {
     externalOnly: r.externalOnly === true,
     roleTypes: Array.isArray(r.roleTypes) ? r.roleTypes.filter((x): x is string => typeof x === 'string') : [],
     sponsors: Array.isArray(r.sponsors) ? r.sponsors.map(parseSponsor).filter((x): x is Sponsor => x !== null) : [],
-    assignments: parseAssignments(r.assignments),
+    assignments: parseAssignments(r.assignments, nowMs),
   };
 }
 
 export type AssignmentPhase = 'active' | 'upcoming' | 'over';
 
-/** Where an assignment stands. The server's `active` wins; otherwise the window decides. `over` is never shown. */
+/**
+ * Where an assignment stands. The local clock ALWAYS decides whether the window is open (`[validFrom, validUntil]`): a stale
+ * list or a server `active: true` never keeps access details after the end. A server `active: false` inside the local window
+ * (clock skew) hides the details too (`over`, the conservative answer until the next reload).
+ */
 export function assignmentPhase(a: Pick<ExternalAssignment, 'validFrom' | 'validUntil'> & { active?: boolean }, nowMs: number): AssignmentPhase {
-  if (a.active === true) return 'active';
   const from = Date.parse(a.validFrom);
   const until = Date.parse(a.validUntil);
   if (Number.isNaN(from) || Number.isNaN(until)) return 'over';
   if (nowMs < from) return 'upcoming';
   if (nowMs > until) return 'over';
-  return 'active';
+  return a.active === false ? 'over' : 'active';
+}
+
+/** The next moment (ms) a window opens or closes after `nowMs`, or null when none is ahead. Drives the screen timer. */
+export function nextAssignmentBoundary(list: Pick<ExternalAssignment, 'validFrom' | 'validUntil'>[], nowMs: number): number | null {
+  let next: number | null = null;
+  for (const a of list) {
+    for (const t of [Date.parse(a.validFrom), Date.parse(a.validUntil)]) {
+      if (!Number.isNaN(t) && t >= nowMs && (next === null || t < next)) next = t;
+    }
+  }
+  return next;
 }
 
 /** Public club page (`GET /public/clubs/:slug`, no session) as far as the sponsor view shows it. 404 = the club has no public page. */
@@ -287,10 +308,28 @@ export function isClubSuspendedError(err: unknown): boolean {
 
 // --- Display helpers --------------------------------------------------------------------------------------------------
 
-/** ISO instant as "21.11.2026, 14:30" in the app language and the device's time zone; null when it is not a date. */
+/** The club's time zone: all instants are shown in it, whatever zone the device is in (same as the website). */
+export const CLUB_TIME_ZONE = 'Europe/Berlin';
+
+/** ISO instant as "21.11.2026, 14:30" in the app language and Berlin time; null when it is not a date. */
 export function formatInstant(iso: string | null | undefined, language: string): string | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return `${d.toLocaleDateString(language)}, ${d.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}`;
+  try {
+    return `${d.toLocaleDateString(language, { timeZone: CLUB_TIME_ZONE })}, ${d.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit', timeZone: CLUB_TIME_ZONE })}`;
+  } catch {
+    return `${d.toLocaleDateString(language)}, ${d.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}`;
+  }
+}
+
+/** `mailto:` link only for a plain e-mail address (no header injection, no extra recipients); else null. */
+export function safeMailto(email: string | null | undefined): string | null {
+  return email && /^[^\s@<>"',;?&=]+@[^\s@<>"',;?&=]+\.[^\s@<>"',;?&=]+$/.test(email) ? `mailto:${email}` : null;
+}
+
+/** `tel:` link only for a phone number made of digits and usual separators; else null. */
+export function safeTel(phone: string | null | undefined): string | null {
+  if (!phone || !/^\+?[0-9 ()./-]{3,40}$/.test(phone)) return null;
+  return `tel:${phone.replace(/[^+0-9]/g, '')}`;
 }

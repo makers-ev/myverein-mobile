@@ -64,7 +64,7 @@ export default function MehrScreen({ navigation }: Props) {
   const { activeClub } = useActiveClub();
   const { guardianOnly } = useWards();
   // Sponsor / service-provider login (Wave 15 M1): no club entries, no member documents, no joining; only account, help, legal.
-  const { role: externalRole } = useExternalAccess();
+  const { reduced: externalRole } = useExternalAccess();
   const platformUnread = useUnreadNotificationCount();
   const clubId = isAuthenticated && activeClub && !guardianOnly && !externalRole ? activeClub.clubId : null;
   const { membership } = useOwnMembership(clubId);

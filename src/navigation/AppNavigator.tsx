@@ -107,13 +107,13 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 /** Heute is for signed-in users: a guest (e.g. after signing out while it was open) is moved to the guest start page. */
 function DashboardGate(props: React.ComponentProps<typeof DashboardScreen>) {
   const { isAuthenticated } = useAuth();
-  const { role, loading } = useExternalAccess();
+  const { reduced, loading } = useExternalAccess();
   useEffect(() => {
     if (!isAuthenticated) goToTab('Home');
   }, [isAuthenticated]);
   if (!isAuthenticated) return null;
   // An external login (sponsor / service provider) never sees the member dashboard; `ExternalStartRedirect` moves it on.
-  if (role || loading) return <ExternalHold />;
+  if (reduced || loading) return <ExternalHold />;
   return <DashboardScreen {...props} />;
 }
 
@@ -140,7 +140,7 @@ function MainNavigator() {
   const themeColors = useThemeColors();
   const { t } = useLanguage();
   const { hasWards, guardianOnly } = useWards();
-  const { role: externalRole } = useExternalAccess();
+  const { role: externalRole, roles: externalRoles, reduced: externalReduced } = useExternalAccess();
   // Detail screens reached from a tab get a visible title and back arrow (swipe/hardware back keep working).
   const sub = (titleKey: string) => ({ headerShown: true, title: t(titleKey), headerBackTitle: t('common.back') });
 
@@ -289,7 +289,7 @@ function MainNavigator() {
               // navigate to yet.
               if (result.success) {
                 // Replaces Login (no stack growth); a guardian-only account never lands on club-only screens.
-                goToTab(resolveReturnTo(route.params?.returnTo, { isAuthenticated: true, hasWards, guardianOnly, externalRole }));
+                goToTab(resolveReturnTo(route.params?.returnTo, { isAuthenticated: true, hasWards, guardianOnly, externalRole, externalRoles, externalPending: externalReduced && !externalRole }));
               }
               return result;
             }}

@@ -42,11 +42,12 @@ export default function Navbar() {
     const [activeRoute, setActiveRoute] = useState<string | undefined>();
     const [showTitles, setShowTitles] = useState(true);
     const { activeClub } = useActiveClub();
-    const { role: externalRole } = useExternalAccess();
+    const { role: externalRole, roles: externalRoles, reduced: externalReduced } = useExternalAccess();
+    const externalPending = externalReduced && !externalRole;
     // The club inbox is member-only: an external login (Wave 15) has no Mitteilungen tab and makes no call.
-    const inboxUnreadCount = useUnreadCount(externalRole ? null : (activeClub?.clubId ?? null));
+    const inboxUnreadCount = useUnreadCount(externalReduced ? null : (activeClub?.clubId ?? null));
     const { hasWards, guardianOnly } = useWards();
-    const tabs = visibleTabs({ guardianOnly, externalRole });
+    const tabs = visibleTabs({ guardianOnly, externalRole, externalPending });
     const activeTab = tabForRoute(activeRoute);
 
     useEffect(() => {
@@ -82,7 +83,7 @@ export default function Navbar() {
             showTitles={showTitles}
             bottomInset={insets.bottom}
             iconColors={{ active: themeColors.primaryText, inactive: themeColors.mutedForeground }}
-            onSelect={(key) => goToTab(tabTarget(key as TabKey, { isAuthenticated, hasWards, guardianOnly, externalRole }))}
+            onSelect={(key) => goToTab(tabTarget(key as TabKey, { isAuthenticated, hasWards, guardianOnly, externalRole, externalRoles, externalPending }))}
         />
     );
 }

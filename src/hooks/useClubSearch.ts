@@ -39,13 +39,12 @@ export function useClubSearch(query: string) {
   }, [q, searchable, retry]);
 
   // Typing below the minimum (or clearing) resets at once; results of an older query are never shown for a newer one.
-  if (!searchable) return { phase: 'idle' as ClubSearchPhase, hits: [] as ClubSearchHit[], error: null, tooShort: q.length > 0, retry: () => setRetry((n) => n + 1) };
+  if (!searchable) return { phase: 'idle' as ClubSearchPhase, hits: [] as ClubSearchHit[], error: null, retry: () => setRetry((n) => n + 1) };
   const fresh = state.q === q;
   return {
     phase: (fresh ? state.phase : 'loading') as ClubSearchPhase,
     hits: fresh ? state.hits : [],
     error: fresh ? state.error : null,
-    tooShort: false,
     retry: () => setRetry((n) => n + 1),
   };
 }

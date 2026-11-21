@@ -65,19 +65,33 @@ describe('external roles (Wave 15)', () => {
     expect(tabForRoute('Sponsoren')).toBe('verein');
   });
 
-  it('allows only the role own screen and account/legal screens', () => {
-    expect(externalRoutes('sponsor')).toContain('Partner');
-    expect(externalRoutes('sponsor')).not.toContain('Einsatz');
-    for (const role of ['sponsor', 'dienstleister'] as const) {
+  it('allows only the role own screens and account/legal screens', () => {
+    expect(externalRoutes(['sponsor'])).toContain('Partner');
+    expect(externalRoutes(['sponsor'])).not.toContain('Einsatz');
+    expect(externalRoutes(['dienstleister'])).toContain('Einsatz');
+    // An account holding both roles reaches both screens (Einsatz must not be bounced back to Partner).
+    expect(externalRoutes(['sponsor', 'dienstleister'])).toEqual(expect.arrayContaining(['Partner', 'Einsatz']));
+    // Role still unknown (fail closed): only the loading/retry screen.
+    expect(externalRoutes([])).toContain('Partner');
+    expect(externalRoutes([])).not.toContain('Einsatz');
+    for (const roles of [['sponsor'], ['dienstleister'], ['sponsor', 'dienstleister'], []] as const) {
       for (const club of ['Dashboard', 'Kalender', 'Verein', 'Mitteilungen', 'Standorte', 'Sponsoren', 'JoinClub', 'Mitgliedsausweis'] as const) {
-        expect(externalRoutes(role)).not.toContain(club);
+        expect(externalRoutes(roles)).not.toContain(club);
       }
     }
+  });
+
+  it('fails closed while the role is unknown', () => {
+    const pending = { isAuthenticated: true, hasWards: false, guardianOnly: false, externalPending: true };
+    expect(visibleTabs({ guardianOnly: false, externalPending: true })).toEqual(['heute', 'mehr']);
+    expect(tabTarget('heute', pending)).toBe('Partner');
+    expect(resolveReturnTo('Kalender', pending)).toBe('Partner');
   });
 
   it('returns to the own start screen after sign-in unless the route is allowed', () => {
     expect(resolveReturnTo('Kalender', sponsor)).toBe('Partner');
     expect(resolveReturnTo(undefined, provider)).toBe('Einsatz');
     expect(resolveReturnTo('Settings', sponsor)).toBe('Settings');
+    expect(resolveReturnTo('Einsatz', { ...sponsor, externalRoles: ['sponsor', 'dienstleister'] })).toBe('Einsatz');
   });
 });

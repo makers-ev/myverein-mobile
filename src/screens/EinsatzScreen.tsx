@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { AppState, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CalendarClock, ClipboardList } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useExternalAccess } from '@/external/ExternalAccessProvider';
-import { assignmentPhase, formatInstant, type ExternalAssignment } from '@/lib/outreach';
+import { assignmentPhase, formatInstant, nextAssignmentBoundary, type ExternalAssignment } from '@/lib/outreach';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import ListRow from '@/components/ui/ListRow';
@@ -63,12 +63,36 @@ function ActiveCard({ a, t, language }: { a: ExternalAssignment; t: T; language:
 export default function EinsatzScreen() {
   const { t, language } = useLanguage();
   const { me, loading, error, reload } = useExternalAccess();
+  const assignmentsKey = me?.assignments.map((a) => `${a.validFrom}|${a.validUntil}`).join(',') ?? '';
   const [refreshing, setRefreshing] = useState(false);
-  // Taken when the screen opens and on every refresh (a window that ends meanwhile disappears with the next one).
+  // The clock the windows are judged by: set on open, at every window start/end (timer), on app resume and on refresh, so
+  // place, address and note vanish at the end of the window even while the screen stays open.
   const [now, setNow] = useState(() => Date.now());
   const list = (me?.assignments ?? []).map((a) => ({ a, phase: assignmentPhase(a, now) }));
   const active = list.filter((x) => x.phase === 'active').map((x) => x.a);
   const upcoming = list.filter((x) => x.phase === 'upcoming').map((x) => x.a);
+
+  useEffect(() => {
+    const boundary = nextAssignmentBoundary(me?.assignments ?? [], now);
+    if (boundary === null) return undefined;
+    // A window opened or closed: re-judge with a fresh clock and reload (a window that just opened brings its details).
+    const timer = setTimeout(() => {
+      setNow(Date.now());
+      void reload();
+    }, Math.min(Math.max(boundary - now, 0) + 250, 2_147_000_000));
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assignmentsKey, now, reload]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        setNow(Date.now());
+        void reload();
+      }
+    });
+    return () => sub.remove();
+  }, [reload]);
 
   const refresh = async () => {
     setRefreshing(true);
@@ -83,7 +107,7 @@ export default function EinsatzScreen() {
         <ScreenHeader title={t('einsatz.title')} context={me ? <ClubSwitcher /> : undefined} />
         <View className="px-4">
           {error && !me ? (
-            <ErrorState fallbackKey="einsatz.error" onRetry={() => void reload()} />
+            <ErrorState error={error} fallbackKey="einsatz.error" onRetry={() => void reload()} />
           ) : loading || !me ? (
             <Skeleton shape="rows" lines={3} />
           ) : active.length === 0 && upcoming.length === 0 ? (

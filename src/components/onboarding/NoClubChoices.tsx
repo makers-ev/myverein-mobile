@@ -25,7 +25,7 @@ export default function NoClubChoices({ hideCreate }: Props) {
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('onboarding.choice.body')}</Text>
       </View>
       <View style={{ gap: 4 }}>
-        <Button label={t('onboarding.choice.find')} onPress={() => navigate('JoinClub', { search: true })} accessibilityHint={t('onboarding.choice.find.hint')} />
+        <Button label={t('onboarding.choice.find')} onPress={() => navigate('JoinClub', { search: true })} />
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{t('onboarding.choice.find.hint')}</Text>
       </View>
       <View style={{ gap: 4 }}>
