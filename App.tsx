@@ -11,6 +11,7 @@ import { PaletteProvider } from './src/theme/PaletteProvider';
 import { AuthProvider } from './src/auth/AuthProvider';
 import { ActiveClubProvider } from './src/clubs/ActiveClubProvider';
 import { WardsProvider } from './src/guardian/WardsProvider';
+import { ExternalAccessProvider } from './src/external/ExternalAccessProvider';
 import { PushProvider } from './src/notifications/PushProvider';
 import { ErrorBoundary } from './src/error/ErrorBoundary';
 import AppNavigator from './src/navigation/AppNavigator';
@@ -50,9 +51,11 @@ export default function App() {
                   <NavigationBar style="auto" />
                   <ActiveClubProvider>
                     <WardsProvider>
-                      <PushProvider>
-                        <AppNavigator />
-                      </PushProvider>
+                      <ExternalAccessProvider>
+                        <PushProvider>
+                          <AppNavigator />
+                        </PushProvider>
+                      </ExternalAccessProvider>
                     </WardsProvider>
                   </ActiveClubProvider>
                 </AuthProvider>

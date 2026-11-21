@@ -14,6 +14,7 @@ import { getShowNavbarTitles } from '@/settings/appSettingsStorage';
 import { useUnreadCount } from '@/hooks/useClubInbox';
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
 import { useWards } from '@/hooks/useWards';
+import { useExternalAccess } from '@/external/ExternalAccessProvider';
 
 const TAB_META: Record<TabKey, { labelKey: string; Icon: LucideIcon }> = {
     heute: { labelKey: 'nav.heute', Icon: CalendarCheck },
@@ -41,9 +42,12 @@ export default function Navbar() {
     const [activeRoute, setActiveRoute] = useState<string | undefined>();
     const [showTitles, setShowTitles] = useState(true);
     const { activeClub } = useActiveClub();
-    const inboxUnreadCount = useUnreadCount(activeClub?.clubId ?? null);
+    const { role: externalRole, roles: externalRoles, reduced: externalReduced } = useExternalAccess();
+    const externalPending = externalReduced && !externalRole;
+    // The club inbox is member-only: an external login (Wave 15) has no Mitteilungen tab and makes no call.
+    const inboxUnreadCount = useUnreadCount(externalReduced ? null : (activeClub?.clubId ?? null));
     const { hasWards, guardianOnly } = useWards();
-    const tabs = visibleTabs({ guardianOnly });
+    const tabs = visibleTabs({ guardianOnly, externalRole, externalPending });
     const activeTab = tabForRoute(activeRoute);
 
     useEffect(() => {
@@ -79,7 +83,7 @@ export default function Navbar() {
             showTitles={showTitles}
             bottomInset={insets.bottom}
             iconColors={{ active: themeColors.primaryText, inactive: themeColors.mutedForeground }}
-            onSelect={(key) => goToTab(tabTarget(key as TabKey, { isAuthenticated, hasWards, guardianOnly }))}
+            onSelect={(key) => goToTab(tabTarget(key as TabKey, { isAuthenticated, hasWards, guardianOnly, externalRole, externalRoles, externalPending }))}
         />
     );
 }

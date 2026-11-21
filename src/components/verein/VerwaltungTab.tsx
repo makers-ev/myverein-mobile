@@ -10,14 +10,15 @@ import Button from '@/components/ui/Button';
 import HeroCard from '@/components/ui/HeroCard';
 import ListRow from '@/components/ui/ListRow';
 import ListSection from '@/components/ui/ListSection';
-import { Landmark, SlidersHorizontal, UserPlus, Users, Vote } from 'lucide-react-native';
+import { Handshake, Landmark, SlidersHorizontal, UserPlus, Users, Vote } from 'lucide-react-native';
+import { canSeeSponsors } from '@/lib/outreach';
 import { CardCheckEntry } from '@/components/documents/DocumentsEntry';
 import MemberStatsCard from './MemberStatsCard';
 import ExitRequestsQueue from './ExitRequestsQueue';
 
 /** True when the role-dependent "Verwaltung" entry has anything to show (board roles only, deny by default). */
-export function canSeeVerwaltung(can: (p: 'members:write' | 'members:read_sensitive' | 'club_stats:read' | 'forms:write') => boolean): boolean {
-  return can('members:write') || can('club_stats:read') || can('forms:write');
+export function canSeeVerwaltung(can: (p: 'members:write' | 'members:read_sensitive' | 'club_stats:read' | 'forms:write' | 'sponsors:read' | 'sponsors:write') => boolean): boolean {
+  return can('members:write') || can('club_stats:read') || can('forms:write') || canSeeSponsors(can);
 }
 
 /** Row to the join applications with the number of open ones. */
@@ -78,6 +79,7 @@ export default function VerwaltungTab({ clubId, onOpenMembers }: { clubId: strin
           <ListRow key="members" icon={Users} title={t('admin.members.open')} hint={t('admin.members.hint')} onPress={onOpenMembers} />
         ) : null}
         {can('forms:write') ? <ListRow key="pm" icon={SlidersHorizontal} title={t('forms.pm.title')} hint={t('forms.pm.entry.hint')} onPress={() => navigate('ProfileModules')} /> : null}
+        {canSeeSponsors(can) ? <ListRow key="sponsors" icon={Handshake} title={t('sponsors.title')} hint={t('sponsors.entry.hint')} onPress={() => navigate('Sponsoren')} /> : null}
         <CardCheckEntry key="check" clubId={clubId} />
       </ListSection>
       {can('assembly:manage') ? (

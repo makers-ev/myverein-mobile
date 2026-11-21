@@ -11,7 +11,7 @@ interface Props {
 }
 
 /**
- * First step for a signed-in person without a club (Wave 14 N3): join, start one, or look around first. Used on Heute
+ * First step for a signed-in person without a club (Wave 14 N3): find a club, join with a code, start one, or look around first. Used on Heute
  * and in the Verein tab, so both say the same thing. "Erst mal umschauen" opens Mehr (settings, privacy), never a dead end.
  */
 export default function NoClubChoices({ hideCreate }: Props) {
@@ -25,7 +25,11 @@ export default function NoClubChoices({ hideCreate }: Props) {
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('onboarding.choice.body')}</Text>
       </View>
       <View style={{ gap: 4 }}>
-        <Button label={t('onboarding.choice.join')} onPress={() => navigate('JoinClub')} accessibilityHint={t('onboarding.choice.join.hint')} />
+        <Button label={t('onboarding.choice.find')} onPress={() => navigate('JoinClub', { search: true })} />
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{t('onboarding.choice.find.hint')}</Text>
+      </View>
+      <View style={{ gap: 4 }}>
+        <Button variant="secondary" label={t('onboarding.choice.join')} onPress={() => navigate('JoinClub')} accessibilityHint={t('onboarding.choice.join.hint')} />
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">{t('onboarding.choice.join.hint')}</Text>
       </View>
       {hideCreate ? null : (

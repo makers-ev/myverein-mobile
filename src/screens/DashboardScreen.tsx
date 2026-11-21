@@ -12,6 +12,7 @@ import { rsvpPath, type MyRsvp, type RegistrationInfo } from '@/lib/eventRegistr
 import { useRsvpActions } from '@/hooks/useEventRegistration';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
+import SuspendedBanner from '@/components/verein/SuspendedBanner';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import type { CalendarEvent } from '@/hooks/useEvents';
 import SickNoteCard from '@/components/privacy/SickNoteCard';
@@ -288,6 +289,7 @@ export default function DashboardScreen({ navigation }: Props) {
           context={activeClub ? <ClubSwitcher /> : undefined}
           actions={activeClub ? <IconButton icon={Search} label={t('search.open')} onPress={() => navigation.navigate('Suche')} /> : undefined}
         />
+        <SuspendedBanner />
         <View className="px-4 pt-1">{main}</View>
       </ScrollView>
     </SafeAreaView>

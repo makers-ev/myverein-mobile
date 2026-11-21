@@ -18,6 +18,7 @@ import { useOwnMembership } from '@/hooks/useOwnMembership';
 import NoClubChoices from '@/components/onboarding/NoClubChoices';
 import TabChips from '@/components/ui/TabChips';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
+import SuspendedBanner from '@/components/verein/SuspendedBanner';
 import ClubsLoadError from '@/components/verein/ClubsLoadError';
 import ClubDocumentReader from '@/components/documents/ClubDocumentReader';
 import ListRow from '@/components/ui/ListRow';
@@ -215,6 +216,7 @@ export default function VereinScreen() {
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-background dark:bg-background-dark">
       <ScreenHeader title={t('nav.verein')} context={<ClubSwitcher onBeforeSwitch={guardClubSwitch} />} />
+      <SuspendedBanner />
 
       {clubsLoading ? (
         <View className="flex-1 items-center justify-center">
