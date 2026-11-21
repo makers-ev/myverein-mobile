@@ -6,29 +6,17 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { useClubSearch } from '@/hooks/useClubSearch';
 import { MIN_CLUB_SEARCH_LENGTH, type ClubSearchHit } from '@/lib/outreach';
-import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import ListRow from '@/components/ui/ListRow';
 import ListSection from '@/components/ui/ListSection';
-import SignedImage from '@/components/ui/SignedImage';
+import OrgLogo from '@/components/outreach/OrgLogo';
 
 interface Props {
   /** A tapped hit: the screen opens that club's application (the club code is public, the hit carries it). */
   onSelect: (hit: ClubSearchHit) => void;
   disabled?: boolean;
   autoFocus?: boolean;
-}
-
-/** Club logo (signed URL via the media layer, never a raw link) with the initials as fallback (decorative: the name stands next to it). */
-function HitLogo({ hit }: { hit: ClubSearchHit }) {
-  const initials = <Avatar name={hit.name} size="M" tone="accent" />;
-  if (!hit.logoUrl) return initials;
-  return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" className="rounded-full overflow-hidden" style={{ width: 40, height: 40 }}>
-      <SignedImage uri={hit.logoUrl} style={{ width: 40, height: 40 }} fallback={initials} />
-    </View>
-  );
 }
 
 /**
@@ -76,7 +64,7 @@ export default function ClubSearch({ onSelect, disabled, autoFocus }: Props) {
             {hits.map((hit) => (
               <ListRow
                 key={hit.slug}
-                leading={<HitLogo hit={hit} />}
+                leading={<OrgLogo name={hit.name} uri={hit.logoUrl} />}
                 title={hit.name}
                 hint={hit.city ?? undefined}
                 accessibilityHint={t('join-club.search.hit', { name: hit.name })}

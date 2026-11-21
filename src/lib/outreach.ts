@@ -12,20 +12,16 @@ import { parseDayKey } from './ward';
 
 export type ExternalRole = 'sponsor' | 'dienstleister';
 
-const EXTERNAL_ROLES: readonly string[] = ['sponsor', 'dienstleister'];
-
 /**
- * The external role of a membership (`GET /my-clubs`): an explicit `externalRole`, else a `sponsor` / `dienstleister`
- * token in the (possibly comma-separated) `orgRole`. Deny by default: anything else is a normal member (null).
+ * The reduced role of an account from `GET /external/me`: only when the server says `externalOnly` (a guest whose roles are
+ * exclusively sponsor/dienstleister). A sponsor wins over a service provider when an account holds both. Deny by default:
+ * anything else is a normal member (null) and sees the normal app.
  */
-export function externalRoleOf(club: { orgRole?: string | null; externalRole?: string | null } | null | undefined): ExternalRole | null {
-  if (!club) return null;
-  if (club.externalRole && EXTERNAL_ROLES.includes(club.externalRole)) return club.externalRole as ExternalRole;
-  const token = (club.orgRole ?? '')
-    .split(',')
-    .map((r) => r.trim())
-    .find((r) => EXTERNAL_ROLES.includes(r));
-  return (token as ExternalRole | undefined) ?? null;
+export function externalRoleOf(me: Pick<ExternalMe, 'externalOnly' | 'roleTypes'> | null | undefined): ExternalRole | null {
+  if (!me || me.externalOnly !== true) return null;
+  if (me.roleTypes.includes('sponsor')) return 'sponsor';
+  if (me.roleTypes.includes('dienstleister')) return 'dienstleister';
+  return null;
 }
 
 // --- Sponsors ---------------------------------------------------------------------------------------------------------
@@ -138,30 +134,6 @@ export function formatDay(day: string | null | undefined, language: string): str
 
 // --- External accounts ------------------------------------------------------------------------------------------------
 
-/** Own sponsor profile of a `sponsor` login: what the club recorded about the partnership (no internal notes). */
-export interface ExternalSponsorProfile {
-  name: string;
-  website: string | null;
-  description: string | null;
-  consideration: string | null;
-  startsOn: string | null;
-  endsOn: string | null;
-  status: SponsorStatus;
-  daysLeft: number | null;
-  logoUrl: string | null;
-}
-
-/** Public club information an external role may read (never member data). */
-export interface ExternalClubInfo {
-  name: string;
-  description: string | null;
-  logoUrl: string | null;
-  contactEmail: string | null;
-  contactPhone: string | null;
-  website: string | null;
-  city: string | null;
-}
-
 export interface ExternalAssignment {
   id: string;
   title: string;
@@ -169,27 +141,26 @@ export interface ExternalAssignment {
   /** ISO timestamps. */
   validFrom: string;
   validUntil: string;
-  location: { id: string; name: string; address: string | null; accessNote: string | null } | null;
+  /** The server's view: inside the window right now. */
+  active: boolean;
+  location: { id: string; name: string; address: string | null } | null;
 }
 
-export function parseExternalSponsorProfile(raw: unknown): ExternalSponsorProfile | null {
-  const s = parseSponsor(raw);
-  if (!s) return null;
-  return { name: s.name, website: s.website, description: s.description, consideration: s.consideration, startsOn: s.startsOn, endsOn: s.endsOn, status: s.status, daysLeft: s.daysLeft, logoUrl: s.logoUrl };
+/** `GET /external/me`: the whole reduced app of an external login. Own sponsor profile(s) never carry internal notes. */
+export interface ExternalMe {
+  clubId: string;
+  clubName: string;
+  clubSlug: string | null;
+  externalOnly: boolean;
+  roleTypes: string[];
+  sponsors: Sponsor[];
+  assignments: ExternalAssignment[];
 }
 
-export function parseExternalClubInfo(raw: unknown): ExternalClubInfo | null {
-  if (!raw || typeof raw !== 'object') return null;
-  const r = raw as Record<string, unknown>;
-  if (typeof r.name !== 'string') return null;
-  return { name: r.name, description: str(r.description), logoUrl: str(r.logoUrl), contactEmail: str(r.contactEmail), contactPhone: str(r.contactPhone), website: str(r.website), city: str(r.city) };
-}
-
-export function parseAssignments(payload: unknown): ExternalAssignment[] | null {
-  const list = unwrapList<Record<string, unknown>>(payload);
-  if (!list) return null;
+export function parseAssignments(list: unknown): ExternalAssignment[] {
+  if (!Array.isArray(list)) return [];
   const out: ExternalAssignment[] = [];
-  for (const a of list) {
+  for (const a of list as Record<string, unknown>[]) {
     if (!a || typeof a.id !== 'string' || typeof a.title !== 'string' || typeof a.validFrom !== 'string' || typeof a.validUntil !== 'string') continue;
     const loc = a.location && typeof a.location === 'object' ? (a.location as Record<string, unknown>) : null;
     out.push({
@@ -198,22 +169,81 @@ export function parseAssignments(payload: unknown): ExternalAssignment[] | null 
       note: str(a.note),
       validFrom: a.validFrom,
       validUntil: a.validUntil,
-      location: loc && typeof loc.id === 'string' && typeof loc.name === 'string' ? { id: loc.id, name: loc.name, address: str(loc.address), accessNote: str(loc.accessNote) } : null,
+      active: a.active === true,
+      location: loc && typeof loc.id === 'string' && typeof loc.name === 'string' ? { id: loc.id, name: loc.name, address: str(loc.address) } : null,
     });
   }
   return out;
 }
 
+export function parseExternalMe(raw: unknown): ExternalMe | null {
+  const data = raw && typeof raw === 'object' && 'data' in raw ? (raw as { data: unknown }).data : raw;
+  if (!data || typeof data !== 'object') return null;
+  const r = data as Record<string, unknown>;
+  if (typeof r.clubId !== 'string' || typeof r.clubName !== 'string') return null;
+  return {
+    clubId: r.clubId,
+    clubName: r.clubName,
+    clubSlug: str(r.clubSlug),
+    externalOnly: r.externalOnly === true,
+    roleTypes: Array.isArray(r.roleTypes) ? r.roleTypes.filter((x): x is string => typeof x === 'string') : [],
+    sponsors: Array.isArray(r.sponsors) ? r.sponsors.map(parseSponsor).filter((x): x is Sponsor => x !== null) : [],
+    assignments: parseAssignments(r.assignments),
+  };
+}
+
 export type AssignmentPhase = 'active' | 'upcoming' | 'over';
 
-/** Where `now` lies relative to the window. Access details are only shown while `active` (the server enforces it too). */
-export function assignmentPhase(a: Pick<ExternalAssignment, 'validFrom' | 'validUntil'>, nowMs: number): AssignmentPhase {
+/** Where an assignment stands. The server's `active` wins; otherwise the window decides. `over` is never shown. */
+export function assignmentPhase(a: Pick<ExternalAssignment, 'validFrom' | 'validUntil'> & { active?: boolean }, nowMs: number): AssignmentPhase {
+  if (a.active === true) return 'active';
   const from = Date.parse(a.validFrom);
   const until = Date.parse(a.validUntil);
   if (Number.isNaN(from) || Number.isNaN(until)) return 'over';
   if (nowMs < from) return 'upcoming';
   if (nowMs > until) return 'over';
   return 'active';
+}
+
+/** Public club page (`GET /public/clubs/:slug`, no session) as far as the sponsor view shows it. 404 = the club has no public page. */
+export interface PublicClubInfo {
+  name: string;
+  tagline: string | null;
+  description: string | null;
+  city: string | null;
+  address: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  website: string | null;
+  /** Unsigned URL of a file the club released for the public page. */
+  logoUrl: string | null;
+  events: { title: string; startsAt: string; locationName: string | null }[];
+}
+
+export function parsePublicClub(raw: unknown): PublicClubInfo | null {
+  const data = raw && typeof raw === 'object' && 'data' in raw ? (raw as { data: unknown }).data : raw;
+  if (!data || typeof data !== 'object') return null;
+  const r = data as Record<string, unknown>;
+  if (typeof r.name !== 'string') return null;
+  const contact = r.contact && typeof r.contact === 'object' ? (r.contact as Record<string, unknown>) : {};
+  const events: PublicClubInfo['events'] = [];
+  if (Array.isArray(r.events)) {
+    for (const e of r.events as Record<string, unknown>[]) {
+      if (e && typeof e.title === 'string' && typeof e.startsAt === 'string' && e.cancelled !== true) events.push({ title: e.title, startsAt: e.startsAt, locationName: str(e.locationName) });
+    }
+  }
+  return {
+    name: r.name,
+    tagline: str(r.tagline),
+    description: str(r.description),
+    city: str(r.city),
+    address: str(r.address),
+    contactEmail: str(contact.email),
+    contactPhone: str(contact.phone),
+    website: str(contact.website),
+    logoUrl: str(r.logoUrl),
+    events,
+  };
 }
 
 // --- Club search ------------------------------------------------------------------------------------------------------
@@ -248,10 +278,19 @@ export function parseClubHits(payload: unknown): ClubSearchHit[] | null {
   return out;
 }
 
-/** The platform suspended the club (Wave 15 B7): clients show an understandable notice, not a generic error. */
+/** The platform suspended the club (Wave 15 B7: `403 CLUB_SUSPENDED`, `details.code = club_suspended`): clients show an understandable notice, not a generic error. */
 export function isClubSuspendedError(err: unknown): boolean {
   if (!(err instanceof ApiError)) return false;
-  const code = err.code.toLowerCase();
   const detail = String((err.details as { code?: unknown } | undefined)?.code ?? '').toLowerCase();
-  return code === 'club_suspended' || detail === 'club_suspended';
+  return err.code.toLowerCase() === 'club_suspended' || detail === 'club_suspended';
+}
+
+// --- Display helpers --------------------------------------------------------------------------------------------------
+
+/** ISO instant as "21.11.2026, 14:30" in the app language and the device's time zone; null when it is not a date. */
+export function formatInstant(iso: string | null | undefined, language: string): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return `${d.toLocaleDateString(language)}, ${d.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}`;
 }

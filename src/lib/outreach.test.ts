@@ -19,26 +19,61 @@ import {
   canSearchClubs,
   canSeeSponsors,
   externalRoleOf,
+  formatInstant,
+  parseExternalMe,
+  parsePublicClub,
   formatDay,
   groupSponsors,
   isClubSuspendedError,
   normalizeSearchQuery,
-  parseAssignments,
   parseClubHits,
   parseSponsors,
   safeWebLink,
 } from './outreach';
 
 describe('externalRoleOf', () => {
-  it('reads an explicit role or an orgRole token', () => {
-    expect(externalRoleOf({ orgRole: 'guest', externalRole: 'sponsor' })).toBe('sponsor');
-    expect(externalRoleOf({ orgRole: 'guest, dienstleister' })).toBe('dienstleister');
+  it('needs externalOnly and prefers sponsor over dienstleister', () => {
+    expect(externalRoleOf({ externalOnly: true, roleTypes: ['dienstleister'] })).toBe('dienstleister');
+    expect(externalRoleOf({ externalOnly: true, roleTypes: ['dienstleister', 'sponsor'] })).toBe('sponsor');
   });
   it('is null for members, guardians and unknown values (deny by default)', () => {
-    expect(externalRoleOf({ orgRole: 'member' })).toBeNull();
-    expect(externalRoleOf({ orgRole: 'guest' })).toBeNull();
-    expect(externalRoleOf({ orgRole: 'owner', externalRole: 'admin' })).toBeNull();
+    expect(externalRoleOf({ externalOnly: false, roleTypes: ['sponsor'] })).toBeNull();
+    expect(externalRoleOf({ externalOnly: true, roleTypes: ['admin'] })).toBeNull();
     expect(externalRoleOf(null)).toBeNull();
+  });
+});
+
+describe('parseExternalMe', () => {
+  it('parses the self view with sponsors and assignments', () => {
+    const me = parseExternalMe({
+      data: {
+        clubId: 'c1',
+        clubName: 'TSV',
+        clubSlug: 'tsv',
+        externalOnly: true,
+        roleTypes: ['sponsor'],
+        sponsors: [{ id: 's', name: 'Bäckerei', status: 'aktiv', logoUrl: 'https://x/media/k?sig=1', contacts: [] }, { bad: 1 }],
+        assignments: [{ id: 'a', title: 'Heizung', validFrom: '2026-05-01T08:00:00Z', validUntil: '2026-05-01T18:00:00Z', active: true, location: { id: 'l', name: 'Halle', address: 'Weg 1' } }],
+      },
+    })!;
+    expect(me.externalOnly).toBe(true);
+    expect(me.sponsors.map((s) => s.name)).toEqual(['Bäckerei']);
+    expect(me.assignments[0]!.location).toEqual({ id: 'l', name: 'Halle', address: 'Weg 1' });
+  });
+  it('rejects a malformed answer', () => {
+    expect(parseExternalMe({ data: { clubId: 1 } })).toBeNull();
+    expect(parseExternalMe('x')).toBeNull();
+  });
+});
+
+describe('parsePublicClub', () => {
+  it('reads the released fields and skips cancelled events', () => {
+    const c = parsePublicClub({
+      data: { name: 'TSV', tagline: 'Sport', contact: { email: 'a@b.de', phone: null }, events: [{ title: 'Fest', startsAt: '2026-06-01T10:00:00Z', locationName: 'Halle' }, { title: 'Weg', startsAt: '2026-06-02T10:00:00Z', cancelled: true }] },
+    })!;
+    expect(c.contactEmail).toBe('a@b.de');
+    expect(c.events.map((e) => e.title)).toEqual(['Fest']);
+    expect(parsePublicClub({ data: {} })).toBeNull();
   });
 });
 
@@ -89,23 +124,16 @@ describe('sponsors', () => {
 
 describe('assignments', () => {
   const a = { validFrom: '2026-05-01T08:00:00.000Z', validUntil: '2026-05-01T18:00:00.000Z' };
-  it('knows the window', () => {
+  it('knows the window, the server flag wins', () => {
     expect(assignmentPhase(a, Date.parse('2026-05-01T07:00:00Z'))).toBe('upcoming');
     expect(assignmentPhase(a, Date.parse('2026-05-01T12:00:00Z'))).toBe('active');
     expect(assignmentPhase(a, Date.parse('2026-05-02T00:00:00Z'))).toBe('over');
+    expect(assignmentPhase({ ...a, active: true }, Date.parse('2026-05-02T00:00:00Z'))).toBe('active');
     expect(assignmentPhase({ validFrom: 'x', validUntil: 'y' }, 0)).toBe('over');
   });
-  it('parses rows with and without location', () => {
-    const list = parseAssignments({
-      data: [
-        { id: '1', title: 'Heizung warten', ...a, location: { id: 'l', name: 'Halle', accessNote: 'Seiteneingang' } },
-        { id: '2', title: 'Ohne Ort', ...a },
-        { id: '3' },
-      ],
-    })!;
-    expect(list.map((x) => x.id)).toEqual(['1', '2']);
-    expect(list[0]!.location?.accessNote).toBe('Seiteneingang');
-    expect(list[1]!.location).toBeNull();
+  it('formats an instant only when it is a date', () => {
+    expect(formatInstant('nope', 'de')).toBeNull();
+    expect(formatInstant('2026-05-01T08:00:00Z', 'de')).toContain(',');
   });
 });
 

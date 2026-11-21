@@ -1,6 +1,6 @@
 jest.mock('./AppNavigator', () => ({}));
 
-import { resolveReturnTo, tabForRoute, tabTarget, visibleTabs, TAB_ORDER, TAB_ROUTES } from './tabs';
+import { externalRoutes, resolveReturnTo, tabForRoute, tabTarget, visibleTabs, TAB_ORDER, TAB_ROUTES } from './tabs';
 
 describe('tabs', () => {
   it('has exactly five tabs in the agreed order', () => {
@@ -44,5 +44,40 @@ describe('resolveReturnTo', () => {
   it('sends a guardian-only account away from club-only routes', () => {
     expect(resolveReturnTo('Kalender', guardian)).toBe('Heute');
     expect(resolveReturnTo('Settings', guardian)).toBe('Settings');
+  });
+});
+
+describe('external roles (Wave 15)', () => {
+  const sponsor = { isAuthenticated: true, hasWards: false, guardianOnly: false, externalRole: 'sponsor' as const };
+  const provider = { ...sponsor, externalRole: 'dienstleister' as const };
+
+  it('shows only Heute and Mehr, and Heute opens the role start screen', () => {
+    expect(visibleTabs({ guardianOnly: false, externalRole: 'sponsor' })).toEqual(['heute', 'mehr']);
+    expect(visibleTabs({ guardianOnly: false, externalRole: null })).toHaveLength(5);
+    expect(tabTarget('heute', sponsor)).toBe('Partner');
+    expect(tabTarget('heute', provider)).toBe('Einsatz');
+    expect(tabTarget('heute', { ...sponsor, isAuthenticated: false })).toBe('Home');
+  });
+
+  it('keeps the new routes under their tabs', () => {
+    expect(tabForRoute('Partner')).toBe('heute');
+    expect(tabForRoute('Einsatz')).toBe('heute');
+    expect(tabForRoute('Sponsoren')).toBe('verein');
+  });
+
+  it('allows only the role own screen and account/legal screens', () => {
+    expect(externalRoutes('sponsor')).toContain('Partner');
+    expect(externalRoutes('sponsor')).not.toContain('Einsatz');
+    for (const role of ['sponsor', 'dienstleister'] as const) {
+      for (const club of ['Dashboard', 'Kalender', 'Verein', 'Mitteilungen', 'Standorte', 'Sponsoren', 'JoinClub', 'Mitgliedsausweis'] as const) {
+        expect(externalRoutes(role)).not.toContain(club);
+      }
+    }
+  });
+
+  it('returns to the own start screen after sign-in unless the route is allowed', () => {
+    expect(resolveReturnTo('Kalender', sponsor)).toBe('Partner');
+    expect(resolveReturnTo(undefined, provider)).toBe('Einsatz');
+    expect(resolveReturnTo('Settings', sponsor)).toBe('Settings');
   });
 });
