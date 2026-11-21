@@ -11,6 +11,7 @@ import { useCalendarFeeds } from '@/hooks/useCalendarFeeds';
 import type { Calendar } from '@/hooks/useCalendars';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 import { ColorChip } from './ColorChip';
+import Button from '@/components/ui/Button';
 
 interface Props {
   visible: boolean;
@@ -59,7 +60,7 @@ function NewLinkCard({ link, onDone }: { link: NewCalendarFeed; onDone: () => vo
   };
 
   return (
-    <View className="border border-primary dark:border-primary-dark rounded-xl p-3 mb-4" accessibilityLiveRegion="polite">
+    <View className="border border-primary dark:border-primary-dark rounded-control p-3 mb-4" accessibilityLiveRegion="polite">
       <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mb-1">{t('feeds.new.title')}</Text>
       <Text className="text-destructive dark:text-destructive-dark text-xs mb-2">{t('feeds.warning')}</Text>
       <Text selectable className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-2">
@@ -151,24 +152,13 @@ export default function CalendarFeedsSheet({ visible, onClose, clubId, calendars
           placeholderTextColor={themeColors.mutedForeground}
         />
       </Field>
-      <TouchableOpacity
-        onPress={() => void create()}
-        disabled={!!busy}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: !!busy, busy: busy === 'create' }}
-        className={`bg-primary dark:bg-primary-dark rounded-xl items-center justify-center mb-4 ${busy ? 'opacity-60' : ''}`}
-        style={{ minHeight: 44 }}
-      >
-        {busy === 'create' ? (
-          <ActivityIndicator color={themeColors.primaryForeground} size="small" />
-        ) : (
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('feeds.create')}</Text>
-        )}
-      </TouchableOpacity>
+      <View className="mb-4">
+        <Button block label={t('feeds.create')} onPress={() => void create()} loading={busy === 'create'} disabled={!!busy} />
+      </View>
 
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-2">{t('feeds.list.title')}</Text>
       {loading && feeds.length === 0 ? (
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       ) : error && feeds.length === 0 ? (
         <View>
           <Text className="text-destructive dark:text-destructive-dark text-sm mb-1">{t('feeds.list.error')}</Text>
@@ -178,7 +168,7 @@ export default function CalendarFeedsSheet({ visible, onClose, clubId, calendars
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('feeds.list.empty')}</Text>
       ) : (
         feeds.map((feed) => (
-          <View key={feed.id} className="border border-border dark:border-border-dark rounded-xl p-3 mb-2">
+          <View key={feed.id} className="border border-border dark:border-border-dark rounded-control p-3 mb-2">
             <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{feed.label || t('feeds.unnamed')}</Text>
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{feed.calendarName ?? t('feeds.all-calendars')}</Text>
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">

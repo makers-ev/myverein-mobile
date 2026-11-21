@@ -140,7 +140,7 @@ function IssueKeySheet({
                     key={m.id}
                     onPress={() => setSelected(m)}
                     accessibilityRole="button"
-                    className="py-2.5 border-b border-border dark:border-border-dark"
+                    className="py-2.5 border-b border-divider dark:border-divider-dark"
                   >
                     <Text className="text-foreground dark:text-foreground-dark text-sm">{m.name ?? '—'}</Text>
                   </TouchableOpacity>
@@ -213,7 +213,7 @@ function HistoryRow({ entry, isLast }: { entry: KeyHistoryEntry; isLast: boolean
   const { t } = useLanguage();
   const subject = entry.keyLabel ? `${entry.memberName} · ${entry.keyLabel}` : entry.memberName;
   return (
-    <View className={`py-2.5 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`}>
+    <View className={`py-2.5 ${isLast ? '' : 'border-b border-divider dark:border-divider-dark'}`}>
       <View className="flex-row items-center justify-between mb-1" style={{ gap: 8 }}>
         <StatusChip label={t(`standorte.keys.action.${entry.action}`)} tone={entry.action === 'issued' ? 'primary' : 'muted'} />
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{new Date(entry.createdAt).toLocaleString()}</Text>
@@ -264,12 +264,12 @@ export default function KeysSection({
         action={canWrite ? <IconButton kind="add" label={t('standorte.keys.issue')} onPress={() => setIssuing(true)} /> : undefined}
       >
         {holders.length === 0 ? (
-          <EmptyState icon={<KeyRound size={26} color={themeColors.primary} />} text={t('standorte.detail.key-holders.empty')} />
+          <EmptyState icon={<KeyRound size={26} color={themeColors.primaryText} />} text={t('standorte.detail.key-holders.empty')} />
         ) : (
           holders.map((h, i) => (
             <View
               key={h.id}
-              className={`flex-row items-center py-2.5 ${i === holders.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}
+              className={`flex-row items-center py-2.5 ${i === holders.length - 1 ? '' : 'border-b border-divider dark:border-divider-dark'}`}
               style={{ gap: 8 }}
             >
               <KeyRound size={16} color={themeColors.mutedForeground} />
@@ -283,7 +283,7 @@ export default function KeysSection({
                   accessibilityRole="button"
                   hitSlop={8}
                   accessibilityLabel={t('standorte.keys.return')}
-                  className="flex-row items-center px-3 py-1.5 rounded-[10px] border border-border dark:border-border-dark"
+                  className="flex-row items-center px-3 py-1.5 rounded-control border border-border dark:border-border-dark"
                   style={{ gap: 4 }}
                 >
                   <Undo2 size={14} color={themeColors.foreground} />
@@ -298,7 +298,7 @@ export default function KeysSection({
       {!history.forbidden && (
         <SectionCard title={t('standorte.keys.history')}>
           {history.loading && history.entries.length === 0 ? (
-            <ActivityIndicator color={themeColors.primary} />
+            <ActivityIndicator color={themeColors.primaryText} />
           ) : history.error && history.entries.length === 0 ? (
             <View>
               <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{t('standorte.keys.history-error')}</Text>
@@ -317,7 +317,7 @@ export default function KeysSection({
               {history.hasMore && (
                 <TouchableOpacity onPress={() => void history.loadMore()} disabled={history.loadingMore} accessibilityRole="button" hitSlop={8} className="self-start mt-2">
                   {history.loadingMore ? (
-                    <ActivityIndicator color={themeColors.primary} size="small" />
+                    <ActivityIndicator color={themeColors.primaryText} size="small" />
                   ) : (
                     <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.keys.load-more')}</Text>
                   )}

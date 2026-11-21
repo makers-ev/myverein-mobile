@@ -22,6 +22,7 @@ import {
 } from '@/lib/credentials';
 import { useThemeColors } from '@/theme/colors';
 import MemberDetailSheet from './MemberDetailSheet';
+import Surface from '@/components/ui/Surface';
 
 function Chip({ label, selected, disabled, onPress, locked }: { label: string; selected: boolean; disabled?: boolean; onPress: () => void; locked?: boolean }) {
   const colors = useThemeColors();
@@ -29,7 +30,7 @@ function Chip({ label, selected, disabled, onPress, locked }: { label: string; s
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      className={`px-4 rounded-[10px] justify-center flex-row items-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'} ${disabled ? 'opacity-40' : ''}`}
+      className={`px-4 rounded-control justify-center flex-row items-center ${selected ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'} ${disabled ? 'opacity-40' : ''}`}
       style={{ minHeight: 44, gap: 5 }}
       accessibilityRole="button"
       accessibilityState={{ selected, disabled }}
@@ -117,7 +118,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
   const formatDate = (v: string) => formatCredentialDate(v, language);
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+    <Surface className="p-4 mb-4">
       <TouchableOpacity
         onPress={() => setExpanded((e) => !e)}
         className="flex-row items-center justify-between"
@@ -177,7 +178,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
           <View className="mt-4">
             {loading ? (
               <View className="py-8 items-center" accessibilityLabel={t('forms.cred.overview.loading')}>
-                <ActivityIndicator color={colors.primary} />
+                <ActivityIndicator color={colors.primaryText} />
               </View>
             ) : failure ? (
               <View>
@@ -186,7 +187,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
                 </Text>
                 <TouchableOpacity
                   onPress={() => (failure === 'notFound' ? set({ fieldKey: null, status: query.status === 'missing' ? null : query.status }) : void reload())}
-                  className="self-start px-4 justify-center rounded-lg border border-border dark:border-border-dark"
+                  className="self-start px-4 justify-center rounded-control border border-border dark:border-border-dark"
                   style={{ minHeight: 44 }}
                   accessibilityRole="button"
                 >
@@ -201,7 +202,7 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
                 {filtersActive ? (
                   <TouchableOpacity
                     onPress={() => set({ fieldKey: null, status: null })}
-                    className="self-start px-4 justify-center rounded-lg border border-border dark:border-border-dark"
+                    className="self-start px-4 justify-center rounded-control border border-border dark:border-border-dark"
                     style={{ minHeight: 44 }}
                     accessibilityRole="button"
                   >
@@ -233,14 +234,14 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
                       key={`${row.clubMemberId}|${row.fieldKey}`}
                       onPress={() => void openMember(row.clubMemberId)}
                       disabled={opening !== null}
-                      className="border border-border dark:border-border-dark rounded-xl p-3 mb-2"
+                      className="border border-border dark:border-border-dark rounded-control p-3 mb-2"
                       style={{ minHeight: 44 }}
                       accessibilityRole="button"
                       accessibilityLabel={`${t('forms.cred.overview.open', { name, field: fieldLabel })}${row.sensitive ? `, ${t('forms.cf.sensitive')}` : ''}`}
                     >
                       <View className="flex-row items-center justify-between" style={{ gap: 8 }}>
                         <Text className="flex-1 text-foreground dark:text-foreground-dark font-semibold text-sm">{name}</Text>
-                        {opening === row.clubMemberId ? <ActivityIndicator color={colors.primary} accessibilityLabel={t('forms.cred.overview.opening')} /> : null}
+                        {opening === row.clubMemberId ? <ActivityIndicator color={colors.primaryText} accessibilityLabel={t('forms.cred.overview.opening')} /> : null}
                       </View>
                       <View className="flex-row items-center flex-wrap mt-0.5" style={{ gap: 6 }}>
                         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{fieldLabel}</Text>
@@ -281,6 +282,6 @@ export default function CredentialOverview({ clubId }: { clubId: string }) {
       ) : null}
 
       <MemberDetailSheet member={member} onClose={() => setMember(null)} clubId={clubId} />
-    </View>
+    </Surface>
   );
 }

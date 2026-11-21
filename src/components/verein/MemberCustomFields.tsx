@@ -11,6 +11,8 @@ import { unverifiedEntryKey } from '@/lib/credentials';
 import { contentLang, customFieldErrorKey, displayValue, localizedHelpText, localizedLabel, partitionFields, toFormField, valuesPatch, valuesToAnswers } from '@/lib/customFields';
 import { type Answers, type FieldErrorCode, fieldErrorsFromError, validateAnswers } from '@/lib/formSchema';
 import { useThemeColors } from '@/theme/colors';
+import Button from '@/components/ui/Button';
+import Surface from '@/components/ui/Surface';
 
 interface Props {
   clubId: string;
@@ -136,53 +138,54 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
   const own = target === 'me';
   const boardView = readOnlyView || (!own && guardianOfName === undefined);
   const showEntryHints = readOnlyView || !own;
-  const wrapper = card ? 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4' : 'mt-2';
-  const title = guardianOfName !== undefined ? t('forms.cf.values.titleChild', { name: guardianOfName }) : own ? t('forms.cf.values.titleOwn') : t('forms.cf.values.title');
+  const wrapper = card ? 'p-4 mb-4' : 'mt-2';
+  const Wrap = card ? Surface : View;
+    const title = guardianOfName !== undefined ? t('forms.cf.values.titleChild', { name: guardianOfName }) : own ? t('forms.cf.values.titleOwn') : t('forms.cf.values.title');
   const mutedClass = 'text-muted-foreground dark:text-muted-foreground-dark text-xs';
 
   if (status === 'loading') {
     return (
-      <View className={wrapper}>
-        <ActivityIndicator color={themeColors.primary} accessibilityLabel={t('forms.cf.values.loading')} />
-      </View>
+      <Wrap className={wrapper}>
+        <ActivityIndicator color={themeColors.primaryText} accessibilityLabel={t('forms.cf.values.loading')} />
+      </Wrap>
     );
   }
   if (status === 'failed' || !fields) {
     return (
-      <View className={wrapper}>
+      <Wrap className={wrapper}>
         <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert">
           {t('forms.cf.values.loadError')}
         </Text>
         <TouchableOpacity
           onPress={() => void reload()}
-          className="self-start px-4 justify-center rounded-lg border border-border dark:border-border-dark"
+          className="self-start px-4 justify-center rounded-control border border-border dark:border-border-dark"
           style={{ minHeight: 44 }}
           accessibilityRole="button"
         >
           <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('verein.retry')}</Text>
         </TouchableOpacity>
-      </View>
+      </Wrap>
     );
   }
   // Nothing to show (and nothing hidden from this caller): keep the screen free of an empty box.
   if (fields.length === 0) {
     if (!manageHint || target !== 'me') return null;
     return (
-      <View className={wrapper}>
+      <Wrap className={wrapper}>
         <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1" accessibilityRole="header">
           {t('forms.pm.hint.title')}
         </Text>
         <Text className={`${mutedClass} mb-3`}>{t('forms.pm.hint.text')}</Text>
         <TouchableOpacity
           onPress={() => navigate('ProfileModules')}
-          className="self-start px-4 justify-center rounded-lg border border-border dark:border-border-dark"
+          className="self-start px-4 justify-center rounded-control border border-border dark:border-border-dark"
           style={{ minHeight: 44 }}
           accessibilityRole="link"
           accessibilityLabel={t('forms.pm.hint.link')}
         >
           <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('forms.pm.hint.link')}</Text>
         </TouchableOpacity>
-      </View>
+      </Wrap>
     );
   }
 
@@ -196,7 +199,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
   const sensitiveEditable = editable.filter((f) => f.sensitive);
 
   return (
-    <View className={wrapper}>
+    <Wrap className={wrapper}>
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1" accessibilityRole="header">
         {title}
       </Text>
@@ -213,7 +216,7 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
             return (
               <View
                 key={f.id}
-                className="rounded-lg border border-border dark:border-border-dark px-3 py-2"
+                className="rounded-control border border-border dark:border-border-dark px-3 py-2"
                 accessible
                 accessibilityLabel={`${label}${f.sensitive ? `, ${t('forms.cf.sensitive')}` : ''}: ${text ?? t('forms.cf.values.empty')}`}
               >
@@ -267,23 +270,9 @@ export default function MemberCustomFields({ clubId, target, readOnlyView = fals
               {result.text}
             </Text>
           ) : null}
-          <TouchableOpacity
-            className={`bg-primary dark:bg-primary-dark rounded-xl py-3 items-center justify-center ${busy || !dirty ? 'opacity-50' : ''}`}
-            style={{ minHeight: 48 }}
-            onPress={() => void handleSave()}
-            disabled={busy || !dirty}
-            accessibilityRole="button"
-            accessibilityLabel={t('forms.cf.values.save')}
-            accessibilityState={{ disabled: busy || !dirty, busy }}
-          >
-            {busy ? (
-              <ActivityIndicator color={themeColors.primaryForeground} />
-            ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('forms.cf.values.save')}</Text>
-            )}
-          </TouchableOpacity>
+          <Button block label={t('forms.cf.values.save')} onPress={() => void handleSave()} loading={busy} disabled={!dirty} />
         </View>
       ) : null}
-    </View>
+    </Wrap>
   );
 }

@@ -55,7 +55,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               {texts.body}
             </Text>
             <TouchableOpacity
-              className="bg-primary dark:bg-primary-dark py-3 px-6 rounded-lg"
+              className="bg-primary dark:bg-primary-dark py-3 px-6 rounded-control"
               onPress={this.handleReset}
               accessibilityRole="button"
             >

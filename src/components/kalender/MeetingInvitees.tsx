@@ -7,6 +7,7 @@ import NotifySwitch from '@/components/ui/NotifySwitch';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { LIVE_MEMBER_STATUSES, type ClubMember } from '@/hooks/useClubMembers';
 import type { MeetingInvitee } from '@/hooks/useMeetingDetail';
+import Surface from '@/components/ui/Surface';
 
 interface Props {
   invitees: MeetingInvitee[];
@@ -52,7 +53,7 @@ export default function MeetingInvitees({ invitees, directory, nameFor, onAdd, o
   };
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+    <Surface className="p-4 mb-4">
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-3">{t('treffen.invitees.title')}</Text>
 
       {invitees.length === 0 ? (
@@ -98,7 +99,7 @@ export default function MeetingInvitees({ invitees, directory, nameFor, onAdd, o
           <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('treffen.invitees.add')}</Text>
         </TouchableOpacity>
       ) : (
-        <View className="mt-3 pt-3 border-t border-border dark:border-border-dark">
+        <View className="mt-3 pt-3 border-t border-divider dark:border-divider-dark">
           <NotifySwitch label={t('treffen.notify')} hint={t('treffen.notify.hint-invite')} value={notify} onChange={setNotify} disabled={busyId !== null} />
           {candidates.length === 0 ? (
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('treffen.invitees.none-left')}</Text>
@@ -115,7 +116,7 @@ export default function MeetingInvitees({ invitees, directory, nameFor, onAdd, o
               >
                 <Text className="text-foreground dark:text-foreground-dark text-sm">{m.name ?? '—'}</Text>
                 {busyId === m.memberId ? (
-                  <ActivityIndicator color={themeColors.primary} size="small" />
+                  <ActivityIndicator color={themeColors.primaryText} size="small" />
                 ) : (
                   <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('treffen.invitees.invite')}</Text>
                 )}
@@ -134,6 +135,6 @@ export default function MeetingInvitees({ invitees, directory, nameFor, onAdd, o
           </TouchableOpacity>
         </View>
       )}
-    </View>
+    </Surface>
   );
 }

@@ -7,6 +7,7 @@ import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { addDaysKey, dayKey, groupByDay, privacyErrorKeyOr } from '@/lib/ward';
 import { useWardEvents, type WardAnswer, type WardEvent } from '@/hooks/useWardToday';
 import type { Ward } from '@/lib/ward';
+import Surface from '@/components/ui/Surface';
 
 function Button({ label, active, disabled, onPress }: { label: string; active: boolean; disabled: boolean; onPress: () => void }) {
   return (
@@ -15,7 +16,7 @@ function Button({ label, active, disabled, onPress }: { label: string; active: b
       accessibilityState={{ selected: active, disabled }}
       disabled={disabled}
       onPress={onPress}
-      className={`flex-1 rounded-xl items-center justify-center border ${
+      className={`flex-1 rounded-control items-center justify-center border ${
         active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'bg-card dark:bg-card-dark border-border dark:border-border-dark'
       } ${disabled ? 'opacity-50' : ''}`}
       style={{ minHeight: 44 }}
@@ -54,7 +55,7 @@ export default function WardEventsSection({ ward, events }: { ward: Ward; events
         {t('heute.events.title')}
       </Text>
       {loading && rows.length === 0 && !error ? (
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       ) : error && rows.length === 0 ? (
         <View>
           <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'heute.events.error')}</Text>
@@ -73,7 +74,7 @@ export default function WardEventsSection({ ward, events }: { ward: Ward; events
               const cancelled = !!event.cancelledAt;
               const busy = pending === event.id;
               return (
-                <View key={event.id} className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-2">
+                <Surface key={event.id} className="p-3 mb-2">
                   <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
                     <View className="flex-1">
                       <Text className={`text-foreground dark:text-foreground-dark text-base font-semibold ${cancelled ? 'line-through' : ''}`}>{event.title}</Text>
@@ -99,7 +100,7 @@ export default function WardEventsSection({ ward, events }: { ward: Ward; events
                       {t('heute.events.own-account', { name })}
                     </Text>
                   ) : null}
-                </View>
+                </Surface>
               );
             })}
           </View>

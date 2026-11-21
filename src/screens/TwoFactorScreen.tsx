@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useAttemptLockout } from '@/hooks/useAttemptLockout';
 import { useThemeColors } from '@/theme/colors';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
+import Title from '@/components/ui/Title';
+import Button from '@/components/ui/Button';
 
 interface TwoFactorScreenProps {
   onVerify?: (code: string) => Promise<{ success: boolean; error?: string }>;
@@ -57,19 +59,19 @@ export default function TwoFactorScreen({ onVerify, onCancel }: TwoFactorScreenP
 
   return (
     <KeyboardAwareScreen
-      className="bg-muted dark:bg-muted-dark"
+      className="bg-background dark:bg-background-dark"
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
     >
-        <Text className="text-2xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
+        <Title className="text-foreground dark:text-foreground-dark text-center mb-2">
           {t('twofactor.title')}
-        </Text>
+        </Title>
         <Text className="text-sm text-center mb-8 text-muted-foreground dark:text-muted-foreground-dark">
           {t('twofactor.description')}
         </Text>
 
-        <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
+        <View className="bg-card dark:bg-card-dark p-5 rounded-card">
           <TextInput
-            className="bg-muted dark:bg-muted-dark rounded-lg p-3.5 text-2xl tracking-[8px] text-center text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-4"
+            className="bg-card dark:bg-card-dark rounded-control p-3.5 text-2xl tracking-[8px] text-center text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-4"
             placeholder={t('twofactor.placeholder')}
             placeholderTextColor={themeColors.mutedForeground}
             keyboardType="number-pad"
@@ -88,19 +90,7 @@ export default function TwoFactorScreen({ onVerify, onCancel }: TwoFactorScreenP
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3 text-center">{attemptsMessage}</Text>
           )}
 
-          <TouchableOpacity accessibilityRole="button"
-            className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-1 ${(isSubmitting || isLocked) ? 'opacity-70' : ''}`}
-            onPress={handleVerify}
-            disabled={isSubmitting || isLocked || code.length === 0}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color={themeColors.primaryForeground} />
-            ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">
-                {t('twofactor.button')}
-              </Text>
-            )}
-          </TouchableOpacity>
+          <Button block label={t('twofactor.button')} onPress={handleVerify} loading={isSubmitting} disabled={isLocked || code.length === 0} />
 
           <TouchableOpacity accessibilityRole="button" className="mt-4 items-center" onPress={onCancel}>
             <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('twofactor.cancel')}</Text>

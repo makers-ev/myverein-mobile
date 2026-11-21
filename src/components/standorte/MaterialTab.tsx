@@ -37,6 +37,8 @@ import {
   useToneColor,
   type Tone,
 } from './shared';
+import Surface from '@/components/ui/Surface';
+import { useElevation } from '@/theme/elevation';
 
 const ALL = '__all__';
 const DAMAGE_STATUSES: DamageReportStatus[] = ['gemeldet', 'in_bearbeitung', 'behoben'];
@@ -61,15 +63,16 @@ function OverdueChip() {
 }
 
 function ItemCard({ item, locationName, onPress }: { item: InventoryItem; locationName: string | null; onPress: () => void }) {
+  const shadow = useElevation('card');
   const themeColors = useThemeColors();
   return (
     <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
-      className="flex-row bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-3"
-      style={{ gap: 12 }}
+      className="flex-row bg-card dark:bg-card-dark rounded-card p-4 mb-3"
+      style={[{ gap: 12 }, shadow]}
     >
-      <View className="w-10 h-10 rounded-xl items-center justify-center bg-primary/10 dark:bg-primary-dark/10">
-        <Package size={20} color={themeColors.primary} />
+      <View className="w-10 h-10 rounded-tile items-center justify-center bg-primary/10 dark:bg-primary-dark/10">
+        <Package size={20} color={themeColors.primaryText} />
       </View>
       <View className="flex-1">
         <View className="flex-row items-start justify-between" style={{ gap: 8 }}>
@@ -115,7 +118,7 @@ function MaterialList({
   if (loading && items.length === 0) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }
@@ -144,7 +147,7 @@ function MaterialList({
       )}
 
       {visible.length === 0 ? (
-        <EmptyState icon={<Package size={26} color={themeColors.primary} />} text={t('material.list.empty')} docsPath={DOCS_PATHS.places} />
+        <EmptyState icon={<Package size={26} color={themeColors.primaryText} />} text={t('material.list.empty')} docsPath={DOCS_PATHS.places} />
       ) : (
         visible.map((i) => <ItemCard key={i.id} item={i} locationName={locationName(i.locationId)} onPress={() => onSelect(i.id)} />)
       )}
@@ -155,7 +158,7 @@ function MaterialList({
 function LoanRow({ loan, isLast }: { loan: InventoryLoan; isLast: boolean }) {
   const { t } = useLanguage();
   return (
-    <View className={`py-2.5 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`}>
+    <View className={`py-2.5 ${isLast ? '' : 'border-b border-divider dark:border-divider-dark'}`}>
       <View className="flex-row items-center justify-between mb-1">
         <Text className="text-foreground dark:text-foreground-dark text-sm font-medium">
           {new Date(loan.borrowedAt).toLocaleDateString()}
@@ -181,7 +184,7 @@ const PHOTO_REFRESH_MS = 10_000;
 
 function DamageReportPhoto({ photoUrl, onExpired }: { photoUrl: string | null; onExpired: () => void }) {
   if (!photoUrl) return null;
-  return <SignedImage uri={photoUrl} className="w-16 h-16 rounded-lg" onExpired={onExpired} />;
+  return <SignedImage uri={photoUrl} className="w-16 h-16 rounded-control" onExpired={onExpired} />;
 }
 
 function DamageReportRow({
@@ -198,7 +201,7 @@ function DamageReportRow({
 }) {
   const { t } = useLanguage();
   return (
-    <View className={`flex-row py-2.5 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`} style={{ gap: 10 }}>
+    <View className={`flex-row py-2.5 ${isLast ? '' : 'border-b border-divider dark:border-divider-dark'}`} style={{ gap: 10 }}>
       <DamageReportPhoto photoUrl={report.photoUrl} onExpired={onPhotoExpired} />
       <View className="flex-1">
         <Text className="text-foreground dark:text-foreground-dark text-sm font-medium mb-1">{report.description}</Text>
@@ -352,7 +355,7 @@ function MaterialDetail({
   if (loading && !item) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }
@@ -385,10 +388,10 @@ function MaterialDetail({
         <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('material.back')}</Text>
       </TouchableOpacity>
 
-      <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+      <Surface className="p-4 mb-4">
         <View className="flex-row items-start" style={{ gap: 12 }}>
-          <View className="w-12 h-12 rounded-xl items-center justify-center bg-primary/10 dark:bg-primary-dark/10">
-            <Package size={24} color={themeColors.primary} />
+          <View className="w-12 h-12 rounded-tile items-center justify-center bg-primary/10 dark:bg-primary-dark/10">
+            <Package size={24} color={themeColors.primaryText} />
           </View>
           <View className="flex-1">
             <Text className="text-xl font-semibold text-foreground dark:text-foreground-dark">{item.name}</Text>
@@ -407,7 +410,7 @@ function MaterialDetail({
           {item.maintenanceDue && <MaintenanceDueChip />}
           {isOverdue && <OverdueChip />}
         </View>
-      </View>
+      </Surface>
 
       {infoRows.length > 0 && (
         <SectionCard title={t('material.detail.info')}>
@@ -429,7 +432,7 @@ function MaterialDetail({
 
         {ownOpenLoan ? (
           <TouchableOpacity accessibilityRole="button"
-            className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${returningLoanId ? 'opacity-70' : ''}`}
+            className={`bg-primary dark:bg-primary-dark rounded-control py-2.5 items-center mt-3 ${returningLoanId ? 'opacity-70' : ''}`}
             onPress={() => void handleReturn(ownOpenLoan.id)}
             disabled={!!returningLoanId}
           >
@@ -445,7 +448,7 @@ function MaterialDetail({
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-3">{t('material.loans.self-disabled')}</Text>
         ) : !hasOpenLoan ? (
           <TouchableOpacity accessibilityRole="button"
-            className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center mt-3 ${borrowSaving ? 'opacity-70' : ''}`}
+            className={`bg-primary dark:bg-primary-dark rounded-control py-2.5 items-center mt-3 ${borrowSaving ? 'opacity-70' : ''}`}
             onPress={() => void handleBorrow()}
             disabled={borrowSaving}
           >
@@ -479,9 +482,9 @@ function MaterialDetail({
         {triageError ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-2">{triageError}</Text> : null}
 
         {showDamageForm ? (
-          <View className="mt-3 pt-3 border-t border-border dark:border-border-dark">
+          <View className="mt-3 pt-3 border-t border-divider dark:border-divider-dark">
             <TextInput
-              className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-sm text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
+              className="bg-card dark:bg-card-dark rounded-control p-3 text-sm text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
               placeholder={t('material.damage-reports.description-placeholder')}
               placeholderTextColor={themeColors.mutedForeground}
               value={description}
@@ -492,7 +495,7 @@ function MaterialDetail({
 
             <View className="flex-row items-center mb-3" style={{ gap: 10 }}>
               <TouchableOpacity accessibilityRole="button"
-                className={`flex-row items-center bg-muted dark:bg-muted-dark rounded-lg py-2 px-3 ${photoUploading ? 'opacity-70' : ''}`}
+                className={`flex-row items-center bg-muted dark:bg-muted-dark rounded-control py-2 px-3 ${photoUploading ? 'opacity-70' : ''}`}
                 style={{ gap: 6 }}
                 onPress={upload.choose}
                 disabled={photoUploading}
@@ -504,7 +507,7 @@ function MaterialDetail({
               </TouchableOpacity>
               {photoUploading ? (
                 <View className="flex-row items-center" style={{ gap: 6 }}>
-                  <ActivityIndicator size="small" color={themeColors.primary} />
+                  <ActivityIndicator size="small" color={themeColors.primaryText} />
                   <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
                     {t('material.damage-reports.uploading')}
                   </Text>
@@ -524,7 +527,7 @@ function MaterialDetail({
             {damageError ?? upload.error ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{damageError ?? upload.error}</Text> : null}
 
             <TouchableOpacity accessibilityRole="button"
-              className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${damageSaving || photoUploading ? 'opacity-70' : ''}`}
+              className={`bg-primary dark:bg-primary-dark rounded-control py-2.5 items-center ${damageSaving || photoUploading ? 'opacity-70' : ''}`}
               onPress={() => void handleSubmitDamage()}
               disabled={damageSaving || photoUploading}
             >

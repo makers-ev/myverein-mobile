@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity } from 'react-native';
+import Button from '@/components/ui/Button';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -21,7 +22,7 @@ export default function ClubNoticeCard({ clubId }: { clubId: string }) {
   return (
     <PrivacyCard title={t('datenschutz.notice.title')} intro={t('datenschutz.notice.intro')}>
       {loading && !notice && !error ? (
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       ) : error && !notice ? (
         <>
           <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'datenschutz.notice.error')}</Text>
@@ -32,16 +33,7 @@ export default function ClubNoticeCard({ clubId }: { clubId: string }) {
       ) : !notice ? (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('datenschutz.notice.none')}</Text>
       ) : (
-        <TouchableOpacity
-          accessibilityRole="button"
-          onPress={() => setOpen(true)}
-          className="border border-border dark:border-border-dark rounded-xl items-center justify-center"
-          style={{ minHeight: 48 }}
-        >
-          <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">
-            {t('datenschutz.notice.read', { version: notice.version, date: new Date(notice.publishedAt).toLocaleDateString(language) })}
-          </Text>
-        </TouchableOpacity>
+        <Button block variant="secondary" label={t('datenschutz.notice.read', { version: notice.version, date: new Date(notice.publishedAt).toLocaleDateString(language) })} onPress={() => setOpen(true)} />
       )}
 
       <FormSheet visible={open && !!notice} title={t('datenschutz.notice.title')} onClose={() => setOpen(false)} cancelLabel={t('consent.close')}>

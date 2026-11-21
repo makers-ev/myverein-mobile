@@ -28,7 +28,7 @@ export default function VisibilitySection({ clubId, clubMemberId }: { clubId: st
   return (
     <PrivacyCard title={t('datenschutz.visibility.title')} intro={t('datenschutz.visibility.intro')}>
       {loading && !levels && !error ? (
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       ) : !levels ? (
         <>
           <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'datenschutz.visibility.load-error')}</Text>
@@ -38,7 +38,7 @@ export default function VisibilitySection({ clubId, clubMemberId }: { clubId: st
         </>
       ) : (
         VISIBILITY_FIELDS.map((field) => (
-          <View key={field} className="border-t border-border dark:border-border-dark py-3">
+          <View key={field} className="border-t border-divider dark:border-divider-dark py-3">
             <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mb-2">{t(`datenschutz.visibility.field.${field}`)}</Text>
             <View className="flex-row" style={{ gap: 6 }} accessibilityRole="radiogroup">
               {VISIBILITY_LEVELS.map((level) => {
@@ -50,7 +50,7 @@ export default function VisibilitySection({ clubId, clubMemberId }: { clubId: st
                     accessibilityState={{ selected }}
                     accessibilityLabel={`${t(`datenschutz.visibility.field.${field}`)}: ${t(`datenschutz.visibility.level.${level}`)}`}
                     onPress={() => void choose(field, level)}
-                    className={`flex-1 rounded-xl items-center justify-center border ${selected ? 'bg-primary dark:bg-primary-dark border-transparent' : 'border-border dark:border-border-dark'}`}
+                    className={`flex-1 rounded-control items-center justify-center border ${selected ? 'bg-primary dark:bg-primary-dark border-transparent' : 'border-border dark:border-border-dark'}`}
                     style={{ minHeight: 44, paddingHorizontal: 4 }}
                   >
                     <Text

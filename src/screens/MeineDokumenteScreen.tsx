@@ -3,7 +3,9 @@ import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
-import { Body, Card, Loading } from '@/components/assembly/ui';
+import { FileText } from 'lucide-react-native';
+import EmptyState from '@/components/ui/EmptyState';
+import Skeleton from '@/components/ui/Skeleton';
 import ChipSelector from '@/components/documents/ChipSelector';
 import MemberDocumentsList from '@/components/documents/MemberDocumentsList';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
@@ -50,10 +52,8 @@ export default function MeineDokumenteScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <View className="px-6 pt-4">
-        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
-          {t('mydocs.title')}
-        </Text>
+      <View className="px-4 pt-3">
+        {/* The stack header names the screen (no second large title). */}
         {selected ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-2" numberOfLines={1}>
             {ward ? t('mydocs.child-title', { name: selected.label }) : selected.sub}
@@ -63,15 +63,13 @@ export default function MeineDokumenteScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 12, paddingBottom: 140 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 120 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} />}
       >
         {clubLoading || (wardsLoading && wards.length === 0) ? (
-          <Loading />
+          <Skeleton shape="rows" lines={4} />
         ) : !selected ? (
-          <Card>
-            <Body muted>{t('mydocs.no-club')}</Body>
-          </Card>
+          <EmptyState icon={FileText} title={t('mydocs.no-club')} />
         ) : (
           <MemberDocumentsList
             key={`${selected.key}:${version}`}

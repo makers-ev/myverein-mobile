@@ -161,7 +161,7 @@ export function LocationForm({
       </Field>
       <Field label={t('standorte.form.photo')}>
         {previewUrl ? (
-          <SignedImage uri={previewUrl} className="w-full h-36 rounded-xl mb-2" fallback={null} />
+          <SignedImage uri={previewUrl} className="w-full h-36 rounded-control mb-2" fallback={null} />
         ) : null}
         <View className="flex-row items-center" style={{ gap: 16 }}>
           <TouchableOpacity onPress={upload.choose} disabled={upload.busy} accessibilityRole="button" style={{ minHeight: 44, justifyContent: 'center' }}>

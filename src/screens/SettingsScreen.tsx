@@ -8,6 +8,8 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { supportedLanguages } from '@/contexts/translation/supportedLanguages';
 import { useThemeColors } from '@/theme/colors';
 import { useAuth } from '@/auth/AuthProvider';
+import Button from '@/components/ui/Button';
+import Title from '@/components/ui/Title';
 import Logo from '@/components/Logo';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 
@@ -37,6 +39,7 @@ import { setStoredTheme } from '@/theme/themePreferenceStorage';
 import { usePalette } from '@/theme/PaletteProvider';
 import { palettes, predefinedPaletteIds } from '@/theme/palettes';
 import PaletteCustomEditor from '@/components/Settings/PaletteCustomEditor';
+import Surface from '@/components/ui/Surface';
 
 interface SettingsScreenProps {
   onLogout?: () => void;
@@ -50,13 +53,13 @@ const openURL = (url: string) => {
 /** Small reusable card wrapper so every settings section looks the same. */
 function SectionCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
     return (
-        <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+        <Surface className="p-4 mb-4">
             <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">{title}</Text>
             {subtitle && (
                 <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mt-0.5 mb-1">{subtitle}</Text>
             )}
             <View className="mt-2">{children}</View>
-        </View>
+        </Surface>
     );
 }
 
@@ -272,8 +275,8 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                 showCloseIcon={true}
             />
 
-                <View className="items-center mb-6">
-                    <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark">{t('settings.title')}</Text>
+                <View className="mb-6">
+                    <Title>{t('settings.title')}</Title>
                 </View>
 
                 {isAuthenticated ? (
@@ -300,7 +303,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                     // legal apply to guests too. Only the account-specific
                     // sections above need a real session, so this replaces
                     // them rather than blocking the whole screen.
-                    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+                    <Surface className="p-4 mb-4">
                         <Text className="text-foreground dark:text-foreground-dark text-base font-semibold mb-1">
                             {t('home.guest-heading')}
                         </Text>
@@ -309,7 +312,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                         </Text>
                         <View className="flex-row" style={{ gap: 12 }}>
                             <TouchableOpacity accessibilityRole="button"
-                                className="flex-1 bg-primary dark:bg-primary-dark rounded-xl py-3"
+                                className="flex-1 bg-primary dark:bg-primary-dark rounded-control py-3"
                                 onPress={() => navigation.navigate('Signup')}
                             >
                                 <Text className="text-primary-foreground dark:text-primary-foreground-dark text-center font-semibold">
@@ -317,7 +320,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity accessibilityRole="button"
-                                className="flex-1 border border-border dark:border-border-dark rounded-xl py-3"
+                                className="flex-1 border border-border dark:border-border-dark rounded-control py-3"
                                 onPress={() => navigation.navigate('Login', {})}
                             >
                                 <Text className="text-foreground dark:text-foreground-dark text-center font-semibold">
@@ -325,7 +328,7 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
                                 </Text>
                             </TouchableOpacity>
                         </View>
-                    </View>
+                    </Surface>
                 )}
 
                 <SectionCard title={t('settings.choose-language')}>
@@ -403,51 +406,24 @@ export default function SettingsScreen({ onLogout, onDeleteAccount }: SettingsSc
 
                 {isAuthenticated && (
                     <SectionCard title={t('datenschutz.title')} subtitle={t('datenschutz.settings-hint')}>
-                        <TouchableOpacity
-                            className="bg-primary dark:bg-primary-dark py-2.5 px-4 rounded-lg"
-                            accessibilityRole="button"
-                            onPress={() => navigation.navigate('PrivacyCenter')}>
-                            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold text-center">
-                                {t('datenschutz.open')}
-                            </Text>
-                        </TouchableOpacity>
+                        <Button block variant="secondary" label={t('datenschutz.open')} onPress={() => navigation.navigate('PrivacyCenter')} />
                     </SectionCard>
                 )}
 
                 <SectionCard title={t('settings.section-app-lock')}>
-                    <TouchableOpacity accessibilityRole="button"
-                        className={`${appLockActive ? 'bg-destructive' : 'bg-primary dark:bg-primary-dark'} py-2.5 px-4 rounded-lg`}
-                        onPress={handlePinButtonPress}>
-                        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold text-center">
-                            {appLockButtonTitle}
-                        </Text>
-                    </TouchableOpacity>
+                    {/* Removing the PIN can be undone by setting a new one: neutral, not red. */}
+                    <Button block variant={appLockActive ? 'secondary' : 'primary'} label={appLockButtonTitle} onPress={handlePinButtonPress} />
                 </SectionCard>
 
                 {isAuthenticated && (
-                <View className="items-center justify-center mb-5">
-                    <View className="w-full border-2 border-destructive p-4 rounded-md bg-card dark:bg-card-dark">
-                        <Text className="text-lg font-semibold text-destructive dark:text-destructive-dark mb-2 text-center">
-                            {t('settings.danger-zone')}
-                        </Text>
-
-                        <TouchableOpacity accessibilityRole="button"
-                            className="bg-destructive py-2 px-4 rounded-md my-1"
-                            onPress={() => setLogoutPopup(true)}>
-                            <Text className="text-primary-foreground text-base font-semibold text-center">
-                                {t('settings.logout')}
-                            </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity accessibilityRole="button"
-                            className="bg-destructive py-2 px-4 rounded-md my-1"
-                            onPress={() => setDeleteAccountPopup(true)}>
-                            <Text className="text-primary-foreground text-base font-semibold text-center">
-                                {t('settings.delete-account')}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
+                    // Account: signing out is reversible (secondary); deleting the account is the one irreversible action
+                    // (solid red, behind its own typed confirmation).
+                    <SectionCard title={t('settings.danger-zone')}>
+                        <View style={{ gap: 10 }}>
+                            <Button block variant="secondary" label={t('settings.logout')} onPress={() => setLogoutPopup(true)} />
+                            <Button block variant="destructive" label={t('settings.delete-account')} onPress={() => setDeleteAccountPopup(true)} />
+                        </View>
+                    </SectionCard>
                 )}
 
                 {savedMessage && (
@@ -510,17 +486,17 @@ function ProfileSection({
         <SectionCard title={t('settings.section-profile')}>
             <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1">{t('settings.field-name')}</Text>
             <TextInput
-                className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3"
+                className="bg-card dark:bg-card-dark rounded-control p-3 text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3"
                 value={name}
                 onChangeText={setName}
             />
             <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1">{t('settings.field-email')}</Text>
-            <Text className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-muted-foreground dark:text-muted-foreground-dark border border-border dark:border-border-dark mb-3">
+            <Text className="bg-muted dark:bg-muted-dark rounded-control p-3 text-muted-foreground dark:text-muted-foreground-dark border border-border dark:border-border-dark mb-3">
                 {user?.email}
             </Text>
             {error && <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{error}</Text>}
             <TouchableOpacity accessibilityRole="button"
-                className={`bg-primary dark:bg-primary-dark rounded-lg py-2.5 items-center ${submitting ? 'opacity-70' : ''}`}
+                className={`bg-primary dark:bg-primary-dark rounded-control py-2.5 items-center ${submitting ? 'opacity-70' : ''}`}
                 onPress={handleSave}
                 disabled={submitting}
             >
@@ -635,12 +611,12 @@ function SecuritySection({
     return (
         <SectionCard title={t('settings.section-security')}>
             {/* Change password */}
-            <View className="border border-dashed border-border dark:border-border-dark rounded-lg p-3 mb-3">
+            <View className="border border-border dark:border-border-dark rounded-control p-3 mb-3">
                 <Text className="font-semibold text-foreground dark:text-foreground-dark">{t('settings.change-password')}</Text>
 
                 {!showPasswordForm ? (
                     <TouchableOpacity accessibilityRole="button"
-                        className="mt-2 self-start bg-muted dark:bg-muted-dark rounded-lg px-3 py-2"
+                        className="mt-2 self-start bg-muted dark:bg-muted-dark rounded-control px-3 py-2"
                         onPress={() => setShowPasswordForm(true)}
                     >
                         <Text className="text-foreground dark:text-foreground-dark">{t('settings.change-password')}</Text>
@@ -648,14 +624,14 @@ function SecuritySection({
                 ) : (
                     <View className="mt-2">
                         <TextInput
-                            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-2"
+                            className="bg-card dark:bg-card-dark rounded-control p-3 text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-2"
                             placeholder={t('settings.current-password')}
                             secureTextEntry
                             value={currentPassword}
                             onChangeText={setCurrentPassword}
                         />
                         <TextInput
-                            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-2"
+                            className="bg-card dark:bg-card-dark rounded-control p-3 text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-2"
                             placeholder={t('settings.new-password')}
                             secureTextEntry
                             value={newPassword}
@@ -664,7 +640,7 @@ function SecuritySection({
                         {passwordError && <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{passwordError}</Text>}
                         <View className="flex-row" style={{ gap: 8 }}>
                             <TouchableOpacity accessibilityRole="button"
-                                className={`bg-primary dark:bg-primary-dark rounded-lg px-3 py-2 ${passwordSubmitting ? 'opacity-70' : ''}`}
+                                className={`bg-primary dark:bg-primary-dark rounded-control px-3 py-2 ${passwordSubmitting ? 'opacity-70' : ''}`}
                                 onPress={handleChangePassword}
                                 disabled={passwordSubmitting || !currentPassword || newPassword.length < 8}
                             >
@@ -677,7 +653,7 @@ function SecuritySection({
                                 )}
                             </TouchableOpacity>
                             <TouchableOpacity accessibilityRole="button"
-                                className="border border-border dark:border-border-dark rounded-lg px-3 py-2"
+                                className="border border-border dark:border-border-dark rounded-control px-3 py-2"
                                 onPress={() => {
                                     setShowPasswordForm(false);
                                     setPasswordError(null);
@@ -693,7 +669,7 @@ function SecuritySection({
             </View>
 
             {/* Two-factor authentication */}
-            <View className="border border-dashed border-border dark:border-border-dark rounded-lg p-3">
+            <View className="border border-border dark:border-border-dark rounded-control p-3">
                 <View className="flex-row justify-between items-center">
                     <Text className="font-semibold text-foreground dark:text-foreground-dark">{t('settings.two-factor')}</Text>
                     <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark">
@@ -703,7 +679,7 @@ function SecuritySection({
 
                 {twoFactorStep === 'idle' && (
                     <TouchableOpacity accessibilityRole="button"
-                        className={`mt-2 self-start rounded-lg px-3 py-2 ${twoFactorEnabled ? 'bg-muted dark:bg-muted-dark' : 'bg-primary dark:bg-primary-dark'}`}
+                        className={`mt-2 self-start rounded-control px-3 py-2 ${twoFactorEnabled ? 'bg-muted dark:bg-muted-dark' : 'bg-primary dark:bg-primary-dark'}`}
                         onPress={() => setTwoFactorStep(twoFactorEnabled ? 'disable' : 'enable')}
                     >
                         <Text className={twoFactorEnabled ? 'text-foreground dark:text-foreground-dark' : 'text-primary-foreground dark:text-primary-foreground-dark'}>
@@ -718,7 +694,7 @@ function SecuritySection({
                             {t('settings.2fa-password-prompt')}
                         </Text>
                         <TextInput
-                            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-2"
+                            className="bg-card dark:bg-card-dark rounded-control p-3 text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-2"
                             placeholder={t('settings.current-password')}
                             secureTextEntry
                             value={twoFactorPassword}
@@ -727,7 +703,7 @@ function SecuritySection({
                         {twoFactorError && <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{twoFactorError}</Text>}
                         <View className="flex-row" style={{ gap: 8 }}>
                             <TouchableOpacity accessibilityRole="button"
-                                className={`rounded-lg px-3 py-2 ${twoFactorStep === 'disable' ? 'bg-destructive' : 'bg-primary dark:bg-primary-dark'} ${twoFactorSubmitting ? 'opacity-70' : ''}`}
+                                className={`rounded-control px-3 py-2 ${twoFactorStep === 'disable' ? 'bg-destructive' : 'bg-primary dark:bg-primary-dark'} ${twoFactorSubmitting ? 'opacity-70' : ''}`}
                                 onPress={twoFactorStep === 'disable' ? handleDisableTwoFactor : startTwoFactorEnable}
                                 disabled={twoFactorSubmitting || !twoFactorPassword}
                             >
@@ -739,7 +715,7 @@ function SecuritySection({
                                     </Text>
                                 )}
                             </TouchableOpacity>
-                            <TouchableOpacity accessibilityRole="button" className="border border-border dark:border-border-dark rounded-lg px-3 py-2" onPress={resetTwoFactorFlow}>
+                            <TouchableOpacity accessibilityRole="button" className="border border-border dark:border-border-dark rounded-control px-3 py-2" onPress={resetTwoFactorFlow}>
                                 <Text className="text-foreground dark:text-foreground-dark">{t('settings.cancel')}</Text>
                             </TouchableOpacity>
                         </View>
@@ -752,12 +728,12 @@ function SecuritySection({
                             {t('settings.2fa-verify-prompt')}
                         </Text>
                         {totpUri && (
-                            <Text className="bg-muted dark:bg-muted-dark rounded p-2 text-xs mb-2" selectable>
+                            <Text className="bg-muted dark:bg-muted-dark rounded-tile p-2 text-xs mb-2" selectable>
                                 {totpUri}
                             </Text>
                         )}
                         <TextInput
-                            className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-center tracking-[6px] text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-2"
+                            className="bg-card dark:bg-card-dark rounded-control p-3 text-center tracking-[6px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-2"
                             placeholder={t('settings.2fa-code-placeholder')}
                             keyboardType="number-pad"
                             maxLength={6}
@@ -767,7 +743,7 @@ function SecuritySection({
                         {twoFactorError && <Text className="text-destructive dark:text-destructive-dark text-sm mb-2">{twoFactorError}</Text>}
                         <View className="flex-row" style={{ gap: 8 }}>
                             <TouchableOpacity accessibilityRole="button"
-                                className={`bg-primary dark:bg-primary-dark rounded-lg px-3 py-2 ${twoFactorSubmitting ? 'opacity-70' : ''}`}
+                                className={`bg-primary dark:bg-primary-dark rounded-control px-3 py-2 ${twoFactorSubmitting ? 'opacity-70' : ''}`}
                                 onPress={handleVerifyTwoFactor}
                                 disabled={twoFactorSubmitting || totpCode.length !== 6}
                             >
@@ -779,7 +755,7 @@ function SecuritySection({
                                     </Text>
                                 )}
                             </TouchableOpacity>
-                            <TouchableOpacity accessibilityRole="button" className="border border-border dark:border-border-dark rounded-lg px-3 py-2" onPress={resetTwoFactorFlow}>
+                            <TouchableOpacity accessibilityRole="button" className="border border-border dark:border-border-dark rounded-control px-3 py-2" onPress={resetTwoFactorFlow}>
                                 <Text className="text-foreground dark:text-foreground-dark">{t('settings.cancel')}</Text>
                             </TouchableOpacity>
                         </View>
@@ -838,7 +814,7 @@ function SessionsSection({
                 <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('settings.no-other-sessions')}</Text>
             ) : (
                 otherSessions.map((s) => (
-                    <View key={s.id} className="flex-row items-center justify-between border border-dashed border-border dark:border-border-dark rounded-lg p-3 mb-2">
+                    <View key={s.id} className="flex-row items-center justify-between border border-border dark:border-border-dark rounded-control p-3 mb-2">
                         <View className="flex-1 pr-2">
                             <Text className="text-foreground dark:text-foreground-dark text-sm" numberOfLines={1}>
                                 {s.userAgent ?? s.id}
@@ -848,7 +824,7 @@ function SessionsSection({
                             </Text>
                         </View>
                         <TouchableOpacity accessibilityRole="button"
-                            className={`bg-destructive rounded-lg px-3 py-2 ${revokingToken === s.token ? 'opacity-70' : ''}`}
+                            className={`bg-destructive rounded-control px-3 py-2 ${revokingToken === s.token ? 'opacity-70' : ''}`}
                             onPress={() => handleRevoke(s.token)}
                             disabled={revokingToken === s.token}
                         >
@@ -891,7 +867,7 @@ function DebugSection() {
     return (
         <SectionCard title={t('settings.section-debug')} subtitle={t('settings.debug-description')}>
             <TouchableOpacity accessibilityRole="button"
-                className={`self-start bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-lg px-3 py-2 ${isLoading ? 'opacity-70' : ''}`}
+                className={`self-start bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-control px-3 py-2 ${isLoading ? 'opacity-70' : ''}`}
                 onPress={handlePing}
                 disabled={isLoading}
             >
@@ -903,7 +879,7 @@ function DebugSection() {
             </TouchableOpacity>
 
             {result && (
-                <Text className="mt-3 bg-muted dark:bg-muted-dark rounded-lg p-3 text-xs text-foreground dark:text-foreground-dark" selectable>
+                <Text className="mt-3 bg-muted dark:bg-muted-dark rounded-control p-3 text-xs text-foreground dark:text-foreground-dark" selectable>
                     {result}
                 </Text>
             )}

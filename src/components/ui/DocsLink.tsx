@@ -11,7 +11,7 @@ interface Props {
   labelKey?: string;
 }
 
-/** Contextual "Anleitung ansehen" link to the docs portal (external browser, 44pt target, role link). */
+/** Contextual "Anleitung ansehen" link to the docs portal as a tertiary text action (no underline, external browser, 44pt target, role link). */
 export default function DocsLink({ path, labelKey = 'docs.link' }: Props) {
   const { t } = useLanguage();
   const label = t(labelKey);
@@ -28,7 +28,7 @@ export default function DocsLink({ path, labelKey = 'docs.link' }: Props) {
       className="self-start justify-center"
       style={{ minHeight: 44, minWidth: 44 }}
     >
-      <Text className="text-primary dark:text-primary-dark text-sm font-semibold underline">{label}</Text>
+      <Text className="text-primary dark:text-primary-dark text-[15px] leading-5 font-semibold">{label}</Text>
     </TouchableOpacity>
   );
 }

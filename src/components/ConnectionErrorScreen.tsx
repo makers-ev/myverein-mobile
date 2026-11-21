@@ -1,11 +1,12 @@
 import React from 'react';
-import { ActivityIndicator, Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, Text, TouchableOpacity, View } from 'react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import DocsLink from '@/components/ui/DocsLink';
 import { DOCS_PATHS } from '@/lib/docsUrl';
 import { withScheme } from '@/lib/withScheme';
+import Button from '@/components/ui/Button';
 
 export type ConnectionStatus = 'checking' | 'online' | 'offline';
 
@@ -48,19 +49,7 @@ export default function ConnectionErrorScreen({ status, onRetry }: ConnectionErr
         {t('connection.offline-description')}
       </Text>
 
-      <TouchableOpacity accessibilityRole="button"
-        className="bg-primary dark:bg-primary-dark rounded-lg py-3 px-6 items-center"
-        onPress={onRetry}
-        disabled={status === 'checking'}
-      >
-        {status === 'checking' ? (
-          <ActivityIndicator color={themeColors.primaryForeground} />
-        ) : (
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">
-            {t('connection.retry')}
-          </Text>
-        )}
-      </TouchableOpacity>
+      <Button label={t('connection.retry')} onPress={onRetry} loading={status === 'checking'} />
 
       {STATUS_PAGE_URL ? (
         <TouchableOpacity accessibilityRole="button"

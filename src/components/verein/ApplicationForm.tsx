@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { ActivityIndicator, Alert, AppState, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, AppState, Text, TouchableOpacity, View } from 'react-native';
 import { RefreshCw } from 'lucide-react-native';
 
 import FormRenderer, { type FormRendererHandle } from '@/components/forms/FormRenderer';
@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useFormSubmission, type UseFormSubmissionOptions } from '@/hooks/useFormSubmission';
 import { fieldErrorKey, type FieldErrorCode } from '@/lib/formSchema';
 import { useThemeColors } from '@/theme/colors';
+import Button from '@/components/ui/Button';
 
 interface Props extends UseFormSubmissionOptions {
   /** Lets the parent wait for a pending autosave before it replaces this form (mode switch, other club). */
@@ -90,12 +91,12 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
 
       {form.notice ? (
         <View
-          className="mt-3 rounded-lg border border-primary/40 dark:border-primary-dark/40 bg-primary/5 dark:bg-primary-dark/5 p-3"
+          className="mt-3 rounded-control border border-primary/40 dark:border-primary-dark/40 bg-primary/5 dark:bg-primary-dark/5 p-3"
           accessibilityRole="alert"
           accessibilityLiveRegion="polite"
         >
           <View className="flex-row items-center" style={{ gap: 8 }}>
-            <RefreshCw size={16} color={themeColors.primary} />
+            <RefreshCw size={16} color={themeColors.primaryText} />
             <Text className="flex-1 text-sm font-semibold text-foreground dark:text-foreground-dark">{t('forms.apply.updated.title')}</Text>
           </View>
           <Text className="text-sm mt-1 text-foreground dark:text-foreground-dark">{t('forms.apply.updated.body')}</Text>
@@ -166,20 +167,9 @@ export default function ApplicationForm({ registerFlush, ...options }: Props) {
           {t('forms.apply.uploadRunning')}
         </Text>
       ) : null}
-      <TouchableOpacity
-        className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-4 ${busy || waitingForUpload ? 'opacity-70' : ''}`}
-        onPress={() => void submit()}
-        disabled={busy || waitingForUpload}
-        accessibilityRole="button"
-        accessibilityState={{ busy, disabled: busy || waitingForUpload }}
-        style={{ minHeight: 48 }}
-      >
-        {form.submitting ? (
-          <ActivityIndicator color={themeColors.primaryForeground} />
-        ) : (
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">{t('forms.apply.submit')}</Text>
-        )}
-      </TouchableOpacity>
+      <View className="mt-4">
+        <Button block label={t('forms.apply.submit')} onPress={() => void submit()} loading={form.submitting} disabled={busy || waitingForUpload} />
+      </View>
       {form.hasDraft ? (
         <TouchableOpacity
           onPress={confirmDiscard}

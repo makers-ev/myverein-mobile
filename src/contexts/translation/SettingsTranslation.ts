@@ -9,7 +9,7 @@ const SettingsTranslation: Translation = {
     // SettingsScreen translations
     'settings.title': 'Settings',
     'settings.choose-language': 'Choose Language',
-    'settings.danger-zone': 'Danger Zone',
+    'settings.danger-zone': 'Account',
     'settings.section-app-lock': 'App Lock',
     'settings.create-pin': 'Create App Lock',
     'settings.remove-pin': 'Remove App Lock',
@@ -34,6 +34,8 @@ const SettingsTranslation: Translation = {
 
     // App Lock gate (full-screen PIN prompt shown on launch/foreground)
     'app-lock.title': 'App Locked',
+    'app-lock.digits': '{{count}} of 4 digits entered',
+    'app-lock.delete': 'Delete last digit',
     'app-lock.description': 'Enter your PIN to continue.',
 
     // Account settings
@@ -91,7 +93,7 @@ const SettingsTranslation: Translation = {
     // SettingsScreen translations
     'settings.title': 'Einstellungen',
     'settings.choose-language': 'Sprache wählen',
-    'settings.danger-zone': 'Danger Zone',
+    'settings.danger-zone': 'Konto',
     'settings.section-app-lock': 'App-Sperre',
     'settings.create-pin': 'App Sperre einrichten',
     'settings.remove-pin': 'App Sperre entfernen',
@@ -116,6 +118,8 @@ const SettingsTranslation: Translation = {
 
     // App Lock gate (full-screen PIN prompt shown on launch/foreground)
     'app-lock.title': 'App gesperrt',
+    'app-lock.digits': '{{count}} von 4 Ziffern eingegeben',
+    'app-lock.delete': 'Letzte Ziffer löschen',
     'app-lock.description': 'Gib deine PIN ein, um fortzufahren.',
 
     // Account settings

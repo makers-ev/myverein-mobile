@@ -47,14 +47,20 @@ export default function MitgliedsausweisScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <View className="px-6 pt-4">
-        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
-          {ward ? t('card.child-title', { name: selected?.label ?? '' }) : t('card.screen-title')}
-        </Text>
-        <ChipSelector chips={chips} selectedKey={selected?.key ?? null} onSelect={setChoice} />
-      </View>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 12, paddingBottom: 140 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} />}>
+    // Hero moment: the card sits on the sunken surface, full bleed. The stack header already names the screen, so the
+    // title here only appears for a child's card (whose card it is).
+    <SafeAreaView edges={['bottom', 'left', 'right']} className="flex-1 bg-muted dark:bg-muted-dark">
+      {chips.length > 1 || ward ? (
+        <View className="px-4 pt-3">
+          {ward ? (
+            <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[20px] leading-[26px] font-semibold mb-2">
+              {t('card.child-title', { name: selected?.label ?? '' })}
+            </Text>
+          ) : null}
+          <ChipSelector chips={chips} selectedKey={selected?.key ?? null} onSelect={setChoice} />
+        </View>
+      ) : null}
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 120 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} />}>
         {clubLoading || (wardsLoading && wards.length === 0) ? (
           <Loading />
         ) : !selected ? (

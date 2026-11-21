@@ -8,7 +8,7 @@ export default function PushNotice({ messageKey, onDismiss }: { messageKey: stri
   const { t } = useLanguage();
   if (!messageKey) return null;
   return (
-    <View accessibilityRole="alert" className="flex-row items-center bg-muted dark:bg-muted-dark rounded-2xl p-3 mb-3" style={{ gap: 8 }}>
+    <View accessibilityRole="alert" className="flex-row items-center bg-muted dark:bg-muted-dark rounded-card p-3 mb-3" style={{ gap: 8 }}>
       <Text className="flex-1 text-foreground dark:text-foreground-dark text-sm">{t(messageKey)}</Text>
       <TouchableOpacity accessibilityRole="button" onPress={onDismiss} className="min-h-[44px] justify-center">
         <Text className="text-primary dark:text-primary-dark font-semibold">{t('push.notice.dismiss')}</Text>

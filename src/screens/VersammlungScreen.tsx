@@ -8,12 +8,14 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
 import AssemblyDetailView from '@/components/assembly/AssemblyDetailView';
 import BallotDetailView from '@/components/assembly/BallotDetailView';
+import UiButton from '@/components/ui/Button';
 import TermHint from '@/components/assembly/TermHint';
 import { Body, Card, ErrorRetry, Loading } from '@/components/assembly/ui';
 import { useMeetings } from '@/hooks/useMeetings';
 import { isAssemblyMeeting } from '@/lib/assembly';
 import { usePushScreenTarget } from '@/notifications/usePushScreenTarget';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+import { useElevation } from '@/theme/elevation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Versammlung'>;
 
@@ -24,6 +26,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Versammlung'>;
  */
 export default function VersammlungScreen({ route, navigation }: Props) {
   const { t, language } = useLanguage();
+  const shadow = useElevation('card');
   const { activeClub, loading: clubLoading } = useActiveClub();
   const clubId = activeClub?.clubId ?? null;
   // A tapped push may belong to another club: switch to it first, then drop the hand-over (the id arrives as a route param).
@@ -86,26 +89,29 @@ export default function VersammlungScreen({ route, navigation }: Props) {
               accessibilityRole="button"
               accessibilityLabel={`${m.title}, ${m.scheduledAt ? new Date(m.scheduledAt).toLocaleDateString(language) : t('treffen.scheduled-at.pending')}`}
               onPress={() => setMeetingId(m.id)}
-              className="min-h-[64px] bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-3"
+              className="min-h-[64px] bg-card dark:bg-card-dark rounded-card p-4 mb-2"
+              style={shadow}
             >
-              <Text className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">{m.title}</Text>
-              <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{m.scheduledAt ? new Date(m.scheduledAt).toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' }) : t('treffen.scheduled-at.pending')}</Text>
+              <Text className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-1">{m.title}</Text>
+              <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px]" style={{ fontVariant: ['tabular-nums'] }}>{m.scheduledAt ? new Date(m.scheduledAt).toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' }) : t('treffen.scheduled-at.pending')}</Text>
             </TouchableOpacity>
           ))
         )}
-        <TouchableOpacity accessibilityRole="button" onPress={() => navigation.navigate('Abstimmungen')} className="min-h-[48px] justify-center self-start">
-          <Text className="text-primary dark:text-primary-dark font-semibold">{t('assembly.to-ballots')}</Text>
-        </TouchableOpacity>
+        <View className="self-start mt-2" style={{ marginLeft: -12 }}>
+          <UiButton variant="tertiary" label={t('assembly.to-ballots')} onPress={() => navigation.navigate('Abstimmungen')} />
+        </View>
       </>
     );
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 140 }}>
-        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
-          {t('assembly.title')}
-        </Text>
-        {activeClub?.clubName ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-4">{activeClub.clubName}</Text> : <View className="mb-4" />}
+    <SafeAreaView edges={['bottom', 'left', 'right']} className="flex-1 bg-background dark:bg-background-dark">
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 120 }}>
+        {/* The stack header names the screen; the club is the context line (no second large title). */}
+        {activeClub?.clubName ? (
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-4 px-1">{activeClub.clubName}</Text>
+        ) : (
+          <View className="mb-4" />
+        )}
         {body}
       </ScrollView>
     </SafeAreaView>

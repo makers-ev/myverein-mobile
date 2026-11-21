@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { Check, ChevronLeft, Lock } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useBallot } from '@/hooks/useBallots';
 import { useScopedResource } from '@/hooks/useScopedResource';
-import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { canSubmitSelection, openProxies, toggleOption, votingOpenFor, type BallotDetail, type BallotOption, type VoteFailure } from '@/lib/assembly';
-import { Badge, Body, Button, Card, ErrorRetry, Loading, labelOr } from './ui';
+import { useThemeColors } from '@/theme/colors';
+import Banner from '@/components/ui/Banner';
+import UiButton from '@/components/ui/Button';
+import Badge, { type BadgeTone } from '@/components/ui/Badge';
+import ErrorState from '@/components/ui/ErrorState';
+import Skeleton from '@/components/ui/Skeleton';
+import Title from '@/components/ui/Title';
+import { Body, Button, Card, labelOr } from './ui';
 
 interface Props {
   clubId: string;
@@ -14,13 +21,14 @@ interface Props {
   onBack: () => void;
 }
 
-const PHASE_SYMBOL: Record<string, string> = { scheduled: '⏳', voting: '●', ended: '✓', cancelled: '✕', draft: '…' };
+const PHASE_TONE: Record<string, BadgeTone> = { scheduled: 'neutral', voting: 'warning', ended: 'neutral', cancelled: 'neutral', draft: 'neutral' };
 
 function when(iso: string | null, language: string): string {
   return iso ? new Date(iso).toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' }) : '';
 }
 
 function OptionRow({ option, selected, multi, onPress }: { option: BallotOption; selected: boolean; multi: boolean; onPress: () => void }) {
+  const colors = useThemeColors();
   return (
     <TouchableOpacity
       // radio / checkbox semantics so screen readers announce "selected" without relying on colour.
@@ -28,10 +36,29 @@ function OptionRow({ option, selected, multi, onPress }: { option: BallotOption;
       accessibilityState={multi ? { checked: selected } : { selected }}
       accessibilityLabel={option.label}
       onPress={onPress}
-      className={`min-h-[56px] flex-row items-center rounded-xl px-4 mb-2 border-2 ${selected ? 'border-primary dark:border-primary-dark bg-muted dark:bg-muted-dark' : 'border-border dark:border-border-dark bg-card dark:bg-card-dark'}`}
+      className={`min-h-[56px] flex-row items-center rounded-control mb-2 ${
+        selected ? 'border-primary-text dark:border-primary-text-dark bg-primary-soft dark:bg-primary-soft-dark' : 'border-border-control dark:border-border-control-dark bg-card dark:bg-card-dark'
+      }`}
+      // 2pt ring when selected, 1pt otherwise; the padding keeps the content from shifting.
+      style={{ gap: 12, borderWidth: selected ? 2 : 1, paddingHorizontal: selected ? 15 : 16 }}
     >
-      <Text className="text-lg mr-3 text-foreground dark:text-foreground-dark">{multi ? (selected ? '☑' : '☐') : selected ? '◉' : '○'}</Text>
-      <Text className="flex-1 text-base font-semibold text-foreground dark:text-foreground-dark">{option.label}</Text>
+      {/* Drawn radio / checkbox (no text glyphs); the selected state is also the thicker ring and the fill. */}
+      {multi ? (
+        <View
+          className={`items-center justify-center rounded-md border-2 ${selected ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'border-border-control dark:border-border-control-dark'}`}
+          style={{ width: 24, height: 24 }}
+        >
+          {selected ? <Check size={16} strokeWidth={2.5} color={colors.primaryForeground} /> : null}
+        </View>
+      ) : (
+        <View
+          className={`items-center justify-center rounded-full border-2 ${selected ? 'border-primary-text dark:border-primary-text-dark' : 'border-border-control dark:border-border-control-dark'}`}
+          style={{ width: 24, height: 24 }}
+        >
+          {selected ? <View className="rounded-full bg-primary-text dark:bg-primary-text-dark" style={{ width: 12, height: 12 }} /> : null}
+        </View>
+      )}
+      <Text className={`flex-1 text-[17px] leading-[22px] text-foreground dark:text-foreground-dark ${selected ? 'font-semibold' : ''}`}>{option.label}</Text>
     </TouchableOpacity>
   );
 }
@@ -52,11 +79,26 @@ function Result({ ballot }: { ballot: BallotDetail }) {
   const { t } = useLanguage();
   const r = ballot.result;
   if (!r) return <Body muted>{t('assembly.result.pending')}</Body>;
+  const tallies = r.tallies ?? [];
+  const max = Math.max(1, ...tallies.map((tl) => tl.votes));
   return (
     <View>
-      {r.outcome ? <Body>{labelOr(t, `assembly.outcome.${r.outcome}`, 'assembly.outcome.other')}</Body> : null}
-      {(r.tallies ?? []).map((tl) => (
-        <Text key={tl.optionId} className="text-sm text-foreground dark:text-foreground-dark mb-1">{`${tl.label}: ${tl.votes}`}</Text>
+      {r.outcome ? (
+        <Text className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">{labelOr(t, `assembly.outcome.${r.outcome}`, 'assembly.outcome.other')}</Text>
+      ) : null}
+      {/* Plain bars in the primary colour, the number written next to each (no chart dependency, no rainbow). */}
+      {tallies.map((tl) => (
+        <View key={tl.optionId} accessible accessibilityLabel={`${tl.label}: ${tl.votes}`} className="mb-3">
+          <View className="flex-row justify-between mb-1">
+            <Text className="text-foreground dark:text-foreground-dark text-[15px] leading-5">{tl.label}</Text>
+            <Text className="text-foreground dark:text-foreground-dark text-[15px] leading-5 font-semibold" style={{ fontVariant: ['tabular-nums'] }}>
+              {tl.votes}
+            </Text>
+          </View>
+          <View className="bg-muted dark:bg-muted-dark rounded-full overflow-hidden" style={{ height: 8 }}>
+            <View className="bg-primary dark:bg-primary-dark rounded-full" style={{ height: 8, width: `${Math.round((tl.votes / max) * 100)}%` }} />
+          </View>
+        </View>
       ))}
       {typeof r.participants === 'number' && typeof r.eligible === 'number' ? (
         <Body muted>{t('assembly.result.participation', { voted: r.participants, eligible: r.eligible })}</Body>
@@ -120,8 +162,8 @@ export default function BallotDetailView({ clubId, ballotId, onBack }: Props) {
     setForMember(null);
   }, [ballotId]);
 
-  if (loading && !ballot) return <Loading />;
-  if (!ballot) return <ErrorRetry message={apiErrorMessage(error, t, 'assembly.ballot.error')} onRetry={() => void reload()} />;
+  if (loading && !ballot) return <Skeleton shape="hero" />;
+  if (!ballot) return <ErrorState error={error} fallbackKey="assembly.ballot.error" onRetry={() => void reload()} />;
 
   const multi = ballot.maxChoices > 1;
   // A chosen proxy that is gone (voted elsewhere, withdrawn) falls back to the default instead of voting for the wrong person.
@@ -146,30 +188,33 @@ export default function BallotDetailView({ clubId, ballotId, onBack }: Props) {
 
   return (
     <View>
-      <TouchableOpacity accessibilityRole="button" onPress={onBack} className="min-h-[44px] justify-center self-start mb-2">
-        <Text className="text-primary dark:text-primary-dark font-semibold">{t('assembly.back')}</Text>
-      </TouchableOpacity>
-      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-xl font-semibold mb-2">
-        {ballot.title}
-      </Text>
-      <Badge symbol={PHASE_SYMBOL[ballot.phase] ?? '•'} label={labelOr(t, `assembly.phase.${ballot.phase}`, 'assembly.phase.other')} />
+      <View className="self-start mb-1" style={{ marginLeft: -12 }}>
+        <UiButton variant="tertiary" size="M" icon={ChevronLeft} label={t('assembly.back')} onPress={onBack} />
+      </View>
+      <Title>{ballot.title}</Title>
+      <View className="flex-row flex-wrap my-2" style={{ gap: 6 }}>
+        <Badge tone={PHASE_TONE[ballot.phase] ?? 'neutral'}>{labelOr(t, `assembly.phase.${ballot.phase}`, 'assembly.phase.other')}</Badge>
+        {ballot.secret ? (
+          <Badge tone="neutral" icon={Lock}>
+            {t('assembly.secret')}
+          </Badge>
+        ) : null}
+      </View>
       {ballot.description ? <Body>{ballot.description}</Body> : null}
       {ballot.meeting ? <Body muted>{ballot.meeting.title}</Body> : null}
       {ballot.mode === 'circular' ? <Body muted>{t('assembly.circular-hint')}</Body> : null}
       {ballot.opensAt && ballot.phase === 'scheduled' ? <Body muted>{t('assembly.opens-at', { when: when(ballot.opensAt, language) })}</Body> : null}
       {ballot.closesAt && (ballot.phase === 'voting' || ballot.phase === 'scheduled') ? <Body muted>{t('assembly.closes-at', { when: when(ballot.closesAt, language) })}</Body> : null}
-      {ballot.secret ? (
-        <Card>
-          <Body>{t('assembly.secret-hint')}</Body>
-        </Card>
+      {ballot.secret && ballot.phase === 'voting' ? (
+        <View className="mb-4">
+          <Banner tone="info" icon={Lock} body={t('assembly.secret-hint')} />
+        </View>
       ) : null}
       {ballot.electionId ? <Election clubId={clubId} electionId={ballot.electionId} /> : null}
 
       {failure ? (
         <View className="mb-3">
-          <Text accessibilityRole="alert" className="text-destructive dark:text-destructive-dark text-sm">
-            {failure}
-          </Text>
+          <Banner tone="danger" body={failure} />
         </View>
       ) : null}
 

@@ -51,7 +51,7 @@ export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProp
         <Modal animationType="slide" transparent visible={visible} onRequestClose={() => {}}>
             <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
                 <View
-                    className="bg-card dark:bg-card-dark rounded-[20px] px-6 pt-6 pb-8"
+                    className="bg-card dark:bg-card-dark rounded-hero px-6 pt-6 pb-8"
                     style={{ marginHorizontal: 16, marginBottom: navbarClearance, maxHeight: maxCardHeight }}
                 >
                     <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark mb-4">
@@ -59,7 +59,7 @@ export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProp
                     </Text>
 
                     <ScrollView
-                        className="bg-muted dark:bg-muted-dark rounded-2xl p-4 border border-border dark:border-border-dark mb-6"
+                        className="bg-muted dark:bg-muted-dark rounded-card p-4 border border-border dark:border-border-dark mb-6"
                         style={{ maxHeight: 320 }}
                     >
                         {Array.from({ length: SECTION_COUNT }, (_, i) => i + 1).map((num) => (
@@ -98,7 +98,7 @@ export default function AcceptTosModal({ visible, onAccept }: AcceptTosModalProp
                     <TouchableOpacity accessibilityRole="button"
                         disabled={!isChecked}
                         onPress={handleAccept}
-                        className={`py-4 rounded-xl items-center ${
+                        className={`py-4 rounded-control items-center ${
                             isChecked ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark'
                         }`}
                     >

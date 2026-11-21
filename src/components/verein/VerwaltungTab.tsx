@@ -1,12 +1,16 @@
 import React from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { navigate } from '@/navigation/navigationRef';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { useClubApplications } from '@/hooks/useClubApplications';
+import Button from '@/components/ui/Button';
+import HeroCard from '@/components/ui/HeroCard';
 import ListRow from '@/components/ui/ListRow';
+import ListSection from '@/components/ui/ListSection';
+import { Landmark, SlidersHorizontal, UserPlus, Users, Vote } from 'lucide-react-native';
 import { CardCheckEntry } from '@/components/documents/DocumentsEntry';
 import MemberStatsCard from './MemberStatsCard';
 import ExitRequestsQueue from './ExitRequestsQueue';
@@ -27,7 +31,20 @@ function ApplicationsEntry({ clubId }: { clubId: string }) {
       : total === 0
         ? t('admin.applications.hint-zero')
         : t('admin.applications.hint', { count: total });
-  return <ListRow title={t('verein.applications.open')} hint={hint} onPress={() => navigate('ClubApplications')} />;
+  if (!error && total > 0) {
+    return (
+      <View className="mb-6">
+        <HeroCard eyebrow={t('admin.applications.hero.eyebrow')} title={t('verein.applications.open')} meta={hint}>
+          <Button variant="inverse" label={t('admin.applications.hero.action')} onPress={() => navigate('ClubApplications')} />
+        </HeroCard>
+      </View>
+    );
+  }
+  return (
+    <ListSection title={t('admin.section.open')} inset={60}>
+      <ListRow icon={UserPlus} title={t('verein.applications.open')} hint={hint} onPress={() => navigate('ClubApplications')} />
+    </ListSection>
+  );
 }
 
 /**
@@ -44,26 +61,30 @@ export default function VerwaltungTab({ clubId, onOpenMembers }: { clubId: strin
   if (loading && !membership) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }
   if (!canSeeVerwaltung(can)) {
-    return <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('verein.applications.forbidden')}</Text>;
+    return <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px]">{t('verein.applications.forbidden')}</Text>;
   }
 
   return (
     <>
       {can('members:write') ? <ApplicationsEntry clubId={clubId} /> : null}
-      {can('members:write') || can('members:read_sensitive') ? <ListRow title={t('admin.members.open')} hint={t('admin.members.hint')} onPress={onOpenMembers} /> : null}
-      {can('forms:write') ? <ListRow title={t('forms.pm.title')} hint={t('forms.pm.entry.hint')} onPress={() => navigate('ProfileModules')} /> : null}
       {can('members:write') ? <ExitRequestsQueue clubId={clubId} ownMemberId={membership?.memberId ?? null} /> : null}
-      <CardCheckEntry clubId={clubId} />
+      <ListSection title={t('admin.section.tools')} inset={60}>
+        {can('members:write') || can('members:read_sensitive') ? (
+          <ListRow key="members" icon={Users} title={t('admin.members.open')} hint={t('admin.members.hint')} onPress={onOpenMembers} />
+        ) : null}
+        {can('forms:write') ? <ListRow key="pm" icon={SlidersHorizontal} title={t('forms.pm.title')} hint={t('forms.pm.entry.hint')} onPress={() => navigate('ProfileModules')} /> : null}
+        <CardCheckEntry key="check" clubId={clubId} />
+      </ListSection>
       {can('assembly:manage') ? (
-        <>
-          <ListRow title={t('assembly.dashboard.Abstimmungen')} onPress={() => navigate('Abstimmungen')} />
-          <ListRow title={t('assembly.dashboard.Versammlung')} onPress={() => navigate('Versammlung')} />
-        </>
+        <ListSection title={t('admin.section.assembly')} inset={60}>
+          <ListRow key="ballots" icon={Vote} title={t('assembly.dashboard.Abstimmungen')} onPress={() => navigate('Abstimmungen')} />
+          <ListRow key="assembly" icon={Landmark} title={t('assembly.dashboard.Versammlung')} onPress={() => navigate('Versammlung')} />
+        </ListSection>
       ) : null}
       {can('club_stats:read') ? <MemberStatsCard clubId={clubId} /> : null}
     </>

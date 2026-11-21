@@ -10,10 +10,12 @@ import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { useLocations, useLocationDetail, type Location, type WifiNetwork, type WifiSecurity, type LocationLink } from '@/hooks/useLocations';
 import { buildWifiQrPayload } from '@/lib/wifiQr';
 import SignedImage from '@/components/ui/SignedImage';
+import Skeleton from '@/components/ui/Skeleton';
 import { useThrottledCallback } from '@/hooks/useThrottledCallback';
 import KeysSection from './KeysSection';
 import { LinkForm, LocationForm, WifiForm } from './LocationForms';
 import { EmptyState, IconButton, SectionCard, StatusChip } from './shared';
+import Surface from '@/components/ui/Surface';
 
 // Signed photo URLs expire; an image error triggers one refetch for fresh URLs, at most once per 10 s.
 const PHOTO_REFRESH_MS = 10_000;
@@ -24,7 +26,7 @@ function LocationPhotoPlaceholder({ className }: { className: string }) {
   return (
     <View className={`items-center justify-center bg-muted dark:bg-muted-dark ${className}`}>
       <View className="w-16 h-16 rounded-full items-center justify-center bg-primary/10 dark:bg-primary-dark/10">
-        <MapPin size={28} color={themeColors.primary} />
+        <MapPin size={28} color={themeColors.primaryText} />
       </View>
     </View>
   );
@@ -32,10 +34,8 @@ function LocationPhotoPlaceholder({ className }: { className: string }) {
 
 function LocationCard({ location, onPress, onPhotoExpired }: { location: Location; onPress: () => void; onPhotoExpired: () => void }) {
   return (
-    <TouchableOpacity accessibilityRole="button"
-      onPress={onPress}
-      className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl mb-4 overflow-hidden shadow-sm"
-    >
+    <Surface className="mb-4 overflow-hidden">
+    <TouchableOpacity accessibilityRole="button" onPress={onPress}>
       {location.photoUrl ? (
         <SignedImage
           uri={location.photoUrl}
@@ -55,6 +55,7 @@ function LocationCard({ location, onPress, onPhotoExpired }: { location: Locatio
         )}
       </View>
     </TouchableOpacity>
+    </Surface>
   );
 }
 
@@ -66,11 +67,7 @@ function LocationList({ clubId, canWrite, onSelect }: { clubId: string; canWrite
   const onPhotoExpired = useThrottledCallback(() => void refetch(), PHOTO_REFRESH_MS);
 
   if (loading && locations.length === 0) {
-    return (
-      <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
-      </View>
-    );
+    return <Skeleton shape="rows" lines={3} />;
   }
 
   return (
@@ -83,7 +80,7 @@ function LocationList({ clubId, canWrite, onSelect }: { clubId: string; canWrite
       </View>
 
       {locations.length === 0 ? (
-        <EmptyState icon={<MapPin size={26} color={themeColors.primary} />} text={t('standorte.list.empty')} docsPath={DOCS_PATHS.places} />
+        <EmptyState icon={<MapPin size={26} color={themeColors.primaryText} />} text={t('standorte.list.empty')} docsPath={DOCS_PATHS.places} />
       ) : (
         locations.map((loc) => <LocationCard key={loc.id} location={loc} onPress={() => onSelect(loc.id)} onPhotoExpired={onPhotoExpired} />)
       )}
@@ -103,9 +100,9 @@ function WifiCard({ network, onEdit }: { network: WifiNetwork; onEdit?: () => vo
   const qrValue = network.qrPayload || buildWifiQrPayload(network.ssid, network.password, security);
 
   return (
-    <View className="border border-border dark:border-border-dark rounded-xl p-3 mb-3">
+    <View className="border border-border dark:border-border-dark rounded-control p-3 mb-3">
       <View className="flex-row items-center mb-1" style={{ gap: 8 }}>
-        <Wifi size={16} color={themeColors.primary} />
+        <Wifi size={16} color={themeColors.primaryText} />
         <Text className="flex-1 text-foreground dark:text-foreground-dark font-semibold text-sm">{network.label}</Text>
         {onEdit && <IconButton kind="edit" label={t('standorte.wifi.edit')} onPress={onEdit} />}
       </View>
@@ -122,17 +119,17 @@ function WifiCard({ network, onEdit }: { network: WifiNetwork; onEdit?: () => vo
               {t('standorte.wifi.password')}: {network.password}
             </Text>
           )}
-          <View className="items-center bg-white p-3 rounded-lg self-start">
+          <View className="items-center bg-white p-3 rounded-control self-start">
             <QRCode value={qrValue} size={140} color="#000000" backgroundColor="#FFFFFF" />
           </View>
           <TouchableOpacity onPress={() => setShowQr(false)} accessibilityRole="button" hitSlop={8} className="self-start mt-2 flex-row items-center" style={{ gap: 4 }}>
-            <EyeOff size={14} color={themeColors.primary} />
+            <EyeOff size={14} color={themeColors.primaryText} />
             <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.wifi.hide-qr')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <TouchableOpacity onPress={() => setShowQr(true)} accessibilityRole="button" hitSlop={8} className="self-start flex-row items-center" style={{ gap: 4 }}>
-          <Eye size={14} color={themeColors.primary} />
+          <Eye size={14} color={themeColors.primaryText} />
           <Text className="text-primary dark:text-primary-dark text-xs font-semibold">{t('standorte.wifi.show-qr')}</Text>
         </TouchableOpacity>
       )}
@@ -144,13 +141,13 @@ function LinkRow({ link, isLast, onEdit }: { link: LocationLink; isLast: boolean
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   return (
-    <View className={`flex-row items-center py-2.5 ${isLast ? '' : 'border-b border-border dark:border-border-dark'}`} style={{ gap: 8 }}>
+    <View className={`flex-row items-center py-2.5 ${isLast ? '' : 'border-b border-divider dark:border-divider-dark'}`} style={{ gap: 8 }}>
       <TouchableOpacity accessibilityRole="button"
         onPress={() => Linking.openURL(link.url).catch((err) => console.error('Error opening URL:', err))}
         className="flex-1 flex-row items-center"
         style={{ gap: 8 }}
       >
-        <Link2 size={16} color={themeColors.primary} />
+        <Link2 size={16} color={themeColors.primaryText} />
         <Text className="flex-1 text-foreground dark:text-foreground-dark text-sm font-medium">{link.title}</Text>
         <ExternalLink size={16} color={themeColors.mutedForeground} />
       </TouchableOpacity>
@@ -204,7 +201,7 @@ function LocationDetail({
   if (loading && !location) {
     return (
       <View className="py-12 items-center">
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       </View>
     );
   }
@@ -247,12 +244,12 @@ function LocationDetail({
       {location.photoUrl ? (
         <SignedImage
           uri={location.photoUrl}
-          className="w-full h-40 rounded-2xl mb-4"
+          className="w-full h-40 rounded-card mb-4"
           onExpired={onPhotoExpired}
-          fallback={<LocationPhotoPlaceholder className="w-full h-40 rounded-2xl mb-4" />}
+          fallback={<LocationPhotoPlaceholder className="w-full h-40 rounded-card mb-4" />}
         />
       ) : (
-        <LocationPhotoPlaceholder className="w-full h-40 rounded-2xl mb-4" />
+        <LocationPhotoPlaceholder className="w-full h-40 rounded-card mb-4" />
       )}
 
       <View className="flex-row items-center mb-4" style={{ gap: 8 }}>
@@ -265,7 +262,7 @@ function LocationDetail({
           <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">{location.address}</Text>
           <TouchableOpacity accessibilityRole="button"
             onPress={handleDirections}
-            className="flex-row items-center self-start bg-primary dark:bg-primary-dark rounded-lg py-2.5 px-4"
+            className="flex-row items-center self-start bg-primary dark:bg-primary-dark rounded-control py-2.5 px-4"
             style={{ gap: 6 }}
           >
             <MapPin size={14} color={themeColors.primaryForeground} />

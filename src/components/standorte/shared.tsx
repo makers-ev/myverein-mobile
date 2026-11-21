@@ -7,16 +7,17 @@ import { useThemeColors } from '@/theme/colors';
 import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import DocsLink from '@/components/ui/DocsLink';
+import Surface from '@/components/ui/Surface';
 
 export function SectionCard({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+    <Surface className="p-4 mb-4">
       <View className="flex-row items-center justify-between mb-3">
         <Text className="text-foreground dark:text-foreground-dark font-semibold text-base">{title}</Text>
         {action}
       </View>
       {children}
-    </View>
+    </Surface>
   );
 }
 
@@ -65,7 +66,7 @@ export function ChipPicker<T extends string>({
       <TouchableOpacity accessibilityRole="button"
         key={o.value}
         onPress={() => onChange(o.value)}
-        className={`px-3 py-1.5 rounded-[10px] border ${
+        className={`px-3 py-1.5 rounded-control border ${
           active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'border-border dark:border-border-dark'
         }`}
       >
@@ -112,11 +113,11 @@ export function IconButton({ kind, onPress, label }: { kind: 'add' | 'edit'; onP
 
 export function EmptyState({ icon, text, docsPath }: { icon: React.ReactNode; text: string; docsPath?: string }) {
   return (
-    <View className="items-center py-10 px-6 border border-dashed border-border dark:border-border-dark rounded-2xl">
+    <Surface className="items-center py-10 px-6">
       <View className="w-14 h-14 rounded-full items-center justify-center bg-primary/10 dark:bg-primary-dark/10 mb-3">{icon}</View>
       <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm text-center">{text}</Text>
       {docsPath ? <DocsLink path={docsPath} /> : null}
-    </View>
+    </Surface>
   );
 }
 
@@ -125,7 +126,7 @@ export function SwitchRow({ label, value, onChange }: { label: string; value: bo
   return (
     <View className="flex-row items-center justify-between mb-3">
       <Text className="flex-1 text-foreground dark:text-foreground-dark text-sm">{label}</Text>
-      <Switch value={value} onValueChange={onChange} trackColor={{ true: themeColors.primary, false: themeColors.border }} />
+      <Switch value={value} onValueChange={onChange} trackColor={{ true: themeColors.primary, false: themeColors.borderControl }} />
     </View>
   );
 }

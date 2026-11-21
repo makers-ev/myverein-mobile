@@ -8,6 +8,7 @@ import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useTimeTracking } from '@/hooks/useTimeTracking';
 import { canDeleteEntry, elapsedMinutes, formatDuration, timeErrorKey, totalMinutes } from '@/lib/timeTracking';
 import FormSheet from '@/components/ui/FormSheet';
+import Button from '@/components/ui/Button';
 
 interface Props {
   visible: boolean;
@@ -86,7 +87,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
 
       {time.loading ? (
         <View className="py-8 items-center" accessibilityLabel={t('time.loading')}>
-          <ActivityIndicator color={themeColors.primary} />
+          <ActivityIndicator color={themeColors.primaryText} />
         </View>
       ) : time.error && time.entries.length === 0 && !running ? (
         <View className="py-4">
@@ -95,7 +96,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
         </View>
       ) : (
         <View>
-          <View className="border border-border dark:border-border-dark rounded-xl p-3 mb-4" accessibilityLiveRegion="polite">
+          <View className="border border-border dark:border-border-dark rounded-control p-3 mb-4" accessibilityLiveRegion="polite">
             {running ? (
               <>
                 <Text className="text-foreground dark:text-foreground-dark text-base font-semibold">{t('time.running', { duration: formatDuration(elapsedMinutes(running.startedAt, now)) })}</Text>
@@ -107,7 +108,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
                   onPress={() => void run('out', () => time.clockOut())}
                   disabled={!!busy}
                   accessibilityRole="button"
-                  className={`flex-row items-center justify-center bg-destructive rounded-xl ${busy ? 'opacity-60' : ''}`}
+                  className={`flex-row items-center justify-center bg-destructive rounded-control ${busy ? 'opacity-60' : ''}`}
                   style={{ gap: 8, minHeight: 52 }}
                 >
                   <Square size={18} color="#FFFFFF" />
@@ -117,16 +118,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
             ) : (
               <>
                 <Text className="text-foreground dark:text-foreground-dark text-sm mb-2">{eventTitle ? t('time.start-for', { title: eventTitle }) : t('time.idle')}</Text>
-                <TouchableOpacity
-                  onPress={() => void run('in', () => time.clockIn(eventId ?? null))}
-                  disabled={!!busy || time.currentLoading}
-                  accessibilityRole="button"
-                  className={`flex-row items-center justify-center bg-primary dark:bg-primary-dark rounded-xl ${busy || time.currentLoading ? 'opacity-60' : ''}`}
-                  style={{ gap: 8, minHeight: 52 }}
-                >
-                  <Play size={18} color={themeColors.primaryForeground} />
-                  <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('time.start')}</Text>
-                </TouchableOpacity>
+                <Button block icon={Play} label={t('time.start')} onPress={() => void run('in', () => time.clockIn(eventId ?? null))} disabled={!!busy || time.currentLoading} />
               </>
             )}
           </View>
@@ -136,7 +128,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
               <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('time.suggestions')}</Text>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-1">{t('time.suggestions.hint')}</Text>
               {time.suggestions.map((s) => (
-                <View key={s.eventId} className="flex-row items-center border-b border-border dark:border-border-dark">
+                <View key={s.eventId} className="flex-row items-center border-b border-divider dark:border-divider-dark">
                   <View className="flex-1 py-2">
                     <Text className="text-foreground dark:text-foreground-dark text-sm">{s.title}</Text>
                     <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
@@ -157,7 +149,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
             <View>
               <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-1">{t('time.total', { duration: formatDuration(totalMinutes(finished)) })}</Text>
               {finished.map((e) => (
-                <View key={e.id} className="flex-row items-center border-b border-border dark:border-border-dark">
+                <View key={e.id} className="flex-row items-center border-b border-divider dark:border-divider-dark">
                   <View className="flex-1 py-2">
                     <Text className="text-foreground dark:text-foreground-dark text-sm">
                       {new Date(e.startedAt).toLocaleDateString(language, { day: 'numeric', month: 'short' })} · {formatDuration(e.minutes ?? 0)}

@@ -41,7 +41,7 @@ export default function CheckInSection({ clubId, meetingId }: { clubId: string; 
         value={query}
         onChangeText={setQuery}
         autoCorrect={false}
-        className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-3 min-h-[48px]"
+        className="bg-card dark:bg-card-dark rounded-control p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-3 min-h-[48px]"
       />
       {error ? (
         <Text accessibilityRole="alert" className="text-destructive dark:text-destructive-dark text-sm mb-2">
@@ -52,7 +52,7 @@ export default function CheckInSection({ clubId, meetingId }: { clubId: string; 
       {c.error && rows.length === 0 ? <ErrorRetry message={t('assembly.checkin.error')} onRetry={() => void c.reload()} /> : null}
       {!c.loading && !c.error && rows.length === 0 ? <Body muted>{t('assembly.checkin.empty')}</Body> : null}
       {rows.map((r) => (
-        <View key={r.clubMemberId} className="mb-2 border-b border-border dark:border-border-dark pb-2">
+        <View key={r.clubMemberId} className="mb-2 border-b border-divider dark:border-divider-dark pb-2">
           <Text className="text-foreground dark:text-foreground-dark font-semibold text-base">{r.displayName || t('assembly.unknown-person')}</Text>
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-1">
             {`${r.state === 'present' ? '✓' : r.state === 'left' ? '↩' : '○'} ${t(`assembly.checkin.state.${r.state}`)}${r.proxyCount > 0 ? ` · ${t('assembly.checkin.proxies', { count: r.proxyCount })}` : ''}`}

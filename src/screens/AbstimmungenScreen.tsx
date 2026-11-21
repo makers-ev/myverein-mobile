@@ -55,12 +55,14 @@ export default function AbstimmungenScreen({ route }: Props) {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 140 }}>
-        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
-          {t('assembly.ballots.title')}
-        </Text>
-        {activeClub?.clubName ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-4">{activeClub.clubName}</Text> : <View className="mb-4" />}
+    <SafeAreaView edges={['bottom', 'left', 'right']} className="flex-1 bg-background dark:bg-background-dark">
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 120 }}>
+        {/* The stack header names the screen; the club is the context line (no second large title). */}
+        {activeClub?.clubName ? (
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-4 px-1">{activeClub.clubName}</Text>
+        ) : (
+          <View className="mb-4" />
+        )}
         {loading || switching ? (
           <Loading />
         ) : !clubId ? (
