@@ -68,7 +68,7 @@ export type RootStackParamList = {
   Standorte: { tab?: 'orte' | 'material'; locationId?: string } | undefined;
   Mehr: undefined;
   Suche: undefined;
-  JoinClub: undefined;
+  JoinClub: { search?: boolean } | undefined;
   CreateClub: undefined;
   ClubApplications: undefined;
   ProfileModules: undefined;

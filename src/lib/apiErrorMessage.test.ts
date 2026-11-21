@@ -29,6 +29,13 @@ describe('apiErrorKey', () => {
   });
 });
 
+describe('suspended club (Wave 15)', () => {
+  it('explains a suspended club from the code or details.code, on any status', () => {
+    expect(apiErrorKey(new ApiError(403, 'CLUB_SUSPENDED', 'x'))).toBe('api.error.club-suspended');
+    expect(apiErrorKey(new ApiError(423, 'x', 'x', { code: 'club_suspended' }))).toBe('api.error.club-suspended');
+  });
+});
+
 describe('DPA_REQUIRED and account deletion blockers', () => {
   it('shows a readable message for the club-wide DPA lock, not the generic forbidden text', () => {
     expect(apiErrorKey(new ApiError(403, 'DPA_REQUIRED', 'Processor agreement missing', { code: 'dpa_required' }))).toBe('api.error.dpa-required');

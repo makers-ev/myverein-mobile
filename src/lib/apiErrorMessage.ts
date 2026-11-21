@@ -43,6 +43,8 @@ interface ErrorLike {
  * the generic status fallback. Everything not listed falls back to the HTTP status text, then to the caller's key.
  */
 const CODE_KEYS: Record<string, string> = {
+  club_suspended: 'api.error.club-suspended',
+  CLUB_SUSPENDED: 'api.error.club-suspended',
   query_too_short: 'api.error.query-too-short',
   QUERY_TOO_SHORT: 'api.error.query-too-short',
   INVALID_EMAIL_OR_PASSWORD: 'auth.error.invalid-credentials',
@@ -76,6 +78,7 @@ export function apiErrorKey(err: unknown, fallbackKey = 'alert.general-error-des
   if (!(err instanceof ApiError)) return fallbackKey;
   // Machine-readable conflicts carry `details.code`; it wins over the generic status text.
   const detailsCode = (err.details as { code?: unknown } | undefined)?.code;
+  if (detailsCode === 'club_suspended') return 'api.error.club-suspended';
   if (detailsCode === 'default_calendar_required') return 'kalender.error.default-required';
   if (detailsCode === 'no_rate') return 'time.err.no-rate';
   if (detailsCode === 'report_too_large') return 'time.err.report-too-large';

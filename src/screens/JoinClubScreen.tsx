@@ -25,6 +25,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import FlowHeader from '@/components/ui/FlowHeader';
 import ListSection from '@/components/ui/ListSection';
+import ClubSearch from '@/components/onboarding/ClubSearch';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'JoinClub'>;
 
@@ -36,7 +37,8 @@ const CONFLICT_KEY: Record<Conflict, 'already-member' | 'application-pending'> =
 
 /**
  * Digital membership application (Wave 8 M2). A club shares its code out-of-band (website, flyer, word of mouth) --
- * there is no public "browse clubs" directory. The screen loads that club's own application form
+ * clubs that opted in to being found are also offered by name/place search (Wave 15 M2, `ClubSearch`: a tapped hit opens
+ * that club's application, the empty result gives no hint why). The screen loads that club's own application form
  * (`GET /club-forms/:slug/aufnahme`), renders it with the shared `FormRenderer` (via `ApplicationForm`), keeps a draft
  * **on the server** while the person types (debounced autosave through a serial queue) and files it
  * (`POST /form-submissions/:id/submit`). The applicant is NOT a member afterwards -- the board has to approve first, so
@@ -45,7 +47,9 @@ const CONFLICT_KEY: Record<Conflict, 'already-member' | 'application-pending'> =
  * re-pins the draft, keeps the answers and shows what was dropped. Answers are never logged, cached or put into
  * AsyncStorage. The legacy apply (category/birth date only) is gone: the backend answers it with `409 form_required`.
  */
-export default function JoinClubScreen({ navigation }: Props) {
+export default function JoinClubScreen({ navigation, route }: Props) {
+  // Opened from "Verein finden" (onboarding): the search field takes the focus.
+  const searchFirst = route.params?.search === true;
   const { t, language } = useLanguage();
   const shadow = useElevation('card');
   const themeColors = useThemeColors();
@@ -217,6 +221,14 @@ export default function JoinClubScreen({ navigation }: Props) {
       <View className={`mx-4 ${ready ? 'bg-card dark:bg-card-dark rounded-card p-4' : ''}`} style={ready ? shadow : undefined}>
         {!ready ? (
           <>
+            <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">
+              {t('join-club.search.title')}
+            </Text>
+            <ClubSearch autoFocus={searchFirst} disabled={phase === 'loading'} onSelect={(hit) => void openClub(hit.slug)} />
+            <View className="h-6" />
+            <Text accessibilityRole="header" className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-2 px-1">
+              {t('join-club.search.or-code')}
+            </Text>
             <Text className="text-[13px] leading-[18px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
               {t('join-club.slug.label')}
             </Text>
