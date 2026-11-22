@@ -27,6 +27,7 @@ import { useAuth } from '@/auth/AuthProvider';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useActiveClub } from '@/clubs/ActiveClubProvider';
 import { useWards } from '@/hooks/useWards';
+import { useExternalAccess } from '@/external/ExternalAccessProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
@@ -38,6 +39,7 @@ import { getDismissedSetupClubs, restoreSetupChecklist } from '@/settings/setupC
 import ScreenHeader from '@/components/ui/ScreenHeader';
 import ActionSheet from '@/components/ui/ActionSheet';
 import ClubSwitcher from '@/components/verein/ClubSwitcher';
+import SuspendedBanner from '@/components/verein/SuspendedBanner';
 import { MyCardEntry, MyDocumentsEntry } from '@/components/documents/DocumentsEntry';
 import TimeSheet from '@/components/kalender/TimeSheet';
 import MyHoursSheet from '@/components/kalender/MyHoursSheet';
@@ -62,8 +64,10 @@ export default function MehrScreen({ navigation }: Props) {
   const { requireAuth } = useRequireAuth();
   const { activeClub } = useActiveClub();
   const { guardianOnly } = useWards();
+  // Sponsor / service-provider login (Wave 15 M1): no club entries, no member documents, no joining; only account, help, legal.
+  const { reduced: externalRole } = useExternalAccess();
   const platformUnread = useUnreadNotificationCount();
-  const clubId = isAuthenticated && activeClub && !guardianOnly ? activeClub.clubId : null;
+  const clubId = isAuthenticated && activeClub && !guardianOnly && !externalRole ? activeClub.clubId : null;
   const { membership } = useOwnMembership(clubId);
   // Zeiterfassung (decision D3): the same three tools as the Kalender menu, each only for whom it applies.
   const trackTime = canTrackTime(membership);
@@ -89,7 +93,7 @@ export default function MehrScreen({ navigation }: Props) {
   const [hoursMenu, setHoursMenu] = useState(false);
   const [hoursSheet, setHoursSheet] = useState<HoursSheet>(null);
   // Club entries: shown to guests (they sign in on tap) and members; hidden for signed-in accounts without a club.
-  const showClub = !isAuthenticated || (!!activeClub && !guardianOnly);
+  const showClub = !isAuthenticated || (!!activeClub && !guardianOnly && !externalRole);
 
   const hoursOptions = [
     ...(trackTime ? [{ key: 'time', icon: Timer, label: t('time.open'), hint: t('time.open.hint'), onPress: () => setHoursSheet('time') }] : []),
@@ -104,7 +108,8 @@ export default function MehrScreen({ navigation }: Props) {
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-background dark:bg-background-dark">
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 120 }}>
-        <ScreenHeader title={t('mehr.title')} context={clubId ? <ClubSwitcher /> : undefined} />
+        <ScreenHeader title={t('mehr.title')} context={clubId || externalRole ? <ClubSwitcher /> : undefined} />
+        <SuspendedBanner />
         <View className="px-4">
           {clubId ? (
             // Looks like the search field of the Suche screen and opens it (one tap, keyboard comes up there).
@@ -158,7 +163,7 @@ export default function MehrScreen({ navigation }: Props) {
             </ListSection>
           ) : null}
 
-          {isAuthenticated ? (
+          {isAuthenticated && !externalRole ? (
             <ListSection title={t('mehr.section.mine')} inset={60}>
               <MyCardEntry key="card" />
               <MyDocumentsEntry key="docs" />
@@ -169,10 +174,10 @@ export default function MehrScreen({ navigation }: Props) {
           ) : null}
 
           <ListSection title={t('mehr.section.account')} inset={60}>
-            {isAuthenticated && activeClub && !guardianOnly ? (
+            {isAuthenticated && activeClub && !guardianOnly && !externalRole ? (
               <ListRow key="profile" icon={User} title={t('mehr.profile')} hint={t('mehr.profile.hint')} onPress={() => goToTab('Verein', { tab: 'profil' })} />
             ) : null}
-            {isAuthenticated ? <ListRow key="privacy" icon={Shield} title={t('mehr.privacy')} hint={t('mehr.privacy.hint')} onPress={() => navigation.navigate('PrivacyCenter')} /> : null}
+            {isAuthenticated && !externalRole ? <ListRow key="privacy" icon={Shield} title={t('mehr.privacy')} hint={t('mehr.privacy.hint')} onPress={() => navigation.navigate('PrivacyCenter')} /> : null}
             {isAuthenticated ? (
               <ListRow key="platform" icon={Bell} title={t('mehr.platform')} hint={t('mehr.platform.hint')} count={platformUnread} countTone="primary" onPress={() => navigation.navigate('Notifications')} />
             ) : null}
@@ -190,7 +195,7 @@ export default function MehrScreen({ navigation }: Props) {
             <ListRow key="settings" icon={Settings} title={t('mehr.settings')} hint={t('mehr.settings.hint')} onPress={() => navigation.navigate('Settings')} />
           </ListSection>
 
-          {isAuthenticated ? (
+          {isAuthenticated && !externalRole ? (
             <ListSection title={t('mehr.section.more')} inset={60}>
               <ListRow key="join" icon={UserPlus} title={t('mehr.join')} hint={t('mehr.join.hint')} onPress={() => navigation.navigate('JoinClub')} />
               {!activeClub || guardianOnly ? <ListRow key="create" icon={Plus} title={t('mehr.create')} hint={t('mehr.create.hint')} onPress={() => navigation.navigate('CreateClub')} /> : null}

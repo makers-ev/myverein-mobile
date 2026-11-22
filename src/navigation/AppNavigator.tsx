@@ -34,6 +34,11 @@ import BestaetigungenScreen from '@/screens/BestaetigungenScreen';
 import AusweisKontrolleScreen from '@/screens/AusweisKontrolleScreen';
 import MitgliedsausweisScreen from '@/screens/MitgliedsausweisScreen';
 import GuardianStartRedirect from '@/guardian/GuardianStartRedirect';
+import ExternalStartRedirect from '@/external/ExternalStartRedirect';
+import { useExternalAccess } from '@/external/ExternalAccessProvider';
+import PartnerScreen from '@/screens/PartnerScreen';
+import EinsatzScreen from '@/screens/EinsatzScreen';
+import SponsorenScreen from '@/screens/SponsorenScreen';
 import JoinClubScreen from '@/screens/JoinClubScreen';
 import CreateClubScreen from '@/screens/CreateClubScreen';
 import AppLockGate from '@/components/AppLock/AppLockGate';
@@ -68,7 +73,10 @@ export type RootStackParamList = {
   Standorte: { tab?: 'orte' | 'material'; locationId?: string } | undefined;
   Mehr: undefined;
   Suche: undefined;
-  JoinClub: undefined;
+  JoinClub: { search?: boolean } | undefined;
+  Partner: undefined;
+  Einsatz: undefined;
+  Sponsoren: undefined;
   CreateClub: undefined;
   ClubApplications: undefined;
   ProfileModules: undefined;
@@ -99,10 +107,24 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 /** Heute is for signed-in users: a guest (e.g. after signing out while it was open) is moved to the guest start page. */
 function DashboardGate(props: React.ComponentProps<typeof DashboardScreen>) {
   const { isAuthenticated } = useAuth();
+  const { reduced, loading } = useExternalAccess();
   useEffect(() => {
     if (!isAuthenticated) goToTab('Home');
   }, [isAuthenticated]);
-  return isAuthenticated ? <DashboardScreen {...props} /> : null;
+  if (!isAuthenticated) return null;
+  // An external login (sponsor / service provider) never sees the member dashboard; `ExternalStartRedirect` moves it on.
+  if (reduced || loading) return <ExternalHold />;
+  return <DashboardScreen {...props} />;
+}
+
+/** Neutral spinner while it is clear whether a guest membership is an external login. */
+function ExternalHold() {
+  const themeColors = useThemeColors();
+  return (
+    <View className="flex-1 items-center justify-center bg-background dark:bg-background-dark">
+      <ActivityIndicator size="large" color={themeColors.primaryText} />
+    </View>
+  );
 }
 
 function MainNavigator() {
@@ -118,6 +140,7 @@ function MainNavigator() {
   const themeColors = useThemeColors();
   const { t } = useLanguage();
   const { hasWards, guardianOnly } = useWards();
+  const { role: externalRole, roles: externalRoles, reduced: externalReduced } = useExternalAccess();
   // Detail screens reached from a tab get a visible title and back arrow (swipe/hardware back keep working).
   const sub = (titleKey: string) => ({ headerShown: true, title: t(titleKey), headerBackTitle: t('common.back') });
 
@@ -191,6 +214,30 @@ function MainNavigator() {
         )}
       </RootStack.Screen>
 
+      <RootStack.Screen name="Partner">
+        {() => (
+          <RequireAuth>
+            <PartnerScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Einsatz">
+        {() => (
+          <RequireAuth>
+            <EinsatzScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
+      <RootStack.Screen name="Sponsoren" options={sub('sponsors.title')}>
+        {() => (
+          <RequireAuth>
+            <SponsorenScreen />
+          </RequireAuth>
+        )}
+      </RootStack.Screen>
+
       <RootStack.Screen name="ClubApplications" options={sub('verein.applications.open')}>
         {() => (
           <RequireAuth>
@@ -242,7 +289,7 @@ function MainNavigator() {
               // navigate to yet.
               if (result.success) {
                 // Replaces Login (no stack growth); a guardian-only account never lands on club-only screens.
-                goToTab(resolveReturnTo(route.params?.returnTo, { isAuthenticated: true, hasWards, guardianOnly }));
+                goToTab(resolveReturnTo(route.params?.returnTo, { isAuthenticated: true, hasWards, guardianOnly, externalRole, externalRoles, externalPending: externalReduced && !externalRole }));
               }
               return result;
             }}
@@ -462,6 +509,8 @@ export default function AppNavigator() {
         <PushDeepLinkRouter />
         {/* Guardian-only accounts start on "Heute" (Wave 10 M5); renders nothing. */}
         <GuardianStartRedirect />
+        {/* Sponsor / service-provider logins stay in the reduced app (Wave 15 M1); renders nothing. */}
+        <ExternalStartRedirect />
       </NavigationContainer>
     </AppLockGate>
   );
