@@ -94,7 +94,8 @@ const authored = {
 
     // Gesperrter Verein
     'api.error.external-restricted': 'Dieser Bereich ist für deinen Zugang nicht freigegeben.',
-    'club.suspended.title': 'Verein vorübergehend gesperrt',
+    'club.suspended.title': 'Dieser Verein ist vorübergehend gesperrt',
+    'club.suspended.since': 'Seit {{date}}',
     'club.suspended.body': 'Die Plattform hat diesen Verein vorübergehend gesperrt, die Inhalte sind gerade nicht erreichbar. Bitte wende dich an den Vorstand des Vereins.',
     'api.error.club-suspended': 'Dieser Verein ist vorübergehend gesperrt. Bitte wende dich an den Vorstand des Vereins.',
   },
@@ -181,7 +182,8 @@ const authored = {
     'join-club.search.or-code': 'Or use the club code',
 
     'api.error.external-restricted': 'This area is not available for your access.',
-    'club.suspended.title': 'Club temporarily suspended',
+    'club.suspended.title': 'This club is temporarily suspended',
+    'club.suspended.since': 'Since {{date}}',
     'club.suspended.body': 'The platform has temporarily suspended this club, its content is not available right now. Please contact the club board.',
     'api.error.club-suspended': 'This club is temporarily suspended. Please contact the club board.',
   },

@@ -334,3 +334,36 @@ export function safeTel(phone: string | null | undefined): string | null {
   if (!phone || !/^\+?[0-9 ()./-]{3,40}$/.test(phone)) return null;
   return `tel:${phone.replace(/[^+0-9]/g, '')}`;
 }
+
+// --- Club suspension --------------------------------------------------------------------------------------------------
+
+/** What the app shows about a suspension: since when and the note the platform wrote FOR the members (never the internal reason). */
+export interface ClubSuspension {
+  since: string | null;
+  note: string | null;
+}
+
+/** Longest note shown (longer text is cut with an ellipsis). */
+export const MAX_SUSPENSION_NOTE = 400;
+
+/** Plain text only: control characters and line breaks collapse to spaces, then trimmed and capped. No markup is interpreted. */
+export function cleanSuspensionNote(note: unknown): string | null {
+  if (typeof note !== 'string') return null;
+  const text = note.replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!text) return null;
+  return text.length > MAX_SUSPENSION_NOTE ? `${text.slice(0, MAX_SUSPENSION_NOTE - 1).trimEnd()}\u2026` : text;
+}
+
+/**
+ * Reads the suspension of a `GET /my-clubs` row. Only `since` and `note` are ever taken over (whitelist: a `reason` or any
+ * other field a server might add never reaches the state). The older boolean `suspended: true` alone still counts.
+ */
+export function parseSuspension(raw: { suspension?: unknown; suspended?: unknown } | null | undefined): ClubSuspension | null {
+  if (!raw) return null;
+  const s = raw.suspension;
+  if (s && typeof s === 'object') {
+    const r = s as Record<string, unknown>;
+    return { since: typeof r.since === 'string' && !Number.isNaN(Date.parse(r.since)) ? r.since : null, note: cleanSuspensionNote(r.note) };
+  }
+  return raw.suspended === true ? { since: null, note: null } : null;
+}

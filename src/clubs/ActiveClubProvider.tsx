@@ -4,6 +4,7 @@ import { useAuth } from '@/auth/AuthProvider';
 import { apiFetch } from '@/lib/api';
 import { isOfflineError } from '@/lib/apiErrorMessage';
 import { loadOffline, pruneOfflineClubs, saveOffline } from '@/lib/offlineCache';
+import { parseSuspension, type ClubSuspension } from '@/lib/outreach';
 import { isOwnClub } from '@/lib/ward';
 import { clearStoredActiveClubId, getStoredActiveClubId, setStoredActiveClubId } from './activeClubStorage';
 
@@ -12,8 +13,8 @@ export interface MyClub {
   memberId: string;
   clubName: string | null;
   orgRole: string;
-  /** The platform suspended the club (Wave 15 B7): club routes answer 403 CLUB_SUSPENDED. Absent on older servers. */
-  suspended?: boolean;
+  /** The platform suspended the club (Wave 15 B7): club routes answer 403 CLUB_SUSPENDED. Set from `suspension` / `suspended`; null otherwise. */
+  suspension?: ClubSuspension | null;
 }
 
 interface ActiveClubContextValue {
@@ -75,7 +76,9 @@ export function ActiveClubProvider({ children }: { children: React.ReactNode }) 
     setLoading(true);
     setError(false);
     try {
-      const { data } = await apiFetch<{ data: MyClub[] }>('/my-clubs');
+      const { data: raw } = await apiFetch<{ data: MyClub[] }>('/my-clubs');
+      // Only the whitelisted suspension fields (since, note) are kept; nothing else the server adds enters the state.
+      const data = raw.map((c) => ({ clubId: c.clubId, memberId: c.memberId, clubName: c.clubName, orgRole: c.orgRole, suspension: parseSuspension(c as { suspension?: unknown; suspended?: unknown }) }));
       if (id === requestId.current) {
         setClubs(data);
         // Offline start: the club list is what lets Kalender and Mitgliederliste show their copies. Copies of clubs

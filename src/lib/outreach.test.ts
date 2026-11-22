@@ -24,6 +24,8 @@ import {
   safeMailto,
   safeTel,
   parseAssignments,
+  parseSuspension,
+  cleanSuspensionNote,
   formatInstant,
   parseExternalMe,
   parsePublicClub,
@@ -195,5 +197,26 @@ describe('contact links', () => {
     expect(safeTel('0731/12345')).toBe('tel:073112345');
     expect(safeTel('12; rm')).toBeNull();
     expect(safeTel(null)).toBeNull();
+  });
+});
+
+describe('suspension', () => {
+  it('takes over only since and note (no reason leak)', () => {
+    const s = parseSuspension({ suspension: { since: '2026-11-20T08:00:00Z', note: 'Hinweis', reason: 'intern: Zahlungsverzug', suspendedBy: 'x' } } as never);
+    expect(s).toEqual({ since: '2026-11-20T08:00:00Z', note: 'Hinweis' });
+    expect(JSON.stringify(s)).not.toContain('intern');
+  });
+  it('handles null note, bad date, null suspension and the older boolean flag', () => {
+    expect(parseSuspension({ suspension: { since: 'x', note: null } })).toEqual({ since: null, note: null });
+    expect(parseSuspension({ suspension: null })).toBeNull();
+    expect(parseSuspension({ suspension: null, suspended: false })).toBeNull();
+    expect(parseSuspension({ suspended: true })).toEqual({ since: null, note: null });
+    expect(parseSuspension(undefined)).toBeNull();
+  });
+  it('flattens and caps the note', () => {
+    expect(cleanSuspensionNote('  a\n\nb\t c  ')).toBe('a b c');
+    expect(cleanSuspensionNote('   ')).toBeNull();
+    expect(cleanSuspensionNote(42)).toBeNull();
+    expect(cleanSuspensionNote('y'.repeat(900))!.length).toBe(400);
   });
 });
