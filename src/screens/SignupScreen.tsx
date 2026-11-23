@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput } from 'react-native';
-import { Mail, Lock } from 'lucide-react-native';
+import { Mail } from 'lucide-react-native';
 import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
@@ -9,17 +9,18 @@ import Logo from '@/components/Logo';
 import Button from '@/components/ui/Button';
 import Banner from '@/components/ui/Banner';
 import Title from '@/components/ui/Title';
+import PasswordInput from '@/components/PasswordInput';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 
 // Type declarations for lucide-react-native icons
 const IconMail = Mail as any;
-const IconLock = Lock as any;
 
 interface SignupFormData {
   firstName?: string;
   lastName?: string;
   email?: string;
   password?: string;
+  confirmPassword?: string;
 }
 
 interface SignupScreenProps {
@@ -35,6 +36,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
     lastName: '',
     email: '',
     password: '',
+    confirmPassword: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,8 +48,11 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
     }));
   };
 
+  const passwordMismatch = !!formData.confirmPassword && formData.password !== formData.confirmPassword;
+  const canSubmit = !!formData.password && formData.password === formData.confirmPassword;
+
   const handleSubmit = async () => {
-    if (!onSubmit || isSubmitting) return;
+    if (!onSubmit || isSubmitting || !canSubmit) return;
     setError(null);
     setIsSubmitting(true);
     try {
@@ -115,6 +120,22 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
                 />
               </View>
 
+              <View className="mb-4">
+                <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.confirm-password')}</Text>
+                <PasswordInput
+                  showLockIcon
+                  placeholder="********"
+                  autoComplete="new-password"
+                  textContentType="newPassword"
+                  accessibilityLabel={t('signup.confirm-password')}
+                  value={formData.confirmPassword ?? ''}
+                  onChangeText={(value) => handleInputChange('confirmPassword', value)}
+                />
+                {passwordMismatch ? (
+                  <Text className="text-destructive text-xs ml-1 mt-1" accessibilityRole="alert">{t('signup.password-mismatch')}</Text>
+                ) : null}
+              </View>
+
             </View>
           </View>
 
@@ -147,20 +168,15 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
 
               <View className="mb-4">
                 <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.password')}</Text>
-                <View className="flex-row items-center bg-card dark:bg-card-dark px-3 min-h-[48px] rounded-control border border-border-control dark:border-border-control-dark" style={{ gap: 8 }}>
-                  <IconLock size={18} color={themeColors.mutedForeground} />
-                  <TextInput
-                    className="flex-1 text-[17px] text-foreground dark:text-foreground-dark"
-                    placeholder="********"
-                    placeholderTextColor={themeColors.mutedForeground}
-                    secureTextEntry
-                    autoComplete="new-password"
-                    textContentType="newPassword"
-                    accessibilityLabel={t('signup.password')}
-                    value={formData.password}
-                    onChangeText={(value) => handleInputChange('password', value)}
-                  />
-                </View>
+                <PasswordInput
+                  showLockIcon
+                  placeholder="********"
+                  autoComplete="new-password"
+                  textContentType="newPassword"
+                  accessibilityLabel={t('signup.password')}
+                  value={formData.password}
+                  onChangeText={(value) => handleInputChange('password', value)}
+                />
               </View>
 
             </View>
@@ -173,7 +189,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
           ) : null}
 
           <View className="mt-4" style={{ gap: 10 }}>
-            <Button block label={t('signup.button')} onPress={handleSubmit} loading={isSubmitting} />
+            <Button block label={t('signup.button')} onPress={handleSubmit} loading={isSubmitting} disabled={!canSubmit} />
             <Button block variant="tertiary" label={t('login.title')} onPress={() => onNavigateToLogin?.()} />
           </View>
 

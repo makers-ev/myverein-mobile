@@ -9,6 +9,7 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import BackButton from '@/components/ui/BackButton';
 import Logo from '@/components/Logo';
+import PasswordInput from '@/components/PasswordInput';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 
 interface LoginScreenProps {
@@ -70,10 +71,7 @@ export default function LoginScreen({ onLogin, onNavigateToSignup, onForgotPassw
         </Field>
 
         <Field label={t('login.password')}>
-          <TextInput
-            className={inputClassName}
-            placeholderTextColor={themeColors.mutedForeground}
-            secureTextEntry
+          <PasswordInput
             autoComplete="current-password"
             textContentType="password"
             accessibilityLabel={t('login.password')}
