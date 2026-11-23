@@ -84,7 +84,7 @@ Layout:
 src/
 ├── auth/            # AuthProvider, RequireAuth, Better Auth client, app-lock storage
 ├── clubs/           # ActiveClubProvider (GET /my-clubs + selected club), activeClubStorage, lastApplyClubStorage
-├── components/       # Logo, Navbar (five-tab bar), SignedInCard, ConnectionErrorScreen, KeyboardAwareScreen (react-native-keyboard-controller), PasswordInput (password field with show/hide eye toggle, used by Login and Signup (Signup has a confirm-password field, submit disabled until both match, `signup.password-mismatch`), labels `password.show/hide`);
+├── components/       # Logo, Navbar (five-tab bar), SignedInCard, ConnectionErrorScreen, KeyboardAwareScreen (react-native-keyboard-controller), PasswordInput (password field with show/hide eye toggle, used by Login and Signup (Signup has the same fields as the website: name, e-mail, password, confirm-password; submit disabled until both match, `signup.password-mismatch`), labels `password.show/hide`);
 │                     #   AppLock/, Modals/, Settings/ (sub-components), ui/ (shared components, see [Components](#components)), onboarding/ (NoClubChoices, ClubSearch), outreach/ (OrgLogo, SponsorFacts, ContactLines), today/ (Heute sections),
 │                     #   forms/ (FormRenderer, AnswerList), verein/, kalender/, standorte/, documents/ (feature components)
 ├── contexts/         # i18n (translation/: LanguageContext + per-area translation tables, supportedLanguages, language storage)

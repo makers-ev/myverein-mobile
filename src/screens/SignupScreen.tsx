@@ -16,8 +16,7 @@ import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 const IconMail = Mail as any;
 
 interface SignupFormData {
-  firstName?: string;
-  lastName?: string;
+  name?: string;
   email?: string;
   password?: string;
   confirmPassword?: string;
@@ -32,8 +31,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const [formData, setFormData] = useState<SignupFormData>({
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -49,7 +47,7 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
   };
 
   const passwordMismatch = !!formData.confirmPassword && formData.password !== formData.confirmPassword;
-  const canSubmit = !!formData.password && formData.password === formData.confirmPassword;
+  const canSubmit = !!formData.name?.trim() && !!formData.email && !!formData.password && formData.password === formData.confirmPassword;
 
   const handleSubmit = async () => {
     if (!onSubmit || isSubmitting || !canSubmit) return;
@@ -84,101 +82,66 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
             <Text className="text-[17px] leading-6 mt-2 text-muted-foreground dark:text-muted-foreground-dark">{t('signup.description')}</Text>
           </View>
 
-          {/* Personal Info Section */}
-          <View className="mb-8">
-            <Text accessibilityRole="header" className="text-[17px] leading-[22px] font-semibold text-foreground dark:text-foreground-dark mb-3">
-              {t('signup.username')}
-            </Text>
-
-            <View>
-
-              <View className="mb-4">
-                <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.first-name')}</Text>
-                <TextInput
-                  className="bg-card dark:bg-card-dark px-3 py-3 min-h-[48px] rounded-control text-[17px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
-                  placeholder={t('signup.first-name.placeholder')}
-                  accessibilityLabel={t('signup.first-name')}
-                  autoComplete="given-name"
-                  textContentType="givenName"
-                  placeholderTextColor={themeColors.mutedForeground}
-                  value={formData.firstName}
-                  onChangeText={(value) => handleInputChange('firstName', value)}
-                />
-              </View>
-
-              <View className="mb-4">
-                <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.last-name')}</Text>
-                <TextInput
-                  className="bg-card dark:bg-card-dark px-3 py-3 min-h-[48px] rounded-control text-[17px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
-                  placeholder={t('signup.last-name.placeholder')}
-                  accessibilityLabel={t('signup.last-name')}
-                  autoComplete="family-name"
-                  textContentType="familyName"
-                  placeholderTextColor={themeColors.mutedForeground}
-                  value={formData.lastName}
-                  onChangeText={(value) => handleInputChange('lastName', value)}
-                />
-              </View>
-
-              <View className="mb-4">
-                <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.confirm-password')}</Text>
-                <PasswordInput
-                  showLockIcon
-                  placeholder="********"
-                  autoComplete="new-password"
-                  textContentType="newPassword"
-                  accessibilityLabel={t('signup.confirm-password')}
-                  value={formData.confirmPassword ?? ''}
-                  onChangeText={(value) => handleInputChange('confirmPassword', value)}
-                />
-                {passwordMismatch ? (
-                  <Text className="text-destructive text-xs ml-1 mt-1" accessibilityRole="alert">{t('signup.password-mismatch')}</Text>
-                ) : null}
-              </View>
-
+          <View>
+            <View className="mb-4">
+              <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.name')}</Text>
+              <TextInput
+                className="bg-card dark:bg-card-dark px-3 py-3 min-h-[48px] rounded-control text-[17px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
+                accessibilityLabel={t('signup.name')}
+                autoComplete="name"
+                textContentType="name"
+                placeholderTextColor={themeColors.mutedForeground}
+                value={formData.name}
+                onChangeText={(value) => handleInputChange('name', value)}
+              />
             </View>
-          </View>
 
-          {/* Contact Section */}
-          <View className="mb-8">
-            <Text accessibilityRole="header" className="text-[17px] leading-[22px] font-semibold text-foreground dark:text-foreground-dark mb-3">
-              {t('signup.contact')}
-            </Text>
-
-            <View>
-
-              <View className="mb-4">
-                <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.email')}</Text>
-                <View className="flex-row items-center bg-card dark:bg-card-dark px-3 min-h-[48px] rounded-control border border-border-control dark:border-border-control-dark" style={{ gap: 8 }}>
-                  <IconMail size={18} color={themeColors.mutedForeground} />
-                  <TextInput
-                    className="flex-1 text-[17px] text-foreground dark:text-foreground-dark"
-                    placeholder="user@example.com"
-                    placeholderTextColor={themeColors.mutedForeground}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    textContentType="emailAddress"
-                    accessibilityLabel={t('signup.email')}
-                    value={formData.email}
-                    onChangeText={(value) => handleInputChange('email', value)}
-                  />
-                </View>
-              </View>
-
-              <View className="mb-4">
-                <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.password')}</Text>
-                <PasswordInput
-                  showLockIcon
-                  placeholder="********"
-                  autoComplete="new-password"
-                  textContentType="newPassword"
-                  accessibilityLabel={t('signup.password')}
-                  value={formData.password}
-                  onChangeText={(value) => handleInputChange('password', value)}
+            <View className="mb-4">
+              <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.email')}</Text>
+              <View className="flex-row items-center bg-card dark:bg-card-dark px-3 min-h-[48px] rounded-control border border-border-control dark:border-border-control-dark" style={{ gap: 8 }}>
+                <IconMail size={18} color={themeColors.mutedForeground} />
+                <TextInput
+                  className="flex-1 text-[17px] text-foreground dark:text-foreground-dark"
+                  placeholder="user@example.com"
+                  placeholderTextColor={themeColors.mutedForeground}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  textContentType="emailAddress"
+                  accessibilityLabel={t('signup.email')}
+                  value={formData.email}
+                  onChangeText={(value) => handleInputChange('email', value)}
                 />
               </View>
+            </View>
 
+            <View className="mb-4">
+              <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.password')}</Text>
+              <PasswordInput
+                showLockIcon
+                placeholder="********"
+                autoComplete="new-password"
+                textContentType="newPassword"
+                accessibilityLabel={t('signup.password')}
+                value={formData.password}
+                onChangeText={(value) => handleInputChange('password', value)}
+              />
+            </View>
+
+            <View className="mb-4">
+              <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.confirm-password')}</Text>
+              <PasswordInput
+                showLockIcon
+                placeholder="********"
+                autoComplete="new-password"
+                textContentType="newPassword"
+                accessibilityLabel={t('signup.confirm-password')}
+                value={formData.confirmPassword ?? ''}
+                onChangeText={(value) => handleInputChange('confirmPassword', value)}
+              />
+              {passwordMismatch ? (
+                <Text className="text-destructive text-xs ml-1 mt-1" accessibilityRole="alert">{t('signup.password-mismatch')}</Text>
+              ) : null}
             </View>
           </View>
 

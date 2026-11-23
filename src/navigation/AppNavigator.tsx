@@ -312,7 +312,7 @@ function MainNavigator() {
         {({ navigation }) => (
           <SignupScreen
             onSubmit={async (formData) => {
-              const name = [formData.firstName, formData.lastName].filter(Boolean).join(' ').trim();
+              const name = (formData.name ?? '').trim();
               if (!formData.email || !formData.password) {
                 return { success: false, error: 'Email and password are required.', status: 400 };
               }
