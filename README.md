@@ -84,7 +84,7 @@ Layout:
 src/
 ├── auth/            # AuthProvider, RequireAuth, Better Auth client, app-lock storage
 ├── clubs/           # ActiveClubProvider (GET /my-clubs + selected club), activeClubStorage, lastApplyClubStorage
-├── components/       # Logo, Navbar (five-tab bar), SignedInCard, ConnectionErrorScreen, KeyboardAwareScreen (react-native-keyboard-controller);
+├── components/       # Logo, Navbar (five-tab bar), SignedInCard, ConnectionErrorScreen, KeyboardAwareScreen (react-native-keyboard-controller), PasswordInput (password field with show/hide eye toggle, used by Login and Signup (Signup has a confirm-password field, submit disabled until both match, `signup.password-mismatch`), labels `password.show/hide`);
 │                     #   AppLock/, Modals/, Settings/ (sub-components), ui/ (shared components, see [Components](#components)), onboarding/ (NoClubChoices, ClubSearch), outreach/ (OrgLogo, SponsorFacts, ContactLines), today/ (Heute sections),
 │                     #   forms/ (FormRenderer, AnswerList), verein/, kalender/, standorte/, documents/ (feature components)
 ├── contexts/         # i18n (translation/: LanguageContext + per-area translation tables, supportedLanguages, language storage)
@@ -218,7 +218,7 @@ Two independent axes: **light/dark mode** (unchanged, see below) and a
 **color palette** layered on top (predefined or custom, see [Color palettes
 & theming](#color-palettes--theming)).
 
-Dark mode defaults to the OS setting (`app.config.ts`'s `userInterfaceStyle: "automatic"`, Tailwind's `darkMode: 'media'`) but can be overridden per-user from Settings' Appearance section, via NativeWind v4's own `colorScheme.set('light' | 'dark')` / `useColorScheme()` (`import { colorScheme, useColorScheme } from 'nativewind'`) — no custom theme context needed, `darkMode: 'media'` in `tailwind.config.js` stays as-is since NativeWind's runtime override works independently of that setting.
+The app **defaults to the light theme** regardless of the OS setting (`App.tsx` calls `colorScheme.set('light')` at start-up, a stored choice overrides it); dark mode can be switched on per-user from Settings' Appearance section, via NativeWind v4's own `colorScheme.set('light' | 'dark')` / `useColorScheme()` (`import { colorScheme, useColorScheme } from 'nativewind'`) — no custom theme context needed, `darkMode: 'media'` in `tailwind.config.js` stays as-is since NativeWind's runtime override works independently of that setting.
 
 App icon, splash screen, and adaptive icon layers are all rasterized from the same LPJ IT-Solutions mark used by the website templates (`assets/icon.png`, `assets/splash-icon.png`, `assets/android-icon-*.png`). `src/components/Logo.tsx` renders it inline on `LoginScreen`, `SignupScreen`, and `HomeScreen`.
 
