@@ -18,11 +18,16 @@ interface Props {
   onMonthChange: (month: Date) => void;
   selectedDay?: string | null;
   onSelectDay: (dayKey: string, date: Date) => void;
-  /** dayKey -> dot colors (max 3 shown). */
+  /** dayKey -> one entry per event on that day. Shown as neutral dots (1, 2 or 3 for "several"): they only say
+   * "something is on"; what it is (and its department colour) is explained in the day list below. */
   markers?: Record<string, string[]>;
 }
 
-/** Monday-first month grid, pure RN (no picker dependency). */
+/**
+ * Monday-first month grid (Figma `Calendar day`), pure RN (no picker dependency). Header: month name, previous/next and
+ * a "Heute" text action, all 44pt. Today has a ring, the selected day a primary fill, days outside the month are muted.
+ * Each cell is at least 44pt and announces the date and the number of events.
+ */
 export default function MonthCalendar({ month, onMonthChange, selectedDay, onSelectDay, markers = {} }: Props) {
   const { language, t } = useLanguage();
   const themeColors = useThemeColors();
@@ -36,32 +41,36 @@ export default function MonthCalendar({ month, onMonthChange, selectedDay, onSel
     const rows = Array.from({ length: 6 }, (_, w) => days.slice(w * 7, w * 7 + 7));
     // Drop a trailing week that lies fully in the next month.
     if (rows[5][0].getMonth() !== month.getMonth()) rows.pop();
-    const labels = rows[0].map((d) => d.toLocaleDateString(language, { weekday: 'narrow' }));
+    const labels = rows[0].map((d) => d.toLocaleDateString(language, { weekday: 'short' }).replace('.', '').slice(0, 2));
     return { weeks: rows, weekdayLabels: labels };
   }, [month, language]);
 
   const shift = (delta: number) => onMonthChange(new Date(month.getFullYear(), month.getMonth() + delta, 1));
+  const now = new Date();
+  const showingToday = month.getFullYear() === now.getFullYear() && month.getMonth() === now.getMonth();
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3">
-      <View className="flex-row items-center justify-between mb-2">
+    <View>
+      <View className="flex-row items-center mb-1" style={{ minHeight: 44 }}>
+        <Text accessibilityRole="header" className="flex-1 text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold" style={{ fontVariant: ['tabular-nums'] }}>
+          {month.toLocaleDateString(language, { month: 'long', year: 'numeric' })}
+        </Text>
+        {!showingToday ? (
+          <TouchableOpacity accessibilityRole="button" onPress={() => onMonthChange(new Date())} className="justify-center px-3" style={{ minHeight: 44 }}>
+            <Text className="text-primary dark:text-primary-dark text-[15px] font-semibold">{t('ui.today')}</Text>
+          </TouchableOpacity>
+        ) : null}
         <TouchableOpacity accessibilityRole="button" onPress={() => shift(-1)} className="items-center justify-center" style={{ width: 44, height: 44 }} accessibilityLabel={t('ui.prev-month')}>
-          <ChevronLeft size={20} strokeWidth={1.5} color={themeColors.foreground} />
+          <ChevronLeft size={22} strokeWidth={1.75} color={themeColors.foreground} />
         </TouchableOpacity>
-        <TouchableOpacity accessibilityRole="button" onPress={() => onMonthChange(new Date())}>
-          <Text className="text-foreground dark:text-foreground-dark font-semibold text-base">
-            {month.toLocaleDateString(language, { month: 'long', year: 'numeric' })}
-          </Text>
-          <Text className="text-primary dark:text-primary-dark text-xs text-center">{t('ui.today')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity accessibilityRole="button" onPress={() => shift(1)} className="items-center justify-center" style={{ width: 44, height: 44 }} accessibilityLabel={t('ui.next-month')}>
-          <ChevronRight size={20} strokeWidth={1.5} color={themeColors.foreground} />
+        <TouchableOpacity accessibilityRole="button" onPress={() => shift(1)} className="items-center justify-center" style={{ width: 44, height: 44, marginRight: -10 }} accessibilityLabel={t('ui.next-month')}>
+          <ChevronRight size={22} strokeWidth={1.75} color={themeColors.foreground} />
         </TouchableOpacity>
       </View>
 
-      <View className="flex-row">
+      <View className="flex-row" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         {weekdayLabels.map((label, i) => (
-          <Text key={i} className="flex-1 text-center text-muted-foreground dark:text-muted-foreground-dark text-xs font-medium mb-1">
+          <Text key={i} maxFontSizeMultiplier={1.3} className="flex-1 text-center text-muted-foreground dark:text-muted-foreground-dark text-[13px] font-medium mb-1">
             {label}
           </Text>
         ))}
@@ -74,34 +83,49 @@ export default function MonthCalendar({ month, onMonthChange, selectedDay, onSel
             const inMonth = day.getMonth() === month.getMonth();
             const selected = key === selectedDay;
             const isToday = key === todayKey;
-            const dots = markers[key] ?? [];
+            const count = (markers[key] ?? []).length;
+            const dots = Math.min(count, 3);
             return (
-              <TouchableOpacity accessibilityRole="button"
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
                 key={key}
                 onPress={() => onSelectDay(key, day)}
-                className="flex-1 items-center py-1"
-                accessibilityLabel={day.toLocaleDateString(language)}
+                className="flex-1 items-center py-0.5"
+                style={{ minHeight: 48 }}
+                accessibilityLabel={[
+                  day.toLocaleDateString(language, { weekday: 'long', day: 'numeric', month: 'long' }),
+                  isToday ? t('ui.today') : null,
+                  count > 0 ? t('ui.events-count', { count }) : null,
+                ]
+                  .filter(Boolean)
+                  .join(', ')}
               >
                 <View
-                  className={`w-9 h-9 rounded-full items-center justify-center ${
-                    selected ? 'bg-primary dark:bg-primary-dark' : isToday ? 'border border-primary dark:border-primary-dark' : ''
+                  className={`rounded-full items-center justify-center ${
+                    selected ? 'bg-primary dark:bg-primary-dark' : isToday ? 'border-2 border-primary-text dark:border-primary-text-dark' : ''
                   }`}
+                  style={{ width: 38, height: 38 }}
                 >
                   <Text
-                    className={`text-sm ${
+                    maxFontSizeMultiplier={1.3}
+                    style={{ fontVariant: ['tabular-nums'] }}
+                    className={`text-[17px] ${
                       selected
                         ? 'text-primary-foreground dark:text-primary-foreground-dark font-semibold'
-                        : inMonth
-                          ? 'text-foreground dark:text-foreground-dark'
-                          : 'text-muted-foreground dark:text-muted-foreground-dark opacity-50'
+                        : isToday
+                          ? 'text-foreground dark:text-foreground-dark font-semibold'
+                          : inMonth
+                            ? 'text-foreground dark:text-foreground-dark'
+                            : 'text-muted-foreground dark:text-muted-foreground-dark'
                     }`}
                   >
                     {day.getDate()}
                   </Text>
                 </View>
-                <View className="flex-row h-1.5 mt-0.5" style={{ gap: 2 }}>
-                  {dots.slice(0, 3).map((color, i) => (
-                    <View key={i} style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: color }} />
+                <View className="flex-row mt-0.5" style={{ gap: 3, height: 5 }}>
+                  {Array.from({ length: dots }, (_, i) => (
+                    <View key={i} className="bg-muted-foreground dark:bg-muted-foreground-dark" style={{ width: 5, height: 5, borderRadius: 3 }} />
                   ))}
                 </View>
               </TouchableOpacity>

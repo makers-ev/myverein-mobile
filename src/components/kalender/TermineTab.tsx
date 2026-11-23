@@ -1,8 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import { CalendarPlus, ClipboardCheck, Plus, Repeat, Settings2, Timer } from 'lucide-react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { ClipboardCheck, Repeat } from 'lucide-react-native';
 
 import OfflineNotice from '@/components/ui/OfflineNotice';
+import PressScale from '@/components/ui/PressScale';
+import Badge from '@/components/ui/Badge';
+import Banner from '@/components/ui/Banner';
+import Button from '@/components/ui/Button';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
@@ -31,6 +35,7 @@ import EventParticipation from './EventParticipation';
 import { ApiError } from '@/lib/api';
 import DocsLink from '@/components/ui/DocsLink';
 import { DOCS_PATHS } from '@/lib/docsUrl';
+import Surface from '@/components/ui/Surface';
 
 interface Props {
   clubId: string;
@@ -39,71 +44,71 @@ interface Props {
   onFocusHandled?: () => void;
   /** The sheet pointed at an event that does not exist (any more); the sheet was closed. */
   onEventGone?: () => void;
+  /** An action chosen in the Kalender top bar (+ / overflow menu); `n` changes with every tap. */
+  command?: { kind: KalenderCommand; n: number } | null;
+  /** The command was taken over (sheet opened); the screen clears it so it can neither be lost nor fire twice. */
+  onCommandHandled?: () => void;
 }
 
-function EventRow({ event, color, rsvp, onPress, onAttendance }: { event: CalendarEvent; color: string; rsvp: RsvpProps; onPress: () => void; onAttendance?: () => void }) {
+/** Top-bar actions of the Kalender screen that open a sheet owned by this tab. */
+export type KalenderCommand = 'new' | 'manage' | 'feeds' | 'time' | 'myHours' | 'teamHours';
+
+function EventRow({ event, color, calendarName, rsvp, onPress, onAttendance }: { event: CalendarEvent; color: string; calendarName: string | null; rsvp: RsvpProps; onPress: () => void; onAttendance?: () => void }) {
   const { t, language } = useLanguage();
   const themeColors = useThemeColors();
+  const when = formatTimeRange(event, language, t('termine.all-day'));
 
   return (
-    <TouchableOpacity accessibilityRole="button"
+    <Surface className="mb-2 overflow-hidden">
+    {/* Events are lightly highlighted: a very faint primary tint over the card surface, bar in the calendar colour. */}
+    <PressScale
+      accessibilityRole="button"
+      accessibilityLabel={[event.title, when, calendarName, event.cancelled ? t('termine.cancelled') : null].filter(Boolean).join(', ')}
       onPress={onPress}
-      className="flex-row bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl mb-3 overflow-hidden"
+      scale={0.99}
+      className={`flex-row ${event.cancelled ? '' : 'bg-primary-soft/40 dark:bg-primary-soft-dark/40'}`}
     >
-      <View style={{ width: 4, backgroundColor: color }} />
-      <View className="flex-1 p-3">
-        <View className="flex-row items-center" style={{ gap: 6 }}>
-          <Text
-            className="text-foreground dark:text-foreground-dark font-semibold text-sm flex-shrink"
-            style={event.cancelled ? { textDecorationLine: 'line-through', opacity: 0.6 } : undefined}
-          >
+      {/* Department colour as a 3pt bar; the calendar name next to the time explains it (no legend needed). */}
+      <View style={{ width: 3, backgroundColor: event.cancelled ? themeColors.border : color }} />
+      <View className="flex-1 px-4 py-3">
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium" style={{ fontVariant: ['tabular-nums'] }}>
+          {calendarName ? `${when} · ${calendarName}` : when}
+        </Text>
+        <View className="flex-row items-center mt-0.5" style={{ gap: 6 }}>
+          <Text className={`text-[17px] leading-[22px] font-semibold flex-shrink ${event.cancelled ? 'text-muted-foreground dark:text-muted-foreground-dark' : 'text-foreground dark:text-foreground-dark'}`}>
             {event.title}
           </Text>
-          {event.seriesId ? <Repeat size={12} color={themeColors.mutedForeground} accessibilityLabel={t('series.badge')} /> : null}
+          {event.seriesId ? <Repeat size={14} strokeWidth={1.75} color={themeColors.mutedForeground} accessibilityLabel={t('series.badge')} /> : null}
         </View>
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-0.5">{formatTimeRange(event, language, t('termine.all-day'))}</Text>
         <ParticipationLine event={event} />
 
         {event.cancelled ? (
-          <View className="mt-2 self-start bg-destructive px-2 py-1 rounded-md">
-            <Text className="text-xs font-semibold text-white">{t('termine.cancelled')}</Text>
+          <View className="mt-2">
+            <Badge tone="danger">{t('termine.cancelled')}</Badge>
           </View>
         ) : null}
         {event.cancelled && event.cancelReason ? (
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">{t('termine.cancelled-reason', { reason: event.cancelReason })}</Text>
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px] mt-1">{t('termine.cancelled-reason', { reason: event.cancelReason })}</Text>
         ) : null}
 
         {event.category || event.capacity != null ? (
           <View className="flex-row items-center flex-wrap mt-2" style={{ gap: 6 }}>
-            {event.category ? (
-              <View className="bg-muted dark:bg-muted-dark px-2 py-1 rounded-md">
-                <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold">{event.category}</Text>
-              </View>
-            ) : null}
+            {event.category ? <Badge>{event.category}</Badge> : null}
             {event.capacity != null ? (
-              <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('termine.capacity', { capacity: event.capacity })}</Text>
+              <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px]">{t('termine.capacity', { capacity: event.capacity })}</Text>
             ) : null}
           </View>
         ) : null}
 
         {event.cancelled ? null : (
-          <View className="mt-3 flex-row items-center flex-wrap" style={{ gap: 12 }}>
+          <View className="mt-3 flex-row items-center flex-wrap" style={{ gap: 8 }}>
             <RsvpControl {...rsvp} />
-            {onAttendance ? (
-              <TouchableOpacity
-                onPress={onAttendance}
-                accessibilityRole="button"
-                className="flex-row items-center justify-center border border-border dark:border-border-dark rounded-lg px-3"
-                style={{ minHeight: 44, gap: 6 }}
-              >
-                <ClipboardCheck size={14} color={themeColors.foreground} />
-                <Text className="text-foreground dark:text-foreground-dark text-xs font-semibold">{t('att.open')}</Text>
-              </TouchableOpacity>
-            ) : null}
+            {onAttendance ? <Button variant="secondary" size="M" icon={ClipboardCheck} label={t('att.open')} onPress={onAttendance} /> : null}
           </View>
         )}
       </View>
-    </TouchableOpacity>
+    </PressScale>
+    </Surface>
   );
 }
 
@@ -119,7 +124,7 @@ export interface EventFocus {
   event: CalendarEvent;
 }
 
-export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone }: Props) {
+export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone, command, onCommandHandled }: Props) {
   const { t, language } = useLanguage();
   const themeColors = useThemeColors();
   const { info } = useClubInfo(clubId);
@@ -215,24 +220,54 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
 
   // Multi-day events are marked and listed on every day they cover.
   const { markers, byDay } = useMemo(() => {
+    // One marker per event: the grid shows neutral dots ("something is on"), the colours live on the event rows.
     const dots: Record<string, string[]> = {};
     const days = new Map<string, CalendarEvent[]>();
     const list = Array.isArray(events) ? events.filter((e) => e && typeof e.startsAt === 'string') : [];
     for (const event of list.slice().sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt))) {
-      const color = colorFor(event.calendarId);
       for (const key of eventDayKeys(event)) {
-        dots[key] = dots[key]?.includes(color) ? dots[key] : [...(dots[key] ?? []), color];
+        dots[key] = [...(dots[key] ?? []), event.id];
         days.set(key, [...(days.get(key) ?? []), event]);
       }
     }
     return { markers: dots, byDay: days };
-  }, [events, colorFor]);
+  }, [events]);
 
   const dayEvents = byDay.get(selectedDay) ?? [];
   const selectedDate = useMemo(() => {
     const [y, m, d] = selectedDay.split('-').map(Number);
     return new Date(y, m - 1, d);
   }, [selectedDay]);
+
+  // Top-bar actions (decision D3: the hours and calendar tools live in the header, not as buttons above the grid).
+  // The screen only offers an action to people who may use it, so no right is re-checked here (and none can be "not
+  // loaded yet" at mount). A command stays buffered in the screen until this tab handled it, then it is cleared.
+  useEffect(() => {
+    if (!command) return;
+    switch (command.kind) {
+      case 'new':
+        setSheetTarget({ day: selectedDate });
+        break;
+      case 'manage':
+        setManageOpen(true);
+        break;
+      case 'feeds':
+        setFeedsOpen(true);
+        break;
+      case 'time':
+        setTimeOpen(true);
+        break;
+      case 'myHours':
+        setMyHoursOpen(true);
+        break;
+      case 'teamHours':
+        setTeamHoursOpen(true);
+        break;
+    }
+    onCommandHandled?.();
+    // Only a new command triggers; the selected day is read at that moment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [command]);
 
   const handleMonthChange = (next: Date) => {
     setMonth(next);
@@ -287,95 +322,33 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone 
   return (
     <>
       {staleAt ? <OfflineNotice savedAt={staleAt} /> : null}
-      {canWrite ? (
-        <View className="flex-row mb-3" style={{ gap: 8 }}>
-          <TouchableOpacity accessibilityRole="button"
-            onPress={() => setManageOpen(true)}
-            className="flex-1 flex-row items-center justify-center border border-border dark:border-border-dark rounded-xl py-2.5"
-            style={{ gap: 6 }}
-          >
-            <Settings2 size={16} color={themeColors.foreground} />
-            <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('kalender.manage.open')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity accessibilityRole="button"
-            onPress={() => setSheetTarget({ day: selectedDate })}
-            className="flex-1 flex-row items-center justify-center bg-primary dark:bg-primary-dark rounded-xl py-2.5"
-            style={{ gap: 6 }}
-          >
-            <Plus size={16} color={themeColors.primaryForeground} />
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('termine.new')}</Text>
-          </TouchableOpacity>
+      <MonthCalendar month={month} onMonthChange={handleMonthChange} selectedDay={selectedDay} onSelectDay={handleSelectDay} markers={markers} />
+
+      <View className="flex-row items-center justify-between mt-5 mb-2" style={{ minHeight: 24 }}>
+        <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold">
+          {selectedDate.toLocaleDateString(language, { weekday: 'long', day: 'numeric', month: 'long' })}
+        </Text>
+        {loading ? <ActivityIndicator size="small" color={themeColors.primaryText} /> : null}
+      </View>
+
+      {error || loadError ? (
+        <View className="mb-3">
+          <Banner tone="danger" body={error ?? apiErrorMessage(loadError, t)} />
         </View>
       ) : null}
 
-      <TouchableOpacity
-        onPress={() => setFeedsOpen(true)}
-        accessibilityRole="button"
-        className="flex-row items-center justify-center border border-border dark:border-border-dark rounded-xl mb-3"
-        style={{ gap: 6, minHeight: 44 }}
-      >
-        <CalendarPlus size={16} color={themeColors.foreground} />
-        <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('feeds.open')}</Text>
-      </TouchableOpacity>
-
-      {trackTime ? (
-        <TouchableOpacity
-          onPress={() => setTimeOpen(true)}
-          accessibilityRole="button"
-          className="flex-row items-center justify-center border border-border dark:border-border-dark rounded-xl mb-3"
-          style={{ gap: 6, minHeight: 44 }}
-        >
-          <Timer size={16} color={themeColors.foreground} />
-          <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('time.open')}</Text>
-        </TouchableOpacity>
-      ) : null}
-
-      {myHours ? (
-        <TouchableOpacity
-          onPress={() => setMyHoursOpen(true)}
-          accessibilityRole="button"
-          className="flex-row items-center justify-center border border-border dark:border-border-dark rounded-xl mb-3"
-          style={{ gap: 6, minHeight: 44 }}
-        >
-          <Timer size={16} color={themeColors.foreground} />
-          <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('time.my.open')}</Text>
-        </TouchableOpacity>
-      ) : null}
-
-      {teamHours ? (
-        <TouchableOpacity
-          onPress={() => setTeamHoursOpen(true)}
-          accessibilityRole="button"
-          className="flex-row items-center justify-center border border-border dark:border-border-dark rounded-xl mb-3"
-          style={{ gap: 6, minHeight: 44 }}
-        >
-          <Timer size={16} color={themeColors.foreground} />
-          <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('time.team.open')}</Text>
-        </TouchableOpacity>
-      ) : null}
-
-      <MonthCalendar month={month} onMonthChange={handleMonthChange} selectedDay={selectedDay} onSelectDay={handleSelectDay} markers={markers} />
-
-      <View className="flex-row items-center justify-between mt-4 mb-2">
-        <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">
-          {selectedDate.toLocaleDateString(language, { weekday: 'long', day: 'numeric', month: 'long' })}
-        </Text>
-        {loading ? <ActivityIndicator size="small" color={themeColors.primary} /> : null}
-      </View>
-
-      {error || loadError ? <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{error ?? apiErrorMessage(loadError, t)}</Text> : null}
-
       {!loading && dayEvents.length === 0 ? (
-        <>
-          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('termine.day-empty')}</Text>
+        <View className="py-2">
+          <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[15px] leading-[22px]">{t('termine.day-empty')}</Text>
           <DocsLink path={DOCS_PATHS.calendar} />
-        </>
+        </View>
       ) : (
         dayEvents.map((event) => (
           <EventRow
             key={event.id}
             event={event}
             color={colorFor(event.calendarId)}
+            calendarName={calendars.find((c) => c.id === event.calendarId)?.name ?? null}
             rsvp={rsvpPropsFor(event.id)}
             onPress={() => setSheetTarget({ eventId: event.id })}
             onAttendance={canAttendOn(event) ? () => openSub('attendance', event) : undefined}

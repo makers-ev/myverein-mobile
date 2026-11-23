@@ -3,6 +3,8 @@ import { Text, View } from 'react-native';
 import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react-native';
 
 import { Button } from '@/components/assembly/ui';
+import PressScale from '@/components/ui/PressScale';
+import Title from '@/components/ui/Title';
 import SignedImage from '@/components/ui/SignedImage';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import type { VerificationPhase } from '@/hooks/useCardVerification';
@@ -57,9 +59,9 @@ export default function CardCheckResult({ phase, onNext, onRetry, canRetry }: Pr
     <View className="flex-1" style={{ backgroundColor: bg }}>
       <View className="flex-1 items-center justify-center p-6" accessible accessibilityRole="alert" accessibilityLiveRegion="assertive" accessibilityLabel={member ? [word, member.displayName, member.category].filter(Boolean).join('. ') : notACard ? `${word}. ${t('check.result.not-card')}` : word}>
         <Icon size={96} color="#FFFFFF" />
-        <Text className="font-semibold text-center mt-4" style={{ color: '#FFFFFF', fontSize: 40, lineHeight: 46 }}>
+        <Title header={false} className="text-white text-center mt-4" style={{ fontSize: 44, lineHeight: 50, letterSpacing: 1, textAlign: 'center' }}>
           {word}
-        </Text>
+        </Title>
         {notACard ? (
           <Text className="text-center mt-3 text-lg" style={{ color: '#FFFFFF' }}>
             {t('check.result.not-card')}
@@ -72,11 +74,11 @@ export default function CardCheckResult({ phase, onNext, onRetry, canRetry }: Pr
             ) : (
               <NoPhoto text={member.initials} />
             )}
-            <Text className="font-semibold text-center mt-4" style={{ color: '#FFFFFF', fontSize: 28 }}>
+            <Title header={false} size="M" className="text-white text-center mt-4" style={{ textAlign: 'center' }}>
               {member.displayName}
-            </Text>
+            </Title>
             {member.category ? (
-              <Text className="text-center text-lg" style={{ color: '#FFFFFF' }}>
+              <Text className="text-center text-[17px]" style={{ color: '#FFFFFF' }}>
                 {member.category}
               </Text>
             ) : null}
@@ -86,8 +88,18 @@ export default function CardCheckResult({ phase, onNext, onRetry, canRetry }: Pr
           </View>
         ) : null}
       </View>
-      <View className="p-6">
-        <Button label={t('check.next')} onPress={onNext} />
+      <View className="px-6 pb-8 pt-2">
+        <PressScale
+          accessibilityRole="button"
+          accessibilityLabel={t('check.next')}
+          onPress={onNext}
+          className="bg-white rounded-control items-center justify-center"
+          style={{ minHeight: 52 }}
+        >
+          <Text className="text-[16px] font-semibold" style={{ color: bg }}>
+            {t('check.next')}
+          </Text>
+        </PressScale>
       </View>
     </View>
   );

@@ -7,7 +7,13 @@ import { useClubMemberDirectory } from '@/hooks/useClubMembers';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import CheckInSection from './CheckInSection';
-import { Badge, Body, Button, Card, ErrorRetry, Loading, labelOr } from './ui';
+import { Badge, Body, Button, Card, labelOr } from './ui';
+import Banner from '@/components/ui/Banner';
+import UiButton from '@/components/ui/Button';
+import ErrorState from '@/components/ui/ErrorState';
+import HeroCard from '@/components/ui/HeroCard';
+import Skeleton from '@/components/ui/Skeleton';
+import Title from '@/components/ui/Title';
 
 interface Props {
   clubId: string;
@@ -41,8 +47,8 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
     }
   };
 
-  if (a.meetingLoading && !a.meeting) return <Loading />;
-  if (!a.meeting) return <ErrorRetry message={t('assembly.meeting.error')} onRetry={() => void a.reloadAll()} />;
+  if (a.meetingLoading && !a.meeting) return <Skeleton shape="hero" />;
+  if (!a.meeting) return <ErrorState fallbackKey="assembly.meeting.error" onRetry={() => void a.reloadAll()} />;
   const m = a.meeting;
   const mine = a.invitees.find((i) => i.clubMemberId === me);
   const grantedByMe = a.proxies.find((p) => p.grantorClubMemberId === me);
@@ -82,14 +88,21 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
       <TouchableOpacity accessibilityRole="button" onPress={onBack} className="min-h-[44px] justify-center self-start mb-2">
         <Text className="text-primary dark:text-primary-dark font-semibold">{t('assembly.back')}</Text>
       </TouchableOpacity>
-      <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-xl font-semibold mb-1">
-        {m.title}
-      </Text>
+      <Title>{m.title}</Title>
       <Body muted>{m.scheduledAt ? new Date(m.scheduledAt).toLocaleString(language, { dateStyle: 'full', timeStyle: 'short' }) : t('treffen.scheduled-at.pending')}</Body>
       {error ? (
-        <Text accessibilityRole="alert" className="text-destructive dark:text-destructive-dark text-sm mb-3">
-          {error}
-        </Text>
+        <View className="mb-3">
+          <Banner tone="danger" body={error} />
+        </View>
+      ) : null}
+
+      {!over && mine ? (
+        <View className="mb-4">
+          <HeroCard eyebrow={labelOr(t, `assembly.rsvp.${mine.response}`, 'assembly.rsvp.other')} title={t('assembly.rsvp.title')}>
+            <UiButton variant={mine.response === 'zugesagt' ? 'inverse' : 'inverseOutline'} label={t('assembly.rsvp.yes')} loading={a.acting} onPress={() => void run(() => a.respond('zugesagt'))} />
+            <UiButton variant={mine.response === 'abgesagt' ? 'inverse' : 'inverseOutline'} label={t('assembly.rsvp.no')} loading={a.acting} onPress={() => void run(() => a.respond('abgesagt'))} />
+          </HeroCard>
+        </View>
       ) : null}
 
       <Card title={t('assembly.invitation.title')}>
@@ -105,14 +118,6 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
         <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm mb-1">{t('assembly.agenda')}</Text>
         {agenda.length === 0 ? <Body muted>{content?.agendaText || t('assembly.agenda.empty')}</Body> : agenda.map((i) => <Body key={i.key}>{`${i.position}. ${i.title}${i.description ? ` – ${i.description}` : ''}`}</Body>)}
       </Card>
-
-      {!over && mine ? (
-        <Card title={t('assembly.rsvp.title')}>
-          <Badge symbol={mine.response === 'zugesagt' ? '✓' : mine.response === 'abgesagt' ? '✕' : '?'} label={labelOr(t, `assembly.rsvp.${mine.response}`, 'assembly.rsvp.other')} />
-          <Button label={t('assembly.rsvp.yes')} secondary={mine.response !== 'zugesagt'} busy={a.acting} onPress={() => void run(() => a.respond('zugesagt'))} />
-          <Button label={t('assembly.rsvp.no')} secondary={mine.response !== 'abgesagt'} busy={a.acting} onPress={() => void run(() => a.respond('abgesagt'))} />
-        </Card>
-      ) : null}
 
       {!over && m.type === 'mitgliederversammlung' ? (
         <Card title={t('assembly.proxy.title')}>
@@ -148,7 +153,7 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
                 value={search}
                 onChangeText={setSearch}
                 autoCorrect={false}
-                className="bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark mb-2 min-h-[48px]"
+                className="bg-card dark:bg-card-dark rounded-control p-3 text-base text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark mb-2 min-h-[48px]"
               />
               {holders.length === 0 ? <Body muted>{t('assembly.proxy.no-members')}</Body> : null}
               {holders.map((h) => (
@@ -172,10 +177,15 @@ export default function AssemblyDetailView({ clubId, meetingId, onBack, onOpenBa
       ) : null}
 
       {a.quorum && !over ? (
-        <Card title={t('assembly.quorum.title')}>
-          <Badge symbol={a.quorum.result === 'beschlussfaehig' ? '✓' : '!'} label={t(`assembly.quorum.${a.quorum.result}`)} />
-          <Body muted>{t('assembly.quorum.counts', { present: a.quorum.represented, eligible: a.quorum.eligibleTotal })}</Body>
-        </Card>
+        // Quorum notice (handoff): a warning banner while it is missing, a success banner once reached; numbers in words.
+        <View className="mb-4">
+          <Banner
+            tone={a.quorum.result === 'beschlussfaehig' ? 'success' : 'warning'}
+            title={t(`assembly.quorum.${a.quorum.result}`)}
+            body={t('assembly.quorum.counts', { present: a.quorum.represented, eligible: a.quorum.eligibleTotal })}
+            alert={a.quorum.result !== 'beschlussfaehig'}
+          />
+        </View>
       ) : null}
 
       <Card title={t('assembly.ballots.title')}>

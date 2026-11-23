@@ -1,53 +1,182 @@
-import { FIXED_COLORS, palettes } from './palettes';
+import { FIXED_COLORS, palettes, type TokenSet } from './palettes';
 import { blend, contrastRatio } from './contrast';
+import { deriveTokens } from './deriveTokens';
 
-// WCAG AA: 4.5:1 for normal text. Pairs that carry text in the UI, for every built-in palette in light and dark.
-const PAIRS: [keyof (typeof palettes)['vereinsblau']['light'], keyof (typeof palettes)['vereinsblau']['light']][] = [
-  ['foreground', 'background'],
-  ['foreground', 'card'],
-  ['mutedForeground', 'background'],
-  ['mutedForeground', 'card'],
-  ['mutedForeground', 'muted'],
-  ['primary', 'background'],
-  ['primary', 'card'],
+type Key = keyof TokenSet;
+const SURFACES: Key[] = ['background', 'card', 'muted'];
+
+// WCAG AA: 4.5:1 for text, 3:1 for the boundary of a control. Pairs that carry text in the UI ("Vereinsheim" design,
+// handoff section 3), checked for every built-in palette in light and dark.
+const TEXT_PAIRS: [Key, Key][] = [
+  ...SURFACES.flatMap((s): [Key, Key][] => [
+    ['foreground', s],
+    ['mutedForeground', s],
+    ['primaryText', s],
+    ['accent', s],
+  ]),
   ['primaryForeground', 'primary'],
+  ['primaryText', 'primarySoft'],
+  ['primarySoftForeground', 'primarySoft'],
   ['accentForeground', 'accent'],
-  ['accent', 'background'],
-  ['accent', 'card'],
-  ['accent', 'muted'],
+  ['accentSoftForeground', 'accentSoft'],
+  ['foreground', 'primarySoft'],
+  ['mutedForeground', 'primarySoft'],
 ];
 
-describe('palette contrast (WCAG AA 4.5:1)', () => {
+/** Termin rows tint the card with 40 % primarySoft (`bg-primary-soft/40`): muted meta text must stay readable on that blend. */
+function tintedFailures(t: TokenSet): string[] {
+  const r = contrastRatio(t.mutedForeground, blend(t.primarySoft, t.card, 0.4));
+  return r < 4.5 ? [`mutedForeground on 40% primarySoft: ${r.toFixed(2)}`] : [];
+}
+
+/** `divider` is a light decorative line: visible against the card but never stronger than `border`. */
+function dividerFailures(t: TokenSet): string[] {
+  const out: string[] = [];
+  if (t.divider.toLowerCase() === t.card.toLowerCase()) out.push('divider equals card');
+  if (contrastRatio(t.divider, t.card) > contrastRatio(t.border, t.card) + 0.001) out.push('divider stronger than border');
+  return out;
+}
+const CONTROL_PAIRS: [Key, Key][] = [
+  ['borderControl', 'card'],
+  ['borderControl', 'background'],
+  // PIN-pad keys sit on the sunken surface and carry a control border.
+  ['borderControl', 'muted'],
+];
+
+function failures(tokens: TokenSet): string[] {
+  const out: string[] = [];
+  for (const [fg, bg] of TEXT_PAIRS) {
+    const r = contrastRatio(tokens[fg], tokens[bg]);
+    if (r < 4.5) out.push(`${fg} on ${bg}: ${r.toFixed(2)}`);
+  }
+  for (const [fg, bg] of CONTROL_PAIRS) {
+    const r = contrastRatio(tokens[fg], tokens[bg]);
+    if (r < 3) out.push(`${fg} on ${bg}: ${r.toFixed(2)} (control, needs 3:1)`);
+  }
+  return out;
+}
+
+describe('palette contrast (WCAG AA: text 4.5:1, controls 3:1)', () => {
   for (const [name, palette] of Object.entries(palettes)) {
     for (const mode of ['light', 'dark'] as const) {
       it(`${name} ${mode}`, () => {
-        const tokens = palette[mode] as Record<string, string>;
-        const failures = PAIRS.filter(([fg, bg]) => contrastRatio(tokens[fg]!, tokens[bg]!) < 4.5).map(([fg, bg]) => `${fg} on ${bg}: ${contrastRatio(tokens[fg]!, tokens[bg]!).toFixed(2)}`);
-        expect(failures).toEqual([]);
+        expect(failures(palette[mode])).toEqual([]);
+        expect(tintedFailures(palette[mode])).toEqual([]);
+      });
+      it(`${name} ${mode}: divider`, () => {
+        expect(dividerFailures(palette[mode])).toEqual([]);
       });
     }
   }
 });
 
+describe('surface steps', () => {
+  for (const [name, palette] of Object.entries(palettes)) {
+    it(`${name} dark: card is a visible step above the canvas (no borders in dark mode)`, () => {
+      expect(contrastRatio(palette.dark.card, palette.dark.background)).toBeGreaterThanOrEqual(1.1);
+    });
+  }
+
+  it('Vereinsblau dark: card and muted are visibly stepped from the canvas (decision D1)', () => {
+    const d = palettes.vereinsblau.dark;
+    expect(contrastRatio(d.card, d.background)).toBeGreaterThanOrEqual(1.15);
+    expect(contrastRatio(d.muted, d.background)).toBeGreaterThanOrEqual(1.35);
+  });
+
+  it('dark primary fills take white text (decision D4)', () => {
+    for (const palette of Object.values(palettes)) {
+      expect(palette.dark.primaryForeground.toLowerCase()).toBe('#ffffff');
+      expect(contrastRatio('#ffffff', palette.dark.primary)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+});
+
 describe('semantic colors (WCAG AA 4.5:1)', () => {
   for (const [name, palette] of Object.entries(palettes)) {
     for (const mode of ['light', 'dark'] as const) {
-      it(`${name} ${mode}: destructive, success and warning text on every surface and as badge`, () => {
-        const tokens = palette[mode] as Record<string, string>;
-        const fixed = FIXED_COLORS[mode] as Record<string, string>;
-        const failures: string[] = [];
-        for (const tone of ['destructive', 'success', 'warning'] as const) {
-          for (const surface of ['background', 'card', 'muted'] as const) {
-            const ratio = contrastRatio(fixed[tone]!, tokens[surface]!);
-            if (ratio < 4.5) failures.push(`${tone} on ${surface}: ${ratio.toFixed(2)}`);
-            // Badge: the tone as text on its own 10% tint over the surface (Badge and the Orte/Material chips).
-            const tint = contrastRatio(fixed[tone]!, blend(fixed[tone]!, tokens[surface]!, 0.1));
-            if (tint < 4.5) failures.push(`${tone} badge on ${surface}: ${tint.toFixed(2)}`);
+      it(`${name} ${mode}: danger, success, warning and info as text, on their soft tint and as badge`, () => {
+        const tokens = palette[mode];
+        const fixed = FIXED_COLORS[mode];
+        const out: string[] = [];
+        const tones = [
+          ['destructive', 'destructiveSoft'],
+          ['success', 'successSoft'],
+          ['warning', 'warningSoft'],
+          ['info', 'infoSoft'],
+        ] as const;
+        for (const [tone, soft] of tones) {
+          for (const surface of SURFACES) {
+            const ratio = contrastRatio(fixed[tone], tokens[surface]);
+            if (ratio < 4.5) out.push(`${tone} on ${surface}: ${ratio.toFixed(2)}`);
+            // Legacy tint (the tone at 10 % over the surface), still used by some feature chips.
+            const tint = contrastRatio(fixed[tone], blend(fixed[tone], tokens[surface], 0.1));
+            if (tint < 4.5) out.push(`${tone} on 10% tint over ${surface}: ${tint.toFixed(2)}`);
           }
+          const onSoft = contrastRatio(fixed[tone], fixed[soft]);
+          if (onSoft < 4.5) out.push(`${tone} on ${soft}: ${onSoft.toFixed(2)}`);
+          const fgOnSoft = contrastRatio(tokens.foreground, fixed[soft]);
+          if (fgOnSoft < 4.5) out.push(`foreground on ${soft}: ${fgOnSoft.toFixed(2)}`);
         }
-        // White text on a solid destructive fill (unread counters, danger buttons).
-        if (mode === 'light' && contrastRatio('#ffffff', fixed.destructive!) < 4.5) failures.push('white on destructive');
-        expect(failures).toEqual([]);
+        // Solid destructive fill (irreversible actions, the one red "needs action" count) with white text.
+        const fill = contrastRatio(fixed.destructiveForeground, fixed.destructiveFill);
+        if (fill < 4.5) out.push(`white on destructiveFill: ${fill.toFixed(2)}`);
+        expect(out).toEqual([]);
+      });
+    }
+  }
+});
+
+describe('custom palettes (deriveTokens)', () => {
+  // A spread of anchors a club might pick: the defaults, a light yellow, a saturated red, a mid grey, a near-black.
+  const anchors = [
+    { background: '#ffffff', foreground: '#2e3338', primary: '#1e293b' },
+    { background: '#1e1e1e', foreground: '#dcddde', primary: '#64748b' },
+    { background: '#ffffff', foreground: '#111111', primary: '#f5d000' },
+    { background: '#101418', foreground: '#f0f0f0', primary: '#ff3b30' },
+    { background: '#fafafa', foreground: '#202020', primary: '#888888' },
+    { background: '#0b0b0b', foreground: '#e5e5e5', primary: '#22b8cf' },
+    { background: '#121212', foreground: '#eeeeee', primary: '#0a0a40' },
+  ];
+  for (const a of anchors) {
+    it(`derived roles stay AA for ${a.background}/${a.foreground}/${a.primary}`, () => {
+      const tokens = deriveTokens(a);
+      const derived: [Key, Key, number][] = [
+        ['primaryForeground', 'primary', 4.5],
+        ['primarySoftForeground', 'primarySoft', 4.5],
+        ['accentForeground', 'accent', 4.5],
+        ...SURFACES.flatMap((s): [Key, Key, number][] => [
+          ['primaryText', s, 4.5],
+          ['mutedForeground', s, 4.5],
+          ['borderControl', s, 3],
+        ]),
+      ];
+      const out = derived.filter(([fg, bg, min]) => contrastRatio(tokens[fg], tokens[bg]) < min).map(([fg, bg]) => `${fg} on ${bg}: ${contrastRatio(tokens[fg], tokens[bg]).toFixed(2)}`);
+      expect(out).toEqual([]);
+      expect(tintedFailures(tokens)).toEqual([]);
+      expect(dividerFailures(tokens)).toEqual([]);
+      expect(contrastRatio(tokens.mutedForeground, tokens.primarySoft)).toBeGreaterThanOrEqual(4.5);
+    });
+  }
+  it('derived dark palette: card is stepped from the canvas', () => {
+    const t = deriveTokens({ background: '#808080', foreground: '#f0f0f0', primary: '#22b8cf' });
+    expect(t.divider).not.toBe(t.card);
+  });
+});
+
+// Own palettes (ADR-008): the hero buttons `inverse` (fill = on-primary colour, label = primary fill) and `inverseOutline`
+// (outline and label = on-primary colour) are exactly the pair primaryForeground/primary, so it must hold for light own
+// colours such as a yellow, a cyan and a mid grey, on a light and on a dark canvas.
+describe('derived palettes keep the on-primary pairs readable', () => {
+  const anchors = [
+    ['light', '#ffffff', '#111111'],
+    ['dark', '#101114', '#f2f2f2'],
+  ] as const;
+  for (const primary of ['#f5d000', '#22b8cf', '#888888']) {
+    for (const [mode, background, foreground] of anchors) {
+      it(`${primary} on ${mode}`, () => {
+        const tokens = deriveTokens({ background, foreground, primary });
+        expect(failures(tokens)).toEqual([]);
+        expect(contrastRatio(tokens.primaryForeground, tokens.primary)).toBeGreaterThanOrEqual(4.5);
       });
     }
   }

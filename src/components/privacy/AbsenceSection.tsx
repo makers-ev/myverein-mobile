@@ -7,6 +7,8 @@ import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { isNotFound, parseDayKey, privacyErrorKeyOr } from '@/lib/ward';
 import { useAbsences, type Absence, type AbsenceInput, type AbsenceSubject } from '@/hooks/useAbsences';
 import AbsenceSheet from './AbsenceSheet';
+import Button from '@/components/ui/Button';
+import Surface from '@/components/ui/Surface';
 
 interface Props {
   subject: AbsenceSubject;
@@ -69,26 +71,16 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
   };
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+    <Surface className="p-4 mb-4">
       <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-base mb-2">
         {t('absence.title')}
       </Text>
       {canReport ? (
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel={wardName ? t('absence.button-ward', { name: wardName }) : t('absence.button')}
-          onPress={() => {
+        <Button block label={wardName ? t('absence.button-ward', { name: wardName }) : t('absence.button')} onPress={() => {
             setNotice(null);
             setSheetError(null);
             setSheetOpen(true);
-          }}
-          className="bg-primary dark:bg-primary-dark rounded-xl items-center justify-center"
-          style={{ minHeight: 48 }}
-        >
-          <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold text-sm">
-            {wardName ? t('absence.button-ward', { name: wardName }) : t('absence.button')}
-          </Text>
-        </TouchableOpacity>
+          }} />
       ) : (
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm">{t('absence.read-only-ward')}</Text>
       )}
@@ -101,7 +93,7 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
 
       {loading && absences.length === 0 && !error ? (
         <View className="mt-3">
-          <ActivityIndicator color={themeColors.primary} />
+          <ActivityIndicator color={themeColors.primaryText} />
         </View>
       ) : error && absences.length === 0 ? (
         <View className="mt-2">
@@ -112,7 +104,7 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
         </View>
       ) : (
         absences.map((a) => (
-          <View key={a.id} className="flex-row items-center border-t border-border dark:border-border-dark mt-3 pt-3" style={{ gap: 8 }}>
+          <View key={a.id} className="flex-row items-center border-t border-divider dark:border-divider-dark mt-3 pt-3" style={{ gap: 8 }}>
             <View className="flex-1">
               <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">
                 {t(`absence.kind.${a.kind}`)} - {period(a)}
@@ -129,6 +121,6 @@ export default function AbsenceSection({ subject, wardName = null, canReport = t
       )}
 
       <AbsenceSheet visible={sheetOpen} wardName={wardName} saving={saving} error={sheetError} onClose={() => !saving && setSheetOpen(false)} onSubmit={(i) => void submit(i)} />
-    </View>
+    </Surface>
   );
 }

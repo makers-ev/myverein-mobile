@@ -28,7 +28,7 @@ export default function InfoModal({
         onPress={onClose}
         activeOpacity={1}
       >
-        <View className="bg-white rounded-lg p-5 max-w-xs w-80 relative">
+        <View className="bg-white rounded-control p-5 max-w-xs w-80 relative">
           {showCloseIcon && (
             <TouchableOpacity accessibilityRole="button"
               onPress={onClose}

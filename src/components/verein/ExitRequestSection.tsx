@@ -12,6 +12,8 @@ import { type Answers, type FieldErrorCode, fieldErrorsFromError, formErrorKey, 
 import { activeCancellation, exitErrorCode, formatDay, todayBerlin, useMyExitRequests, type ExitPreview } from '@/hooks/useExitRequests';
 import DateTimeField, { toDateString } from '@/components/ui/DateTimeField';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
+import Button from '@/components/ui/Button';
+import Surface from '@/components/ui/Surface';
 
 function noticeHint(preview: ExitPreview | null, t: (key: string, params?: Record<string, string | number>) => string): string {
   if (!preview || (preview.noticePeriodDays === null && preview.noticeMode === null)) return t('exit.notice.none');
@@ -190,7 +192,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
     ]);
   };
 
-  const cardClass = 'bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4';
+  const cardClass = 'p-4 mb-4';
   const titleClass = 'text-foreground dark:text-foreground-dark font-semibold text-base mb-2';
   const mutedClass = 'text-muted-foreground dark:text-muted-foreground-dark text-sm';
 
@@ -209,7 +211,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
 
   let body: React.ReactNode;
   if (!loaded && loading) {
-    body = <ActivityIndicator color={themeColors.primary} />;
+    body = <ActivityIndicator color={themeColors.primaryText} />;
   } else if (!loaded && error) {
     body = (
       <View>
@@ -218,7 +220,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
         </Text>
         <TouchableOpacity
           onPress={() => void refetch()}
-          className="self-start px-4 justify-center rounded-lg border border-border dark:border-border-dark"
+          className="self-start px-4 justify-center rounded-control border border-border dark:border-border-dark"
           style={{ minHeight: 44 }}
           accessibilityRole="button"
         >
@@ -239,17 +241,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
               : t('exit.pending.body', { requested: formatDay(pending.requestedOn) })
             : t('exit.scheduled.body', { date: formatDay(active.effectiveOn) })}
         </Text>
-        <TouchableOpacity
-          className={`border border-border dark:border-border-dark rounded-xl items-center justify-center ${withdrawing ? 'opacity-50' : ''}`}
-          style={{ minHeight: 48 }}
-          onPress={confirmWithdraw}
-          disabled={withdrawing}
-          accessibilityRole="button"
-          accessibilityLabel={t('exit.withdraw')}
-          accessibilityState={{ disabled: withdrawing, busy: withdrawing }}
-        >
-          {withdrawing ? <ActivityIndicator color={themeColors.primary} /> : <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('exit.withdraw')}</Text>}
-        </TouchableOpacity>
+        <Button block variant="secondary" label={t('exit.withdraw')} onPress={confirmWithdraw} loading={withdrawing} />
       </View>
     );
   } else if (isOwner) {
@@ -262,7 +254,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
           <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{t('exit.rejected', { note: lastRejected.decisionNote ?? '—' })}</Text>
         ) : null}
         <TouchableOpacity
-          className="border border-border dark:border-border-dark rounded-xl items-center justify-center"
+          className="border border-border dark:border-border-dark rounded-control items-center justify-center"
           style={{ minHeight: 48 }}
           onPress={openSheet}
           accessibilityRole="button"
@@ -275,7 +267,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
   }
 
   return (
-    <View className={cardClass}>
+    <Surface className={cardClass}>
       <Text className={titleClass} accessibilityRole="header">
         {t('exit.title')}
       </Text>
@@ -314,7 +306,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
         </Field>
         {formNotice ? (
           <View
-            className="mb-3 rounded-lg border border-primary/40 dark:border-primary-dark/40 bg-primary/5 dark:bg-primary-dark/5 p-3"
+            className="mb-3 rounded-control border border-primary/40 dark:border-primary-dark/40 bg-primary/5 dark:bg-primary-dark/5 p-3"
             accessibilityRole="alert"
             accessibilityLiveRegion="polite"
           >
@@ -362,7 +354,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
                 setFormRetries((n) => n + 1);
                 void exitForm.reload();
               }}
-              className="self-start px-4 justify-center rounded-lg border border-border dark:border-border-dark"
+              className="self-start px-4 justify-center rounded-control border border-border dark:border-border-dark"
               style={{ minHeight: 44 }}
               accessibilityRole="button"
             >
@@ -371,7 +363,7 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
             {formRetries >= 1 ? (
               <TouchableOpacity
                 onPress={() => setWithoutForm(true)}
-                className="self-start mt-2 px-4 justify-center rounded-lg border border-border dark:border-border-dark"
+                className="self-start mt-2 px-4 justify-center rounded-control border border-border dark:border-border-dark"
                 style={{ minHeight: 44 }}
                 accessibilityRole="button"
               >
@@ -380,9 +372,9 @@ export default function ExitRequestSection({ clubId }: { clubId: string }) {
             ) : null}
           </View>
         ) : (
-          <ActivityIndicator color={themeColors.primary} accessibilityLabel={t('forms.exit.loading')} />
+          <ActivityIndicator color={themeColors.primaryText} accessibilityLabel={t('forms.exit.loading')} />
         )}
       </FormSheet>
-    </View>
+    </Surface>
   );
 }

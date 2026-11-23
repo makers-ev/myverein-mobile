@@ -39,6 +39,9 @@ export type ClubPermission =
   | 'member_cards:manage'
   | 'branding:write'
   | 'storage:read'
+  // Wave 15: sponsor/partner list (board, read only in the app; managing stays on the website).
+  | 'sponsors:read'
+  | 'sponsors:write'
   // Not a ClubPermission in the backend, but appended to /club-members/me for UI gating (board roles).
   | 'club_stats:read';
 

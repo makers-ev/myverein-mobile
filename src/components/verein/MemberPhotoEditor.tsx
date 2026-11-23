@@ -1,8 +1,8 @@
 import React from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
-import { useThemeColors } from '@/theme/colors';
+import Button from '@/components/ui/Button';
 import { useMemberPhoto } from '@/hooks/useMemberPhoto';
 import type { ClubMember } from '@/hooks/useClubMembers';
 import MemberAvatar from './MemberAvatar';
@@ -24,7 +24,6 @@ interface Props {
 /** Avatar plus "take / choose photo" and "remove" actions (two taps to change, three to remove). */
 export default function MemberPhotoEditor({ clubId, target, name, photoUrl, hint, readOnly, onChanged, onPhotoExpired }: Props) {
   const { t } = useLanguage();
-  const themeColors = useThemeColors();
   const { busy, error, choose, remove } = useMemberPhoto({ clubId, target, t, onChanged });
 
   return (
@@ -32,36 +31,10 @@ export default function MemberPhotoEditor({ clubId, target, name, photoUrl, hint
       <View className="flex-row items-center" style={{ gap: 16 }}>
         <MemberAvatar name={name} photoUrl={photoUrl} size={72} onExpired={onPhotoExpired} />
         {readOnly ? null : (
-          <View className="flex-1" style={{ gap: 8 }}>
-            <TouchableOpacity
-              className={`bg-primary dark:bg-primary-dark rounded-xl px-4 items-center justify-center ${busy ? 'opacity-50' : ''}`}
-              style={{ minHeight: 44 }}
-              onPress={choose}
-              disabled={busy}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: busy, busy }}
-              accessibilityLabel={photoUrl ? t('member-photo.change') : t('member-photo.add')}
-            >
-              {busy ? (
-                <ActivityIndicator color={themeColors.primaryForeground} />
-              ) : (
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">
-                  {photoUrl ? t('member-photo.change') : t('member-photo.add')}
-                </Text>
-              )}
-            </TouchableOpacity>
-            {photoUrl ? (
-              <TouchableOpacity
-                className={`rounded-xl px-4 items-center justify-center border border-border dark:border-border-dark ${busy ? 'opacity-50' : ''}`}
-                style={{ minHeight: 44 }}
-                onPress={remove}
-                disabled={busy}
-                accessibilityRole="button"
-                accessibilityLabel={t('member-photo.remove')}
-              >
-                <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('member-photo.remove')}</Text>
-              </TouchableOpacity>
-            ) : null}
+          <View className="flex-1 flex-row flex-wrap items-center" style={{ gap: 4 }}>
+            <Button variant="secondary" size="M" label={photoUrl ? t('member-photo.change') : t('member-photo.add')} onPress={choose} loading={busy} />
+            {/* Removing is reversible (a new photo can be taken), so it is a quiet text action that asks first. */}
+            {photoUrl ? <Button variant="tertiary" size="M" label={t('member-photo.remove')} onPress={remove} disabled={busy} /> : null}
           </View>
         )}
       </View>
@@ -70,7 +43,7 @@ export default function MemberPhotoEditor({ clubId, target, name, photoUrl, hint
           {error}
         </Text>
       ) : null}
-      {hint ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-2">{hint}</Text> : null}
+      {hint ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-2">{hint}</Text> : null}
     </View>
   );
 }

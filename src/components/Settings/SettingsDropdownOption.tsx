@@ -40,10 +40,10 @@ export function SettingsDropdownOption({
   };
 
   return (
-    <View className="items-center">
-      <View className="w-80 bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-xl">
+    <View>
+      <View className="self-stretch bg-muted dark:bg-muted-dark rounded-control" style={{ minHeight: 52 }}>
         <TouchableOpacity accessibilityRole="button" onPress={handlePress}>
-          <Text className="p-4 text-lg text-center text-foreground dark:text-foreground-dark">
+          <Text className="px-4 py-3.5 text-[17px] leading-[22px] text-foreground dark:text-foreground-dark">
             {isDropdown && selectedValue && showSelectedValueInTitle
               ? `${infoField}: ${
                 dropdownOptions?.find((opt) => opt.value === selectedValue)?.label ||
@@ -66,13 +66,13 @@ export function SettingsDropdownOption({
             onPress={() => setIsDropdownVisible(false)}
             activeOpacity={1}
           >
-            <View className="w-[200px] max-h-[300px] bg-card dark:bg-card-dark rounded-lg p-2 shadow-lg">
+            <View className="w-[200px] max-h-[300px] bg-card dark:bg-card-dark rounded-control p-2 shadow-lg">
               <FlatList
                 data={dropdownOptions}
                 keyExtractor={(item) => item.value}
                 renderItem={({ item }) => (
                   <TouchableOpacity accessibilityRole="button"
-                    className={`flex-row justify-between items-center py-2 px-3 rounded ${
+                    className={`flex-row justify-between items-center py-2 px-3 rounded-control ${
                       selectedValue === item.value ? "bg-muted dark:bg-muted-dark" : ""
                     }`}
                     onPress={() => handleOptionSelect(item)}
@@ -87,7 +87,7 @@ export function SettingsDropdownOption({
                       {item.label}
                     </Text>
                     {selectedValue === item.value && (
-                      <Text style={{ color: themeColors.primary, fontWeight: "bold" }}>✔</Text>
+                      <Text style={{ color: themeColors.primaryText, fontWeight: "bold" }}>✔</Text>
                     )}
                   </TouchableOpacity>
                 )}

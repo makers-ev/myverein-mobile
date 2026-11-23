@@ -25,6 +25,7 @@ import { wardsOfClub } from '@/lib/eventRegistration';
 import FormSheet, { Field, inputClassName } from '@/components/ui/FormSheet';
 import DateTimeField from '@/components/ui/DateTimeField';
 import SubjectChips from './SubjectChips';
+import Button from '@/components/ui/Button';
 
 interface Props {
   visible: boolean;
@@ -117,7 +118,7 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
     const own = requestOf(ride, subject, callerId);
     const key = ride.id;
     return (
-      <View key={ride.id} className="border border-border dark:border-border-dark rounded-xl p-3 mb-2">
+      <View key={ride.id} className="border border-border dark:border-border-dark rounded-control p-3 mb-2">
         <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">
           {ride.mine ? t('ride.mine') : (ride.driver.displayName ?? t('ride.driver-unknown'))}
         </Text>
@@ -172,7 +173,7 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
             onPress={() => void run(key, () => rides.requestSeat(ride.id, subject))}
           />
         )}
-        {busy === key ? <ActivityIndicator size="small" color={themeColors.primary} /> : null}
+        {busy === key ? <ActivityIndicator size="small" color={themeColors.primaryText} /> : null}
       </View>
     );
   };
@@ -192,7 +193,7 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
     >
       {rides.loading && !rides.data ? (
         <View className="py-8 items-center" accessibilityLabel={t('ride.loading')}>
-          <ActivityIndicator color={themeColors.primary} />
+          <ActivityIndicator color={themeColors.primaryText} />
         </View>
       ) : rides.error && !rides.data ? (
         <View className="py-4">
@@ -206,11 +207,11 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
             <View>
               <Field label={t('ride.form.seats')}>
                 <View className="flex-row items-center" style={{ gap: 12 }}>
-                  <TouchableOpacity onPress={() => stepper(-1)} accessibilityRole="button" accessibilityLabel={t('reg.party.less')} className="border border-border dark:border-border-dark rounded-xl items-center justify-center" style={{ width: 48, height: 48 }}>
+                  <TouchableOpacity onPress={() => stepper(-1)} accessibilityRole="button" accessibilityLabel={t('reg.party.less')} className="border border-border dark:border-border-dark rounded-control items-center justify-center" style={{ width: 48, height: 48 }}>
                     <Minus size={18} color={themeColors.foreground} />
                   </TouchableOpacity>
                   <Text className="text-foreground dark:text-foreground-dark text-lg font-semibold">{draft.seats}</Text>
-                  <TouchableOpacity onPress={() => stepper(1)} accessibilityRole="button" accessibilityLabel={t('reg.party.more')} className="border border-border dark:border-border-dark rounded-xl items-center justify-center" style={{ width: 48, height: 48 }}>
+                  <TouchableOpacity onPress={() => stepper(1)} accessibilityRole="button" accessibilityLabel={t('reg.party.more')} className="border border-border dark:border-border-dark rounded-control items-center justify-center" style={{ width: 48, height: 48 }}>
                     <Plus size={18} color={themeColors.foreground} />
                   </TouchableOpacity>
                 </View>
@@ -251,14 +252,9 @@ export default function RidesSheet({ visible, onClose, clubId, event }: Props) {
               ) : (
                 rides.data.rides.map(renderRide)
               )}
-              <TouchableOpacity
-                onPress={() => setOffering(true)}
-                accessibilityRole="button"
-                className="bg-primary dark:bg-primary-dark rounded-xl items-center justify-center mt-2"
-                style={{ minHeight: 48 }}
-              >
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('ride.offer')}</Text>
-              </TouchableOpacity>
+              <View className="mt-2">
+                <Button block label={t('ride.offer')} onPress={() => setOffering(true)} />
+              </View>
             </View>
           )}
         </View>

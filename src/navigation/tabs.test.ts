@@ -1,6 +1,6 @@
 jest.mock('./AppNavigator', () => ({}));
 
-import { resolveReturnTo, tabForRoute, tabTarget, visibleTabs, TAB_ORDER, TAB_ROUTES } from './tabs';
+import { externalRoutes, resolveReturnTo, tabForRoute, tabTarget, visibleTabs, TAB_ORDER, TAB_ROUTES } from './tabs';
 
 describe('tabs', () => {
   it('has exactly five tabs in the agreed order', () => {
@@ -44,5 +44,54 @@ describe('resolveReturnTo', () => {
   it('sends a guardian-only account away from club-only routes', () => {
     expect(resolveReturnTo('Kalender', guardian)).toBe('Heute');
     expect(resolveReturnTo('Settings', guardian)).toBe('Settings');
+  });
+});
+
+describe('external roles (Wave 15)', () => {
+  const sponsor = { isAuthenticated: true, hasWards: false, guardianOnly: false, externalRole: 'sponsor' as const };
+  const provider = { ...sponsor, externalRole: 'dienstleister' as const };
+
+  it('shows only Heute and Mehr, and Heute opens the role start screen', () => {
+    expect(visibleTabs({ guardianOnly: false, externalRole: 'sponsor' })).toEqual(['heute', 'mehr']);
+    expect(visibleTabs({ guardianOnly: false, externalRole: null })).toHaveLength(5);
+    expect(tabTarget('heute', sponsor)).toBe('Partner');
+    expect(tabTarget('heute', provider)).toBe('Einsatz');
+    expect(tabTarget('heute', { ...sponsor, isAuthenticated: false })).toBe('Home');
+  });
+
+  it('keeps the new routes under their tabs', () => {
+    expect(tabForRoute('Partner')).toBe('heute');
+    expect(tabForRoute('Einsatz')).toBe('heute');
+    expect(tabForRoute('Sponsoren')).toBe('verein');
+  });
+
+  it('allows only the role own screens and account/legal screens', () => {
+    expect(externalRoutes(['sponsor'])).toContain('Partner');
+    expect(externalRoutes(['sponsor'])).not.toContain('Einsatz');
+    expect(externalRoutes(['dienstleister'])).toContain('Einsatz');
+    // An account holding both roles reaches both screens (Einsatz must not be bounced back to Partner).
+    expect(externalRoutes(['sponsor', 'dienstleister'])).toEqual(expect.arrayContaining(['Partner', 'Einsatz']));
+    // Role still unknown (fail closed): only the loading/retry screen.
+    expect(externalRoutes([])).toContain('Partner');
+    expect(externalRoutes([])).not.toContain('Einsatz');
+    for (const roles of [['sponsor'], ['dienstleister'], ['sponsor', 'dienstleister'], []] as const) {
+      for (const club of ['Dashboard', 'Kalender', 'Verein', 'Mitteilungen', 'Standorte', 'Sponsoren', 'JoinClub', 'Mitgliedsausweis'] as const) {
+        expect(externalRoutes(roles)).not.toContain(club);
+      }
+    }
+  });
+
+  it('fails closed while the role is unknown', () => {
+    const pending = { isAuthenticated: true, hasWards: false, guardianOnly: false, externalPending: true };
+    expect(visibleTabs({ guardianOnly: false, externalPending: true })).toEqual(['heute', 'mehr']);
+    expect(tabTarget('heute', pending)).toBe('Partner');
+    expect(resolveReturnTo('Kalender', pending)).toBe('Partner');
+  });
+
+  it('returns to the own start screen after sign-in unless the route is allowed', () => {
+    expect(resolveReturnTo('Kalender', sponsor)).toBe('Partner');
+    expect(resolveReturnTo(undefined, provider)).toBe('Einsatz');
+    expect(resolveReturnTo('Settings', sponsor)).toBe('Settings');
+    expect(resolveReturnTo('Einsatz', { ...sponsor, externalRoles: ['sponsor', 'dienstleister'] })).toBe('Einsatz');
   });
 });

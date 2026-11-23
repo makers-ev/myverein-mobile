@@ -8,6 +8,8 @@ import { isNotFound, privacyErrorKeyOr } from '@/lib/ward';
 import { consentActions, consentBadgeKey } from '@/lib/consentUi';
 import { useConsents, type ConsentSubject, type ConsentView } from '@/hooks/useConsents';
 import FormSheet from '@/components/ui/FormSheet';
+import Button from '@/components/ui/Button';
+import Surface from '@/components/ui/Surface';
 
 interface Props {
   subject: ConsentSubject;
@@ -87,7 +89,7 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
   const actions = open ? consentActions(open) : null;
 
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+    <Surface className="p-4 mb-4">
       <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark font-semibold text-base mb-1">
         {t('consent.title')}
       </Text>
@@ -100,7 +102,7 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
       ) : null}
 
       {loading && consents.length === 0 && !error ? (
-        <ActivityIndicator color={themeColors.primary} />
+        <ActivityIndicator color={themeColors.primaryText} />
       ) : error && consents.length === 0 ? (
         <View>
           <Text className="text-destructive dark:text-destructive-dark text-sm">{apiErrorMessage(error, t, 'consent.load-error')}</Text>
@@ -117,7 +119,7 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
             accessibilityRole="button"
             accessibilityLabel={`${c.name}: ${t(consentBadgeKey(c))}`}
             onPress={() => openSheet(c)}
-            className="flex-row items-center justify-between border-t border-border dark:border-border-dark py-3"
+            className="flex-row items-center justify-between border-t border-divider dark:border-divider-dark py-3"
             style={{ minHeight: 48, gap: 8 }}
           >
             <Text className="flex-1 text-foreground dark:text-foreground-dark text-sm font-semibold">{c.name}</Text>
@@ -140,7 +142,7 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
             ) : null}
             {open.description ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">{open.description}</Text> : null}
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs font-semibold mb-1">{t('consent.text-version', { version: open.text.version })}</Text>
-            <ScrollView className="border border-border dark:border-border-dark rounded-xl p-3 mb-3" style={{ maxHeight: 260 }} nestedScrollEnabled>
+            <ScrollView className="border border-border dark:border-border-dark rounded-control p-3 mb-3" style={{ maxHeight: 260 }} nestedScrollEnabled>
               <Text selectable className="text-foreground dark:text-foreground-dark text-sm">
                 {open.text.body}
               </Text>
@@ -155,30 +157,10 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
             {canDecide ? (
               <View style={{ gap: 8 }}>
                 {actions.grant ? (
-                  <TouchableOpacity
-                    accessibilityRole="button"
-                    disabled={saving}
-                    onPress={() => void run(open, 'grant')}
-                    className={`bg-primary dark:bg-primary-dark rounded-xl items-center justify-center ${saving ? 'opacity-50' : ''}`}
-                    style={{ minHeight: 48 }}
-                  >
-                    {saving ? (
-                      <ActivityIndicator color={themeColors.primaryForeground} />
-                    ) : (
-                      <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold text-sm">{t(actions.grant)}</Text>
-                    )}
-                  </TouchableOpacity>
+                  <Button block label={t(actions.grant)} onPress={() => void run(open, 'grant')} loading={saving} />
                 ) : null}
                 {actions.decline ? (
-                  <TouchableOpacity
-                    accessibilityRole="button"
-                    disabled={saving}
-                    onPress={() => (open.state === 'granted' ? confirmRevoke(open) : void run(open, 'revoke'))}
-                    className={`border border-border dark:border-border-dark rounded-xl items-center justify-center ${saving ? 'opacity-50' : ''}`}
-                    style={{ minHeight: 48 }}
-                  >
-                    <Text className={`font-semibold text-sm ${open.state === 'granted' ? 'text-destructive dark:text-destructive-dark' : 'text-foreground dark:text-foreground-dark'}`}>{t(actions.decline)}</Text>
-                  </TouchableOpacity>
+                  <Button block variant={open.state === 'granted' ? 'destructive' : 'secondary'} label={t(actions.decline)} onPress={() => (open.state === 'granted' ? confirmRevoke(open) : void run(open, 'revoke'))} disabled={saving} />
                 ) : null}
               </View>
             ) : (
@@ -192,6 +174,6 @@ export default function ConsentsSection({ subject, wardName = null, onChanged, o
           </View>
         ) : null}
       </FormSheet>
-    </View>
+    </Surface>
   );
 }

@@ -114,7 +114,7 @@ export default function HelpersSheet({ visible, onClose, clubId, event }: Props)
     const candidates = swapFor === shift.id && plan ? swapCandidates(plan, shift.id, subject) : [];
     const names = shift.signups.map((s) => s.displayName).filter((n): n is string => !!n);
     return (
-      <View key={shift.id} className="border border-border dark:border-border-dark rounded-xl p-3 mb-2" accessibilityLabel={`${stationName}, ${timeRange(shift, language)}`}>
+      <View key={shift.id} className="border border-border dark:border-border-dark rounded-control p-3 mb-2" accessibilityLabel={`${stationName}, ${timeRange(shift, language)}`}>
         <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{timeRange(shift, language)}</Text>
         <View className="flex-row items-center mt-1" style={{ gap: 6 }}>
           <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: TONE[tone].dot }} />
@@ -146,7 +146,7 @@ export default function HelpersSheet({ visible, onClose, clubId, event }: Props)
         ))}
 
         <View className="flex-row flex-wrap items-center mt-1">
-          {busy ? <ActivityIndicator size="small" color={themeColors.primary} /> : null}
+          {busy ? <ActivityIndicator size="small" color={themeColors.primaryText} /> : null}
           {on ? (
             <>
               <LinkButton label={t('help.withdraw')} danger disabled={busy} onPress={() => void act(shift.id, () => helpers.withdraw(shift.id, subject))} />
@@ -178,7 +178,7 @@ export default function HelpersSheet({ visible, onClose, clubId, event }: Props)
     <FormSheet visible={visible} title={t('help.title', { title: event.title })} onClose={onClose} cancelLabel={t('ui.done')} error={error}>
       {helpers.loading && !plan ? (
         <View className="py-8 items-center" accessibilityLabel={t('help.loading')}>
-          <ActivityIndicator color={themeColors.primary} />
+          <ActivityIndicator color={themeColors.primaryText} />
         </View>
       ) : helpers.error && !plan ? (
         <View className="py-4">
@@ -190,7 +190,7 @@ export default function HelpersSheet({ visible, onClose, clubId, event }: Props)
           {plan.cancelled ? <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold mb-3">{t('termine.cancelled')}</Text> : null}
 
           {plan.mine.length > 0 ? (
-            <View className="border border-primary dark:border-primary-dark rounded-xl p-3 mb-3" accessibilityLiveRegion="polite">
+            <View className="border border-primary dark:border-primary-dark rounded-control p-3 mb-3" accessibilityLiveRegion="polite">
               <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold mb-1">{t('help.mine')}</Text>
               {plan.mine.map((m) => (
                 <Text key={m.signupId} className="text-foreground dark:text-foreground-dark text-sm">

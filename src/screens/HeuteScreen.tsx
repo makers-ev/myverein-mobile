@@ -16,6 +16,7 @@ import { AcknowledgementsEntry, MyCardEntry, MyDocumentsEntry } from '@/componen
 import WardContactsSection from '@/components/guardian/WardContactsSection';
 import { goToTab } from '@/navigation/navigationRef';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+import Title from '@/components/ui/Title';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Heute'>;
 
@@ -55,9 +56,9 @@ export default function HeuteScreen({ navigation }: Props) {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <View className="px-6 pt-4">
-        <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-1">
+        <Title className="text-foreground dark:text-foreground-dark mb-1">
           {t('heute.title')}
-        </Text>
+        </Title>
         {selected ? (
           <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-2" numberOfLines={1}>
             {[selected.firstName ?? selected.name, selected.clubName].filter(Boolean).join(' - ')}
@@ -71,7 +72,7 @@ export default function HeuteScreen({ navigation }: Props) {
 
       {loading && wards.length === 0 ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={themeColors.primary} />
+          <ActivityIndicator size="large" color={themeColors.primaryText} />
         </View>
       ) : !selected ? (
         <View className="px-6 pt-6">
@@ -97,7 +98,7 @@ export default function HeuteScreen({ navigation }: Props) {
         <ScrollView
           key={`${selected.clubId}:${selected.wardId}`}
           contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 12, paddingBottom: 140 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void handleRefresh()} tintColor={themeColors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void handleRefresh()} tintColor={themeColors.primaryText} />}
         >
           {goneNotice ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-3">{t('heute.gone')}</Text> : null}
           <AbsenceSection subject={{ kind: 'ward', clubId: selected.clubId, wardId: selected.wardId }} wardName={selected.firstName ?? selected.name} canReport={selected.canReportAbsence} onGone={handleGone} />

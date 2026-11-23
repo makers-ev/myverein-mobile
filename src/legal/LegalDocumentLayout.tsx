@@ -42,7 +42,7 @@ export default function LegalDocumentLayout({ keyPrefix, sectionCount = 4 }: { k
 
             <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
                 {showLegalFallbackNotice && (
-                    <View className="bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-lg p-3 mb-4">
+                    <View className="bg-muted dark:bg-muted-dark border border-border dark:border-border-dark rounded-control p-3 mb-4">
                         <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark">
                             {t('legal.fallback-notice')}
                         </Text>

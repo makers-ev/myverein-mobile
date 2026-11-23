@@ -29,7 +29,7 @@ function ActionButton({ icon, label, onPress }: { icon: React.ReactNode; label: 
     <TouchableOpacity
       onPress={onPress}
       accessibilityRole="button"
-      className="flex-row items-center border border-border dark:border-border-dark rounded-xl px-3"
+      className="flex-row items-center border border-border dark:border-border-dark rounded-control px-3"
       style={{ minHeight: 48, gap: 8 }}
     >
       {icon}
@@ -51,7 +51,7 @@ function HelpersAction({ clubId, event, onOpen }: { clubId: string; event: Calen
     <TouchableOpacity
       onPress={onOpen}
       accessibilityRole="button"
-      className="flex-row items-center border border-border dark:border-border-dark rounded-xl px-3"
+      className="flex-row items-center border border-border dark:border-border-dark rounded-control px-3"
       style={{ minHeight: 48, gap: 8 }}
     >
       <HandHelping size={18} color={themeColors.foreground} />
@@ -74,7 +74,7 @@ function RidesAction({ clubId, event, onOpen }: { clubId: string; event: Calenda
     <TouchableOpacity
       onPress={onOpen}
       accessibilityRole="button"
-      className="flex-row items-center border border-border dark:border-border-dark rounded-xl px-3"
+      className="flex-row items-center border border-border dark:border-border-dark rounded-control px-3"
       style={{ minHeight: 48, gap: 8 }}
     >
       <Car size={18} color={themeColors.foreground} />

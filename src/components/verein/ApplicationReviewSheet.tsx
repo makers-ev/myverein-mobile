@@ -25,6 +25,7 @@ import {
 import { formatBytes } from '@/lib/formSchema';
 import { clearReviewFileCache, downloadReviewImage } from '@/lib/media';
 import { useThemeColors } from '@/theme/colors';
+import Button from '@/components/ui/Button';
 
 export interface DecisionOutcome {
   action: 'approved' | 'rejected';
@@ -59,7 +60,7 @@ function Hint({ text, tone }: { text: string; tone: 'warning' | 'info' }) {
   const themeColors = useThemeColors();
   return (
     <View
-      className={`flex-row rounded-lg border p-3 ${
+      className={`flex-row rounded-control border p-3 ${
         tone === 'warning'
           ? 'border-warning/40 dark:border-warning-dark/40 bg-warning/10 dark:bg-warning-dark/10'
           : 'border-border dark:border-border-dark bg-muted/40 dark:bg-muted-dark/40'
@@ -204,66 +205,31 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
 
   const redactedAny = review?.answers.some((a) => a.redacted) || review?.files.some((f) => f.redacted);
   const inputClass =
-    'bg-muted dark:bg-muted-dark rounded-lg px-3 py-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark';
+    'bg-muted dark:bg-muted-dark rounded-control px-3 py-3 text-base text-foreground dark:text-foreground-dark border border-border dark:border-border-dark';
 
   const footer =
     review && pending ? (
       rejecting ? (
         <View className="flex-row" style={{ gap: 10 }}>
-          <TouchableOpacity
-            onPress={() => setRejecting(false)}
-            disabled={busy}
-            accessibilityRole="button"
-            className={`flex-1 border border-border dark:border-border-dark rounded-xl items-center justify-center ${busy ? 'opacity-60' : ''}`}
-            style={{ minHeight: 48 }}
-          >
-            <Text className="text-foreground dark:text-foreground-dark font-semibold">{t('forms.review.reject.back')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => void decide('reject')}
-            disabled={busy}
-            accessibilityRole="button"
-            className={`flex-1 bg-destructive rounded-xl items-center justify-center ${busy ? 'opacity-60' : ''}`}
-            style={{ minHeight: 48 }}
-          >
-            {busy ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-semibold">{t('forms.review.reject.confirm')}</Text>}
-          </TouchableOpacity>
+          <View className="flex-1">
+            <Button block variant="secondary" label={t('forms.review.reject.back')} onPress={() => setRejecting(false)} disabled={busy} />
+          </View>
+          <View className="flex-1">
+            <Button block variant="destructive" label={t('forms.review.reject.confirm')} onPress={() => void decide('reject')} loading={busy} />
+          </View>
         </View>
       ) : (
         <View className="flex-row" style={{ gap: 10 }}>
-          <TouchableOpacity
-            onPress={() => setRejecting(true)}
-            disabled={busy}
-            accessibilityRole="button"
-            className={`flex-1 border border-border dark:border-border-dark rounded-xl items-center justify-center ${busy ? 'opacity-60' : ''}`}
-            style={{ minHeight: 48 }}
-          >
-            <Text className="text-destructive dark:text-destructive-dark font-semibold">{t('verein.applications.reject')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => void decide('approve')}
-            disabled={busy}
-            accessibilityRole="button"
-            className={`flex-1 bg-primary dark:bg-primary-dark rounded-xl items-center justify-center ${busy ? 'opacity-60' : ''}`}
-            style={{ minHeight: 48 }}
-          >
-            {busy ? (
-              <ActivityIndicator color={themeColors.primaryForeground} />
-            ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark font-semibold">{t('verein.applications.approve')}</Text>
-            )}
-          </TouchableOpacity>
+          <View className="flex-1">
+            <Button block variant="secondary" label={t('verein.applications.reject')} onPress={() => setRejecting(true)} disabled={busy} />
+          </View>
+          <View className="flex-1">
+            <Button block label={t('verein.applications.approve')} onPress={() => void decide('approve')} loading={busy} />
+          </View>
         </View>
       )
     ) : (
-      <TouchableOpacity
-        onPress={onClose}
-        accessibilityRole="button"
-        className="border border-border dark:border-border-dark rounded-xl items-center justify-center"
-        style={{ minHeight: 48 }}
-      >
-        <Text className="text-foreground dark:text-foreground-dark font-semibold">{t('forms.review.close')}</Text>
-      </TouchableOpacity>
+      <Button block variant="secondary" label={t('forms.review.close')} onPress={onClose} />
     );
 
   return (
@@ -292,18 +258,11 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
           {error ? (
             <View className="mt-4" accessibilityRole="alert">
               <Text className="text-destructive dark:text-destructive-dark text-sm mb-3">{t(reviewErrorKey(error))}</Text>
-              <TouchableOpacity
-                onPress={() => void refetch()}
-                accessibilityRole="button"
-                className="bg-primary dark:bg-primary-dark rounded-lg px-5 self-start items-center justify-center"
-                style={{ minHeight: 44 }}
-              >
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('forms.review.retry')}</Text>
-              </TouchableOpacity>
+              <Button label={t('forms.review.retry')} onPress={() => void refetch()} />
             </View>
           ) : !review || loading ? (
             <View className="mt-10 items-center" accessibilityLiveRegion="polite">
-              <ActivityIndicator size="large" color={themeColors.primary} />
+              <ActivityIndicator size="large" color={themeColors.primaryText} />
               <Text className="text-sm mt-3 text-muted-foreground dark:text-muted-foreground-dark">{t('forms.review.loading')}</Text>
             </View>
           ) : (
@@ -311,7 +270,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
               <View className="flex-row flex-wrap mt-2" style={{ gap: 8 }}>
                 {child ? (
                   <View className="flex-row items-center rounded-md bg-primary/10 dark:bg-primary-dark/10 px-2.5 py-0.5" style={{ gap: 4 }}>
-                    <Baby size={14} color={themeColors.primary} />
+                    <Baby size={14} color={themeColors.primaryText} />
                     <Text className="text-xs font-semibold text-primary dark:text-primary-dark">{t('forms.review.badge.child')}</Text>
                   </View>
                 ) : null}
@@ -404,7 +363,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
                   ) : (
                     <View style={{ gap: 8 }}>
                       {review.answers.map((a) => (
-                        <View key={a.key} className="rounded-lg border border-border dark:border-border-dark px-3 py-2">
+                        <View key={a.key} className="rounded-control border border-border dark:border-border-dark px-3 py-2">
                           <Text className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground-dark">{a.label}</Text>
                           {/* Plain text: answers are applicant input and are never interpreted as markup. */}
                           {a.redacted ? (
@@ -437,7 +396,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
                         const view = reviewFileView(f);
                         const shown = preview?.id === f.id;
                         return (
-                          <View key={f.id} className="rounded-lg border border-border dark:border-border-dark px-3 py-2">
+                          <View key={f.id} className="rounded-control border border-border dark:border-border-dark px-3 py-2">
                             <View className="flex-row items-center" style={{ gap: 8 }}>
                               <FileText size={16} color={themeColors.mutedForeground} />
                               <View className="flex-1">
@@ -454,11 +413,11 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
                                   onPress={() => (shown ? dropPreview() : void showImage(f))}
                                   disabled={fileBusy === f.id}
                                   accessibilityRole="button"
-                                  className="rounded-lg border border-border dark:border-border-dark px-3 items-center justify-center"
+                                  className="rounded-control border border-border dark:border-border-dark px-3 items-center justify-center"
                                   style={{ minHeight: 44 }}
                                 >
                                   {fileBusy === f.id ? (
-                                    <ActivityIndicator size="small" color={themeColors.primary} />
+                                    <ActivityIndicator size="small" color={themeColors.primaryText} />
                                   ) : (
                                     <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">
                                       {shown ? t('forms.review.file.hide') : t('forms.review.file.show')}
@@ -502,9 +461,9 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
 
               <Section title={t('forms.review.consent')}>
                 {review.consent ? (
-                  <View className="rounded-lg border border-border dark:border-border-dark p-3">
+                  <View className="rounded-control border border-border dark:border-border-dark p-3">
                     <View className="flex-row items-center" style={{ gap: 8 }}>
-                      <ShieldCheck size={16} color={themeColors.primary} />
+                      <ShieldCheck size={16} color={themeColors.primaryText} />
                       <Text className="flex-1 text-sm font-medium text-foreground dark:text-foreground-dark">
                         {review.consent.consentFieldKeys.length > 0 ? t('forms.review.consent.given') : t('forms.review.consent.notGiven')}
                       </Text>
@@ -668,7 +627,7 @@ export default function ApplicationReviewSheet({ clubId, application, onClose, o
         </KeyboardAwareScrollView>
 
         {review || error ? (
-          <View className="px-5 pt-3 pb-3 border-t border-border dark:border-border-dark bg-background dark:bg-background-dark">{footer}</View>
+          <View className="px-5 pt-3 pb-3 border-t border-divider dark:border-divider-dark bg-background dark:bg-background-dark">{footer}</View>
         ) : null}
       </SafeAreaView>
     </Modal>

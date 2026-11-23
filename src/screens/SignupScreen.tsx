@@ -1,21 +1,25 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
-import { Mail, Lock } from 'lucide-react-native';
+import { View, Text, TextInput } from 'react-native';
+import { Mail } from 'lucide-react-native';
 import { mapApiError } from '@/lib/mapApiError';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
+import BackButton from '@/components/ui/BackButton';
 import Logo from '@/components/Logo';
+import Button from '@/components/ui/Button';
+import Banner from '@/components/ui/Banner';
+import Title from '@/components/ui/Title';
+import PasswordInput from '@/components/PasswordInput';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
 
 // Type declarations for lucide-react-native icons
 const IconMail = Mail as any;
-const IconLock = Lock as any;
 
 interface SignupFormData {
-  firstName?: string;
-  lastName?: string;
+  name?: string;
   email?: string;
   password?: string;
+  confirmPassword?: string;
 }
 
 interface SignupScreenProps {
@@ -27,10 +31,10 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const [formData, setFormData] = useState<SignupFormData>({
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
     password: '',
+    confirmPassword: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,8 +46,11 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
     }));
   };
 
+  const passwordMismatch = !!formData.confirmPassword && formData.password !== formData.confirmPassword;
+  const canSubmit = !!formData.name?.trim() && !!formData.email && !!formData.password && formData.password === formData.confirmPassword;
+
   const handleSubmit = async () => {
-    if (!onSubmit || isSubmitting) return;
+    if (!onSubmit || isSubmitting || !canSubmit) return;
     setError(null);
     setIsSubmitting(true);
     try {
@@ -64,123 +71,90 @@ export default function SignupScreen({ onSubmit, onNavigateToLogin }: SignupScre
       className="bg-background dark:bg-background-dark"
       showsVerticalScrollIndicator={false}
     >
-        <View className="px-6 pb-32 relative">
+        <View className="px-4 pb-32 relative">
 
-          <View className="items-center py-8 mb-4">
-            <Logo size={56} />
-            <Text className="text-xl font-semibold text-foreground dark:text-foreground-dark mt-4">{t('signup.title')}</Text>
-            <Text className="text-muted-foreground dark:text-muted-foreground-dark">{t('signup.description')}</Text>
-          </View>
-
-          {/* Personal Info Section */}
-          <View className="mb-8">
-            <Text className="text-lg font-semibold text-foreground dark:text-foreground-dark mb-3 ml-1">
-              {t('signup.username')}
-            </Text>
-
-            <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4">
-
-              <View className="mb-4">
-                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">{t('signup.first-name')}</Text>
-                <TextInput
-                  className="bg-muted dark:bg-muted-dark p-3 rounded-xl text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
-                  placeholder={t('signup.first-name.placeholder')}
-                  accessibilityLabel={t('signup.first-name')}
-                  autoComplete="given-name"
-                  textContentType="givenName"
-                  placeholderTextColor={themeColors.mutedForeground}
-                  value={formData.firstName}
-                  onChangeText={(value) => handleInputChange('firstName', value)}
-                />
-              </View>
-
-              <View className="mb-4">
-                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">{t('signup.last-name')}</Text>
-                <TextInput
-                  className="bg-muted dark:bg-muted-dark p-3 rounded-xl text-foreground dark:text-foreground-dark border border-border dark:border-border-dark"
-                  placeholder={t('signup.last-name.placeholder')}
-                  accessibilityLabel={t('signup.last-name')}
-                  autoComplete="family-name"
-                  textContentType="familyName"
-                  placeholderTextColor={themeColors.mutedForeground}
-                  value={formData.lastName}
-                  onChangeText={(value) => handleInputChange('lastName', value)}
-                />
-              </View>
-
+          <BackButton />
+          <View className="pt-8 mb-8">
+            <Logo />
+            <View className="mt-6">
+              <Title>{t('signup.title')}</Title>
             </View>
+            <Text className="text-[17px] leading-6 mt-2 text-muted-foreground dark:text-muted-foreground-dark">{t('signup.description')}</Text>
           </View>
 
-          {/* Contact Section */}
-          <View className="mb-8">
-            <Text className="text-lg font-semibold text-foreground dark:text-foreground-dark mb-3 ml-1">
-              {t('signup.contact')}
-            </Text>
+          <View>
+            <View className="mb-4">
+              <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.name')}</Text>
+              <TextInput
+                className="bg-card dark:bg-card-dark px-3 py-3 min-h-[48px] rounded-control text-[17px] text-foreground dark:text-foreground-dark border border-border-control dark:border-border-control-dark"
+                accessibilityLabel={t('signup.name')}
+                autoComplete="name"
+                textContentType="name"
+                placeholderTextColor={themeColors.mutedForeground}
+                value={formData.name}
+                onChangeText={(value) => handleInputChange('name', value)}
+              />
+            </View>
 
-            <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4">
-
-              <View className="mb-4">
-                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">{t('signup.email')}</Text>
-                <View className="flex-row items-center bg-muted dark:bg-muted-dark p-3 rounded-xl border border-border dark:border-border-dark">
-                  <IconMail size={18} color={themeColors.mutedForeground} />
-                  <TextInput
-                    className="flex-1 text-foreground dark:text-foreground-dark"
-                    placeholder="user@example.com"
-                    placeholderTextColor={themeColors.mutedForeground}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    textContentType="emailAddress"
-                    accessibilityLabel={t('signup.email')}
-                    value={formData.email}
-                    onChangeText={(value) => handleInputChange('email', value)}
-                  />
-                </View>
+            <View className="mb-4">
+              <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.email')}</Text>
+              <View className="flex-row items-center bg-card dark:bg-card-dark px-3 min-h-[48px] rounded-control border border-border-control dark:border-border-control-dark" style={{ gap: 8 }}>
+                <IconMail size={18} color={themeColors.mutedForeground} />
+                <TextInput
+                  className="flex-1 text-[17px] text-foreground dark:text-foreground-dark"
+                  placeholder="user@example.com"
+                  placeholderTextColor={themeColors.mutedForeground}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  textContentType="emailAddress"
+                  accessibilityLabel={t('signup.email')}
+                  value={formData.email}
+                  onChangeText={(value) => handleInputChange('email', value)}
+                />
               </View>
+            </View>
 
-              <View className="mb-4">
-                <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark mb-1 ml-1 font-medium">{t('signup.password')}</Text>
-                <View className="flex-row items-center bg-muted dark:bg-muted-dark p-3 rounded-xl border border-border dark:border-border-dark">
-                  <IconLock size={18} color={themeColors.mutedForeground} />
-                  <TextInput
-                    className="flex-1 text-foreground dark:text-foreground-dark"
-                    placeholder="********"
-                    placeholderTextColor={themeColors.mutedForeground}
-                    secureTextEntry
-                    autoComplete="new-password"
-                    textContentType="newPassword"
-                    accessibilityLabel={t('signup.password')}
-                    value={formData.password}
-                    onChangeText={(value) => handleInputChange('password', value)}
-                  />
-                </View>
-              </View>
+            <View className="mb-4">
+              <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.password')}</Text>
+              <PasswordInput
+                showLockIcon
+                placeholder="********"
+                autoComplete="new-password"
+                textContentType="newPassword"
+                accessibilityLabel={t('signup.password')}
+                value={formData.password}
+                onChangeText={(value) => handleInputChange('password', value)}
+              />
+            </View>
 
+            <View className="mb-4">
+              <Text className="text-[13px] leading-[18px] text-foreground dark:text-foreground-dark mb-1.5 font-medium">{t('signup.confirm-password')}</Text>
+              <PasswordInput
+                showLockIcon
+                placeholder="********"
+                autoComplete="new-password"
+                textContentType="newPassword"
+                accessibilityLabel={t('signup.confirm-password')}
+                value={formData.confirmPassword ?? ''}
+                onChangeText={(value) => handleInputChange('confirmPassword', value)}
+              />
+              {passwordMismatch ? (
+                <Text className="text-destructive text-xs ml-1 mt-1" accessibilityRole="alert">{t('signup.password-mismatch')}</Text>
+              ) : null}
             </View>
           </View>
 
           {error ? (
-            <Text className="text-destructive dark:text-destructive-dark text-sm text-center mb-2">{error}</Text>
+            <View className="mb-3">
+              <Banner tone="danger" body={error} />
+            </View>
           ) : null}
 
-          <TouchableOpacity accessibilityRole="button"
-            className="mt-8 bg-primary dark:bg-primary-dark rounded-xl py-4 active:opacity-80"
-            onPress={handleSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color={themeColors.primaryForeground} />
-            ) : (
-              <Text className="text-primary-foreground dark:text-primary-foreground-dark text-center font-semibold text-lg">{t('signup.button')}</Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity accessibilityRole="button"
-            className="mt-4"
-            onPress={onNavigateToLogin}
-          >
-            <Text className="text-center text-primary dark:text-primary-dark font-semibold">{t('login.title')}</Text>
-          </TouchableOpacity>
+          <View className="mt-4" style={{ gap: 10 }}>
+            <Button block label={t('signup.button')} onPress={handleSubmit} loading={isSubmitting} disabled={!canSubmit} />
+            <Button block variant="tertiary" label={t('login.title')} onPress={() => onNavigateToLogin?.()} />
+          </View>
 
         </View>
     </KeyboardAwareScreen>

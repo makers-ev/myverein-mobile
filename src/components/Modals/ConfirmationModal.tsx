@@ -39,7 +39,7 @@ export default function ConfirmationModal({
         onPress={onClose}
         activeOpacity={1}
       >
-        <View className="bg-white rounded-lg p-5 max-w-xs">
+        <View className="bg-white rounded-control p-5 max-w-xs">
           <Text className={`text-lg font-semibold text-center mb-4 ${titleColor}`}>
             {title}
           </Text>
@@ -53,7 +53,7 @@ export default function ConfirmationModal({
               {buttons.slice(0, 2).map((button, index) => (
                 <TouchableOpacity accessibilityRole="button"
                   key={index}
-                  className={`py-2 px-4 rounded-md ${button.color}`}
+                  className={`py-2 px-4 rounded-control ${button.color}`}
                   onPress={button.onPress}
                 >
                   <Text className="text-white font-semibold text-center">

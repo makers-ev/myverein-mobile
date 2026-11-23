@@ -70,7 +70,7 @@ export default function AusweisKontrolleScreen() {
   } else {
     body = (
       <View className="flex-1">
-        <View className="flex-1 rounded-2xl overflow-hidden" accessible accessibilityLabel={t('check.scan-hint')}>
+        <View className="flex-1 rounded-hero overflow-hidden bg-black" accessible accessibilityLabel={t('check.scan-hint')}>
           {focused ? (
             <CameraView
               style={{ flex: 1 }}
@@ -81,11 +81,38 @@ export default function AusweisKontrolleScreen() {
               mute
             />
           ) : null}
+          <View pointerEvents="none" className="absolute inset-0 items-center justify-center">
+            <View style={{ width: 220, height: 220 }}>
+              {(['tl', 'tr', 'bl', 'br'] as const).map((c) => (
+                <View
+                  key={c}
+                  style={{
+                    position: 'absolute',
+                    width: 44,
+                    height: 44,
+                    borderColor: '#FFFFFF',
+                    top: c[0] === 't' ? 0 : undefined,
+                    bottom: c[0] === 'b' ? 0 : undefined,
+                    left: c[1] === 'l' ? 0 : undefined,
+                    right: c[1] === 'r' ? 0 : undefined,
+                    borderTopWidth: c[0] === 't' ? 4 : 0,
+                    borderBottomWidth: c[0] === 'b' ? 4 : 0,
+                    borderLeftWidth: c[1] === 'l' ? 4 : 0,
+                    borderRightWidth: c[1] === 'r' ? 4 : 0,
+                    borderTopLeftRadius: c === 'tl' ? 14 : 0,
+                    borderTopRightRadius: c === 'tr' ? 14 : 0,
+                    borderBottomLeftRadius: c === 'bl' ? 14 : 0,
+                    borderBottomRightRadius: c === 'br' ? 14 : 0,
+                  }}
+                />
+              ))}
+            </View>
+          </View>
         </View>
         <Text accessibilityLiveRegion="polite" className="text-foreground dark:text-foreground-dark text-base font-semibold text-center mt-4">
           {t('check.scan-hint')}
         </Text>
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs text-center mt-1">{t('check.not-stored')}</Text>
+        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] text-center mt-1">{t('check.not-stored')}</Text>
       </View>
     );
   }
@@ -93,14 +120,8 @@ export default function AusweisKontrolleScreen() {
   const fullBleed = allowed && phase.kind !== 'scanning';
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={fullBleed ? ['bottom'] : undefined}>
-      {fullBleed ? null : (
-        <View className="px-6 pt-4">
-          <Text accessibilityRole="header" className="text-[28px] leading-8 font-semibold text-foreground dark:text-foreground-dark mb-2">
-            {t('check.title')}
-          </Text>
-        </View>
-      )}
-      <View className={fullBleed ? 'flex-1' : 'flex-1 px-6 pb-6'}>{body}</View>
+      {/* The stack header names the screen (no second large title). */}
+      <View className={fullBleed ? 'flex-1' : 'flex-1 px-6 pt-3 pb-6'}>{body}</View>
     </SafeAreaView>
   );
 }

@@ -5,6 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CheckCircle2, Clock } from 'lucide-react-native';
 
 import { useAuth } from '@/auth/AuthProvider';
+import { useElevation } from '@/theme/elevation';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import KeyboardAwareScreen from '@/components/KeyboardAwareScreen';
@@ -19,6 +20,12 @@ import type { SubmittedResult } from '@/hooks/useFormSubmission';
 import { ApiError } from '@/lib/api';
 import { type ApplyConflict, childWarningKey, formErrorKey, type OnBehalfOf } from '@/lib/formSchema';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+import Banner from '@/components/ui/Banner';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import FlowHeader from '@/components/ui/FlowHeader';
+import ListSection from '@/components/ui/ListSection';
+import ClubSearch from '@/components/onboarding/ClubSearch';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'JoinClub'>;
 
@@ -30,7 +37,8 @@ const CONFLICT_KEY: Record<Conflict, 'already-member' | 'application-pending'> =
 
 /**
  * Digital membership application (Wave 8 M2). A club shares its code out-of-band (website, flyer, word of mouth) --
- * there is no public "browse clubs" directory. The screen loads that club's own application form
+ * clubs that opted in to being found are also offered by name/place search (Wave 15 M2, `ClubSearch`: a tapped hit opens
+ * that club's application, the empty result gives no hint why). The screen loads that club's own application form
  * (`GET /club-forms/:slug/aufnahme`), renders it with the shared `FormRenderer` (via `ApplicationForm`), keeps a draft
  * **on the server** while the person types (debounced autosave through a serial queue) and files it
  * (`POST /form-submissions/:id/submit`). The applicant is NOT a member afterwards -- the board has to approve first, so
@@ -39,8 +47,11 @@ const CONFLICT_KEY: Record<Conflict, 'already-member' | 'application-pending'> =
  * re-pins the draft, keeps the answers and shows what was dropped. Answers are never logged, cached or put into
  * AsyncStorage. The legacy apply (category/birth date only) is gone: the backend answers it with `409 form_required`.
  */
-export default function JoinClubScreen({ navigation }: Props) {
+export default function JoinClubScreen({ navigation, route }: Props) {
+  // Opened from "Verein finden" (onboarding): the search field takes the focus.
+  const searchFirst = route.params?.search === true;
   const { t, language } = useLanguage();
+  const shadow = useElevation('card');
   const themeColors = useThemeColors();
   const { club, phase, loadErrorKey, refreshing, refreshFailed, load, reset, markSubmitted, withdraw } = useClubForm();
   const [slug, setSlug] = useState('');
@@ -180,26 +191,12 @@ export default function JoinClubScreen({ navigation }: Props) {
   if (conflict) {
     const key = CONFLICT_KEY[conflict];
     return (
-      <KeyboardAwareScreen
-        className="bg-muted dark:bg-muted-dark"
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
-      >
-        <View className="bg-card dark:bg-card-dark p-6 rounded-2xl items-center" accessibilityLiveRegion="polite">
-          <Text className="text-xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark">
-            {t(`join-club.result.${key}.title`)}
-          </Text>
-          <Text className="text-sm text-center mb-5 text-muted-foreground dark:text-muted-foreground-dark">
-            {t(`join-club.result.${key}.body`)}
-          </Text>
-          <TouchableOpacity
-            className="bg-primary dark:bg-primary-dark rounded-lg py-3 px-6 items-center"
-            style={{ minHeight: 44 }}
-            onPress={() => navigation.goBack()}
-            accessibilityRole="button"
-            accessibilityLabel={t('join-club.pending.back')}
-          >
-            <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">{t('join-club.pending.back')}</Text>
-          </TouchableOpacity>
+      <KeyboardAwareScreen className="bg-background dark:bg-background-dark" contentContainerStyle={{ flexGrow: 1, paddingTop: 8, paddingBottom: 40 }}>
+        <FlowHeader title={t('join-club.title')} onBack={() => navigation.goBack()} />
+        <View className="px-4" accessibilityLiveRegion="polite">
+          <Card variant="action" icon={key === 'already-member' ? CheckCircle2 : Clock} title={t(`join-club.result.${key}.title`)} body={t(`join-club.result.${key}.body`)}>
+            <Button block label={t('join-club.pending.back')} onPress={() => navigation.goBack()} />
+          </Card>
         </View>
       </KeyboardAwareScreen>
     );
@@ -207,27 +204,39 @@ export default function JoinClubScreen({ navigation }: Props) {
 
   const ready = phase === 'ready' && club !== null;
 
+  const stepNumber = (n: number) => (
+    <View className="rounded-full bg-primary-soft dark:bg-primary-soft-dark items-center justify-center" style={{ width: 24, height: 24 }}>
+      <Text className="text-primary-soft-foreground dark:text-primary-soft-foreground-dark text-[13px] font-semibold">{n}</Text>
+    </View>
+  );
+
   return (
     <KeyboardAwareScreen
       scrollRef={scrollRef}
-      className="bg-muted dark:bg-muted-dark"
-      contentContainerStyle={{ flexGrow: 1, padding: 24, paddingBottom: 40, justifyContent: ready ? 'flex-start' : 'center' }}
+      className="bg-background dark:bg-background-dark"
+      contentContainerStyle={{ flexGrow: 1, paddingTop: 8, paddingBottom: 40 }}
     >
-      <Text className="text-3xl font-semibold text-center mb-2 text-foreground dark:text-foreground-dark" accessibilityRole="header">
-        {t('join-club.title')}
-      </Text>
-      <Text className="text-sm text-center mb-6 text-muted-foreground dark:text-muted-foreground-dark">{t('join-club.description')}</Text>
+      <FlowHeader title={t('join-club.title')} description={t('join-club.description')} onBack={() => navigation.goBack()} />
 
-      <View className="bg-card dark:bg-card-dark p-5 rounded-2xl">
+      <View className={`mx-4 ${ready ? 'bg-card dark:bg-card-dark rounded-card p-4' : ''}`} style={ready ? shadow : undefined}>
         {!ready ? (
           <>
-            <Text className="text-[13px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
+            <Text accessibilityRole="header" className="text-foreground dark:text-foreground-dark text-[17px] leading-[22px] font-semibold mb-3">
+              {t('join-club.search.title')}
+            </Text>
+            <ClubSearch autoFocus={searchFirst} disabled={phase === 'loading'} onSelect={(hit) => void openClub(hit.slug)} />
+            <View className="h-6" />
+            <Text accessibilityRole="header" className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] font-medium mb-2 px-1">
+              {t('join-club.search.or-code')}
+            </Text>
+            <Text className="text-[13px] leading-[18px] font-medium mb-1.5 text-muted-foreground dark:text-muted-foreground-dark">
               {t('join-club.slug.label')}
             </Text>
             <TextInput
-              className={`bg-muted dark:bg-muted-dark rounded-lg p-3 text-base text-foreground dark:text-foreground-dark border mb-2 ${
-                loadErrorKey ? 'border-destructive' : 'border-border dark:border-border-dark'
+              className={`bg-card dark:bg-card-dark rounded-control px-3 text-[17px] text-foreground dark:text-foreground-dark border mb-3 ${
+                loadErrorKey ? 'border-destructive dark:border-destructive-dark' : 'border-border-control dark:border-border-control-dark'
               }`}
+              style={{ minHeight: 48 }}
               accessibilityLabel={t('join-club.slug.label')}
               placeholder={t('forms.apply.slugPlaceholder')}
               placeholderTextColor={themeColors.mutedForeground}
@@ -242,26 +251,22 @@ export default function JoinClubScreen({ navigation }: Props) {
               onSubmitEditing={handleLoad}
               returnKeyType="go"
             />
+            <Button block label={t('forms.apply.load')} onPress={handleLoad} loading={phase === 'loading'} disabled={!slug.trim()} />
             {loadErrorKey ? (
-              <Text className="text-destructive dark:text-destructive-dark text-sm mb-2" accessibilityRole="alert" accessibilityLiveRegion="polite">
-                {t(loadErrorKey)}
-              </Text>
+              <View className="mt-3" accessibilityLiveRegion="polite">
+                <Banner tone="warning" body={t(loadErrorKey)} alert />
+              </View>
             ) : null}
-            <TouchableOpacity
-              className={`bg-primary dark:bg-primary-dark rounded-lg py-3.5 items-center mt-1 ${phase === 'loading' || !slug.trim() ? 'opacity-70' : ''}`}
-              style={{ minHeight: 48 }}
-              onPress={handleLoad}
-              disabled={phase === 'loading' || !slug.trim()}
-              accessibilityRole="button"
-              accessibilityLabel={t('forms.apply.load')}
-              accessibilityState={{ busy: phase === 'loading' }}
-            >
-              {phase === 'loading' ? (
-                <ActivityIndicator color={themeColors.primaryForeground} />
-              ) : (
-                <Text className="text-primary-foreground dark:text-primary-foreground-dark text-base font-semibold">{t('forms.apply.load')}</Text>
-              )}
-            </TouchableOpacity>
+            <View className="mt-6">
+              <ListSection title={t('join-club.steps.title')} inset={52}>
+                {(['1', '2', '3'] as const).map((n) => (
+                  <View key={n} className="flex-row items-center px-4 py-3" style={{ gap: 12, minHeight: 56 }}>
+                    {stepNumber(Number(n))}
+                    <Text className="flex-1 text-foreground dark:text-foreground-dark text-[15px] leading-[22px]">{t(`join-club.steps.${n}`)}</Text>
+                  </View>
+                ))}
+              </ListSection>
+            </View>
             <MyApplicationsStatus
               open={applications.open}
               decided={applications.decided}
@@ -290,7 +295,7 @@ export default function JoinClubScreen({ navigation }: Props) {
 
             {refreshing ? (
               <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
-                <ActivityIndicator size="small" color={themeColors.primary} />
+                <ActivityIndicator size="small" color={themeColors.primaryText} />
                 <Text className="text-xs text-muted-foreground dark:text-muted-foreground-dark">{t('forms.apply.working')}</Text>
               </View>
             ) : null}
@@ -311,7 +316,7 @@ export default function JoinClubScreen({ navigation }: Props) {
 
             {banner ? (
               <View
-                className="mt-4 rounded-lg border border-success/40 dark:border-success-dark/40 bg-success/10 dark:bg-success-dark/10 p-3"
+                className="mt-4 rounded-control border border-success/40 dark:border-success-dark/40 bg-success/10 dark:bg-success-dark/10 p-3"
                 accessibilityRole="alert"
                 accessibilityLiveRegion="polite"
               >
@@ -335,12 +340,12 @@ export default function JoinClubScreen({ navigation }: Props) {
                   {t('forms.apply.open.title')}
                 </Text>
                 {club.submitted.map((s) => (
-                  <View key={s.id} className="mt-2 rounded-lg border border-border dark:border-border-dark p-3">
+                  <View key={s.id} className="mt-2 rounded-control border border-border dark:border-border-dark p-3">
                     <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">
                       {t(s.onBehalfOf === 'guardian' ? 'forms.apply.open.forChild' : 'forms.apply.open.forSelf')}
                     </Text>
                     <View className="flex-row items-center mt-1" style={{ gap: 6 }}>
-                      <Clock size={14} color={themeColors.primary} />
+                      <Clock size={14} color={themeColors.primaryText} />
                       <Text className="text-xs font-semibold text-primary dark:text-primary-dark">{t('forms.apply.open.waiting')}</Text>
                     </View>
                     <Text className="text-xs mt-1 text-muted-foreground dark:text-muted-foreground-dark">
@@ -382,7 +387,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                             onPress={() => void changeMode(m)}
                             accessibilityRole="radio"
                             accessibilityState={{ checked: active }}
-                            className={`px-4 rounded-[10px] items-center justify-center ${
+                            className={`px-4 rounded-control items-center justify-center ${
                               active ? 'bg-primary dark:bg-primary-dark' : 'bg-muted dark:bg-muted-dark border border-border dark:border-border-dark'
                             }`}
                             style={{ minHeight: 44 }}
@@ -403,7 +408,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                   </View>
                 ) : null}
                 {club.mode === 'guardian' ? (
-                  <View className="mt-3 rounded-lg border border-border dark:border-border-dark bg-muted/40 dark:bg-muted-dark/40 p-3">
+                  <View className="mt-3 rounded-control border border-border dark:border-border-dark bg-muted/40 dark:bg-muted-dark/40 p-3">
                     <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">{t('forms.apply.child.title')}</Text>
                     {(['data', 'consent', 'account'] as const).map((hint) => (
                       <Text key={hint} className="text-sm mt-1 text-muted-foreground dark:text-muted-foreground-dark">
@@ -415,7 +420,7 @@ export default function JoinClubScreen({ navigation }: Props) {
                 ) : null}
                 {club.mode === 'guardian' && (user?.emailVerified === false || serverBlocked) ? (
                   <View
-                    className="mt-4 rounded-lg border border-warning/40 dark:border-warning-dark/40 bg-warning/10 dark:bg-warning-dark/10 p-3"
+                    className="mt-4 rounded-control border border-warning/40 dark:border-warning-dark/40 bg-warning/10 dark:bg-warning-dark/10 p-3"
                     accessibilityRole="alert"
                     accessibilityLiveRegion="polite"
                   >
@@ -426,37 +431,9 @@ export default function JoinClubScreen({ navigation }: Props) {
                     ) : null}
                     {resendState === 'failed' ? <Text className="text-destructive dark:text-destructive-dark text-sm mt-2">{t('forms.apply.unverified.failed')}</Text> : null}
                     <View className="flex-row flex-wrap mt-2" style={{ gap: 8 }}>
-                      <TouchableOpacity
-                        onPress={() => void resend()}
-                        disabled={resendState === 'sending' || !user?.email}
-                        accessibilityRole="button"
-                        accessibilityLabel={t('forms.apply.unverified.resend')}
-                        className="bg-primary dark:bg-primary-dark rounded-lg px-4 items-center justify-center"
-                        style={{ minHeight: 44 }}
-                      >
-                        <Text className="text-primary-foreground dark:text-primary-foreground-dark text-sm font-semibold">{t('forms.apply.unverified.resend')}</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => void recheckVerification()}
-                        disabled={checking}
-                        accessibilityRole="button"
-                        accessibilityLabel={t('forms.apply.unverified.check')}
-                        className="border border-border dark:border-border-dark rounded-lg px-4 items-center justify-center"
-                        style={{ minHeight: 44 }}
-                      >
-                        <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold">{t('forms.apply.unverified.check')}</Text>
-                      </TouchableOpacity>
-                      {club.modes.includes('self') ? (
-                        <TouchableOpacity
-                          onPress={() => void changeMode('self')}
-                          accessibilityRole="button"
-                          accessibilityLabel={t('forms.apply.mode.self')}
-                          className="rounded-lg px-4 items-center justify-center"
-                          style={{ minHeight: 44 }}
-                        >
-                          <Text className="text-primary dark:text-primary-dark text-sm font-semibold">{t('forms.apply.mode.self')}</Text>
-                        </TouchableOpacity>
-                      ) : null}
+                      <Button size="M" label={t('forms.apply.unverified.resend')} onPress={() => void resend()} disabled={resendState === 'sending' || !user?.email} />
+                      <Button size="M" variant="secondary" label={t('forms.apply.unverified.check')} onPress={() => void recheckVerification()} disabled={checking} />
+                      {club.modes.includes('self') ? <Button size="M" variant="tertiary" label={t('forms.apply.mode.self')} onPress={() => void changeMode('self')} /> : null}
                     </View>
                   </View>
                 ) : (
@@ -479,15 +456,6 @@ export default function JoinClubScreen({ navigation }: Props) {
         )}
       </View>
 
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        accessibilityRole="button"
-        accessibilityLabel={t('join-club.pending.back')}
-        className="items-center mt-4"
-        style={{ minHeight: 44, justifyContent: 'center' }}
-      >
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-sm font-semibold">{t('join-club.pending.back')}</Text>
-      </TouchableOpacity>
     </KeyboardAwareScreen>
   );
 }

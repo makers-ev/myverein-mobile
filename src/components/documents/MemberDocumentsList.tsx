@@ -1,14 +1,17 @@
 import React from 'react';
-import { Text, View } from 'react-native';
 
-import { Body, Card, ErrorRetry, Loading } from '@/components/assembly/ui';
+import { FileText } from 'lucide-react-native';
+
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import ListSection from '@/components/ui/ListSection';
+import Skeleton from '@/components/ui/Skeleton';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useDocumentOpen } from '@/hooks/useDocumentOpen';
 import { useGenerationTemplates } from '@/hooks/useDocumentGeneration';
 import { useMemberDocuments, type MemberDocumentsSubject } from '@/hooks/useDocuments';
 import { useReportOnce } from '@/hooks/useReportOnce';
 import { useOwnMembership } from '@/hooks/useOwnMembership';
-import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { formatDocumentDate, formatFileSize, memberDocumentDownloadPath } from '@/lib/documents';
 import { isNotFound } from '@/lib/ward';
 import DocumentRow from './DocumentRow';
@@ -52,23 +55,15 @@ export default function MemberDocumentsList({ subject, wardName, onGone }: Props
   // Once per child that turned out to be gone: the parent's wards reload re-renders this list, so no effect on `onGone`.
   useReportOnce(gone && subject.kind === 'ward', subject.kind === 'ward' ? `${subject.clubId}:${subject.wardId}` : null, onGone);
 
-  if (loading && !documents) return <Loading />;
-  if (gone) {
-    return (
-      <Card>
-        <Body muted>{t('mydocs.gone')}</Body>
-      </Card>
-    );
-  }
-  if (!documents) return <ErrorRetry message={apiErrorMessage(error, t, 'mydocs.error')} onRetry={() => void reload()} />;
+  if (loading && !documents) return <Skeleton shape="rows" lines={4} />;
+  if (gone) return <EmptyState icon={FileText} title={t('mydocs.gone')} />;
+  if (!documents) return <ErrorState error={error} fallbackKey="mydocs.error" onRetry={() => void reload()} />;
   if (documents.length === 0) {
     return (
       <>
         {requestCard}
         <OpenFileNotice error={file.error} unsupported={file.unsupported} />
-        <Card>
-          <Body muted>{wardName ? t('mydocs.empty-child', { name: wardName }) : t('mydocs.empty')}</Body>
-        </Card>
+        <EmptyState icon={FileText} title={wardName ? t('mydocs.empty-child', { name: wardName }) : t('mydocs.empty')} />
       </>
     );
   }
@@ -76,23 +71,19 @@ export default function MemberDocumentsList({ subject, wardName, onGone }: Props
   return (
     <>
       {requestCard}
-      <Card>
-        <OpenFileNotice error={file.error} unsupported={file.unsupported} />
-        {documents.map((d, i) => (
+      <OpenFileNotice error={file.error} unsupported={file.unsupported} />
+      <ListSection footer={t('mydocs.privacy')} inset={60}>
+        {documents.map((d) => (
           <DocumentRow
             key={d.id}
             title={d.title}
             meta={[formatDocumentDate(d.createdAt), formatFileSize(d.sizeBytes), t(`mydocs.source.${d.source}`), d.hidden ? t('mydocs.hidden') : null].filter(Boolean).join(' · ')}
             busy={file.busyId === d.id}
             disabled={!!file.busyId}
-            isLast={i === documents.length - 1}
             onPress={() => void file.open({ id: d.id, path: memberDocumentDownloadPath(subject.clubId, memberId, d.id), title: d.title, mimeType: d.mimeType })}
           />
         ))}
-      </Card>
-      <View accessible>
-        <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('mydocs.privacy')}</Text>
-      </View>
+      </ListSection>
     </>
   );
 }

@@ -71,7 +71,7 @@ function SheetBody({ wardName, saving, error, onClose, onSubmit }: Omit<Props, '
                 accessibilityRole="radio"
                 accessibilityState={{ selected: active, checked: active }}
                 onPress={() => setKind(k)}
-                className={`flex-1 rounded-xl border items-center justify-center ${
+                className={`flex-1 rounded-control border items-center justify-center ${
                   active ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' : 'bg-card dark:bg-card-dark border-border dark:border-border-dark'
                 }`}
                 style={{ minHeight: 44 }}

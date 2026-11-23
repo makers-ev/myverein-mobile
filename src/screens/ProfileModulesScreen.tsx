@@ -11,6 +11,7 @@ import { useProfileModules } from '@/hooks/useProfileModules';
 import { contentLang, localizedHelpText, localizedLabel } from '@/lib/customFields';
 import { audienceKey, canToggleModule, type CatalogModule, groupModules, isCustomized, profileModuleErrorKey } from '@/lib/profileModules';
 import { useThemeColors } from '@/theme/colors';
+import Surface from '@/components/ui/Surface';
 
 const mutedClass = 'text-muted-foreground dark:text-muted-foreground-dark text-xs';
 
@@ -29,7 +30,7 @@ function Chip({ label, tone = 'muted', locked }: { label: string; tone?: 'muted'
 
 function Note({ text }: { text: string }) {
   return (
-    <View className="bg-muted dark:bg-muted-dark rounded-xl p-3 mb-2">
+    <View className="bg-muted dark:bg-muted-dark rounded-control p-3 mb-2">
       <Text className={mutedClass}>{text}</Text>
     </View>
   );
@@ -54,7 +55,7 @@ function ModuleCard({ module: m, name, description, helpText, allowed, reason, b
   const disabled = !allowed || anyBusy;
   const actionLabel = active ? t('forms.pm.action.deactivate') : m.state === 'archived' ? t('forms.pm.action.reactivate') : t('forms.pm.action.activate');
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-3 mb-3">
+    <Surface className="p-3 mb-3">
       <Text className="text-foreground dark:text-foreground-dark font-semibold text-sm">{name}</Text>
       {description ? <Text className={`${mutedClass} mt-0.5`}>{description}</Text> : null}
       {helpText && helpText !== description ? <Text className={`${mutedClass} mt-0.5`}>{helpText}</Text> : null}
@@ -68,19 +69,19 @@ function ModuleCard({ module: m, name, description, helpText, allowed, reason, b
       <TouchableOpacity
         onPress={onToggle}
         disabled={disabled}
-        className={`mt-3 rounded-xl items-center justify-center ${active ? 'border border-border dark:border-border-dark' : 'bg-primary dark:bg-primary-dark'} ${disabled ? 'opacity-50' : ''}`}
+        className={`mt-3 rounded-control items-center justify-center ${active ? 'border border-border dark:border-border-dark' : 'bg-primary dark:bg-primary-dark'} ${disabled ? 'opacity-50' : ''}`}
         style={{ minHeight: 44 }}
         accessibilityRole="button"
         accessibilityLabel={t(active ? 'forms.pm.action.deactivateNamed' : 'forms.pm.action.activateNamed', { name })}
         accessibilityState={{ disabled, busy }}
       >
         {busy ? (
-          <ActivityIndicator color={active ? colors.primary : colors.primaryForeground} />
+          <ActivityIndicator color={active ? colors.primaryText : colors.primaryForeground} />
         ) : (
           <Text className={`text-sm font-semibold ${active ? 'text-destructive dark:text-destructive-dark' : 'text-primary-foreground dark:text-primary-foreground-dark'}`}>{actionLabel}</Text>
         )}
       </TouchableOpacity>
-    </View>
+    </Surface>
   );
 }
 
@@ -135,7 +136,7 @@ export default function ProfileModulesScreen() {
   const retryButton = (
     <TouchableOpacity
       onPress={() => void reload()}
-      className="self-start px-4 justify-center rounded-lg border border-border dark:border-border-dark"
+      className="self-start px-4 justify-center rounded-control border border-border dark:border-border-dark"
       style={{ minHeight: 44 }}
       accessibilityRole="button"
     >
@@ -145,16 +146,14 @@ export default function ProfileModulesScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <View className="px-6 pt-4 pb-3">
-        <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark" accessibilityRole="header">
-          {t('forms.pm.title')}
-        </Text>
+      <View className="px-4 pt-3 pb-3">
+        {/* The stack header names the screen (no second large title). */}
         {data ? <Text className={`${mutedClass} mt-1`}>{t('forms.pm.limit', { used: data.limit.used, max: data.limit.max })}</Text> : null}
       </View>
 
       {initialLoading ? (
         <View className="flex-1 items-center justify-center" accessibilityLabel={t('forms.pm.loading')}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.primaryText} />
         </View>
       ) : !activeClub && clubsError ? (
         <ClubsLoadError />
@@ -172,8 +171,8 @@ export default function ProfileModulesScreen() {
         </View>
       ) : (
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140, flexGrow: 1 }}
-          refreshControl={<RefreshControl refreshing={false} onRefresh={() => void reload()} tintColor={colors.primary} />}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, flexGrow: 1 }}
+          refreshControl={<RefreshControl refreshing={false} onRefresh={() => void reload()} tintColor={colors.primaryText} />}
         >
           <Text className="text-foreground dark:text-foreground-dark text-sm mb-3">{t('forms.pm.intro')}</Text>
           <Note text={t('forms.pm.note.optional')} />

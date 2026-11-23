@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { ChevronRight } from 'lucide-react-native';
-import { useThemeColors } from '@/theme/colors';
+import { Folder, FolderOpen, Search } from 'lucide-react-native';
 
-import { Body, Button, Card, ErrorRetry, Loading } from '@/components/assembly/ui';
+import Button from '@/components/ui/Button';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import ListRow from '@/components/ui/ListRow';
+import ListSection from '@/components/ui/ListSection';
+import Skeleton from '@/components/ui/Skeleton';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useDocumentOpen } from '@/hooks/useDocumentOpen';
 import { useArchiveDocuments, useArchiveFolders } from '@/hooks/useDocuments';
-import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { archiveDownloadPath, canOpenArchive, childFolders, folderTrail, formatDocumentDate, formatFileSize } from '@/lib/documents';
 import DocumentRow from './DocumentRow';
 import OpenFileNotice from './OpenFileNotice';
@@ -26,7 +29,6 @@ interface Props {
  */
 export default function ArchiveBrowser({ clubId, folderId, onFolderChange }: Props) {
   const { t } = useLanguage();
-  const colors = useThemeColors();
   const folders = useArchiveFolders(clubId);
   const [draft, setDraft] = useState('');
   const [query, setQuery] = useState('');
@@ -34,15 +36,9 @@ export default function ArchiveBrowser({ clubId, folderId, onFolderChange }: Pro
   const file = useDocumentOpen();
   const searching = query.trim().length > 0;
 
-  if (folders.loading && !folders.answer) return <Loading />;
-  if (!folders.answer && folders.error) return <ErrorRetry message={apiErrorMessage(folders.error, t, 'archive.error')} onRetry={() => void folders.reload()} />;
-  if (!canOpenArchive(folders.answer)) {
-    return (
-      <Card>
-        <Body muted>{t('archive.no-access')}</Body>
-      </Card>
-    );
-  }
+  if (folders.loading && !folders.answer) return <Skeleton shape="rows" lines={4} />;
+  if (!folders.answer && folders.error) return <ErrorState error={folders.error} fallbackKey="archive.error" onRetry={() => void folders.reload()} />;
+  if (!canOpenArchive(folders.answer)) return <EmptyState icon={FolderOpen} title={t('archive.no-access')} />;
   const all = folders.answer!.data;
   const subFolders = searching ? [] : childFolders(all, folderId);
   const trail = folderTrail(all, folderId);
@@ -59,7 +55,7 @@ export default function ArchiveBrowser({ clubId, folderId, onFolderChange }: Pro
           maxLength={100}
           placeholder={t('archive.search')}
           accessibilityLabel={t('archive.search')}
-          className="flex-1 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-xl px-3 text-foreground dark:text-foreground-dark text-sm"
+          className="flex-1 bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-control px-3 text-foreground dark:text-foreground-dark text-sm"
           style={{ minHeight: 48 }}
         />
         {searching || draft ? (
@@ -90,63 +86,48 @@ export default function ArchiveBrowser({ clubId, folderId, onFolderChange }: Pro
       ) : null}
 
       {subFolders.length > 0 ? (
-        <Card title={t('archive.folders')}>
-          {subFolders.map((f, i) => (
-            <TouchableOpacity
-              key={f.id}
-              onPress={() => onFolderChange(f.id)}
-              accessibilityRole="button"
-              accessibilityLabel={t('archive.folder-label', { name: f.name })}
-              className={`flex-row items-center justify-between py-3 ${i === subFolders.length - 1 ? '' : 'border-b border-border dark:border-border-dark'}`}
-              style={{ minHeight: 48 }}
-            >
-              <Text className="text-foreground dark:text-foreground-dark text-sm font-semibold flex-1" numberOfLines={2}>
-                {f.name}
-              </Text>
-              <ChevronRight size={18} strokeWidth={1.5} color={colors.mutedForeground} />
-            </TouchableOpacity>
+        <ListSection title={t('archive.folders')} inset={60}>
+          {subFolders.map((f) => (
+            <ListRow key={f.id} icon={Folder} title={f.name} onPress={() => onFolderChange(f.id)} accessibilityHint={t('archive.folder-label', { name: f.name })} />
           ))}
-        </Card>
+        </ListSection>
       ) : null}
 
       {!searching && !folderId ? (
         subFolders.length === 0 ? (
-          <Card>
-            <Body muted>{t('archive.empty')}</Body>
-          </Card>
+          <EmptyState icon={FolderOpen} title={t('archive.empty')} />
         ) : null
       ) : docs.loading && !docs.documents ? (
-        <Loading />
+        <Skeleton shape="rows" lines={3} />
       ) : !docs.documents ? (
-        <ErrorRetry message={apiErrorMessage(docs.error, t, 'archive.error')} onRetry={() => void docs.reload()} />
+        <ErrorState error={docs.error} fallbackKey="archive.error" onRetry={() => void docs.reload()} />
       ) : docs.documents.length === 0 ? (
         subFolders.length === 0 || searching ? (
-          <Card>
-            <Body muted>{searching ? t('archive.search.empty') : t('archive.empty')}</Body>
-          </Card>
+          <EmptyState icon={searching ? Search : FolderOpen} title={searching ? t('archive.search.empty') : t('archive.empty')} />
         ) : null
       ) : (
-        <Card title={t('archive.documents')}>
+        <>
           <OpenFileNotice error={file.error} unsupported={file.unsupported} />
-          {docs.documents.map((d, i) => (
-            <DocumentRow
-              key={d.id}
-              title={d.title}
-              meta={[formatDocumentDate(d.updatedAt), formatFileSize(d.currentVersion?.sizeBytes), d.kind === 'erzeugt' ? t('archive.generated') : null].filter(Boolean).join(' · ')}
-              busy={file.busyId === d.id}
-              disabled={!!file.busyId || !d.currentVersion}
-              isLast={i === docs.documents!.length - 1}
-              onPress={() =>
-                void file.open({ id: d.id, path: archiveDownloadPath(clubId, d.id), title: d.title, mimeType: d.currentVersion?.mimeType })
-              }
-            />
-          ))}
-          {docs.error ? <ErrorRetry message={apiErrorMessage(docs.error, t, 'archive.error')} onRetry={() => (docs.hasMore ? docs.loadMore() : void docs.reload())} /> : null}
-          {docs.hasMore ? <Button secondary label={t('archive.more')} busy={docs.loading} onPress={docs.loadMore} /> : null}
-        </Card>
+          <ListSection title={t('archive.documents')} inset={60}>
+            {docs.documents.map((d) => (
+              <DocumentRow
+                key={d.id}
+                title={d.title}
+                meta={[formatDocumentDate(d.updatedAt), formatFileSize(d.currentVersion?.sizeBytes), d.kind === 'erzeugt' ? t('archive.generated') : null].filter(Boolean).join(' · ')}
+                busy={file.busyId === d.id}
+                disabled={!!file.busyId || !d.currentVersion}
+                onPress={() =>
+                  void file.open({ id: d.id, path: archiveDownloadPath(clubId, d.id), title: d.title, mimeType: d.currentVersion?.mimeType })
+                }
+              />
+            ))}
+          </ListSection>
+          {docs.error ? <ErrorState error={docs.error} fallbackKey="archive.error" onRetry={() => (docs.hasMore ? docs.loadMore() : void docs.reload())} /> : null}
+          {docs.hasMore ? <Button block variant="secondary" label={t('archive.more')} loading={docs.loading} onPress={docs.loadMore} /> : null}
+        </>
       )}
 
-      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mt-1">{t('archive.read-only')}</Text>
+      <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px] mt-1 px-1">{t('archive.read-only')}</Text>
     </>
   );
 }

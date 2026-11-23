@@ -3,13 +3,14 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 import { useAuth } from '@/auth/AuthProvider';
 import { useLanguage } from '@/contexts/translation/LanguageContext';
+import Surface from '@/components/ui/Surface';
 
 /** "Signed in as" card with a settings shortcut, shared by Home and Dashboard. */
 export default function SignedInCard({ onOpenSettings }: { onOpenSettings: () => void }) {
   const { t } = useLanguage();
   const { user } = useAuth();
   return (
-    <View className="bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-2xl p-4 flex-row items-center" style={{ gap: 12 }}>
+    <Surface className="p-4 flex-row items-center" style={{ gap: 12 }}>
       <Text className="flex-1 text-foreground dark:text-foreground-dark text-sm" numberOfLines={1}>
         {t('home.signed-in-as').replace('{email}', user?.email ?? '')}
       </Text>
@@ -21,6 +22,6 @@ export default function SignedInCard({ onOpenSettings }: { onOpenSettings: () =>
       >
         <Text className="text-primary dark:text-primary-dark font-semibold">{t('home.go-to-settings')}</Text>
       </TouchableOpacity>
-    </View>
+    </Surface>
   );
 }

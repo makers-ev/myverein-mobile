@@ -11,11 +11,15 @@ import { PaletteProvider } from './src/theme/PaletteProvider';
 import { AuthProvider } from './src/auth/AuthProvider';
 import { ActiveClubProvider } from './src/clubs/ActiveClubProvider';
 import { WardsProvider } from './src/guardian/WardsProvider';
+import { ExternalAccessProvider } from './src/external/ExternalAccessProvider';
 import { PushProvider } from './src/notifications/PushProvider';
 import { ErrorBoundary } from './src/error/ErrorBoundary';
 import AppNavigator from './src/navigation/AppNavigator';
 import { getStoredTheme } from './src/theme/themePreferenceStorage';
 import { clearReviewFileCache } from './src/lib/media';
+
+// Light is the default; the OS setting is ignored until the user picks dark in Settings (stored below).
+colorScheme.set('light');
 
 export default function App() {
   useEffect(() => {
@@ -50,9 +54,11 @@ export default function App() {
                   <NavigationBar style="auto" />
                   <ActiveClubProvider>
                     <WardsProvider>
-                      <PushProvider>
-                        <AppNavigator />
-                      </PushProvider>
+                      <ExternalAccessProvider>
+                        <PushProvider>
+                          <AppNavigator />
+                        </PushProvider>
+                      </ExternalAccessProvider>
                     </WardsProvider>
                   </ActiveClubProvider>
                 </AuthProvider>
