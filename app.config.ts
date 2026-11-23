@@ -13,6 +13,9 @@ const config = {
     bundleIdentifier: 'com.myverein.app',
   },
   android: {
+    package: 'com.mycouple.app',
+    versionCode: 1,
+    googleServicesFile: './google-services.json',
     adaptiveIcon: {
       backgroundColor: '#2c4870',
       foregroundImage: './assets/android-icon-foreground.png',
@@ -20,7 +23,6 @@ const config = {
       monochromeImage: './assets/android-icon-monochrome.png',
     },
     predictiveBackGestureEnabled: false,
-    package: 'com.myverein.app',
   },
   web: {
     favicon: './assets/favicon.png',
