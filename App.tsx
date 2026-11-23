@@ -18,6 +18,9 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { getStoredTheme } from './src/theme/themePreferenceStorage';
 import { clearReviewFileCache } from './src/lib/media';
 
+// Light is the default; the OS setting is ignored until the user picks dark in Settings (stored below).
+colorScheme.set('light');
+
 export default function App() {
   useEffect(() => {
     // Applicant photos viewed in the board review live in the cache only while shown; a killed session may have left some.
