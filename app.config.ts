@@ -13,7 +13,7 @@ const config = {
     bundleIdentifier: 'com.myverein.app',
   },
   android: {
-    package: 'com.mycouple.app',
+    package: 'com.myverein.app',
     versionCode: 1,
     googleServicesFile: './google-services.json',
     adaptiveIcon: {
