@@ -108,8 +108,7 @@ export default function KalenderScreen() {
   const teamHours = canSeeTeamHours(membership);
   const [menuOpen, setMenuOpen] = useState(false);
   const clearCommand = useCallback(() => setCommand(null), []);
-  // Time-entry push: open the time stamp only for who may use it. Reduced (external) accounts never get here, a lost role gets
-  // a calm notice instead of a sheet that answers 403.
+  // Time-entry push: open the time stamp once the membership of the active club is loaded. Reduced (external) accounts never get here.
   useEffect(() => {
     if (!pendingTime) return;
     if (externalReduced) {
@@ -118,8 +117,9 @@ export default function KalenderScreen() {
     }
     if (!activeClub || !membership) return;
     setPendingTime(false);
-    if (canTrackTime(membership)) setCommand((prev) => queueCommand(prev, 'time'));
-    else setNoticeKey('push.notice.time-unavailable');
+    // Not gated by `canTrack`: the push is about the person's own entry (reminder, auto-ended / discarded, ended by a lead), which
+    // they must be able to correct or discard even without a current hourly rate.
+    setCommand((prev) => queueCommand(prev, 'time'));
   }, [pendingTime, externalReduced, activeClub, membership]);
   const run = (kind: KalenderCommand) => {
     setTab('termine');

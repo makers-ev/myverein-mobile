@@ -42,6 +42,8 @@ describe('parsePushPayload', () => {
     expect(parsePushPayload({ type: 'reminder', clubId: 'c' })).toEqual({ kind: 'inbox', clubId: 'c' });
     expect(parsePushPayload({ type: 'meeting', meetingId: 'm' })).toEqual({ kind: 'calendar', clubId: null, tab: 'treffen' });
     expect(parsePushPayload({ type: 'time_entry', timeEntryId: 't1', clubId: 'c1' })).toEqual({ kind: 'time', clubId: 'c1' });
+    // time.auto_discarded / auto_closed / closed_by_other / long_running all use the same payload type
+    expect(parsePushPayload({ type: 'time_entry', timeEntryId: 't1', clubId: 'c1', urgent: false })).toEqual({ kind: 'time', clubId: 'c1' });
   });
 
   it('ignores unknown or malformed payloads', () => {

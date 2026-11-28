@@ -102,5 +102,7 @@ describe('time tracking helpers', () => {
     expect(entryMarks({ corrected: true })).toEqual(['corrected']);
     expect(entryMarks({ corrected: true, autoClosed: true })).toEqual(['autoClosed']);
     expect(entryMarks({ corrected: true, closedByOther: true })).toEqual(['closedByOther']);
+    expect(entryMarks({ autoClosed: true, status: 'offen' })).toEqual(['autoClosed']);
+    expect(entryMarks({ autoClosed: true, corrected: true, status: 'abgelehnt' })).toEqual(['autoDiscarded']);
   });
 });

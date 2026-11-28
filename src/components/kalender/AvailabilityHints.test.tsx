@@ -63,6 +63,15 @@ describe('AvailabilityHints', () => {
     expect(screen.queryByText(/Who is not available/)).toBeNull();
   });
 
+  it('never shows names unless includesNames is true, even when the answer carries them', async () => {
+    apiFetchMock.mockResolvedValue(answer({ includesNames: false }));
+    const screen = await mount();
+    await settle();
+    expect(screen.getByText('12 of 18 available')).toBeTruthy();
+    expect(screen.queryByText(/Who is not available/)).toBeNull();
+    expect(screen.queryByText('Anna')).toBeNull();
+  });
+
   it('hides the whole section on 403', async () => {
     apiFetchMock.mockRejectedValue(new ApiError(403, 'FORBIDDEN', 'no'));
     const screen = await mount();

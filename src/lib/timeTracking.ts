@@ -161,9 +161,12 @@ export const END_PROBLEM_KEY: Record<EndProblem, string> = {
 };
 
 /** Pills next to an entry: how its end came about. */
-export function entryMarks(e: Pick<TimeEntry, 'corrected' | 'autoClosed' | 'closedByOther'>): ('autoClosed' | 'closedByOther' | 'corrected')[] {
-  const marks: ('autoClosed' | 'closedByOther' | 'corrected')[] = [];
-  if (e.autoClosed) marks.push('autoClosed');
+export function entryMarks(
+  e: Pick<TimeEntry, 'corrected' | 'autoClosed' | 'closedByOther'> & { status?: TimeEntryStatus },
+): ('autoClosed' | 'autoDiscarded' | 'closedByOther' | 'corrected')[] {
+  const marks: ('autoClosed' | 'autoDiscarded' | 'closedByOther' | 'corrected')[] = [];
+  // A stamp that ran for over a year is rejected by the system (`abgelehnt` + `autoClosed`): "verworfen", not "bitte prüfen".
+  if (e.autoClosed) marks.push(e.status === 'abgelehnt' ? 'autoDiscarded' : 'autoClosed');
   if (e.closedByOther) marks.push('closedByOther');
   else if (e.corrected && !e.autoClosed) marks.push('corrected');
   return marks;

@@ -66,12 +66,12 @@ describe('KalenderScreen time-entry push', () => {
     expect(lastCommand?.kind).toBe('time');
   });
 
-  it('shows a calm notice instead of the sheet when tracking was withdrawn', async () => {
+  it('still opens the time stamp without a current rate (own entry must stay correctable)', async () => {
     mockMembership.mockReturnValue(member(false));
     const screen = await mount();
     await act(async () => {});
-    expect(lastCommand ?? null).toBeNull();
-    expect(screen.getByText(/Time tracking is not available to you/)).toBeTruthy();
+    expect(lastCommand?.kind).toBe('time');
+    expect(screen.queryByText(/Time tracking is not available/)).toBeNull();
   });
 
   it('waits for the membership before deciding', async () => {
