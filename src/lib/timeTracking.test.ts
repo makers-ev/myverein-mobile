@@ -2,7 +2,7 @@ jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://tes
 
 import { ApiError } from './api';
 import { apiErrorKey } from './apiErrorMessage';
-import { runningState, canDeleteEntry, elapsedMinutes, formatDuration, monthBounds, shiftMonth, timeErrorKey, totalMinutes } from './timeTracking';
+import { endTimeErrorKey, endTimeProblem, entryMarks, isStuck, latestEnd, needsEndTime, runningState, canDeleteEntry, elapsedMinutes, formatDuration, monthBounds, shiftMonth, timeErrorKey, totalMinutes } from './timeTracking';
 
 describe('time tracking helpers', () => {
   it('formats durations as h:mm', () => {
@@ -65,5 +65,42 @@ describe('time tracking helpers', () => {
     expect(runningState(960)).toBe('stale');
     expect(runningState(961)).toBe('too-long');
     expect(runningState(328 * 60)).toBe('too-long');
+  });
+
+  it('maps needs_end_time and flags it', () => {
+    const e = (status: number, code: string) => new ApiError(status, 'X', 'english', { code });
+    expect(needsEndTime(e(409, 'needs_end_time'))).toBe(true);
+    expect(needsEndTime(e(409, 'already_running'))).toBe(false);
+    expect(timeErrorKey(e(409, 'needs_end_time'))).toBe('time.err.needs-end');
+    expect(timeErrorKey(e(422, 'invalid_time'))).toBe('time.err.invalid');
+    expect(timeErrorKey(e(422, 'in_future'))).toBe('time.err.future');
+    expect(timeErrorKey(e(409, 'entry_overlap'))).toBe('time.err.overlap');
+    expect(endTimeErrorKey(e(422, 'too_long'))).toBe('time.err.end-too-long');
+  });
+
+  it('bounds the end between start and min(now, start + 16 h)', () => {
+    const now = new Date('2026-06-10T12:00:00Z');
+    const entry = { startedAt: '2026-06-01T08:00:00Z', maxEndedAt: '2026-06-01T24:00:00Z'.replace('24:00', '23:59') };
+    expect(endTimeProblem(entry, new Date('2026-06-01T08:00:00Z'), now)).toBe('order');
+    expect(endTimeProblem(entry, new Date('2026-06-01T12:00:00Z'), now)).toBeNull();
+    expect(endTimeProblem(entry, new Date('2026-06-02T08:30:00Z'), now)).toBe('long');
+    expect(endTimeProblem({ startedAt: '2026-06-10T11:00:00Z' }, new Date('2026-06-10T13:00:00Z'), now)).toBe('future');
+    expect(latestEnd({ startedAt: '2026-06-10T11:00:00Z' }, now)).toBe(now.getTime());
+    expect(latestEnd({ startedAt: '2026-06-01T08:00:00Z' }, now)).toBe(new Date('2026-06-02T00:00:00Z').getTime());
+  });
+
+  it('knows stuck entries from the server flag or the running time', () => {
+    const now = new Date('2026-06-10T12:00:00Z');
+    expect(isStuck({ running: true, overdue: true, startedAt: '2026-06-10T11:00:00Z' }, now)).toBe(true);
+    expect(isStuck({ running: true, startedAt: '2026-06-09T12:00:00Z' }, now)).toBe(true);
+    expect(isStuck({ running: true, overdue: false, startedAt: '2026-06-10T11:00:00Z' }, now)).toBe(false);
+    expect(isStuck({ running: false, overdue: true, startedAt: '2026-06-01T11:00:00Z' }, now)).toBe(false);
+  });
+
+  it('marks corrected, auto-closed and lead-closed entries', () => {
+    expect(entryMarks({})).toEqual([]);
+    expect(entryMarks({ corrected: true })).toEqual(['corrected']);
+    expect(entryMarks({ corrected: true, autoClosed: true })).toEqual(['autoClosed']);
+    expect(entryMarks({ corrected: true, closedByOther: true })).toEqual(['closedByOther']);
   });
 });

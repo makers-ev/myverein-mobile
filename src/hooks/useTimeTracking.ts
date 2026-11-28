@@ -32,8 +32,9 @@ export function useTimeTracking(clubId: string | null, enabled: boolean, now: Da
     [club, reloadAll],
   );
 
-  const clockOut = useCallback(async () => {
-    await apiFetch(`/time-entries/clock-out?clubId=${club}`, { method: 'POST', body: {} });
+  /** Stops the running entry; `endedAt` (ISO string) sets the end afterwards (needed once it runs longer than 16 h). */
+  const clockOut = useCallback(async (endedAt?: string) => {
+    await apiFetch(`/time-entries/clock-out?clubId=${club}`, { method: 'POST', body: endedAt ? { endedAt } : {} });
     await reloadAll();
   }, [club, reloadAll]);
 

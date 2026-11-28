@@ -6,10 +6,26 @@ import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useTimeTracking } from '@/hooks/useTimeTracking';
-import { canDeleteEntry, elapsedMinutes, formatDuration, runningState, timeErrorKey, totalMinutes } from '@/lib/timeTracking';
+import {
+  canDeleteEntry,
+  elapsedMinutes,
+  END_PROBLEM_KEY,
+  endTimeErrorKey,
+  endTimeProblem,
+  entryMarks,
+  formatDuration,
+  isStuck,
+  latestEnd,
+  needsEndTime,
+  runningState,
+  timeErrorKey,
+  totalMinutes,
+  type TimeEntry,
+} from '@/lib/timeTracking';
 import FormSheet from '@/components/ui/FormSheet';
 import Button from '@/components/ui/Button';
 import Banner from '@/components/ui/Banner';
+import DateTimeField from '@/components/ui/DateTimeField';
 import { useConfirm } from '@/hooks/useConfirm';
 
 interface Props {
@@ -47,6 +63,8 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
+  const [endOpen, setEndOpen] = useState(false);
+  const [endValue, setEndValue] = useState<Date | null>(null);
   const alive = useRef(true);
   const { confirm } = useConfirm();
 
@@ -59,13 +77,15 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
   useEffect(() => {
     if (!visible) {
       setError(null);
+      setEndOpen(false);
+      setEndValue(null);
       return;
     }
     const id = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(id);
   }, [visible]);
 
-  const run = async (key: string, job: () => Promise<void>) => {
+  const run = async (key: string, job: () => Promise<void>, errorKey: (err: unknown) => string = timeErrorKey) => {
     if (busy) return;
     setBusy(key);
     setError(null);
@@ -73,7 +93,9 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
       await job();
     } catch (err) {
       if (alive.current) {
-        setError(t(timeErrorKey(err)));
+        // The server wants an end time (running for more than 16 h): open the form instead of showing an error.
+        if (needsEndTime(err)) setEndOpen(true);
+        else setError(t(errorKey(err)));
         void time.reload();
       }
     } finally {
@@ -83,10 +105,23 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
 
   const running = time.current;
   const runningMinutes = running ? elapsedMinutes(running.startedAt, now) : 0;
-  const state = runningState(runningMinutes);
+  const stuck = running ? isStuck(running, now) : false;
+  const state = stuck ? 'too-long' : runningState(runningMinutes);
   const startedLabel = running
     ? `${new Date(running.startedAt).toLocaleDateString(language, { day: 'numeric', month: 'short' })}, ${new Date(running.startedAt).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}`
     : '';
+
+  const endMax = running ? new Date(latestEnd(running, now)) : null;
+  const endProblem = running && endValue ? endTimeProblem(running, endValue, now) : null;
+  const fmt = (d: Date) => d.toLocaleString(language, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const saveEnd = async () => {
+    if (!endValue || endProblem) return;
+    await run('end', () => time.clockOut(endValue.toISOString()), endTimeErrorKey);
+    if (alive.current) {
+      setEndOpen(false);
+      setEndValue(null);
+    }
+  };
 
   const discard = async () => {
     if (!running || busy) return;
@@ -129,16 +164,32 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
                     />
                   </View>
                 ) : null}
-                <TouchableOpacity
-                  onPress={() => void run('out', () => time.clockOut())}
-                  disabled={!!busy}
-                  accessibilityRole="button"
-                  className={`flex-row items-center justify-center bg-destructive rounded-control ${busy ? 'opacity-60' : ''}`}
-                  style={{ gap: 8, minHeight: 52 }}
-                >
-                  <Square size={18} color="#FFFFFF" />
-                  <Text className="text-white font-semibold">{t('time.stop')}</Text>
-                </TouchableOpacity>
+                {stuck ? (
+                  endOpen ? (
+                    <View className="mb-1">
+                      <Text className="text-foreground dark:text-foreground-dark text-[13px] font-medium mb-1.5">{t('time.end.label')}</Text>
+                      <DateTimeField value={endValue} onChange={setEndValue} />
+                      <Text accessibilityRole={endProblem ? 'alert' : undefined} className={`text-xs mt-1 ${endProblem ? 'text-destructive dark:text-destructive-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}>
+                        {endProblem ? t(END_PROBLEM_KEY[endProblem]) : t('time.end.hint', { from: fmt(new Date(running.startedAt)), to: fmt(endMax!) })}
+                      </Text>
+                      <LinkButton label={t('time.end.take-latest')} disabled={!!busy} onPress={() => setEndValue(endMax)} />
+                      <Button block label={t('time.end.submit')} onPress={() => void saveEnd()} disabled={!!busy || !endValue || endProblem !== null} loading={busy === 'end'} />
+                    </View>
+                  ) : (
+                    <Button block label={t('time.end.open')} onPress={() => setEndOpen(true)} disabled={!!busy} />
+                  )
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => void run('out', () => time.clockOut())}
+                    disabled={!!busy}
+                    accessibilityRole="button"
+                    className={`flex-row items-center justify-center bg-destructive rounded-control ${busy ? 'opacity-60' : ''}`}
+                    style={{ gap: 8, minHeight: 52 }}
+                  >
+                    <Square size={18} color="#FFFFFF" />
+                    <Text className="text-white font-semibold">{t('time.stop')}</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
                   onPress={() => void discard()}
                   disabled={!!busy}
@@ -194,6 +245,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
                     <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
                       {e.eventTitle ? `${e.eventTitle} · ` : ''}
                       {t(`time.status.${e.status}`)}
+                      {entryMarks(e).map((m) => ` · ${t(`time.mark.${m}`)}`).join('')}
                     </Text>
                   </View>
                   {canDeleteEntry(e) ? <LinkButton label={t('ui.delete')} danger disabled={!!busy} onPress={() => void run(e.id, () => time.removeEntry(e.id))} /> : null}

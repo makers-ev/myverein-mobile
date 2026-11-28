@@ -46,6 +46,7 @@ export default function KalenderScreen() {
   const { activeClub, error: clubsError, loading: clubsLoading } = useMyClubs();
   const [noticeKey, setNoticeKey] = useState<string | null>(null);
   const [focus, setFocus] = useState<EventFocus | null>(null);
+  const [command, setCommand] = useState<{ kind: KalenderCommand; n: number } | null>(null);
   const { target, ready, unreachable, consume } = usePushScreenTarget('Kalender');
   const clearFocus = useCallback(() => setFocus(null), []);
   // Loads one event (visibility is checked server-side) and lets the Termine tab jump to its day and open it.
@@ -86,6 +87,11 @@ export default function KalenderScreen() {
     setNoticeKey(null);
     // Meeting pushes open the Treffen tab; everything else starts on Termine.
     setTab(target.kind === 'calendar' && target.tab ? target.tab : 'termine');
+    // Time-entry pushes open the time stamp (reminder, auto-closed, closed by a lead).
+    if (target.kind === 'time') {
+      if (activeClub) setCommand((prev) => queueCommand(prev, 'time'));
+      return;
+    }
     if (target.kind !== 'event' || !activeClub) return;
     void openEvent(target.eventId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,7 +103,6 @@ export default function KalenderScreen() {
   const myHours = trackTime || membership?.hasRate === true;
   const teamHours = canSeeTeamHours(membership);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [command, setCommand] = useState<{ kind: KalenderCommand; n: number } | null>(null);
   const clearCommand = useCallback(() => setCommand(null), []);
   const run = (kind: KalenderCommand) => {
     setTab('termine');

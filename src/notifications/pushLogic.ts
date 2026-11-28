@@ -12,7 +12,9 @@ export type PushTarget =
   | { kind: 'inbox'; clubId: string | null }
   | { kind: 'calendar'; clubId: string | null; tab?: CalendarTabHint }
   | { kind: 'ballot'; clubId: string | null; ballotId: string | null }
-  | { kind: 'assembly'; clubId: string | null; meetingId: string };
+  | { kind: 'assembly'; clubId: string | null; meetingId: string }
+  // Wave 16: reminder / auto-close / closed-by-lead of a time entry -> Zeiterfassung.
+  | { kind: 'time'; clubId: string | null };
 
 /** Which Kalender tab a calendar target opens (default: Termine). */
 export type CalendarTabHint = 'treffen';
@@ -50,6 +52,8 @@ export function parsePushPayload(data: unknown): PushTarget | null {
     }
     case 'meeting':
       return { kind: 'calendar', clubId, tab: 'treffen' };
+    case 'time_entry':
+      return { kind: 'time', clubId };
     case 'reminder':
     case 'message':
       return { kind: 'inbox', clubId };
@@ -63,7 +67,7 @@ export type PushRoute = 'Mitteilungen' | 'Kalender' | 'Abstimmungen' | 'Versamml
 export function routeForTarget(target: PushTarget): PushRoute {
   if (target.kind === 'ballot') return 'Abstimmungen';
   if (target.kind === 'assembly') return 'Versammlung';
-  return target.kind === 'event' || target.kind === 'calendar' ? 'Kalender' : 'Mitteilungen';
+  return target.kind === 'event' || target.kind === 'calendar' || target.kind === 'time' ? 'Kalender' : 'Mitteilungen';
 }
 
 export type PushNavigationDecision =

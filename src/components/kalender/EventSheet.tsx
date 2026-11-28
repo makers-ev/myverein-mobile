@@ -29,6 +29,7 @@ import {
 } from '@/lib/eventSeries';
 import { ColorChip } from './ColorChip';
 import RecurrenceEditor from './RecurrenceEditor';
+import AvailabilityHints from './AvailabilityHints';
 import SeriesScopePicker from './SeriesScopePicker';
 
 // The caller's own sign-up comes from the backend (`myRsvp` on every event), the sheet refetches after rsvp()/cancelRsvp().
@@ -274,6 +275,9 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
   const ruleProblem = creatingSeries || editingRule ? recurrenceProblem(recurrence, startsAt) : null;
   const previewBody =
     creatingSeries && !ruleProblem && calendarId && startsAt ? createSeriesBody({ ...template(), title: title.trim() || '-' }, recurrence) : null;
+
+  // ISO strings of the range as currently entered (all-day: local midnight to 23:59:59 of the last day).
+  const hintRange = startsAt ? (allDay ? allDayRange(startsAt, endsAt) : { startsAt: startsAt.toISOString(), endsAt: endsAt ? endsAt.toISOString() : null }) : null;
 
   const validate = (): string | null => {
     if (!calendarId || !title.trim() || !startsAt) return t('termine.form.required');
@@ -620,6 +624,16 @@ export default function EventSheet({ target, event, onClose, calendars, colorFor
           </View>
           {scope !== 'this' && !isCreate && seriesId ? (
             <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs mb-3">{t('series.time-only-hint')}</Text>
+          ) : null}
+          {canWrite && clubId ? (
+            <AvailabilityHints
+              clubId={clubId}
+              calendarId={calendarId}
+              startsAt={hintRange?.startsAt ?? null}
+              endsAt={hintRange?.endsAt ?? null}
+              eventId={isCreate ? null : event?.id}
+              series={creatingSeries ? 'first' : !isCreate && seriesId ? 'this' : null}
+            />
           ) : null}
           {isCreate && canWrite ? (
             <RecurrenceEditor

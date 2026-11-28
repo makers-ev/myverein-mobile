@@ -2,7 +2,7 @@ import React from 'react';
 import { Alert } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
-import { apiFetch } from '@/lib/api';
+import { ApiError, apiFetch } from '@/lib/api';
 import { LanguageProvider } from '@/contexts/translation/LanguageContext';
 import TimeSheet from './TimeSheet';
 
@@ -69,7 +69,7 @@ describe('TimeSheet running entry', () => {
     const screen = await setup(running(328));
     await act(async () => {});
     expect(screen.getByText(/Did you forget to stop/)).toBeTruthy();
-    expect(screen.getByText(/can no longer be stopped/)).toBeTruthy();
+    expect(screen.getByText(/runs longer than 16 hours/)).toBeTruthy();
     await act(async () => {
       fireEvent.press(screen.getByText('Discard entry'));
     });
@@ -90,5 +90,40 @@ describe('TimeSheet running entry', () => {
     });
     expect(apiFetchMock.mock.calls.some((c) => c[1]?.method === 'DELETE')).toBe(false);
     alert.mockRestore();
+  });
+
+  it('lets a stuck entry be ended afterwards with the end time bounded by the server', async () => {
+    const entry = { ...running(40), overdue: true, maxEndedAt: new Date(Date.now() - 24 * 3_600_000).toISOString() };
+    const screen = await setup(entry);
+    await act(async () => {});
+    expect(screen.queryByText('Stop clock')).toBeNull();
+    await act(async () => {
+      fireEvent.press(screen.getByText('Enter end time'));
+    });
+    expect(screen.getByText(/Pick a time between/)).toBeTruthy();
+    await act(async () => {
+      fireEvent.press(screen.getByText('Use the latest possible end'));
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByText('Save end time'));
+    });
+    await act(async () => {});
+    const call = apiFetchMock.mock.calls.find((c) => String(c[0]).startsWith('/time-entries/clock-out'));
+    expect(call?.[1].body.endedAt).toBe(entry.maxEndedAt);
+  });
+
+  it('opens the end form when the server answers needs_end_time', async () => {
+    const screen = await setup(running(5));
+    await act(async () => {});
+    apiFetchMock.mockImplementation(async (path: string, opts?: { method?: string }) => {
+      if (path.startsWith('/time-entries/clock-out')) throw new ApiError(409, 'CONFLICT', 'x', { code: 'needs_end_time' });
+      if (path.startsWith('/time-entries/current')) return { data: { ...running(20), overdue: true } };
+      return { data: [] };
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByText('Stop clock'));
+    });
+    await act(async () => {});
+    expect(screen.getByText(/Pick a time between/)).toBeTruthy();
   });
 });

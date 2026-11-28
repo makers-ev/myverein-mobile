@@ -22,6 +22,16 @@ export interface TimeEntry {
   source: 'stempeln' | 'aus_termin' | 'manuell';
   status: TimeEntryStatus;
   confirmedAt: string | null;
+  /** Wave 16: the end was entered afterwards. */
+  corrected?: boolean;
+  /** Wave 16: ended by the system after the auto-close time; needs checking. */
+  autoClosed?: boolean;
+  /** Wave 16: ended (or rejected while running) by a board member / department lead. */
+  closedByOther?: boolean;
+  /** Wave 16: still running for more than 16 h (stuck). */
+  overdue?: boolean;
+  /** Wave 16: latest allowed end of a running entry, `min(now, start + 16 h)`. */
+  maxEndedAt?: string | null;
 }
 
 export interface TimeSuggestion {
@@ -111,11 +121,64 @@ const DETAIL_KEYS: Record<string, string> = {
   entry_exists: 'time.err.exists',
   in_future: 'time.err.future',
   too_long: 'time.err.too-long',
+  needs_end_time: 'time.err.needs-end',
   too_old: 'time.err.too-old',
   invalid_time: 'time.err.invalid',
   no_rate: 'time.err.no-rate',
   report_too_large: 'time.err.report-too-large',
 };
+
+/** The entry is stuck: server flag, or (older backends) running for more than 16 h. */
+export function isStuck(e: Pick<TimeEntry, 'running' | 'overdue' | 'startedAt'>, now: Date): boolean {
+  return e.running && (e.overdue ?? runningState(elapsedMinutes(e.startedAt, now)) === 'too-long');
+}
+
+/** Latest end a running entry may get (ms): the server value, else min(now, start + 16 h). */
+export function latestEnd(e: Pick<TimeEntry, 'startedAt' | 'maxEndedAt'>, now: Date): number {
+  if (e.maxEndedAt) {
+    const max = new Date(e.maxEndedAt).getTime();
+    if (!Number.isNaN(max)) return max;
+  }
+  return Math.min(now.getTime(), new Date(e.startedAt).getTime() + MAX_ENTRY_MINUTES * 60_000);
+}
+
+export type EndProblem = 'order' | 'future' | 'long';
+
+/** Client mirror of the end-time rules (start < end <= min(now, start + 16 h)); the server decides. */
+export function endTimeProblem(e: Pick<TimeEntry, 'startedAt' | 'maxEndedAt'>, end: Date, now: Date): EndProblem | null {
+  const start = new Date(e.startedAt).getTime();
+  const t = end.getTime();
+  if (Number.isNaN(t) || t <= start) return 'order';
+  if (t > start + MAX_ENTRY_MINUTES * 60_000) return 'long';
+  if (t > latestEnd(e, now) + 60_000) return 'future';
+  return null;
+}
+
+export const END_PROBLEM_KEY: Record<EndProblem, string> = {
+  order: 'time.err.invalid',
+  future: 'time.err.future',
+  long: 'time.err.end-too-long',
+};
+
+/** Pills next to an entry: how its end came about. */
+export function entryMarks(e: Pick<TimeEntry, 'corrected' | 'autoClosed' | 'closedByOther'>): ('autoClosed' | 'closedByOther' | 'corrected')[] {
+  const marks: ('autoClosed' | 'closedByOther' | 'corrected')[] = [];
+  if (e.autoClosed) marks.push('autoClosed');
+  if (e.closedByOther) marks.push('closedByOther');
+  else if (e.corrected && !e.autoClosed) marks.push('corrected');
+  return marks;
+}
+
+/** `needs_end_time` on clock-out: the entry runs too long and needs an end time. */
+export function needsEndTime(err: unknown): boolean {
+  return err instanceof ApiError && (err.details as { code?: unknown } | undefined)?.code === 'needs_end_time';
+}
+
+/** Text key for a failed "set the end" request; `too_long` here means the chosen end, not the running time. */
+export function endTimeErrorKey(err: unknown): string {
+  if (err instanceof ApiError && (err.details as { code?: unknown } | undefined)?.code === 'too_long') return 'time.err.end-too-long';
+  return timeErrorKey(err);
+}
 
 export function timeErrorKey(err: unknown): string {
   if (err instanceof ApiError) {
