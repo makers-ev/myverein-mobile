@@ -1,14 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import { Play, Square } from 'lucide-react-native';
+import { Play, Square, Trash2, TriangleAlert } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useTimeTracking } from '@/hooks/useTimeTracking';
-import { canDeleteEntry, elapsedMinutes, formatDuration, timeErrorKey, totalMinutes } from '@/lib/timeTracking';
+import { canDeleteEntry, elapsedMinutes, formatDuration, runningState, timeErrorKey, totalMinutes } from '@/lib/timeTracking';
 import FormSheet from '@/components/ui/FormSheet';
 import Button from '@/components/ui/Button';
+import Banner from '@/components/ui/Banner';
+import { useConfirm } from '@/hooks/useConfirm';
 
 interface Props {
   visible: boolean;
@@ -46,6 +48,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
   const alive = useRef(true);
+  const { confirm } = useConfirm();
 
   useEffect(() => {
     alive.current = true;
@@ -79,6 +82,17 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
   };
 
   const running = time.current;
+  const runningMinutes = running ? elapsedMinutes(running.startedAt, now) : 0;
+  const state = runningState(runningMinutes);
+  const startedLabel = running
+    ? `${new Date(running.startedAt).toLocaleDateString(language, { day: 'numeric', month: 'short' })}, ${new Date(running.startedAt).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}`
+    : '';
+
+  const discard = async () => {
+    if (!running || busy) return;
+    const ok = await confirm({ title: t('time.discard.title'), message: t('time.discard.message'), confirmLabel: t('time.discard'), destructive: true });
+    if (ok) await run('discard', () => time.discardRunning(running.id));
+  };
   const finished = time.entries.filter((e) => !e.running);
 
   return (
@@ -104,6 +118,17 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
                   {running.eventTitle ? `${running.eventTitle} · ` : ''}
                   {t('time.since', { time: new Date(running.startedAt).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' }) })}
                 </Text>
+                {state !== 'ok' ? (
+                  <View className="mb-3">
+                    <Banner
+                      tone={state === 'too-long' ? 'danger' : 'warning'}
+                      icon={TriangleAlert}
+                      title={t('time.stale.title', { since: startedLabel, duration: formatDuration(runningMinutes) })}
+                      body={t(state === 'too-long' ? 'time.stale.too-long' : 'time.stale.body')}
+                      alert
+                    />
+                  </View>
+                ) : null}
                 <TouchableOpacity
                   onPress={() => void run('out', () => time.clockOut())}
                   disabled={!!busy}
@@ -113,6 +138,18 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
                 >
                   <Square size={18} color="#FFFFFF" />
                   <Text className="text-white font-semibold">{t('time.stop')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => void discard()}
+                  disabled={!!busy}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('time.discard')}
+                  accessibilityState={{ disabled: !!busy }}
+                  className={`flex-row items-center justify-center mt-2 ${busy ? 'opacity-50' : ''}`}
+                  style={{ gap: 8, minHeight: 44 }}
+                >
+                  <Trash2 size={16} color={themeColors.destructive} />
+                  <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('time.discard')}</Text>
                 </TouchableOpacity>
               </>
             ) : (

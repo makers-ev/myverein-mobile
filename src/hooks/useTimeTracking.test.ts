@@ -39,6 +39,7 @@ describe('useTimeTracking', () => {
       await result.current.clockOut();
       await result.current.fromEvent('e2');
       await result.current.removeEntry('t1');
+      await result.current.discardRunning('r1');
     });
     const calls = apiFetchMock.mock.calls.map((c) => [c[0], c[1]]);
     expect(calls).toContainEqual(['/time-entries/clock-in?clubId=club', { method: 'POST', body: { eventId: 'e1' } }]);
@@ -46,5 +47,6 @@ describe('useTimeTracking', () => {
     expect(calls).toContainEqual(['/time-entries/clock-out?clubId=club', { method: 'POST', body: {} }]);
     expect(calls).toContainEqual(['/time-entries/from-event?clubId=club', { method: 'POST', body: { eventId: 'e2' } }]);
     expect(calls).toContainEqual(['/time-entries/t1?clubId=club', { method: 'DELETE' }]);
+    expect(calls).toContainEqual(['/time-entries/r1?clubId=club', { method: 'DELETE' }]);
   });
 });

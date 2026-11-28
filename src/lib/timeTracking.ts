@@ -83,6 +83,20 @@ export function totalMinutes(entries: readonly Pick<TimeEntry, 'minutes' | 'stat
   return entries.reduce((sum, e) => (e.status === 'abgelehnt' ? sum : sum + (e.minutes ?? 0)), 0);
 }
 
+/** From this running time on the sheet asks whether the user forgot to stop (8 h). */
+export const STALE_HINT_MINUTES = 8 * 60;
+/** The server refuses to stop an entry running longer than this (16 h, `too_long`): it can only be discarded for now. */
+export const MAX_ENTRY_MINUTES = 16 * 60;
+
+export type RunningState = 'ok' | 'stale' | 'too-long';
+
+/** How a running entry should be presented: normal, "did you forget to stop?" (>= 8 h) or no longer stoppable (> 16 h). */
+export function runningState(minutes: number): RunningState {
+  if (minutes > MAX_ENTRY_MINUTES) return 'too-long';
+  if (minutes >= STALE_HINT_MINUTES) return 'stale';
+  return 'ok';
+}
+
 /** Only an own open, finished entry can still be deleted (the server says `entry_decided` / `running` otherwise). */
 export function canDeleteEntry(entry: Pick<TimeEntry, 'status' | 'running'>): boolean {
   return entry.status === 'offen' && !entry.running;

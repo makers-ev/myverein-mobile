@@ -2,7 +2,7 @@ jest.mock('@/auth/auth-client', () => ({ authClient: {}, backendUrl: 'http://tes
 
 import { ApiError } from './api';
 import { apiErrorKey } from './apiErrorMessage';
-import { canDeleteEntry, elapsedMinutes, formatDuration, monthBounds, shiftMonth, timeErrorKey, totalMinutes } from './timeTracking';
+import { runningState, canDeleteEntry, elapsedMinutes, formatDuration, monthBounds, shiftMonth, timeErrorKey, totalMinutes } from './timeTracking';
 
 describe('time tracking helpers', () => {
   it('formats durations as h:mm', () => {
@@ -57,5 +57,13 @@ describe('time tracking helpers', () => {
   it('shifts months across year ends', () => {
     expect(shiftMonth(new Date(2026, 0, 15), -1)).toEqual(new Date(2025, 11, 1));
     expect(shiftMonth(new Date(2026, 11, 3), 1)).toEqual(new Date(2027, 0, 1));
+  });
+
+  it('classifies running time: normal, stale from 8 h, too long above 16 h', () => {
+    expect(runningState(479)).toBe('ok');
+    expect(runningState(480)).toBe('stale');
+    expect(runningState(960)).toBe('stale');
+    expect(runningState(961)).toBe('too-long');
+    expect(runningState(328 * 60)).toBe('too-long');
   });
 });
