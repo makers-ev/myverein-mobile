@@ -61,6 +61,7 @@ describe('routing', () => {
   it('routes by target kind', () => {
     expect(routeForTarget({ kind: 'announcement', announcementId: 'a', clubId: null })).toBe('Mitteilungen');
     expect(routeForTarget({ kind: 'inbox', clubId: null })).toBe('Mitteilungen');
+    expect(routeForTarget({ kind: 'time', clubId: 'c1' })).toBe('Kalender');
     expect(routeForTarget({ kind: 'event', eventId: 'e', clubId: null })).toBe('Kalender');
     expect(routeForTarget({ kind: 'calendar', clubId: null })).toBe('Kalender');
   });

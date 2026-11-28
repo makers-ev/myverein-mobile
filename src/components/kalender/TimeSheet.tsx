@@ -85,12 +85,14 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
     return () => clearInterval(id);
   }, [visible]);
 
-  const run = async (key: string, job: () => Promise<void>, errorKey: (err: unknown) => string = timeErrorKey) => {
-    if (busy) return;
+  /** Resolves `true` only when the job succeeded (callers close forms / reset input only then). */
+  const run = async (key: string, job: () => Promise<void>, errorKey: (err: unknown) => string = timeErrorKey): Promise<boolean> => {
+    if (busy) return false;
     setBusy(key);
     setError(null);
     try {
       await job();
+      return true;
     } catch (err) {
       if (alive.current) {
         // The server wants an end time (running for more than 16 h): open the form instead of showing an error.
@@ -98,6 +100,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
         else setError(t(errorKey(err)));
         void time.reload();
       }
+      return false;
     } finally {
       if (alive.current) setBusy(null);
     }
@@ -116,8 +119,9 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
   const fmt = (d: Date) => d.toLocaleString(language, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const saveEnd = async () => {
     if (!endValue || endProblem) return;
-    await run('end', () => time.clockOut(endValue.toISOString()), endTimeErrorKey);
-    if (alive.current) {
+    const ok = await run('end', () => time.clockOut(endValue.toISOString()), endTimeErrorKey);
+    // On failure (offline, overlap, in the future) the form stays open with the input; the error shows in the sheet.
+    if (ok && alive.current) {
       setEndOpen(false);
       setEndValue(null);
     }
@@ -168,7 +172,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
                   endOpen ? (
                     <View className="mb-1">
                       <Text className="text-foreground dark:text-foreground-dark text-[13px] font-medium mb-1.5">{t('time.end.label')}</Text>
-                      <DateTimeField value={endValue} onChange={setEndValue} />
+                      <DateTimeField value={endValue} onChange={setEndValue} min={new Date(running.startedAt)} max={endMax} initial={endMax} minuteStep={5} />
                       <Text accessibilityRole={endProblem ? 'alert' : undefined} className={`text-xs mt-1 ${endProblem ? 'text-destructive dark:text-destructive-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}>
                         {endProblem ? t(END_PROBLEM_KEY[endProblem]) : t('time.end.hint', { from: fmt(new Date(running.startedAt)), to: fmt(endMax!) })}
                       </Text>

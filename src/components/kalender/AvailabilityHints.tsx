@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { AccessibilityInfo, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { ChevronDown, ChevronUp, UsersRound } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
@@ -22,9 +22,15 @@ export default function AvailabilityHints({ series, ...input }: Props) {
   const [open, setOpen] = useState(false);
   const hints = useAvailabilityHints(input, true);
 
+  const { data } = hints;
+  const summary = data && data.counts.total > 0 ? t('availability.count', { free: data.counts.verfuegbar, total: data.counts.total }) : null;
+  // iOS does not read a live region reliably: announce the new counter when it changes.
+  useEffect(() => {
+    if (summary && Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(summary);
+  }, [summary]);
+
   if (hints.forbidden) return null;
 
-  const { data } = hints;
   const names = data ? sortedNames(data) : [];
   const failureKey = hints.failure === 'rate' ? 'availability.rate' : hints.failure === 'range' ? 'availability.range' : 'availability.error';
 
@@ -51,10 +57,11 @@ export default function AvailabilityHints({ series, ...input }: Props) {
   } else {
     const { counts } = data;
     body = (
-      <View style={{ opacity: hints.loading ? 0.6 : 1 }}>
+      <View>
         <Text className="text-foreground dark:text-foreground-dark text-base font-semibold" style={{ fontVariant: ['tabular-nums'] }}>
-          {t('availability.count', { free: counts.verfuegbar, total: counts.total })}
+          {summary}
         </Text>
+        {hints.loading ? <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">{t('availability.loading')}</Text> : null}
         <Text className="text-muted-foreground dark:text-muted-foreground-dark text-[13px] leading-[18px]">
           {t('availability.busy', { count: counts.nicht_verfuegbar })} · {t('availability.unknown', { count: counts.unbekannt })}
         </Text>

@@ -126,4 +126,46 @@ describe('TimeSheet running entry', () => {
     await act(async () => {});
     expect(screen.getByText(/Pick a time between/)).toBeTruthy();
   });
+
+  it('keeps the end form and the chosen time open when saving fails, and closes it after success', async () => {
+    const entry = { ...running(40), overdue: true, maxEndedAt: new Date(Date.now() - 24 * 3_600_000).toISOString() };
+    const screen = await setup(entry);
+    await act(async () => {});
+    const failing = (code: string) =>
+      apiFetchMock.mockImplementation(async (path: string) => {
+        if (path.startsWith('/time-entries/clock-out')) throw new ApiError(409, 'CONFLICT', 'x', { code });
+        if (path.startsWith('/time-entries/current')) return { data: entry };
+        return { data: [] };
+      });
+    failing('entry_overlap');
+    await act(async () => {
+      fireEvent.press(screen.getByText('Enter end time'));
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByText('Use the latest possible end'));
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByText('Save end time'));
+    });
+    await act(async () => {});
+    expect(screen.getByText('The period overlaps another entry.')).toBeTruthy();
+    expect(screen.getByText('Save end time')).toBeTruthy();
+    expect(screen.getByText(/Pick a time between/)).toBeTruthy();
+    // The input survived: saving again sends the same end time.
+    apiFetchMock.mockClear();
+    failing('in_future');
+    await act(async () => {
+      fireEvent.press(screen.getByText('Save end time'));
+    });
+    await act(async () => {});
+    expect(apiFetchMock.mock.calls.find((c) => String(c[0]).startsWith('/time-entries/clock-out'))?.[1].body.endedAt).toBe(entry.maxEndedAt);
+    expect(screen.getByText('The time is in the future.')).toBeTruthy();
+    // Success closes the form.
+    apiFetchMock.mockImplementation(async (path: string) => (path.startsWith('/time-entries/current') ? { data: null } : { data: [] }));
+    await act(async () => {
+      fireEvent.press(screen.getByText('Save end time'));
+    });
+    await act(async () => {});
+    expect(screen.queryByText('Save end time')).toBeNull();
+  });
 });

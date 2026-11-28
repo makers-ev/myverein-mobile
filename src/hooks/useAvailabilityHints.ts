@@ -51,8 +51,8 @@ export function useAvailabilityHints(input: HintInput, enabled: boolean) {
   const current = result && result.path === path ? result : null;
   return {
     skip: enabled && request.kind === 'skip' ? request.reason : null,
-    /** 403: the section does not exist for this user. */
-    forbidden: result?.failure === 'forbidden',
+    /** 403 for the CURRENT request (calendar / time): the section does not exist for this user; a new request asks again. */
+    forbidden: current?.failure === 'forbidden',
     loading: path !== null && current === null,
     failure: current?.failure ?? null,
     /** The last answer stays visible (dimmed by the caller) while a new one loads. */

@@ -10,6 +10,7 @@ import { useThemeColors } from '@/theme/colors';
 import { useMyClubs } from '@/hooks/useMyClubs';
 import { apiFetch } from '@/lib/api';
 import PushNotice from '@/components/push/PushNotice';
+import { useExternalAccess } from '@/external/ExternalAccessProvider';
 import { usePushScreenTarget } from '@/notifications/usePushScreenTarget';
 import NoClubChoices from '@/components/onboarding/NoClubChoices';
 import TabChips from '@/components/ui/TabChips';
@@ -46,6 +47,7 @@ export default function KalenderScreen() {
   const { activeClub, error: clubsError, loading: clubsLoading } = useMyClubs();
   const [noticeKey, setNoticeKey] = useState<string | null>(null);
   const [focus, setFocus] = useState<EventFocus | null>(null);
+  const [pendingTime, setPendingTime] = useState(false);
   const [command, setCommand] = useState<{ kind: KalenderCommand; n: number } | null>(null);
   const { target, ready, unreachable, consume } = usePushScreenTarget('Kalender');
   const clearFocus = useCallback(() => setFocus(null), []);
@@ -88,8 +90,9 @@ export default function KalenderScreen() {
     // Meeting pushes open the Treffen tab; everything else starts on Termine.
     setTab(target.kind === 'calendar' && target.tab ? target.tab : 'termine');
     // Time-entry pushes open the time stamp (reminder, auto-closed, closed by a lead).
+    // Whether this account may use it is decided below, once the membership of the active club is loaded.
     if (target.kind === 'time') {
-      if (activeClub) setCommand((prev) => queueCommand(prev, 'time'));
+      setPendingTime(true);
       return;
     }
     if (target.kind !== 'event' || !activeClub) return;
@@ -98,12 +101,26 @@ export default function KalenderScreen() {
   }, [target, ready, unreachable]);
 
   const { membership, can } = useOwnMembership(activeClub?.clubId ?? null);
+  const { reduced: externalReduced } = useExternalAccess();
   const canWrite = can('calendars:write');
   const trackTime = canTrackTime(membership);
   const myHours = trackTime || membership?.hasRate === true;
   const teamHours = canSeeTeamHours(membership);
   const [menuOpen, setMenuOpen] = useState(false);
   const clearCommand = useCallback(() => setCommand(null), []);
+  // Time-entry push: open the time stamp only for who may use it. Reduced (external) accounts never get here, a lost role gets
+  // a calm notice instead of a sheet that answers 403.
+  useEffect(() => {
+    if (!pendingTime) return;
+    if (externalReduced) {
+      setPendingTime(false);
+      return;
+    }
+    if (!activeClub || !membership) return;
+    setPendingTime(false);
+    if (canTrackTime(membership)) setCommand((prev) => queueCommand(prev, 'time'));
+    else setNoticeKey('push.notice.time-unavailable');
+  }, [pendingTime, externalReduced, activeClub, membership]);
   const run = (kind: KalenderCommand) => {
     setTab('termine');
     setCommand((prev) => queueCommand(prev, kind));
