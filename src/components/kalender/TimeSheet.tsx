@@ -1,14 +1,32 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import { Play, Square } from 'lucide-react-native';
+import { Play, Square, Trash2, TriangleAlert } from 'lucide-react-native';
 
 import { useLanguage } from '@/contexts/translation/LanguageContext';
 import { useThemeColors } from '@/theme/colors';
 import { apiErrorMessage } from '@/lib/apiErrorMessage';
 import { useTimeTracking } from '@/hooks/useTimeTracking';
-import { canDeleteEntry, elapsedMinutes, formatDuration, timeErrorKey, totalMinutes } from '@/lib/timeTracking';
+import {
+  canDeleteEntry,
+  elapsedMinutes,
+  END_PROBLEM_KEY,
+  endTimeErrorKey,
+  endTimeProblem,
+  entryMarks,
+  formatDuration,
+  isStuck,
+  latestEnd,
+  needsEndTime,
+  runningState,
+  timeErrorKey,
+  totalMinutes,
+  type TimeEntry,
+} from '@/lib/timeTracking';
 import FormSheet from '@/components/ui/FormSheet';
 import Button from '@/components/ui/Button';
+import Banner from '@/components/ui/Banner';
+import DateTimeField from '@/components/ui/DateTimeField';
+import { useConfirm } from '@/hooks/useConfirm';
 
 interface Props {
   visible: boolean;
@@ -45,7 +63,10 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
+  const [endOpen, setEndOpen] = useState(false);
+  const [endValue, setEndValue] = useState<Date | null>(null);
   const alive = useRef(true);
+  const { confirm } = useConfirm();
 
   useEffect(() => {
     alive.current = true;
@@ -56,29 +77,61 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
   useEffect(() => {
     if (!visible) {
       setError(null);
+      setEndOpen(false);
+      setEndValue(null);
       return;
     }
     const id = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(id);
   }, [visible]);
 
-  const run = async (key: string, job: () => Promise<void>) => {
-    if (busy) return;
+  /** Resolves `true` only when the job succeeded (callers close forms / reset input only then). */
+  const run = async (key: string, job: () => Promise<void>, errorKey: (err: unknown) => string = timeErrorKey): Promise<boolean> => {
+    if (busy) return false;
     setBusy(key);
     setError(null);
     try {
       await job();
+      return true;
     } catch (err) {
       if (alive.current) {
-        setError(t(timeErrorKey(err)));
+        // The server wants an end time (running for more than 16 h): open the form instead of showing an error.
+        if (needsEndTime(err)) setEndOpen(true);
+        else setError(t(errorKey(err)));
         void time.reload();
       }
+      return false;
     } finally {
       if (alive.current) setBusy(null);
     }
   };
 
   const running = time.current;
+  const runningMinutes = running ? elapsedMinutes(running.startedAt, now) : 0;
+  const stuck = running ? isStuck(running, now) : false;
+  const state = stuck ? 'too-long' : runningState(runningMinutes);
+  const startedLabel = running
+    ? `${new Date(running.startedAt).toLocaleDateString(language, { day: 'numeric', month: 'short' })}, ${new Date(running.startedAt).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}`
+    : '';
+
+  const endMax = running ? new Date(latestEnd(running, now)) : null;
+  const endProblem = running && endValue ? endTimeProblem(running, endValue, now) : null;
+  const fmt = (d: Date) => d.toLocaleString(language, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const saveEnd = async () => {
+    if (!endValue || endProblem) return;
+    const ok = await run('end', () => time.clockOut(endValue.toISOString()), endTimeErrorKey);
+    // On failure (offline, overlap, in the future) the form stays open with the input; the error shows in the sheet.
+    if (ok && alive.current) {
+      setEndOpen(false);
+      setEndValue(null);
+    }
+  };
+
+  const discard = async () => {
+    if (!running || busy) return;
+    const ok = await confirm({ title: t('time.discard.title'), message: t('time.discard.message'), confirmLabel: t('time.discard'), destructive: true });
+    if (ok) await run('discard', () => time.discardRunning(running.id));
+  };
   const finished = time.entries.filter((e) => !e.running);
 
   return (
@@ -104,15 +157,54 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
                   {running.eventTitle ? `${running.eventTitle} · ` : ''}
                   {t('time.since', { time: new Date(running.startedAt).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' }) })}
                 </Text>
+                {state !== 'ok' ? (
+                  <View className="mb-3">
+                    <Banner
+                      tone={state === 'too-long' ? 'danger' : 'warning'}
+                      icon={TriangleAlert}
+                      title={t('time.stale.title', { since: startedLabel, duration: formatDuration(runningMinutes) })}
+                      body={t(state === 'too-long' ? 'time.stale.too-long' : 'time.stale.body')}
+                      alert
+                    />
+                  </View>
+                ) : null}
+                {stuck ? (
+                  endOpen ? (
+                    <View className="mb-1">
+                      <Text className="text-foreground dark:text-foreground-dark text-[13px] font-medium mb-1.5">{t('time.end.label')}</Text>
+                      <DateTimeField value={endValue} onChange={setEndValue} min={new Date(running.startedAt)} max={endMax} initial={endMax} minuteStep={5} />
+                      <Text accessibilityRole={endProblem ? 'alert' : undefined} className={`text-xs mt-1 ${endProblem ? 'text-destructive dark:text-destructive-dark' : 'text-muted-foreground dark:text-muted-foreground-dark'}`}>
+                        {endProblem ? t(END_PROBLEM_KEY[endProblem]) : t('time.end.hint', { from: fmt(new Date(running.startedAt)), to: fmt(endMax!) })}
+                      </Text>
+                      <LinkButton label={t('time.end.take-latest')} disabled={!!busy} onPress={() => setEndValue(endMax)} />
+                      <Button block label={t('time.end.submit')} onPress={() => void saveEnd()} disabled={!!busy || !endValue || endProblem !== null} loading={busy === 'end'} />
+                    </View>
+                  ) : (
+                    <Button block label={t('time.end.open')} onPress={() => setEndOpen(true)} disabled={!!busy} />
+                  )
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => void run('out', () => time.clockOut())}
+                    disabled={!!busy}
+                    accessibilityRole="button"
+                    className={`flex-row items-center justify-center bg-destructive rounded-control ${busy ? 'opacity-60' : ''}`}
+                    style={{ gap: 8, minHeight: 52 }}
+                  >
+                    <Square size={18} color="#FFFFFF" />
+                    <Text className="text-white font-semibold">{t('time.stop')}</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
-                  onPress={() => void run('out', () => time.clockOut())}
+                  onPress={() => void discard()}
                   disabled={!!busy}
                   accessibilityRole="button"
-                  className={`flex-row items-center justify-center bg-destructive rounded-control ${busy ? 'opacity-60' : ''}`}
-                  style={{ gap: 8, minHeight: 52 }}
+                  accessibilityLabel={t('time.discard')}
+                  accessibilityState={{ disabled: !!busy }}
+                  className={`flex-row items-center justify-center mt-2 ${busy ? 'opacity-50' : ''}`}
+                  style={{ gap: 8, minHeight: 44 }}
                 >
-                  <Square size={18} color="#FFFFFF" />
-                  <Text className="text-white font-semibold">{t('time.stop')}</Text>
+                  <Trash2 size={16} color={themeColors.destructive} />
+                  <Text className="text-destructive dark:text-destructive-dark text-sm font-semibold">{t('time.discard')}</Text>
                 </TouchableOpacity>
               </>
             ) : (
@@ -157,6 +249,7 @@ export default function TimeSheet({ visible, onClose, clubId, eventId, eventTitl
                     <Text className="text-muted-foreground dark:text-muted-foreground-dark text-xs">
                       {e.eventTitle ? `${e.eventTitle} · ` : ''}
                       {t(`time.status.${e.status}`)}
+                      {entryMarks(e).map((m) => ` · ${t(`time.mark.${m}`)}`).join('')}
                     </Text>
                   </View>
                   {canDeleteEntry(e) ? <LinkButton label={t('ui.delete')} danger disabled={!!busy} onPress={() => void run(e.id, () => time.removeEntry(e.id))} /> : null}

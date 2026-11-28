@@ -388,7 +388,8 @@ export default function TermineTab({ clubId, focus, onFocusHandled, onEventGone,
         }
       />
 
-      {trackTime ? <TimeSheet visible={timeOpen} onClose={() => setTimeOpen(false)} clubId={clubId} /> : null}
+      {/* Not gated by `canTrack`: a stuck or auto-ended own entry must stay correctable / discardable without a current rate (the menu entry is still gated). */}
+      <TimeSheet visible={timeOpen} onClose={() => setTimeOpen(false)} clubId={clubId} />
       {myHours ? <MyHoursSheet visible={myHoursOpen} onClose={() => setMyHoursOpen(false)} clubId={clubId} /> : null}
       {teamHours ? <TeamHoursSheet visible={teamHoursOpen} onClose={() => setTeamHoursOpen(false)} clubId={clubId} /> : null}
       {sub?.kind === 'time' ? <TimeSheet visible onClose={closeSub} clubId={clubId} eventId={sub.event.id} eventTitle={sub.event.title} /> : null}

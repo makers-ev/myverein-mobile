@@ -7,7 +7,8 @@ import { useThemeColors } from '@/theme/colors';
 import MonthCalendar, { toDayKey } from './MonthCalendar';
 
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
-const MINUTES = [0, 15, 30, 45];
+const MINUTES_15 = [0, 15, 30, 45];
+const MINUTES_5 = Array.from({ length: 12 }, (_, i) => i * 5);
 
 interface Props {
   value: Date | null;
@@ -16,10 +17,17 @@ interface Props {
   mode?: 'date' | 'datetime';
   placeholder?: string;
   clearable?: boolean;
+  /** Earliest / latest value: the picker starts inside the window and "Fertig" clamps into it (nothing else changes when unset). */
+  min?: Date | null;
+  max?: Date | null;
+  /** First value shown when the field is empty (default: now, rounded to the quarter hour). */
+  initial?: Date | null;
+  /** Minute chips every 15 (default) or 5 minutes. */
+  minuteStep?: 5 | 15;
 }
 
 /** Pressable field that opens a month grid (+ hour/minute chips in datetime mode). */
-export default function DateTimeField({ value, onChange, mode = 'datetime', placeholder, clearable }: Props) {
+export default function DateTimeField({ value, onChange, mode = 'datetime', placeholder, clearable, min, max, initial, minuteStep = 15 }: Props) {
   const { t, language } = useLanguage();
   const themeColors = useThemeColors();
   const [open, setOpen] = useState(false);
@@ -27,7 +35,7 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
   const [month, setMonth] = useState<Date>(value ?? new Date());
 
   const openPicker = () => {
-    const base = value ?? roundToQuarter(new Date());
+    const base = value ?? initial ?? roundToQuarter(new Date());
     setDraft(base);
     setMonth(base);
     setOpen(true);
@@ -97,8 +105,8 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
                     <Chip key={h} label={String(h).padStart(2, '0')} active={draft.getHours() === h} onPress={() => setTime(h, draft.getMinutes())} />
                   ))}
                 </ScrollView>
-                <View className="flex-row mt-2 px-1" style={{ gap: 6 }}>
-                  {MINUTES.map((m) => (
+                <View className="flex-row flex-wrap mt-2 px-1" style={{ gap: 6 }}>
+                  {(minuteStep === 5 ? MINUTES_5 : MINUTES_15).map((m) => (
                     <Chip key={m} label={`:${String(m).padStart(2, '0')}`} active={draft.getMinutes() === m} onPress={() => setTime(draft.getHours(), m)} />
                   ))}
                 </View>
@@ -111,7 +119,7 @@ export default function DateTimeField({ value, onChange, mode = 'datetime', plac
               </TouchableOpacity>
               <TouchableOpacity accessibilityRole="button"
                 onPress={() => {
-                  onChange(draft);
+                  onChange(clampDate(draft, min, max));
                   setOpen(false);
                 }}
                 className="flex-1 bg-primary dark:bg-primary-dark rounded-control py-3 items-center"
@@ -139,6 +147,12 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
       </Text>
     </TouchableOpacity>
   );
+}
+
+function clampDate(date: Date, min?: Date | null, max?: Date | null): Date {
+  if (min && date.getTime() < min.getTime()) return new Date(min);
+  if (max && date.getTime() > max.getTime()) return new Date(max);
+  return date;
 }
 
 function roundToQuarter(date: Date): Date {

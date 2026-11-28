@@ -32,10 +32,20 @@ export function useTimeTracking(clubId: string | null, enabled: boolean, now: Da
     [club, reloadAll],
   );
 
-  const clockOut = useCallback(async () => {
-    await apiFetch(`/time-entries/clock-out?clubId=${club}`, { method: 'POST', body: {} });
+  /** Stops the running entry; `endedAt` (ISO string) sets the end afterwards (needed once it runs longer than 16 h). */
+  const clockOut = useCallback(async (endedAt?: string) => {
+    await apiFetch(`/time-entries/clock-out?clubId=${club}`, { method: 'POST', body: endedAt ? { endedAt } : {} });
     await reloadAll();
   }, [club, reloadAll]);
+
+  /** Discards the own running (or open) entry; the server allows `DELETE` on a running entry as the way out of a stuck stamp. */
+  const discardRunning = useCallback(
+    async (id: string) => {
+      await apiFetch(`/time-entries/${encodeURIComponent(id)}?clubId=${club}`, { method: 'DELETE' });
+      await reloadAll();
+    },
+    [club, reloadAll],
+  );
 
   /** Takes over a proposal from an attendance list (only on this user action). */
   const fromEvent = useCallback(
@@ -66,5 +76,6 @@ export function useTimeTracking(clubId: string | null, enabled: boolean, now: Da
     clockOut,
     fromEvent,
     removeEntry,
+    discardRunning,
   };
 }
